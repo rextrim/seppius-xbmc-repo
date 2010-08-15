@@ -2,7 +2,7 @@
 <addon id="plugin.video.zoomby.ru"
        name="ZOOMBY.RU"
        version="1.0.2"
-       provider-name="anonim">
+       provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>

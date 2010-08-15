@@ -140,7 +140,7 @@ Bee.FM – это больше чем просто музыка!</description>
 <addon id="plugin.video.ivi.ru"
        name="IVI.RU"
        version="1.0.2"
-       provider-name="none">
+       provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -198,7 +198,7 @@ Bee.FM – это больше чем просто музыка!</description>
 <addon id="plugin.video.zoomby.ru"
        name="ZOOMBY.RU"
        version="1.0.2"
-       provider-name="anonim">
+       provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -333,7 +333,7 @@ Bee.FM – это больше чем просто музыка!</description>
 <addon id="plugin.video.yatv.ru"
        name="YaTV.RU"
        version="1.0.0"
-       provider-name="none">
+       provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
