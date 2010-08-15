@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.audio.radiostyle.ru"
+       name="RadioStyle"
+       version="1.0.0"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Internet radio station http://www.radiostyle.ru/</summary>
+    <summary lang="ru">Интернет-радиостанция http://www.radiostyle.ru/</summary>
+    <description lang="en">Listen to radio with only the best site http://www.radiostyle.ru/</description>
+    <description lang="ru">Слушайте только лучшие радиоканалы с сайтаhttp://www.radiostyle.ru/</description>
+  </extension>
+</addon>
