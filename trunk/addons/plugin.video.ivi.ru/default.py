@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import xbmc, xbmcgui, xbmcplugin, urllib2, urllib, re, string, sys, os, traceback, random
 from urllib import urlretrieve, urlcleanup
@@ -76,6 +75,7 @@ def ShowList(work_url, genre):
 		r1 = re.compile('<div class="preview">(.*?)</p>', re.DOTALL).findall(http)
 	x = 1
 	for l1 in r1:
+		#xbmc.output(l1)
 		rate = 0
 		rrate = re.compile('<span class="rate png">(.*?)</span>').findall(l1)
 		if len(rrate) > 0: rate = int(rrate[0])
@@ -83,6 +83,9 @@ def ShowList(work_url, genre):
 		if len(pupt) == 0:
 			pupt = re.compile('<a href="(.*?)" title="(.*?)" class="clearfix">').findall(l1)
 		(pu, pt) = pupt[0]
+		if len(pt) == 0:
+			pupt2 = re.compile('<span class="title clearfix">(.*?)</span>').findall(l1)
+			pt = pupt2[0]
 		duration = '0'
 		rduration = re.compile('<span class="duration">(.*?)</span>').findall(l1)
 		if len(rduration) > 0: duration = rduration[0]
@@ -182,7 +185,7 @@ def PlayURL(wurl, img, name):
 	print 'PlayURL(%s, %s, %s)'%(wurl, img, name)
 	dialog = xbmcgui.Dialog()
 	http = GET(wurl, [('Host', Header_Host)])
-	print http
+	#print http
 	if http == None:
 		dialog.ok('ERROR in GET', 'http == None. Sorry.')
 		return
@@ -201,20 +204,37 @@ def PlayURL(wurl, img, name):
 	if a == None:
 		return
 	raw_filesdata = fnkeys(re.compile('"files"\: \[(.*?)\],').findall(a)[0])
-	list = []
+
+	selected = -1
 	spcn = len(raw_filesdata)
-	if spcn == 1:
-		selected = 0
-	else:
+	for x in range(spcn):
+		if raw_filesdata[x][1] == 'FLV-hi':
+			selected = x
+	if selected == -1:
 		for x in range(spcn):
-			list.append(raw_filesdata[x][1])
-		selected = dialog.select('Quality?', list)
+			if raw_filesdata[x][1] == 'FLV-lo':
+				selected = x
+
 	if selected < 0:
 		return
+
+	#list = []
+	#spcn = len(raw_filesdata)
+	#if spcn == 1:
+	#	selected = 0
+	#else:
+	#	for x in range(spcn):
+	#		list.append(raw_filesdata[x][1])
+	#	selected = dialog.select('Quality?', list)
+	#if selected < 0:
+	#	return
 	video_mp4url  = raw_filesdata[selected][0]
 	video_quality = raw_filesdata[selected][1]
 	video_id      = raw_filesdata[selected][2]
 
+	#print('video_mp4url  = %s' % video_mp4url)
+	#print('video_quality = %s' % video_quality)
+	#print('video_id      = %s' % video_id)
 
 	listitem = xbmcgui.ListItem(name, iconImage = img, thumbnailImage = img)
 
