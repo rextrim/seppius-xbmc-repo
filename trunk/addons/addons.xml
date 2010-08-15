@@ -61,6 +61,25 @@ Bee.FM – это больше чем просто музыка!</description>
   </extension>
 </addon>
 
+<addon id="plugin.video.russia.ru"
+       name="RUSSIA.RU"
+       version="1.0.1"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта http://russia.ru/</summary>
+    <description>Смотрите видео с сайта http://russia.ru/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.ruhd.tv"
        name="RuHD.TV"
        version="1.0.8"
