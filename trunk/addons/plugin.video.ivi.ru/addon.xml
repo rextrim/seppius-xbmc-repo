@@ -2,7 +2,7 @@
 <addon id="plugin.video.ivi.ru"
        name="IVI.RU"
        version="1.0.2"
-       provider-name="none">
+       provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>

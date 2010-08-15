@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #/*
-# *      Copyright (C) 2010 Seppius
+# *      Copyright (C) 2010 Kostynoy S. aka Seppius
 # *
 # *
 # *  This Program is free software; you can redistribute it and/or modify
@@ -17,7 +17,6 @@
 # *  along with this program; see the file COPYING.  If not, write to
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
-# *
 # */
 import urllib2, re, xbmcaddon, string, xbmc, xbmcgui, xbmcplugin, os, urllib
 
@@ -281,7 +280,7 @@ def show_root():
 	f.close()
 	match = re.compile('<div class="program">\s*<a href="(.+?)"><img src="(.+?)" alt="*" /></a>\s*<h3><a href="(.+?)">(.+?)</a></h3>\s*<p>(.+?)</p>\s*</div>').findall(a)
 	if len(match) > 0:
-		x = 1 
+		x = 1
 		for prog_url, img, prog_url2, name, plot in match:
 			if len(prog_url2) > (prog_url):
 				prog_url = prog_url2
