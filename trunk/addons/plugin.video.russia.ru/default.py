@@ -121,8 +121,8 @@ def OpenRSS(target, name):
 			summary = __language__(30002)
 		else:
 			summary = summary0[0]
-			summary = summary.clean('<![CDATA[','')
-			summary = summary.clean(']]>','')
+			summary = summary.replace('<![CDATA[','')
+			summary = summary.replace(']]>','')
 
 		#xbmc.output('   title = %s'%title)
 		#xbmc.output('    link = %s'%link)
