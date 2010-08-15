@@ -1,0 +1,30 @@
+#!/bin/bash
+REPO="seppius-xbmc-repo"
+UNAM="seppius2"
+PASS="********"
+MESS=`date`
+
+cd $REPO
+
+svn add --force *
+svn status | grep '\!' | awk '{print $2;}' | xargs svn rm
+
+#echo "processing files to add..."
+#svn status | grep “^?” | sed -r 's/^\?[ ]+//' | xargs -r svn add
+
+#echo "processing files to delete..."
+#svn status | grep “^!” | sed -r 's/^\![ ]+//' | xargs -r svn delete
+
+
+#for f in `svn status | grep ! | sed 's/^![ ]*//'`
+#do
+#  svn del "$f"
+#done
+#for f in `svn status | grep ? | sed 's/^?[ ]*//'`
+#do
+#  svn add "$f"
+#done
+
+svn commit --username $UNAM --password $PASS -m '$MESS'
+
+#svn import ./addons 'http://seppius-xbmc-repo.googlecode.com/svn/trunk' --username $UNAM --password $PASS -m '$MESS'
