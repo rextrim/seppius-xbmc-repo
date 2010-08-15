@@ -1,0 +1,41 @@
+<settings>
+
+	<setting
+		id      = "download"
+		type    = "bool"
+		label   = "30030"
+		default = "false"
+	/>
+	<setting
+		id      = "download_path"
+		type    = "folder"
+		source  = "files"
+		label   = "30031"
+		option  = "writeable"
+		default = "/tmp"
+	/>
+	<setting
+		id      = "download_ask"
+		type    = "bool"
+		enable  = "eq(-2,false)"
+		label   = "30032"
+		default = "false"
+	/>
+
+	<setting
+		id      = "count_nonstop"
+		type    = "enum"
+		values  = "15|30|100"
+		label   = "30033"
+		default = "1"
+	/>
+
+	<setting
+		id      = "count_list"
+		type    = "enum"
+		values  = "15|30|100"
+		label   = "30034"
+		default = "1"
+	/>
+
+</settings>
