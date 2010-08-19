@@ -63,7 +63,7 @@ Bee.FM – это больше чем просто музыка!</description>
 
 <addon id="plugin.video.russia.ru"
        name="RUSSIA.RU"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

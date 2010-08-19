@@ -24,20 +24,14 @@ from urllib import urlretrieve, urlcleanup
 __settings__ = xbmcaddon.Addon(id='plugin.video.russia.ru')
 __language__ = __settings__.getLocalizedString
 
-Header_UserAgent = "Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60"
-Header_Host      = "www.russia.ru"
-Header_AccLang   = "ru, *"
-
 russia_url = 'http://www.russia.ru/'
 thumb = os.path.join(os.getcwd(), 'icon.png')
-thumbnail_file = os.path.join( xbmc.translatePath("special://temp/"), "www.russia.ru.tbn")
 
 def GET(target_url, postdata = None):
 	try:
 		req = urllib2.Request(target_url, postdata)
-		req.add_header('User-Agent',      Header_UserAgent)
-		req.add_header('Accept-Language', Header_AccLang)
-		req.add_header('Host',            Header_Host)
+		req.add_header('Accept-Language', 'www.russia.ru')
+		req.add_header('Host',            'ru, *')
 		f = urllib2.urlopen(req)
 		a = f.read()
 		f.close()
@@ -65,13 +59,117 @@ def get_params():
 	return param
 
 def clean(name):
-	remove=[('<strong>',' '),('</strong>',' '),('<span>',' '),('</span>',' '),('&amp;','&'),('&quot;','"'),('&#39;','\''),('&nbsp;',' '),('&laquo;','"'),('&raquo;', '"'),('&#151;','-'),('<nobr>',''),('</nobr>',''),('<P>',''),('</P>','')]
+	remove=[('&ndash;',''),('<ul>',''),('</ul>',''),('" target="_blank">',' '),('<a href="',''),('</a>',''),('<br>',''),('<br />',''),('<div>',''),('</div>',''),('<strong>',' '),('</strong>',' '),('<span>',' '),('</span>',' '),('&amp;','&'),('&quot;','"'),('&#39;','\''),('&nbsp;',' '),('&laquo;','"'),('&raquo;', '"'),('&#151;','-'),('<nobr>',''),('</nobr>',''),('<p>',''),('</p>','')]
 	for trash, crap in remove:
 		name=name.replace(trash, crap)
 	return name
 
+def RssParser(http):
+	item_count = 0
+	titles = []
+	links = []
+	guids = []
+	enclosures = []
+	descriptions = []
+	categorys = []
+	pubDates = []
+	region_1 = re.compile('<item>(.*?)</item>', re.DOTALL).findall(http)
+	if len(region_1) > 0:
+		for region in region_1:
+			current_title       = ''
+			current_link        = russia_url
+			current_guid        = ''
+			current_enclosure   = thumb
+			current_description = __language__(30001)
+			current_category    = __language__(30002)
+			current_pubDate     = __language__(30003)
+			current_title_raw       = re.compile('<title>(.*?)</title>').findall(region)
+			current_link_raw        = re.compile('<link>(.*?)</link>').findall(region)
+			current_guid_raw        = re.compile('<guid>(.*?)</guid>').findall(region)
+			current_enclosure_raw   = re.compile('<enclosure url=\"(.*?)\" type=\"image/jpeg\">').findall(region)
+			if len(current_enclosure_raw) == 0:
+				current_enclosure_raw = re.compile('<img src=\"(.*?)\"/>').findall(region)
+			current_description_raw = re.compile('<itunes:summary>.*<!\[CDATA\[(.*?)\]\]>.*</itunes:summary>', re.DOTALL).findall(region)
+			if len(current_description_raw) == 0:
+				current_description_raw = re.compile('<description>.*<!\[CDATA\[(.*?)\]\]>.*</description>', re.DOTALL).findall(region)
+			current_category_raw    = re.compile('<category>(.*?)</category>').findall(region)
+			current_pubDate_raw     = re.compile('<pubDate>(.*?)</pubDate>').findall(region)
+			if (len(current_title_raw) > 0) and (current_guid_raw > 0):
+				item_count += 1
+				current_title       = current_title_raw[0]
+				if len(current_link_raw) > 0:
+					current_link = current_link_raw[0]
+				current_guid        = current_guid_raw[0]
+				if len(current_enclosure_raw) > 0:
+					current_enclosure = current_enclosure_raw[0]
+				if len(current_description_raw) > 0:
+					current_description = current_description_raw[0]
+				if len(current_category_raw) > 0:
+					current_category = current_category_raw[0]
+				if len(current_pubDate_raw) > 0:
+					current_pubDate = current_pubDate_raw[0]
+				titles.append(current_title)
+				links.append(current_link)
+				guids.append(current_guid)
+				enclosures.append(current_enclosure)
+				descriptions.append(clean(current_description))
+				categorys.append(current_category)
+				pubDates.append(current_pubDate)
+	return item_count, titles, links, guids, enclosures, descriptions, categorys, pubDates
+
+
+def ListRoot():
+
+	catname = __language__(30010).encode('utf8')
+	listitem = xbmcgui.ListItem(catname, iconImage = thumb, thumbnailImage = thumb)
+	url = '%s?mode=%s&url=%s&name=%s'%(sys.argv[0], 'ListCat', urllib.quote_plus(russia_url + 'rss/heroes.xml'), urllib.quote_plus(catname))
+	xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+
+	catname = __language__(30011).encode('utf8')
+	listitem = xbmcgui.ListItem(catname, iconImage = thumb, thumbnailImage = thumb)
+	url = '%s?mode=%s&url=%s&name=%s'%(sys.argv[0], 'ListCat', urllib.quote_plus(russia_url + 'rss/programs.xml'), urllib.quote_plus(catname))
+	xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+
+	catname = __language__(30012).encode('utf8') + ' ' + russia_url
+	listitem = xbmcgui.ListItem(catname, iconImage = thumb, thumbnailImage = thumb)
+	url = '%s?mode=%s&url=%s&name=%s'%(sys.argv[0], 'ListRSS', urllib.quote_plus(russia_url + 'rss/'), urllib.quote_plus(catname))
+	xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+
+	xbmcplugin.endOfDirectory(handle)
+
+
+def ListCat(target, catname):
+	http = GET(target)
+	if http == None:
+		return
+	(item_count, titles, links, guids, enclosures, descriptions, categorys, pubDates) = RssParser(http)
+	if item_count == 0:
+		return
+	y = 1
+	for x in range(item_count):
+		Title       = titles[x]
+		Link        = links[x]
+		Guid        = guids[x]
+		Enclosure   = enclosures[x]
+		Description = descriptions[x]
+		Categorys   = categorys[x]
+		PubDate     = pubDates[x]
+		listitem = xbmcgui.ListItem('%s. %s'%(y,Title), iconImage = Enclosure, thumbnailImage = Enclosure)
+		listitem.setInfo(type = 'Video', infoLabels = {
+			'genre':	Categorys,
+			'director':	russia_url,
+			'title':	Title,
+			'studio':	Link,
+			'premiered':	PubDate,
+			'aired':	PubDate,
+			'plot':		Description })
+		url = '%s?mode=%s&url=%s&name=%s'%(sys.argv[0], 'OpenRSS', urllib.quote_plus(russia_url + 'rss/%s.xml'%Guid), urllib.quote_plus('%s : %s'%(catname, Title)))
+		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+		y += 1
+	xbmcplugin.endOfDirectory(handle)
+
 def ListRSS(target):
-	http = GET(russia_url + target)
+	http = GET(target)
 	if http == None:
 		return
 	r1 = re.compile('<div class="column first">(.*?)<div class="clear">', re.DOTALL).findall(http)
@@ -89,59 +187,40 @@ def ListRSS(target):
 		URL  = URL.replace('&quot;','')
 		NAME = NAME.replace('&quot;','')
 		listitem = xbmcgui.ListItem('%s.%s'%(x,NAME), iconImage = thumb, thumbnailImage = thumb)
-		url = '%s?mode=%s&url=%s&name=%s'%(sys.argv[0], 'OpenRSS', urllib.quote_plus(URL), urllib.quote_plus(NAME))
+		url = '%s?mode=%s&url=%s&name=%s'%(sys.argv[0], 'OpenRSS', urllib.quote_plus(russia_url + URL), urllib.quote_plus(NAME))
 		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 		x += 1
+	xbmcplugin.endOfDirectory(handle)
 
 def OpenRSS(target, name):
-	http = GET(russia_url + target)
+	http = GET(target)
 	if http == None:
 		return
-	r1 = re.compile('<item>(.*?)</item>', re.DOTALL).findall(http)
-	if len(r1) == 0:
-		xbmc.output('OpenRSS len(r1) == 0')
+	(item_count, titles, links, guids, enclosures, descriptions, categorys, pubDates) = RssParser(http)
+	if item_count == 0:
 		return
-	x = 1
-	for r2 in r1:
-		title    = re.compile('<title>(.*?)</title>').findall(r2)[0]
-		link     = re.compile('<link>(.*?)</link>').findall(r2)[0]
-		pubDate  = re.compile('<pubDate>(.*?)</pubDate>').findall(r2)[0]
-		category0 = re.compile('<category>(.*?)</category>').findall(r2)
-		if len(category0) == 0:
-			category = __language__(30003)
-		else:
-			category = category0[0]
-		img0      = re.compile('<img src=\"(.*?)\"/>').findall(r2)
-		if len(img0) == 0:
-			img = thumb
-		else:
-			img = img0[0]
-		summary0  = re.compile('<itunes:summary>(.*?)</itunes:summary>').findall(r2)
-		if len(summary0) == 0:
-			summary = __language__(30002)
-		else:
-			summary = summary0[0]
-			summary = summary.replace('<![CDATA[','')
-			summary = summary.replace(']]>','')
-
-		#xbmc.output('   title = %s'%title)
-		#xbmc.output('    link = %s'%link)
-		#xbmc.output(' pubDate = %s'%pubDate)
-		#xbmc.output('category = %s'%category)
-		#xbmc.output('     img = %s'%img)
-		#xbmc.output(' summary = %s'%summary)
-		listitem = xbmcgui.ListItem('%s. %s'%(x,title), iconImage = img, thumbnailImage = img)
+	y = 1
+	for x in range(item_count):
+		Title       = titles[x]
+		Link        = links[x]
+		Guid        = guids[x]
+		Enclosure   = enclosures[x]
+		Description = descriptions[x]
+		Categorys   = categorys[x]
+		PubDate     = pubDates[x]
+		listitem = xbmcgui.ListItem('%s. %s'%(y,Title), iconImage = Enclosure, thumbnailImage = Enclosure)
 		listitem.setInfo(type = 'Video', infoLabels = {
-			'genre':	category,
+			'genre':	Categorys,
 			'director':	russia_url,
-			'title':	title,
-			'studio':	russia_url,
-			'premiered':	pubDate,
-			'aired':	pubDate,
-			'plot':		summary })
-		url = '%s?mode=%s&url=%s&name=%s&img=%s'%(sys.argv[0], 'PlayPage', urllib.quote_plus(link), urllib.quote_plus(title), urllib.quote_plus(img))
+			'title':	Title,
+			'studio':	Link,
+			'premiered':	PubDate,
+			'aired':	PubDate,
+			'plot':		Description })
+		url = '%s?mode=%s&url=%s&name=%s&img=%s'%(sys.argv[0], 'PlayPage', urllib.quote_plus(Link), urllib.quote_plus(name + ' : ' + Title), urllib.quote_plus(Enclosure))
 		xbmcplugin.addDirectoryItem(handle, url, listitem, False)
-		x += 1
+		y += 1
+	xbmcplugin.endOfDirectory(handle)
 
 def parse_dataxml(url):
 	url = url + 'data.xml'
@@ -270,10 +349,6 @@ def PlayPage(url):
 	(data_ar, info_ar, hero_ar, vid_ar, vids_ar, img_ar, imgs_ar) = parse_dataxml(url)
 	if data_ar == None:
 		return
-	if os.path.isfile(thumbnail_file):
-		os.remove(thumbnail_file)
-	urllib.version = Header_UserAgent
-	urllib.urlretrieve(img_ar[0], thumbnail_file)
 	plot = '"' + clean(info_ar[0]).decode('utf-8') + '"\n'
 	plot = plot + clean(info_ar[1]).decode('utf-8') + '\n\n'
 	plot = plot + __language__(30004) + clean(data_ar[6]).decode('utf-8')# + '\n'
@@ -284,14 +359,13 @@ def PlayPage(url):
 		plot = plot + __language__(30008) + clean(hero_ar[0]).decode('utf-8') + '\n'
 	if hero_ar[1] != '':
 		plot = plot + __language__(30009) + clean(hero_ar[1]).decode('utf-8') + '\n'
-	listitem = xbmcgui.ListItem( label = "Video", iconImage = thumbnail_file, thumbnailImage = thumbnail_file )
+	listitem = xbmcgui.ListItem( label = "Video", iconImage = img_ar[0], thumbnailImage = img_ar[0] )
 	listitem.setInfo( type = "Video", infoLabels={
 		"Title": 	data_ar[5],
 		"Studio": 	url,
 		"Plot": 	plot
 	} )
 	h_1 = '|Referer=' + urllib.quote_plus(url)
-	h_2 = '&User-Agent=' + urllib.quote_plus(Header_UserAgent)
 	list = []
 	spcn = len(vids_ar)
 	dialog = xbmcgui.Dialog()
@@ -303,15 +377,13 @@ def PlayPage(url):
 		selected = dialog.select('Quality?', list)
 	if selected < 0:
 		return
-
-	xbmc.Player().play(vid_ar[selected] + h_1 + h_2, listitem)
+	xbmc.Player().play(vid_ar[selected] + h_1, listitem)
 
 handle = int(sys.argv[1])
 params = get_params()
-
-mode = 'ListRSS'
-url  = 'http://www.russia.ru/'
-name = 'None'
+mode   = 'ListRoot'
+url    = russia_url
+name   = 'None'
 
 
 try:
@@ -327,13 +399,13 @@ try:
 except:
 	pass
 
+if mode == 'ListRoot':
+	ListRoot()
+if mode == 'ListCat':
+	ListCat(url, name)
 if mode == 'ListRSS':
-	ListRSS('rss/')
-	xbmcplugin.endOfDirectory(handle)
-
+	ListRSS(url)
 if mode == 'OpenRSS':
 	OpenRSS(url, name)
-	xbmcplugin.endOfDirectory(handle)
-
 if mode == 'PlayPage':
 	PlayPage(url)
