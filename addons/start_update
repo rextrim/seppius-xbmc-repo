@@ -1,8 +1,0 @@
-#!/bin/bash
-REPO="seppius-xbmc-repo"
-
-cd $REPO/trunk/addons
-./addons_xml_generator.py 2> /dev/null
-cd ../..
-svn add --force *
-svn status | grep '\!' | awk '{print $2;}' | xargs svn rm

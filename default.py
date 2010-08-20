@@ -1,4 +1,24 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+#/*
+# *      Copyright (C) 2010 Kostynoy S. aka Seppius
+# *
+# *
+# *  This Program is free software; you can redistribute it and/or modify
+# *  it under the terms of the GNU General Public License as published by
+# *  the Free Software Foundation; either version 2, or (at your option)
+# *  any later version.
+# *
+# *  This Program is distributed in the hope that it will be useful,
+# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# *  GNU General Public License for more details.
+# *
+# *  You should have received a copy of the GNU General Public License
+# *  along with this program; see the file COPYING.  If not, write to
+# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+# *  http://www.gnu.org/copyleft/gpl.html
+# */
+
 import urllib, urllib2, cookielib, re, xbmcaddon, string, xbmc, xbmcgui, xbmcplugin, os, httplib, socket
 import base64
 import random
@@ -102,24 +122,30 @@ def get_params():
 				param[splitparams[0]]=splitparams[1]
 	return param
 
-
-def ShowRoot(url):
+def ShowSeries(url):
 	http = Get(url)
 	if http == None:
-		xbmc.output('[%s] ShowRoot() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
+		xbmc.output('[%s] ShowSeries() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
 		return
+	#xbmc.output(http)
+
 	raw1 = re.compile('<div id="series">(.*?)<div class="downblack">', re.DOTALL).findall(http)
 	if len(raw1) == 0:
-		xbmc.output('[%s] ShowRoot() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
+		xbmc.output('[%s] ShowSeries() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
 		xbmc.output(http)
 		return
+
+	#xbmc.output(raw1[0])
+
 	raw2 = re.compile('\s<a href="(.*?)">\s(.*?)</a>', re.DOTALL).findall(raw1[0])
 	if len(raw1) == 0:
-		xbmc.output('[%s] ShowRoot() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
+		xbmc.output('[%s] ShowSeries() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
 		xbmc.output(raw1[0])
 		return
+
 	x = 1
 	for wurl, http2 in raw2:
+
 		raw_img = re.compile('<img src="(.*?)".*/>').findall(http2)
 		if len(raw_img) == 0:
 			Thumb = thumb
@@ -148,64 +174,22 @@ def ShowRoot(url):
 		#xbmc.output('*** %s TitleEN = %s' % (sindex, TitleEN))
 		#xbmc.output('*** %s TitleRU = %s' % (sindex, TitleRU))
 		#xbmc.output('*** %s Descr   = %s' % (sindex, Descr))
+		#xbmc.output('*** %s wurl   = %s' %  (sindex, wurl))
 
 		Title = '%s. %s (%s)' % (sindex, TitleRU, TitleEN)
+
 		listitem = xbmcgui.ListItem(Title, iconImage = Thumb, thumbnailImage = Thumb)
 		listitem.setInfo(type = "Video", infoLabels = {
 			"Title":	Title,
 			"Plot":		Descr
 			} )
-		url = sys.argv[0] + '?mode=ShowSeasons&url=' + urllib.quote_plus(wurl) \
+		url = sys.argv[0] + '?mode=OpenSeries&url=' + urllib.quote_plus(wurl) \
 			+ '&title=' + urllib.quote_plus(Title)
 		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+
 		x += 1
 
-
-def ShowSeasons(url, title):
-	http = Get(url, SITEPREF + '/Series/')
-	if http == None:
-		xbmc.output('[%s] ShowSeasons() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
-		return
-
-	raw_topimg = re.compile('<div class="topimgseries">\s*<img src="(.*?)"').findall(http)
-	if len(raw_topimg) == 0:
-		TopIMG = thumb
-		xbmc.output('[%s] ShowSeasons() Warn 1: topimgseries not found URL=%s' % (PLUGIN_NAME, url))
-	else:
-		TopIMG = SITEPREF + raw_topimg[0]
-
-	raw3 = re.compile('<div class="seasonnum">(.*?)</div>', re.DOTALL).findall(http)
-	if len(raw3) == 0:
-		xbmc.output('[%s] ShowSeasons() Error 4: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output(http)
-		return
-
-	raw4 = re.compile('<a href="(.*?)"><span class=".*">(.*?)</span></a>').findall(raw3[0])
-	if len(raw4) == 0:
-		xbmc.output('[%s] ShowSeasons() Error 5: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output(raw3[0])
-		return
-
-	for row_url, row_name in raw4:
-
-		#xbmc.output('*** row_url  = %s' % row_url)
-		#xbmc.output('*** row_name = %s' % row_name)
-
-		listitem = xbmcgui.ListItem(row_name, iconImage = TopIMG, thumbnailImage = TopIMG)
-		listitem.setInfo(type = "Video", infoLabels = {
-			"Title":	row_name
-			} )
-		url = sys.argv[0] + '?mode=OpenSeries&url=' + urllib.quote_plus(row_url) \
-			+ '&title=' + urllib.quote_plus(title + ' : ' + row_name)
-		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
-
-
-
-
-
-
 def OpenSeries(url, title):
-
 	http = Get(url, SITEPREF + '/Series/')
 	if http == None:
 		xbmc.output('[%s] OpenSeries() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
@@ -214,7 +198,6 @@ def OpenSeries(url, title):
 	raw_topimg = re.compile('<div class="topimgseries">\s*<img src="(.*?)"').findall(http)
 	if len(raw_topimg) == 0:
 		TopIMG = thumb
-		xbmc.output('[%s] OpenSeries() Warn 1: topimgseries not found URL=%s' % (PLUGIN_NAME, url))
 	else:
 		TopIMG = SITEPREF + raw_topimg[0]
 
@@ -232,39 +215,33 @@ def OpenSeries(url, title):
 
 	x = 1
 	for wurl, http2 in raw2:
-		err_lev = 0
 		#xbmc.output('************** wurl = %s' % wurl)
 		#xbmc.output('http2 = %s' % http2)
 
 		raw_img = re.compile('<img src="(.*?)".*/>').findall(http2)
 		if len(raw_img) == 0:
-			err_lev = err_lev + 1
 			Thumb = TopIMG
 		else:
 			Thumb = raw_img[0]
 		raw_en = re.compile('<span class="sserieslistonetxten">(.*?)</span>').findall(http2)
 		if len(raw_en) == 0:
-			err_lev = err_lev + 1
 			TitleEN = 'No title'
 		else:
 			TitleEN = raw_en[0]
 		raw_ru = re.compile('<span class="sserieslistonetxtru">(.*?)</span>').findall(http2)
 		if len(raw_ru) == 0:
-			err_lev = err_lev + 1
 			TitleRU = 'No title'
 		else:
 			TitleRU = raw_ru[0]
 
 		raw_se = re.compile('<span class="sserieslistonetxtse">(.*?)</span>').findall(http2)
 		if len(raw_se) == 0:
-			err_lev = err_lev + 1
 			SeaNUM = 'Season not specified'
 		else:
 			SeaNUM = raw_se[0]
 
 		raw_ep = re.compile('<span class="sserieslistonetxtep">(.*?)</span>').findall(http2)
 		if len(raw_ep) == 0:
-			err_lev = err_lev + 1
 			EpiNUM = 'The episode is not specified'
 		else:
 			EpiNUM = raw_ep[0]
@@ -276,41 +253,43 @@ def OpenSeries(url, title):
 		#xbmc.output('*** %s SeaNUM  = %s' % (sindex, SeaNUM))
 		#xbmc.output('*** %s EpiNUM  = %s' % (sindex, EpiNUM))
 
-		Title = '%s %s %s / %s' % (SeaNUM, EpiNUM, TitleRU, TitleEN)
+		Title = '%s. %s / %s' % (sindex, TitleRU, TitleEN)
+		Descr = '%s\n%s' % (SeaNUM, EpiNUM)
 
-		if err_lev < 3:
+		listitem = xbmcgui.ListItem(Title, iconImage = Thumb, thumbnailImage = Thumb)
+		listitem.setInfo(type = "Video", infoLabels = {
+			"Title":	Title,
+			"Plot":		Descr
+			} )
+		url = sys.argv[0] + '?mode=Watch&url=' + urllib.quote_plus(wurl) \
+			+ '&title=' + urllib.quote_plus(Title)
+		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 
-			listitem = xbmcgui.ListItem(Title, iconImage = Thumb, thumbnailImage = Thumb)
-			listitem.setInfo(type = "Video", infoLabels = {
-				"Title":	Title
-				} )
-			url = sys.argv[0] + '?mode=Watch&url=' + urllib.quote_plus(wurl) \
-				+ '&title=' + urllib.quote_plus(Title)
-			xbmcplugin.addDirectoryItem(handle, url, listitem, False)
+		x += 1
 
-			x += 1
+	raw3 = re.compile('<div class="seasonnum">(.*?)</div>', re.DOTALL).findall(http)
+	if len(raw3) == 0:
+		xbmc.output('[%s] OpenSeries() Error 4: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
+		xbmc.output(http)
+		return
 
+	raw4 = re.compile('<a href="(.*?)"><span class=".*">(.*?)</span></a>').findall(raw3[0])
+	if len(raw4) == 0:
+		xbmc.output('[%s] OpenSeries() Error 5: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
+		xbmc.output(raw3[0])
+		return
 
+	for row_url, row_name in raw4:
+		xbmc.output('*** row_url  = %s' % row_url)
+		xbmc.output('*** row_name = %s' % row_name)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		listitem = xbmcgui.ListItem(row_name, iconImage = TopIMG, thumbnailImage = TopIMG)
+		listitem.setInfo(type = "Video", infoLabels = {
+			"Title":	row_name
+			} )
+		url = sys.argv[0] + '?mode=OpenSeries&url=' + urllib.quote_plus(row_url) \
+			+ '&title=' + urllib.quote_plus(title + ' : ' + row_name)
+		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 
 
 
@@ -480,21 +459,21 @@ def Watch(url, title, img):
 				if len(r4) > 0:
 					subtitles_ru = r4[0]
 
-	print('    sources2_default = %s' % sources2_default)
-	print('         sources2_hq = %s' % sources2_hq)
-	print('              aspect = %s' % aspect)
-	print('            duration = %s' % duration)
-	print('                  hq = %s' % hq)
-	print('                 Eid = %s' % Eid)
-	print('              screen = %s' % screen)
-	print('       sizes_default = %s' % sizes_default)
-	print('            sizes_hq = %s' % sizes_hq)
-	print('            langs_en = %s' % langs_en)
-	print('            langs_ru = %s' % langs_ru)
-	print('        subtitles_en = %s' % subtitles_en)
-	print('        subtitles_ru = %s' % subtitles_ru)
-	print('subtitles_en_sources = %s' % subtitles_en_sources)
-	print('subtitles_ru_sources = %s' % subtitles_ru_sources)
+	xbmc.output('    sources2_default = %s' % sources2_default)
+	xbmc.output('         sources2_hq = %s' % sources2_hq)
+	xbmc.output('              aspect = %s' % aspect)
+	xbmc.output('            duration = %s' % duration)
+	xbmc.output('                  hq = %s' % hq)
+	xbmc.output('                 Eid = %s' % Eid)
+	xbmc.output('              screen = %s' % screen)
+	xbmc.output('       sizes_default = %s' % sizes_default)
+	xbmc.output('            sizes_hq = %s' % sizes_hq)
+	xbmc.output('            langs_en = %s' % langs_en)
+	xbmc.output('            langs_ru = %s' % langs_ru)
+	xbmc.output('        subtitles_en = %s' % subtitles_en)
+	xbmc.output('        subtitles_ru = %s' % subtitles_ru)
+	xbmc.output('subtitles_en_sources = %s' % subtitles_en_sources)
+	xbmc.output('subtitles_ru_sources = %s' % subtitles_ru_sources)
 
 
 	Hash = Hash[::-1]
@@ -514,22 +493,20 @@ def Watch(url, title, img):
 	retval = '/%s/%s/%s/%s/%s/%s/%s' % (p1,p2,p3,p4,p5,p6,p7)
 
 
-	print ('SRC file retval = %s' % retval)
+	xbmc.output ('SRC file retval = %s' % retval)
 	rurl = url.replace('/', '_')
-	dest = os.path.join(xbmc.translatePath('special://temp/'), rurl)
-	print ('Dest file = %s' % dest)
+	#dest = os.path.join(xbmc.translatePath('special://temp/'), rurl)
+	#xbmc.output ('Dest file = %s' % dest)
 
 	phpsessid = ''
+	#req = urllib2.Request(durl)
 	if os.path.isfile(phpsessid_file):
 		fh = open(phpsessid_file, 'r')
 		phpsessid = fh.read()
 		fh.close()
 
-	def Download(path, dest):
 
-		if os.path.isfile(dest):
-			os.remove(dest)
-
+	def PlayURL(path):
 		conn =   httplib.HTTPConnection('cdn.turbofilm.tv', 80, 10)
 
 		headers =  {'User-Agent':      'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.6.30 Version/10.70',\
@@ -547,78 +524,41 @@ def Watch(url, title, img):
 		response = conn.getresponse()
 		conn.close()
 		if(response.status == 302):
-			print 'OK - response.status == 302'
-			#data = response.read()
-			#print "DATA: %s" % data
-			Location = response.getheader('Location')
-			print "Location: %s" % Location
-			(new_host, new_path) = re.compile('http://(.*?)/(.*?)\n').findall(Location + '\n')[0]
-			new_path = '/' + new_path
-			print "new_host: %s" % new_host
-			print "new_path: %s" % new_path
-		else:
+			xbmc.output('OK - response.status == 302')
+			Location = response.getheader('Location') # + '@'
+			xbmc.output('Location: %s' % Location)
+
+			#item = xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage = thumb)
+			#item.setInfo(type="Video", infoLabels = {
+			#	"Title":	title,
+			#	"Plot":		Plot
+			#	} )
+
+			h_1 = '|Referer=' + urllib.quote_plus('http://turbofilm.tv/media/swf/Player14.swf')
+			h_2 = '&User-Agent=' + urllib.quote_plus('Opera/9.80 (X11; Linux i686; U; ru) Presto/2.6.30 Version/10.70')
+			h_3 = '&Accept=' + urllib.quote_plus('text/html, application/xml, application/xhtml+xml, */*')
+			h_4 = '&Accept-Language=' + urllib.quote_plus('ru,en;q=0.9')
+			h_5 = '&Accept-Charset=' + urllib.quote_plus('iso-8859-1, utf-8, utf-16, *;q=0.1')
+			h_6 = '&Accept-Encoding=' + urllib.quote_plus('deflate, gzip, x-gzip, identity, *;q=0')
+			h_7 = '&Connection=' + urllib.quote_plus('Keep-Alive')
+			#
+			item = xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage = thumb, path = Location + h_1 + h_2 + h_3 + h_4 + h_5 + h_6 + h_7)
+			item.setInfo(type="Video", infoLabels = {
+				"Title":	title,
+				"Plot":		Plot
+				} )
+			item.setProperty("IsPlayable", "true")
+
+			xbmcplugin.setResolvedUrl(0, True, item)
+
+			#xbmc.Player().play(Location + h_1 + h_2 + h_3 + h_4 + h_5 + h_6 + h_7, item)
+			#xbmc.Player().play(item)
+
 			return
+		return
 
 
-		conn =   httplib.HTTPConnection(new_host, 80, 10)
-
-		headers =  {'User-Agent':      'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.6.30 Version/10.70',\
-			    'Host':            new_host,\
-			    'Accept':          'text/html, application/xml, application/xhtml+xml, */*',\
-			    'Accept-Language': 'ru,en;q=0.9',\
-			    'Accept-Charset':  'iso-8859-1, utf-8, utf-16, *;q=0.1',\
-			    'Accept-Encoding': 'deflate, gzip, x-gzip, identity, *;q=0',\
-			    'Referer':         'http://turbofilm.tv/media/swf/Player14.swf',\
-			    'Connection':      'Keep-Alive' }
-
-		conn.request("GET", new_path, None, headers)
-		response = conn.getresponse()
-		if(response.status == 200):
-			ContentLength = int(response.getheader('Content-Length'))
-
-			dp = xbmcgui.DialogProgress()
-			dp.create('Download...', dest)
-
-			fh = open(dest, 'w')
-			done = 1
-			numblocks = 0
-			percent = 0
-			blocksize = 8192
-			while done:
-				data = response.read(blocksize)
-				if len(data) == 0:
-					print 'Downloading completed'
-					dp.close()
-					done = 0
-				else:
-					fh.write(data)
-
-					try:
-						percent = min((numblocks*blocksize*100)/ContentLength, 100)
-						dp.update(percent, dest)
-					except:
-						percent = 100
-						dp.update(percent)
-					if dp.iscanceled():
-						dp.close()
-						done = 0
-						print 'Downloading canceled'
-				numblocks += 1
-
-			fh.close()
-		conn.close()
-
-
-	Download(retval, dest)
-
-	item = xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage = thumb)
-	item.setInfo(type="Video", infoLabels = {
-		"Title":	title,
-		"Plot":		Plot
-		} )
-
-	xbmc.Player().play(dest, item)
-	#xbmc.Player().setSubtitles(subtitles_en_sources)
+	PlayURL(retval)
 
 
 if run_once():
@@ -649,12 +589,7 @@ if run_once():
 		pass
 
 	if mode == None:
-		ShowRoot('/Series/')
-		xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
-		xbmcplugin.endOfDirectory(handle)
-
-	elif mode == 'ShowSeasons':
-		ShowSeasons(url, title)
+		ShowSeries('/Series/')
 		xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
 		xbmcplugin.endOfDirectory(handle)
 
@@ -665,3 +600,5 @@ if run_once():
 
 	elif mode == 'Watch':
 		Watch(url, title, img)
+		#xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
+		#xbmcplugin.endOfDirectory(handle)

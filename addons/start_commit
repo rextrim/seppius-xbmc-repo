@@ -1,9 +1,0 @@
-#!/bin/bash
-REPO="seppius-xbmc-repo"
-UNAM="seppius2"
-PASS="********"
-MESS=`date`
-
-cd $REPO
-
-svn commit --username $UNAM --password $PASS -m "$MESS"
