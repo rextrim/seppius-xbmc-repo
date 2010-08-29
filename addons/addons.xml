@@ -177,7 +177,7 @@ Bee.FM – это больше чем просто музыка!</description>
 
 <addon id="plugin.audio.svobodanews.ru"
        name="Svobodanews"
-       version="0.1"
+       version="0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
