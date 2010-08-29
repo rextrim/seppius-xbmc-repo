@@ -175,6 +175,25 @@ Bee.FM – это больше чем просто музыка!</description>
   </extension>
 </addon>
 
+<addon id="plugin.audio.svobodanews.ru"
+       name="Svobodanews"
+       version="0.1"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="ru">Радио Свободная Европа/Радио Свобода</summary>
+    <description lang="ru">Радио Свободная Европа/Радио Свобода - это частная некоммерческая информационная служба, финансируемая Конгрессом США, осуществляющая вещание на страны Восточной и Юго-Восточной Европы, Кавказа, Центральной Азии и Ближнего Востока и на Россию.
+Более 35 миллионов слушателей привыкли ежедневно полагаться на передаваемые РСЕ/РС сводки новостей, аналитические обзоры и тематические программы, посвященные последним событиям в их регионе и мире.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.audio.101.ru"
        name="101.RU"
        version="1.0.0"
@@ -192,25 +211,6 @@ Bee.FM – это больше чем просто музыка!</description>
     <summary lang="ru">Интернет-радиостанция 101.RU</summary>
     <description lang="en">Listen to radio with only the best site http://www.101.ru</description>
     <description lang="ru">Слушайте только лучшие радиоканалы с сайта http://www.101.ru</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.svobodanews.ru"
-       name="Радио Свобода"
-       version="0.1"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="ru">Радио Свободная Европа/Радио Свобода</summary>
-    <description lang="ru">Радио Свободная Европа/Радио Свобода - это частная некоммерческая информационная служба, финансируемая Конгрессом США, осуществляющая вещание на страны Восточной и Юго-Восточной Европы, Кавказа, Центральной Азии и Ближнего Востока и на Россию.
-Более 35 миллионов слушателей привыкли ежедневно полагаться на передаваемые РСЕ/РС сводки новостей, аналитические обзоры и тематические программы, посвященные последним событиям в их регионе и мире.</description>
-    <platform>all</platform>
   </extension>
 </addon>
 
