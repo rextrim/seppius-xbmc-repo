@@ -368,4 +368,9 @@ if mode=='Read':
 	del Read
 
 if mode == None:
+	item = xbmcgui.ListItem('* SVOBODA-NEWS ONLINE *', iconImage = icon)
+	item.setInfo(type='music', infoLabels={'title': '* SVOBODA-NEWS ONLINE *'})
+	item.setProperty('IsPlayable', 'true')
+	xbmcplugin.addDirectoryItem(handle = pluginhandle, url = 'http://svobodanews.fvds.ru:8000/Test_RFERL_stream.m3u', listitem = item)
+
 	RSSRoot('http://www.svobodanews.ru/rsspage.aspx')
