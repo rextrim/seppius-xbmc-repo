@@ -3,7 +3,6 @@
 #/*
 # *      Copyright (C) 2010 Kostynoy S. aka Seppius
 # *
-# *
 # *  This Program is free software; you can redistribute it and/or modify
 # *  it under the terms of the GNU General Public License as published by
 # *  the Free Software Foundation; either version 2, or (at your option)
@@ -22,7 +21,7 @@
 import xbmcaddon, xbmc, xbmcgui, xbmcplugin, os, urllib
 
 handle = int(sys.argv[1])
-thumb  = os.path.join( os.getcwd(), "icon.png" )
+thumb  = os.path.join( os.getcwd().replace(';', ''),'icon.png' )
 
 def get_params():
 	param=[]
@@ -42,70 +41,42 @@ def get_params():
 	return param
 
 def ShowRoot():
-	def addItem(itemnum, name):
-		listitem = xbmcgui.ListItem('%s. %s' % (itemnum, name), iconImage = thumb, thumbnailImage = thumb)
-		xbmcplugin.addDirectoryItem(handle, sys.argv[0] + '?mode='+str(itemnum)+'&title=' + urllib.quote_plus(name), listitem, False)
-	addItem(1, 'Концепция')
-	addItem(2, 'Русский крест')
-	addItem(3, 'Телепередачи')
-	addItem(4, 'Научный')
-	addItem(5, 'Здоровье')
-	addItem(6, 'Документальный')
-	addItem(7, 'Тематический')
-	addItem(8, 'Художественный')
-	addItem(9, 'Музыкальный')
-	addItem(10, 'Анимационный')
-	addItem(11, 'Новости')
-	addItem(12, 'Анонсы')
+	def addItem(index, name, first, secon):
+		listitem = xbmcgui.ListItem('%s. %s'%(index,name), iconImage = thumb, thumbnailImage = thumb)
+		uri  = sys.argv[0] + '?mode=Play'
+		uri += '&title=' + urllib.quote_plus(name)
+		uri += '&first=' + urllib.quote_plus(first)
+		uri += '&secon=' + urllib.quote_plus(secon)
+		listitem.setProperty('fanart_image', thumb)
+		xbmcplugin.addDirectoryItem(handle, uri, listitem)
+	addItem(1, ' Концепция',      'mms://212.1.238.70/ts_tv',   'mms://85.21.245.129/ts_tv')
+	addItem(2, ' Русский крест',  'mms://212.1.238.70/ts_tv2',  'mms://85.21.245.129/ts_tv2')
+	addItem(3, ' Телепередачи',   'mms://212.1.238.70/ts_tv3',  'mms://85.21.245.129/ts_tv3')
+	addItem(4, ' Научный',        'mms://212.1.238.70/ts_tv4',  'mms://85.21.245.129/ts_tv4')
+	addItem(5, ' Здоровье',       'mms://212.1.238.70/ts_tv5',  'mms://85.21.245.129/ts_tv5')
+	addItem(6, ' Документальный', 'mms://212.1.238.70/ts_tv6',  'mms://85.21.245.129/ts_tv6')
+	addItem(7, ' Тематический',   'mms://212.1.238.70/ts_tv7',  'mms://85.21.245.129/ts_tv7')
+	addItem(8, ' Художественный', 'mms://212.1.238.70/ts_tv8',  'mms://85.21.245.129/ts_tv8')
+	addItem(9, ' Музыкальный',    'mms://212.1.238.70/ts_tv9',  'mms://85.21.245.129/ts_tv9')
+	addItem(10, 'Анимационный',   'mms://212.1.238.70/ts_tv10', 'mms://85.21.245.129/ts_tv10')
+	addItem(11, 'Новости',        'mms://212.1.238.70/ts_tv11', 'mms://85.21.245.129/ts_tv11')
+	addItem(12, 'Анонсы',         'mms://212.1.238.70/ts_tv1',  'mms://85.21.245.129/ts_tv1')
+	xbmcplugin.endOfDirectory(handle)
 
-def MakePL(title, src1, src2):
-	playList = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-	playList.clear()
-	listitem1=xbmcgui.ListItem(title, iconImage=thumb, thumbnailImage=thumb)
-	listitem2=xbmcgui.ListItem(title + ' (резервный)', iconImage=thumb, thumbnailImage=thumb)
-	playList.add(src1, listitem1)
-	playList.add(src2, listitem2)
-	player = xbmc.Player(xbmc.PLAYER_CORE_AUTO)
-	player.play(playList)
+def Play(title, src1, src2):
+	selected = xbmcgui.Dialog().select(title, ['Основной сервер','Резервный сервер'])
+	if   selected == 0: xbmc.Player().play(src1)
+	elif selected == 1: xbmc.Player().play(src2)
+	else: return
 
 params = get_params()
-mode  = None
-title = ''
-
-try:
-	mode  = urllib.unquote_plus(params["mode"])
-except:
-	pass
-try:
-	title  = urllib.unquote_plus(params["title"])
-except:
-	pass
-if mode == None:
-	ShowRoot()
-	xbmcplugin.setPluginCategory(handle, 'TS-TV')
-	xbmcplugin.endOfDirectory(handle)
-elif mode == '1':
-	MakePL(title, 'mms://212.1.238.70/ts_tv', 'mms://85.21.245.129/ts_tv')
-elif mode == '2':
-	MakePL(title, 'mms://212.1.238.70/ts_tv2', 'mms://85.21.245.129/ts_tv2')
-elif mode == '3':
-	MakePL(title, 'mms://212.1.238.70/ts_tv3', 'mms://85.21.245.129/ts_tv3')
-elif mode == '4':
-	MakePL(title, 'mms://212.1.238.70/ts_tv4', 'mms://85.21.245.129/ts_tv4')
-elif mode == '5':
-	MakePL(title, 'mms://212.1.238.70/ts_tv5', 'mms://85.21.245.129/ts_tv5')
-elif mode == '6':
-	MakePL(title, 'mms://212.1.238.70/ts_tv6', 'mms://85.21.245.129/ts_tv6')
-elif mode == '7':
-	MakePL(title, 'mms://212.1.238.70/ts_tv7', 'mms://85.21.245.129/ts_tv7')
-elif mode == '8':
-	MakePL(title, 'mms://212.1.238.70/ts_tv8', 'mms://85.21.245.129/ts_tv8')
-elif mode == '9':
-	MakePL(title, 'mms://212.1.238.70/ts_tv9', 'mms://85.21.245.129/ts_tv9')
-elif mode == '10':
-	MakePL(title, 'mms://212.1.238.70/ts_tv10', 'mms://85.21.245.129/ts_tv10')
-elif mode == '11':
-	MakePL(title, 'mms://212.1.238.70/ts_tv11', 'mms://85.21.245.129/ts_tv11')
-elif mode == '12':
-	MakePL(title, 'mms://212.1.238.70/ts_tv1', 'mms://85.21.245.129/ts_tv1')
-
+try: mode  = urllib.unquote_plus(params["mode"])
+except: mode  = None
+try: title  = urllib.unquote_plus(params["title"])
+except: title = ''
+try: first  = urllib.unquote_plus(params["first"])
+except: title = ''
+try: secon  = urllib.unquote_plus(params["secon"])
+except: title = ''
+if mode == None: ShowRoot()
+elif mode == 'Play':  Play(title, first, secon)
