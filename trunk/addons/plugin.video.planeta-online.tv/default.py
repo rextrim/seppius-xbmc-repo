@@ -39,47 +39,48 @@ def getURL( url ):
 
 
 def root():
-	url = 'http://debilizator.tv/'
+	url = 'http://www.planeta-online.tv/'
 	xbmcplugin.setContent(pluginhandle, 'tvshows')
-	xbmcplugin.setPluginCategory(pluginhandle, 'debilizator.tv')
+	xbmcplugin.setPluginCategory(pluginhandle, 'planeta-online.tv')
 	xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
 	http = getURL(url)
 
-	r1 = re.compile('<div class="chlogo"><a href=(.*?)><img src="(.*?)" alt="(.*?)" title="(.*?)"></a></div>\s*<div class="chdesc"><h2>(.*?)</h2></div>').findall(http)
-	for rURL, rTHUMB, rALT, rTITLE, rDESCR in r1:
+	r1 = re.compile('<a href="(.*?)" onmouseover="changeTvThumb.*" id=".*"><img src="(.*?)".*" /><span class="ch-name">.*</span><span>(.*?)</span></a>').findall(http)
+	for rURL, rIMG, rTITLE in r1:
 		title = rTITLE
-		description = rDESCR
-		thumbnail = rTHUMB.replace('./', 'http://debilizator.tv/')
-
+		rURL = 'http://www.planeta-online.tv' + rURL
+		rIMG = 'http://www.planeta-online.tv' + rIMG
 		u = sys.argv[0] + '?mode=BIG'
-		u += "&url="+urllib.quote_plus('http://debilizator.tv/' + rURL)
+		u += "&url="+urllib.quote_plus(rURL)
 		u += "&name="+urllib.quote_plus(title)
-		u += "&plot="+urllib.quote_plus(description)
-		u += "&thumbnail="+urllib.quote_plus(thumbnail)
-		liz=xbmcgui.ListItem(title, iconImage="DefaultFolder.png", thumbnailImage=thumbnail)
-		liz.setInfo( type="Video", infoLabels={ "Title": title,
-							"Plot":description})
+		u += "&thumbnail="+urllib.quote_plus(rIMG)
+		liz=xbmcgui.ListItem(title, iconImage="DefaultFolder.png", thumbnailImage=rIMG)
+		liz.setInfo( type="Video", infoLabels={ "Title": title})
 		liz.setProperty('IsPlayable', 'true')
-		liz.setProperty('fanart_image',thumbnail)
+		liz.setProperty('fanart_image',rIMG)
 		xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz)
 	xbmcplugin.endOfDirectory(pluginhandle)
 
 def playVideo(url, name, thumbnail, plot):
 	response = getURL(url)
-	SWFObject = 'http://debilizator.tv/' + re.compile('new SWFObject\(\'(.*?)\'').findall(response)[0]
-	flashvars = re.compile('so.addParam\(\'flashvars\',\'(.*?)\'\);').findall(response)[0] + '&'
-	flashparams = flashvars.split('&')
+	SWFObject = 'http://www.planeta-online.tv' + re.compile('embedSWF\("(.*?)"').findall(response)[0]
+	flashvars = re.compile('(.*?):"(.*?)"').findall(re.compile('var flashvars = \{(.*?)\};', re.DOTALL).findall(response)[0].replace(',',',\n'))
 
-	param={}
-	for i in range(len(flashparams)):
-	    splitparams={}
-	    splitparams=flashparams[i].split('=')
-	    if (len(splitparams))==2:
-		param[splitparams[0]]=splitparams[1]
+	print SWFObject
+	print flashvars
 
-	rtmp_file     = param['file']
-	rtmp_streamer = param['streamer']
-	rtmp_plugins  = param['plugins']
+#	param={}
+#	for i in range(len(flashparams)):
+#	    splitparams={}
+#	    splitparams=flashparams[i].split('=')
+#	    if (len(splitparams))==2:
+#		param[splitparams[0]]=splitparams[1]
+
+	#rtmp_file     = flashvars['rtmp']
+	s = len(flashvars)
+	rtmp_file = flashvars[s-1][1]
+	#rtmp_streamer = param['streamer']
+	#rtmp_plugins  = param['plugins']
 
 	#print '            param =%s'%param
 	#print '      flashparams =%s'%flashparams
@@ -88,11 +89,12 @@ def playVideo(url, name, thumbnail, plot):
 	#print '    rtmp_streamer =%s'%rtmp_streamer
 	#print '     rtmp_plugins =%s'%rtmp_plugins
 
-	furl  = rtmp_streamer + '/' + rtmp_file
+	furl  = rtmp_file
 	furl += ' swfurl='  + SWFObject
 	furl += ' pageUrl=' + url
-	furl += ' tcUrl='   + rtmp_streamer
+	#furl += ' tcUrl='   + rtmp_streamer
 	furl += ' swfVfy='  + SWFObject
+	#furl += ' app=live debug verbose'
 
 	xbmc.output('furl = %s'%furl)
 
