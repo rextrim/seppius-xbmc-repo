@@ -118,6 +118,24 @@ Bee.FM – это больше чем просто музыка!</description>
   </extension>
 </addon>
 
+<addon id="plugin.video.debilizator.tv"
+       name="Debilizator.TV"
+       version="1.0.0"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>http://debilizator.tv/</summary>
+    <description>http://debilizator.tv/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.rusd.tv"
        name="RuSD.TV"
        version="1.0.8"
