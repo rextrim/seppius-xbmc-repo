@@ -120,7 +120,7 @@ Bee.FM – это больше чем просто музыка!</description>
 
 <addon id="plugin.video.debilizator.tv"
        name="Debilizator.TV"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -226,6 +226,24 @@ Bee.FM – это больше чем просто музыка!</description>
     <summary lang="ru">Радио Свободная Европа/Радио Свобода</summary>
     <description lang="ru">Радио Свободная Европа/Радио Свобода - это частная некоммерческая информационная служба, финансируемая Конгрессом США, осуществляющая вещание на страны Восточной и Юго-Восточной Европы, Кавказа, Центральной Азии и Ближнего Востока и на Россию.
 Более 35 миллионов слушателей привыкли ежедневно полагаться на передаваемые РСЕ/РС сводки новостей, аналитические обзоры и тематические программы, посвященные последним событиям в их регионе и мире.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.akado.online"
+       name="akado.online"
+       version="1.0.0"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>http://tv.akado.ru/online/</summary>
+    <description>http://tv.akado.ru/online/</description>
     <platform>all</platform>
   </extension>
 </addon>
