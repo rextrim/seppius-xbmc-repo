@@ -157,7 +157,7 @@ Bee.FM – это больше чем просто музыка!</description>
 
 <addon id="plugin.video.planeta-online.tv"
        name="Planeta-online.tv"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
