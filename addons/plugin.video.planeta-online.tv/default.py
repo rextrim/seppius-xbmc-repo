@@ -27,7 +27,7 @@ fanart = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'fanart.jp
 xbmcplugin.setPluginFanart(pluginhandle, fanart)
 
 
-def getURL( url ):
+def getURL(url):
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
     req.add_header('Accept', 'text/html, application/xml, application/xhtml+xml, */*')
@@ -38,69 +38,50 @@ def getURL( url ):
     return link
 
 
-def root():
-	url = 'http://www.planeta-online.tv/'
-	xbmcplugin.setContent(pluginhandle, 'tvshows')
-	xbmcplugin.setPluginCategory(pluginhandle, 'planeta-online.tv')
-	xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
+def root(url):
 	http = getURL(url)
-
 	r1 = re.compile('<a href="(.*?)" onmouseover="changeTvThumb.*" id=".*"><img src="(.*?)".*" /><span class="ch-name">.*</span><span>(.*?)</span></a>').findall(http)
 	for rURL, rIMG, rTITLE in r1:
 		title = rTITLE
 		rURL = 'http://www.planeta-online.tv' + rURL
 		rIMG = 'http://www.planeta-online.tv' + rIMG
-		u = sys.argv[0] + '?mode=BIG'
-		u += "&url="+urllib.quote_plus(rURL)
-		u += "&name="+urllib.quote_plus(title)
-		u += "&thumbnail="+urllib.quote_plus(rIMG)
-		liz=xbmcgui.ListItem(title, iconImage="DefaultFolder.png", thumbnailImage=rIMG)
-		liz.setInfo( type="Video", infoLabels={ "Title": title})
-		liz.setProperty('IsPlayable', 'true')
-		liz.setProperty('fanart_image',rIMG)
-		xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz)
+		uri = sys.argv[0] + '?mode=BIG'
+		uri += "&url="       + urllib.quote_plus(rURL)
+		uri += "&name="      + urllib.quote_plus(title)
+		uri += "&thumbnail=" + urllib.quote_plus(rIMG)
+		item=xbmcgui.ListItem(title,iconImage=rIMG,thumbnailImage=rIMG)
+		item.setInfo(type="Video", infoLabels={"Title":title})
+		item.setProperty('IsPlayable', 'true')
+		item.setProperty('fanart_image',rIMG)
+		xbmcplugin.addDirectoryItem(pluginhandle, uri, item)
 	xbmcplugin.endOfDirectory(pluginhandle)
 
-def playVideo(url, name, thumbnail, plot):
+def playVideo(url, name, thumbnail):
 	response = getURL(url)
 	SWFObject = 'http://www.planeta-online.tv' + re.compile('embedSWF\("(.*?)"').findall(response)[0]
 	flashvars = re.compile('(.*?):"(.*?)"').findall(re.compile('var flashvars = \{(.*?)\};', re.DOTALL).findall(response)[0].replace(',',',\n'))
 
-	print SWFObject
-	print flashvars
-
-#	param={}
-#	for i in range(len(flashparams)):
-#	    splitparams={}
-#	    splitparams=flashparams[i].split('=')
-#	    if (len(splitparams))==2:
-#		param[splitparams[0]]=splitparams[1]
-
-	#rtmp_file     = flashvars['rtmp']
+	rtmp_file = ''
 	s = len(flashvars)
-	rtmp_file = flashvars[s-1][1]
-	#rtmp_streamer = param['streamer']
-	#rtmp_plugins  = param['plugins']
+	for fkey, fval in flashvars:
+		fkey = fkey.replace(' ','')
+		fkey = fkey.replace(',','')
+		if fkey == 'rtmp':
+			rtmp_file = fval
 
-	#print '            param =%s'%param
-	#print '      flashparams =%s'%flashparams
-	#print '        SWFObject =%s'%SWFObject
-	#print '        rtmp_file =%s'%rtmp_file
-	#print '    rtmp_streamer =%s'%rtmp_streamer
-	#print '     rtmp_plugins =%s'%rtmp_plugins
+	xbmc.output('SWFObject =%s'%SWFObject)
+	xbmc.output('flashvars =%s'%flashvars)
+	xbmc.output('rtmp_file =%s'%rtmp_file)
 
 	furl  = rtmp_file
 	furl += ' swfurl='  + SWFObject
 	furl += ' pageUrl=' + url
-	#furl += ' tcUrl='   + rtmp_streamer
 	furl += ' swfVfy='  + SWFObject
-	#furl += ' app=live debug verbose'
 
-	xbmc.output('furl = %s'%furl)
+	xbmc.output('     furl = %s'%furl)
 
-	item=xbmcgui.ListItem(name, thumbnailImage=thumbnail, path=furl)
-	item.setInfo( type="Video", infoLabels={"Title": name})
-	item.setProperty('IsPlayable', 'true')
+	item=xbmcgui.ListItem(name, iconImage=thumbnail, thumbnailImage=thumbnail, path=furl)
+	item.setInfo(type="Video", infoLabels={"Title": name})
 	xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
 def get_params():
@@ -121,9 +102,15 @@ def get_params():
     return param
 
 params=get_params()
-url=None
-name=None
+url=''
+name=''
+thumbnail=fanart
 mode=None
+
+try:
+    mode=params["mode"]
+except:
+    pass
 
 try:
     url=urllib.unquote_plus(params["url"])
@@ -133,48 +120,13 @@ except:
 try:
     name=urllib.unquote_plus(params["name"])
 except:
-    name=''
-
-try:
-    mode=params["mode"]
-except:
     pass
-
 try:
     thumbnail=urllib.unquote_plus(params["thumbnail"])
 except:
-    thumbnail=''
-
-try:
-    season=int(params["season"])
-except:
-    season=0
-
-try:
-    episode=int(params["episode"])
-except:
-    episode=0
-
-try:
-    premiered=urllib.unquote_plus(params["premiered"])
-except:
-    premiered=''
-
-try:
-    plot=urllib.unquote_plus(params["plot"])
-except:
-    plot=''
-
-#print "Mode: "+str(mode)
-#print "URL: "+str(url)
-#print "Name: "+str(name)
+    pass
 
 if mode=='BIG':
-    playVideo(url, name, thumbnail, plot)
+	playVideo(url, name, thumbnail)
 else:
-	root()
-
-
-
-
-
+	root('http://www.planeta-online.tv/')
