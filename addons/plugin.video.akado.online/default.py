@@ -26,7 +26,7 @@ pluginhandle = int(sys.argv[1])
 fanart = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'fanart.jpg'))
 xbmcplugin.setPluginFanart(pluginhandle, fanart)
 
-def getURL(url):
+def getURL( url ):
 	req = urllib2.Request(url)
 	req.add_header('User-Agent', 'Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
 	req.add_header('Accept', 'text/html, application/xml, application/xhtml+xml, */*')
@@ -38,51 +38,36 @@ def getURL(url):
 
 def root(url):
 	http = getURL(url)
-
-	r1 = re.compile('<div class="chlogo"><a href=(.*?)><img src="(.*?)" alt="(.*?)" title="(.*?)"></a></div>\s*<div class="chdesc"><h2>(.*?)</h2></div>').findall(http)
-	for rURL, rTHUMB, rALT, rTITLE, rDESCR in r1:
-		title = rTITLE
-		description = re.sub('(?is)<.*?>', '', rDESCR, re.DOTALL)
-		thumbnail = rTHUMB.replace('./', url)
+	r1 = re.compile('<div class="canal-frame"><a href="(.*?)"><img src="(.*?)" width="(.*?)" height="(.*?)"/></a></div><h1><a href="(.*?)">(.*?)</a>').findall(http)
+	for rURL, rTHUMB, rD1, rD2, rURL2, rTITLE in r1:
+		thumbnail = 'http://tv.akado.ru' + rTHUMB
+		target = url + rURL
 		uri = sys.argv[0] + '?mode=BIG'
-		uri += '&url='+urllib.quote_plus(url + rURL)
-		uri += '&name='+urllib.quote_plus(title)
-		uri += '&plot='+urllib.quote_plus(description)
-		uri += '&thumbnail='+urllib.quote_plus(thumbnail)
-		item=xbmcgui.ListItem(title, iconImage=thumbnail, thumbnailImage=thumbnail)
-		item.setInfo( type='video', infoLabels={'title': title, 'plot': description})
+		uri += "&url="       + urllib.quote_plus(target)
+		uri += "&name="      + urllib.quote_plus(rTITLE)
+		uri += "&thumbnail=" + urllib.quote_plus(thumbnail)
+		item=xbmcgui.ListItem(rTITLE, iconImage=thumbnail, thumbnailImage=thumbnail)
+		item.setInfo( type="Video", infoLabels={ "Title": rTITLE})
 		item.setProperty('IsPlayable', 'true')
 		item.setProperty('fanart_image',thumbnail)
 		xbmcplugin.addDirectoryItem(pluginhandle,uri,item)
 	xbmcplugin.endOfDirectory(pluginhandle)
 
-def playVideo(url, name, thumbnail, plot):
+def playVideo(url, name, thumbnail):
 	response = getURL(url)
-	SWFObject = 'http://debilizator.tv/' + re.compile('new SWFObject\(\'(.*?)\'').findall(response)[0]
-	flashvars = re.compile('so.addParam\(\'flashvars\',\'(.*?)\'\);').findall(response)[0] + '&'
-	flashparams = flashvars.split('&')
+	SWFObject = 'http://tv.akado.ru/i/online/player.swf'
+	rtmp_path = re.compile('ShowPlayer4ot\(\'(.*?)\'').findall(response)[0]
 
-	param={}
-	for i in range(len(flashparams)):
-	    splitparams={}
-	    splitparams=flashparams[i].split('=')
-	    if (len(splitparams))==2:
-		param[splitparams[0]]=splitparams[1]
-
-	rtmp_file     = param['file']
-	rtmp_streamer = param['streamer']
-	rtmp_plugins  = param['plugins']
-
-	furl  = rtmp_streamer + '/' + rtmp_file
-	furl += ' swfurl='  + SWFObject
-	furl += ' pageUrl=' + url
-	furl += ' tcUrl='   + rtmp_streamer
-	furl += ' swfVfy=True live=True'
-
-	xbmc.output('furl = %s'%furl)
-
-	item=xbmcgui.ListItem(name, thumbnailImage=thumbnail, path=furl)
-	item.setInfo(type='video', infoLabels={'title': name, 'plot': plot})
+	rtmp = rtmp_path
+	rtmp += ' swfUrl='  + urllib.unquote_plus(SWFObject)
+	rtmp += ' pageUrl=' + urllib.unquote_plus(url)
+	rtmp += ' tcUrl='   + urllib.unquote_plus(rtmp_path.replace('/stream',''))
+	rtmp += ' swfVfy=true'
+	rtmp += ' live=true'
+	xbmc.output('rtmp = %s'%rtmp)
+	#xbmc.output('rtmpdump -r "%s" --swfUrl="%s" --pageUrl="%s" --tcUrl="%s" --swfVfy="%s"'%(rtmp_path, SWFObject, SWFObject, rtmp_path.replace('/stream',''), SWFObject))
+	item=xbmcgui.ListItem(name, thumbnailImage=thumbnail, path=rtmp)
+	item.setInfo( type="Video", infoLabels={"Title": name})
 	xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
 def get_params():
@@ -105,22 +90,19 @@ def get_params():
 params=get_params()
 url=None
 name=''
-plot=''
 mode=None
 thumbnail=fanart
 
-try: mode=params['mode']
+try: mode=params["mode"]
 except: pass
-try: url=urllib.unquote_plus(params['url'])
+try: url=urllib.unquote_plus(params["url"])
 except: pass
-try: name=urllib.unquote_plus(params['name'])
+try: name=urllib.unquote_plus(params["name"])
 except: pass
-try: thumbnail=urllib.unquote_plus(params['thumbnail'])
-except: pass
-try: plot=urllib.unquote_plus(params['plot'])
+try: thumbnail=urllib.unquote_plus(params["thumbnail"])
 except: pass
 
 if mode=='BIG':
-    playVideo(url, name, thumbnail,plot)
+    playVideo(url, name, thumbnail)
 else:
-	root('http://debilizator.tv/')
+	root('http://tv.akado.ru/online/')
