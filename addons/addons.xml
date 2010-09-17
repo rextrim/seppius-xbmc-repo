@@ -82,7 +82,7 @@ Bee.FM – это больше чем просто музыка!</description>
 
 <addon id="plugin.video.ruhd.tv"
        name="RuHD.TV"
-       version="1.0.8"
+       version="1.1.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -138,7 +138,7 @@ Bee.FM – это больше чем просто музыка!</description>
 
 <addon id="plugin.video.rusd.tv"
        name="RuSD.TV"
-       version="1.0.8"
+       version="1.1.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

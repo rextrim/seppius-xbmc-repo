@@ -20,6 +20,7 @@
 # */
 
 import urllib2, re, xbmcaddon, string, xbmc, xbmcgui, xbmcplugin, os, urllib, cookielib
+import xml.dom.minidom
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.ruhd.tv')
 __language__ = __settings__.getLocalizedString
@@ -27,18 +28,18 @@ USERNAME = __settings__.getSetting('username')
 USERPASS = __settings__.getSetting('password')
 handle = int(sys.argv[1])
 
-PLUGIN_NAME = 'RuHD.TV'
-SITE_HOSTNAME = 'www.ruhd.tv'
-SITEPREF      = 'http://%s' % SITE_HOSTNAME
-SITE_URL      = SITEPREF + '/'
+PLUGIN_NAME   = 'RuHD.TV'
+SITE_URL      = 'http://ruhd.tv/'
+thumb = os.path.join(os.getcwd().replace(';', ''), "icon.png" )
 
-phpsessid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_ruhd_tv.sess')
-plotdescr_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_ruhd_tv.plot')
-thumb = os.path.join( os.getcwd(), "icon.png" )
+def showMessage(heading, message, times = 3000):
+	heading = heading.encode('utf-8')
+	message = message.encode('utf-8')
+	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, thumb))
 
 def run_once():
 	global USERNAME, USERPASS
-	while (Get(__language__(30008)) == None):
+	while (Get(SITE_URL + 'ShowSeries/') == None):
 		user_keyboard = xbmc.Keyboard()
 		user_keyboard.setHeading(__language__(30001))
 		user_keyboard.doModal()
@@ -59,7 +60,6 @@ def run_once():
 	return True
 
 def Get(url, ref=None):
-	url = SITEPREF + url
 	use_auth = False
 	inter = 2
 	while inter:
@@ -72,24 +72,16 @@ def Get(url, ref=None):
 			post = urllib.urlencode({'login': USERNAME, 'password': USERPASS})
 			url = SITE_URL
 		request = urllib2.Request(url, post)
-		request.add_header('User-Agent', 'Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
-		request.add_header('Host', SITE_HOSTNAME)
-		request.add_header('Accept', 'text/html, application/xml, application/xhtml+xml, */*')
-		request.add_header('Accept-Language', 'ru,en;q=0.9')
 		if ref != None:
 			request.add_header('Referer', ref)
-		if os.path.isfile(phpsessid_file):
-			fh = open(phpsessid_file, 'r')
-			phpsessid = fh.read()
-			fh.close()
+		phpsessid = __settings__.getSetting('cookie')
+		if len(phpsessid) > 0:
 			request.add_header('Cookie', 'PHPSESSID=' + phpsessid)
 		o = urllib2.urlopen(request)
 		for index, cookie in enumerate(cj):
 			cookraw = re.compile('<Cookie PHPSESSID=(.*?) for.*/>').findall(str(cookie))
 			if len(cookraw) > 0:
-				fh = open(phpsessid_file, 'w')
-				fh.write(cookraw[0])
-				fh.close()
+				__settings__.setSetting('cookie', cookraw[0])
 		http = o.read()
 		o.close()
 		if (http.find('<form id="loginform" method="POST" action="/">') == -1):
@@ -116,232 +108,428 @@ def get_params():
 				param[splitparams[0]]=splitparams[1]
 	return param
 
-def ShowSeries(url):
+
+
+def clean(name):
+	name = re.sub('(?is)<.*?>', '', name, re.DOTALL|re.IGNORECASE)
+	remove = [('mdash;',''),('&ndash;',''),('hellip;','\n'),('&amp;',''),('&quot;','"'),
+		  ('&#39;','\''),('&nbsp;',' '),('&laquo;','"'),('&raquo;','"'),('&#151;','-')]
+	for trash, crap in remove:
+		name=name.replace(trash, crap)
+	return name
+
+def GetRegion(data, region, modeall=False, defval=None):
+	try:
+		ret_val = re.compile('<%s>(.*?)</%s>'%(region,region),re.DOTALL|re.IGNORECASE).findall(data)
+		if modeall: return ret_val
+		else: return ret_val[0]
+	except: return defval
+
+def parse_playable_item(data):
+	id_episodes = GetRegion(data, 'id_episodes')
+	series      = GetRegion(data, 'series')
+	snum        = GetRegion(data, 'snum')
+	enum        = GetRegion(data, 'enum')
+	vnum        = GetRegion(data, 'vnum')
+	title       = GetRegion(data, 'title')
+	etitle      = GetRegion(data, 'etitle')
+	tmark       = GetRegion(data, 'tmark')
+	enable      = GetRegion(data, 'enable')
+	defsnd      = GetRegion(data, 'defsnd')
+	addsnd      = GetRegion(data, 'addsnd')
+	sub1        = GetRegion(data, 'sub1')
+	sub2        = GetRegion(data, 'sub2')
+	mark        = GetRegion(data, 'mark')
+	server      = GetRegion(data, 'server')
+	vurl        = GetRegion(data, 'vurl')
+	return id_episodes,series,snum,enum,vnum,clean(title),clean(etitle),tmark,enable,defsnd,addsnd,sub1,sub2,mark,server,vurl
+
+def parse_series_item(data):
+	id_series = GetRegion(data, 'id_series')
+	title     = GetRegion(data, 'title')
+	etitle    = GetRegion(data, 'etitle')
+	theme     = GetRegion(data, 'theme')
+	info      = GetRegion(data, 'info')
+	fpimg     = GetRegion(data, 'fpimg')
+	pimg      = GetRegion(data, 'pimg')
+	mark      = GetRegion(data, 'mark')
+	enable    = GetRegion(data, 'enable')
+	pos       = GetRegion(data, 'pos')
+	isclosed  = GetRegion(data, 'isclosed')
+	fpimg = SITE_URL + fpimg
+	pimg  = SITE_URL + pimg
+	return id_series,clean(title),clean(etitle),theme,clean(info),fpimg,pimg,mark,enable,pos,isclosed
+
+def parse_content_urls(mark, snum, enum):
+	snum0 = snum
+	enum0 = enum
+	if len(snum) == 1: snum0 = '0%s'%snum
+	if len(enum) == 1: enum0 = '0%s'%enum
+	sc     = '%scontent/%s/sc/%s-%s.jpg'     % (SITE_URL, mark, snum0, enum0)
+	s1_mp3 = '%scontent/%s/s/%s-%s_ru.mp3'   % (SITE_URL, mark, snum0, enum0)
+	s2_mp3 = '%scontent/%s/s/%s-%s_en.mp3'   % (SITE_URL, mark, snum0, enum0)
+	sub1   = '%scontent/%s/sub/%s-%s_ru.srt' % (SITE_URL, mark, snum0, enum0)
+	sub2   = '%scontent/%s/sub/%s-%s_en.srt' % (SITE_URL, mark, snum0, enum0)
+	return sc,s1_mp3,s2_mp3,sub1,sub2
+
+
+def ShowSeries(url, showPay = False):
 	http = Get(url)
 	if http == None:
-		xbmc.output('[%s] ShowSeries() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
-		return
-	http2 = re.compile('<td class="sit">(.*?)</td>', re.DOTALL).findall(http)
-	if len(http2) == 0:
-		xbmc.output('[%s] ShowSeries() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output(http)
-		return
-	for dat2 in http2:
-		(row_img, row_title ) = re.compile('<img src="(.*?)" alt="(.*?)"').findall(dat2)[0]
-		row_url = re.compile('<a href="(.*?)"').findall(dat2)[0]
-		Title = row_title
-		rawru = re.compile(';">(.*?)</a><br>').findall(dat2)
-		if len(rawru) > 0:
-			Title = rawru[0]
-		Thumb  = SITEPREF + row_img
-
-		listitem = xbmcgui.ListItem(Title, iconImage = Thumb, thumbnailImage = Thumb)
-		listitem.setInfo(type = "Video", infoLabels = {
-			"Title":	Title
-			} )
-		url = sys.argv[0] + '?mode=ShowEpisodes&url=' + urllib.quote_plus(row_url) \
-			+ '&title=' + urllib.quote_plus(Title)
-		xbmcplugin.addDirectoryItem(handle, url, listitem, True)
-
-def ShowEpisodes(url, title):
-	http = Get(url, SITE_URL)
-	if http == None:
-		xbmc.output('[%s] ShowEpisodes() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
-		return
-	Thumbnail = thumb
-	picdat = re.compile('<div id="series" style="background:.*url\(\'(.*?)\'\) no-repeat top center;">').findall(http)
-	if len(picdat) > 0:
-		Thumbnail = SITEPREF + picdat[0]
-	else:
-		xbmc.output('[%s] ShowEpisodes() Warn 1: background not found (style=background) URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output(http)
-	Plot = __language__(30007)
-	pldata  = re.compile('<div class="desc">(.*?)</div>', re.DOTALL).findall(http)
-	if len(pldata) > 0:
-		Plot = pldata[0]
-		Plot = Plot.replace('&mdash;', '-')
-		Plot = Plot.replace('&hellip;', '.')
-		Plot = Plot.replace('&ndash;', '-')
-		Plot = Plot.replace('&laquo;', '"')
-		Plot = Plot.replace('&ldquo;', '"')
-		Plot = Plot.replace('&ldquo;', '"')
-		Plot = Plot.replace('&raquo;', '"')
-		Plot = Plot.replace('<br />', '')
-		Plot = Plot.replace('<br>', '')
-		Plot = Plot.replace('<br/>', '')
-	else:
-		xbmc.output('[%s] ShowEpisodes() Warn 2: Plot not found (div class=desc) URL=%s' % (PLUGIN_NAME, url))
-	if os.path.isfile(plotdescr_file):
-		os.remove(plotdescr_file)
-	fh = open(plotdescr_file, 'w')
-	fh.write(Plot)
-	fh.close()
-	seasons = re.compile('<h2><span class="head">(.*?)</span></h2>\s(.*?)\s</div>', re.DOTALL).findall(http)
-	if len(seasons) > 0:
-		for seanum, seacont in seasons:
-			srows = re.compile('<div><span class=".*">(.*?)<a href="(.*?)">(.*?)</a></span></div>').findall(seacont)
-			if len(srows) > 0:
-				x = 1
-				for row_sernum, row_url, row_title in srows:
-					ssn = __language__(30003)
-					ser = __language__(30004)
-					Title = ('%s %s %s %s "%s"' % (ssn.encode('utf8'), seanum, ser.encode('utf8'), str(x), row_title))
-					listitem = xbmcgui.ListItem(Title, iconImage = Thumbnail, thumbnailImage = Thumbnail)
-					listitem.setInfo(type="Video", infoLabels = {
-						"Title": 	Title,
-						"Plot": 	Plot
-						} )
-					url = sys.argv[0] + '?mode=ShowEpisode&url=' + urllib.quote_plus(row_url) \
-						+ '&title=' + urllib.quote_plus(title + ' : ' + Title) \
-						+ '&img=' + urllib.quote_plus(Thumbnail)
-					xbmcplugin.addDirectoryItem(handle, url, listitem, False)
-					x = x+1
-			else:
-				xbmc.output('[%s] ShowEpisodes() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-				xbmc.output(seacont)
-	else:
-		xbmc.output('[%s] ShowEpisodes() Error 3: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output(http)
-
-def ShowEpisode(url, title, img):
-	strid = re.compile('.*/([0-9]*)/').findall(url)
-	if len(strid) > 0:
-		http = Get('/GetEpisodeLink/%s/' % strid[0], SITEPREF + url)
-		if http == None:
-			xbmc.output('[%s] ShowEpisode() Error 1: GetEpisodeLink == None URL=%s' % (PLUGIN_NAME, url))
-			return
-		throw = re.compile('f="(.*?)"').findall(http)
-		if len(throw) > 0:
-			Plot = __language__(30007)
-			if os.path.isfile(plotdescr_file):
-				fh = open(plotdescr_file, 'r')
-				Plot = fh.read()
-				fh.close()
-			playfile = throw[0]
-			item = xbmcgui.ListItem(title, iconImage = img, thumbnailImage = img)
-			item.setInfo(type="Video", infoLabels = {
-				"Title":	title,
-				"Plot":		Plot
-				} )
-			xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(playfile, item)
+		showMessage(__language__(30014),__language__(30003))
+		return False
+	if showPay:
+		user_region = re.compile('<user id=\'(.*?)\'>(.*?)</user>',re.DOTALL|re.IGNORECASE).findall(http)
+		if len(user_region) > 0:
+			(user_id, user_block) = user_region[0]
+			login = GetRegion(user_block, 'login')
+			mail  = GetRegion(user_block, 'mail')
+			pdays_region = re.compile('<pdays state=\'(.*?)\'>(.*?)</pdays>',re.DOTALL|re.IGNORECASE).findall(user_block)
+			pdays_state = '?'
+			pdays_days  = '?'
+			if len(pdays_region) > 0:
+				(pdays_state, pdays_days) = pdays_region[0]
+			user_item = '[ %s (%s: %s) %s ]'%(login, __language__(30004).encode('utf-8'), pdays_days, __language__(30005).encode('utf-8'))
+			uri = sys.argv[0] + '?mode=openSettings'
+			item=xbmcgui.ListItem(user_item, iconImage=thumb, thumbnailImage=thumb)
+			xbmcplugin.addDirectoryItem(handle,uri,item)
 		else:
-			xbmc.output('[%s] ShowEpisode() Error 2: r.e. unable to find a link to a video! URL=%s' % (PLUGIN_NAME, url))
-			xbmc.output(http)
-	else:
-		xbmc.output('[%s] ShowEpisode() Error 3: Episode ID - not found! URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output('ShowEpisode(%s, %s, %s)' % (url, title, img))
+			showMessage(__language__(30008),__language__(30019))
+			xbmc.output('[%s] ShowSeries() ERROR: Unable to find "user" region' % (PLUGIN_NAME))
+			xbmc.output('HTTP=%s'%http)
+	fav_list = []
+	favorites_block = GetRegion(http, 'favorites')
+	if favorites_block != None:
+		fav_list = GetRegion(http, 'series', True)
+	serieslist_block = GetRegion(http, 'serieslist')
+	if serieslist_block == None:
+		showMessage(__language__(30008),__language__(30019))
+		xbmc.output('[%s] ShowSeries() ERROR: Unable to find "serieslist" region' % (PLUGIN_NAME))
+		xbmc.output('HTTP=%s'%http)
+		return False
+	item_blocks = GetRegion(serieslist_block, 'item', True)
+	if item_blocks == None:
+		showMessage(__language__(30008),__language__(30019))
+		xbmc.output('[%s] ShowSeries() ERROR: Unable to find "item" region' % (PLUGIN_NAME))
+		xbmc.output('HTTP=%s'%http)
+		return False
+	for item_block in item_blocks:
+		(id_series,title,etitle,theme,info,fpimg,pimg,mark,enable,pos,isclosed)=parse_series_item(item_block)
+		tvshowtitle = '%s (%s)'%(etitle, title)
+		if __language__(30000) == 'Russian':
+			tvshowtitle = '%s (%s)'%(title, etitle)
+		if isclosed == '1':
+			if __settings__.getSetting('shclosed') == 'true':
+				tvshowtitle += ' %s' % __language__(30121).encode('utf-8')
+			info += '\n%s %s' % (__language__(30121).encode('utf-8'), __language__(30122).encode('utf-8'))
+		if id_series in fav_list:
+			fav_ti  = __language__(30006).encode('utf-8') + ' ' + PLUGIN_NAME
+			fav_url = '%sRemoveFromFavorites/%s/'%(SITE_URL, id_series)
+			fav_star = '*'
+		else:
+			fav_ti  = __language__(30007).encode('utf-8') + ' ' + PLUGIN_NAME
+			fav_url = '%sAddToFavorites/%s/'%(SITE_URL, id_series)
+			fav_star = ''
+		uri2 = sys.argv[0] + '?mode=ExecURL'
+		uri2 += '&url='    + urllib.quote_plus(fav_url)
+		uri = sys.argv[0] + '?mode=ShowEpisodes'
+		uri += '&url='    + urllib.quote_plus('%sShowEpisodes/%s/XML/'%(SITE_URL, id_series))
+		item=xbmcgui.ListItem('%s %s'%(tvshowtitle, fav_star), iconImage=fpimg, thumbnailImage=fpimg)
+		item.setInfo(type='video', infoLabels={'title': tvshowtitle, 'genre': theme, 'plot': info, 'tvshowtitle': tvshowtitle})
+		item.setProperty('fanart_image',pimg)
+		if showPay:
+			item.addContextMenuItems([(fav_ti, 'XBMC.RunPlugin(%s)'%uri2,)])
+		xbmcplugin.addDirectoryItem(handle,uri,item, True)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
+	xbmcplugin.endOfDirectory(handle)
 
 
-def AddGetBalance(wwwurl):
-	listitem = xbmcgui.ListItem(__language__(30006), iconImage = thumb, thumbnailImage = thumb)
-	url = sys.argv[0] + '?mode=ShowProfile&url=' + urllib.quote_plus(wwwurl)
-	xbmcplugin.addDirectoryItem(handle, url, listitem, False)
-
-def ShowProfile(url):
-	dialog = xbmcgui.Dialog()
-	www_dir = '/ShowProfile/'
-	http = Get(www_dir, url)
-	if http == None:
-		xbmc.output('[%s] ShowProfile() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
-		return
-	http = http.replace('\t','')
-	http = http.replace('\n','')
-	raw_data = re.compile('<div class="pdays">(.*?)<br><span class="spdays" style=" background-color:.*>(.*?)</span>').findall(http)
-	if len(raw_data) > 0:
-		for msg, days in raw_data:
-			dialog.ok(__language__(30006), msg + '\n' + days)
-	else:
-		xbmc.output('[%s] ShowEpisodes() Error 3: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-		xbmc.output(http)
-
-def GetNews(url):
+def ShowEpisodes(url):
 	http = Get(url)
 	if http == None:
-		xbmc.output('[%s] GetNews() Error 1: Not received data when opening URL=%s' % (PLUGIN_NAME, url))
-		return
-	raw1 = re.compile('<item>(.*?)</item>', re.DOTALL).findall(http)
-	if len(raw1) == 0:
-		xbmc.output('[%s] GetNews() Error 2: r.e. not found it necessary elements. URL=%s' % (PLUGIN_NAME, url))
-		return
-	x = 1
-	for itemblock in raw1:
-		raw_link    = re.compile('<link>(.*?)</link>').findall(itemblock)
-		if len(raw_link) == 0:
-			xbmc.output('[%s] GetNews() Error 3: len(raw_link) == 0 URL=%s' % (PLUGIN_NAME, url))
-			return
-		raw_title   = re.compile('<title>(.*?)</title>').findall(itemblock)
-		if len(raw_title) == 0:
-			xbmc.output('[%s] GetNews() Error 4: len(raw_title) == 0 URL=%s' % (PLUGIN_NAME, url))
-			return
-		raw_pubdate = re.compile('<pubDate>(.*?)</pubDate>').findall(itemblock)
-		if len(raw_pubdate) == 0:
-			xbmc.output('[%s] GetNews() Error 5: len(raw_pubdate) == 0 URL=%s' % (PLUGIN_NAME, url))
-			return
-		Title = ('%s. %s' % (str(x), raw_title[0]))
-		Plot = raw_pubdate[0]
-		listitem = xbmcgui.ListItem(Title, iconImage = thumb, thumbnailImage = thumb)
-		listitem.setInfo(type="Video", infoLabels = {
-			"Title": 	Title,
-			"Plot": 	Plot
-			} )
-		url = sys.argv[0] + '?mode=ShowEpisode&url=' + urllib.quote_plus(raw_link[0]) \
-			+ '&title=' + urllib.quote_plus(raw_title[0])
-		xbmcplugin.addDirectoryItem(handle, url, listitem, False)
-		x = x+1
-	if os.path.isfile(plotdescr_file):
-		os.remove(plotdescr_file)
+		showMessage(__language__(30014),__language__(30003))
+		return False
+	series_raw = re.compile('<series id=\'(.*?)\'>(.*?)</series>',re.DOTALL|re.IGNORECASE).findall(http)
+	if len(series_raw) == 0:
+		showMessage(__language__(30008),__language__(30019))
+		xbmc.output('[%s] ShowEpisodes() ERROR: Unable to find "series" region' % (PLUGIN_NAME))
+		xbmc.output('HTTP=%s'%http)
+		return False
+	(id_series0, series_region) = series_raw[0]
+	common_data = re.sub('(?is)<season.*>.*?</season>','',series_region,re.DOTALL|re.IGNORECASE)
+	(id_series,title,etitle,theme,info,fpimg,pimg,mark,enable,pos,isclosed)=parse_series_item(common_data)
+	tvshowtitle = '%s (%s)'%(etitle, title)
+	if __language__(30000) == 'Russian':
+		tvshowtitle = '%s (%s)'%(title, etitle)
+	season_raw = re.compile('<season(.*?)</season>',re.DOTALL|re.IGNORECASE).findall(http)
+	if len(season_raw) == 0:
+		showMessage(__language__(30008),__language__(30019))
+		xbmc.output('[%s] ShowEpisodes() ERROR: Unable to find "season" region' % (PLUGIN_NAME))
+		xbmc.output('HTTP=%s'%http)
+		return False
 
-def addGetNews():
-	listitem = xbmcgui.ListItem(__language__(30005), iconImage = thumb, thumbnailImage = thumb)
-	url = sys.argv[0] + '?mode=GetNews&url=' + urllib.quote_plus('/ShowRSS/')
-	xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+
+	for cur_season in season_raw:
+		items = GetRegion(cur_season, 'item', True)
+		if items == None:
+			showMessage(__language__(30008),__language__(30019))
+			xbmc.output('[%s] ShowEpisodes() ERROR: Unable to find "item" region' % (PLUGIN_NAME))
+		else:
+			for itemblock in items:
+				(id_episodes,series,snum,enum,vnum,title,etitle,tmark,enable,defsnd,addsnd,sub1,sub2,mark0,server,vurl)=parse_playable_item(itemblock)
+				ide_prefix = ''
+				ide_mode = int(__settings__.getSetting('ide_mode'))
+				if ide_mode == 1:
+					ide_prefix = '%s.%s. '%(snum, enum)
+				elif ide_mode == 2:
+					ide_prefix = __language__(30115).encode('utf-8')%(snum, enum)
+				elif ide_mode == 3:
+					ide_prefix = 's%se%s '%(snum, enum)
+				epititle = '%s%s (%s)'%(ide_prefix, etitle, title)
+				if __language__(30000) == 'Russian':
+					epititle = '%s%s (%s)'%(ide_prefix, title, etitle)
+				(sc,s1_mp3,s2_mp3,sub1,sub2)=parse_content_urls(mark, snum, enum)
+				uri = sys.argv[0] + '?mode=ShowEpisode'
+				uri += '&url='   + urllib.quote_plus('%sGetEpisodeLink/%s/XML/'%(SITE_URL, id_episodes))
+				uri += '&theme=' + urllib.quote_plus(theme)
+				uri += '&tvshowtitle=' + urllib.quote_plus(tvshowtitle)
+				uri += '&info='  + urllib.quote_plus(info)
+				item=xbmcgui.ListItem(epititle, iconImage=sc, thumbnailImage=sc)
+				item.setInfo(type='video', infoLabels={ 'title':       epititle,
+									'genre':       theme,
+									'plot':        info,
+									'season':      int(snum),
+									'episode':     int(enum),
+									'aired':       tmark,
+									'tvshowtitle': tvshowtitle})
+				#item.setProperty('IsPlayable', 'true')
+				item.setProperty('fanart_image', pimg)
+				xbmcplugin.addDirectoryItem(handle,uri,item)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_EPISODE)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
+	xbmcplugin.endOfDirectory(handle)
+
+def ShowEpisode(url, theme, tvshowtitle, info):
+	http = Get(url)
+	if http == None:
+		showMessage(__language__(30014),__language__(30003))
+		return False
+	if (http.find('type=\'nomoney\'') != -1):
+		showMessage(__language__(30008),__language__(30009), 5000)
+		return False
+	if (http.find('type=\'notfound\'') != -1):
+		showMessage(__language__(30008),__language__(30017))
+		return False
+	items = GetRegion(http, 'item', True)
+	if (items == None) or (len(items) == 0):
+		showMessage(__language__(30008),__language__(30019))
+		xbmc.output('[%s] ShowEpisode() ERROR: Unable to find "item" region' % (PLUGIN_NAME))
+		xbmc.output('HTTP=%s'%http)
+		return False
+	(id_episodes,series,snum,enum,vnum,title,etitle,tmark,enable,defsnd,addsnd,sub1,sub2,mark,server,vurl) = parse_playable_item(items[0])
+	use_sub1 = False
+	use_sub2 = False
+	sub_mode = int(__settings__.getSetting('sub_mode'))
+	if sub_mode == 1:
+		if   sub1 == 'ru': use_sub1 = True
+		elif sub2 == 'ru': use_sub2 = True
+		else: showMessage(__language__(30020),__language__(30021))
+	elif sub_mode == 2:
+		if   sub1 == 'en': use_sub1 = True
+		elif sub2 == 'en': use_sub2 = True
+		else: showMessage(__language__(30020),__language__(30022))
+	elif sub_mode == 3:
+		if   len(sub1) == 2: use_sub1 = True
+		elif len(sub2) == 2: use_sub2 = True
+		else: showMessage(__language__(30020),__language__(30023))
+	elif sub_mode == 4:
+		asub1 =  sub1.replace('ru',__language__(30024))
+		asub1 = asub1.replace('en',__language__(30025))
+		asub2 =  sub2.replace('ru',__language__(30024))
+		asub2 = asub2.replace('en',__language__(30025))
+		slist = []
+		if len(asub1) >=2: slist.append(asub1)
+		if len(asub2) >=2: slist.append(asub2)
+		if len(slist) > 1:
+			selected = xbmcgui.Dialog().select(__language__(30020), slist)
+			if selected == 0: use_sub1 = True
+			if selected == 1: use_sub2 = True
+		else:
+			if   len(sub1) == 2: use_sub1 = True
+			elif len(sub2) == 2: use_sub2 = True
+			else: showMessage(__language__(30020),__language__(30023))
+	(sc,s1_mp3,s2_mp3,sub1_url,sub2_url) = parse_content_urls(mark, snum, enum)
+	epititle = '%s (%s)'%(etitle, title)
+	if __language__(30000) == 'Russian':
+		epititle = '%s (%s)'%(title, etitle)
+	item = xbmcgui.ListItem(epititle, iconImage=sc, thumbnailImage=sc)
+	item.setInfo(type='video', infoLabels={'title': epititle, 'genre': theme, 'plot': info, 'season': int(snum), 'episode': int(enum), 'aired': tmark, 'tvshowtitle': tvshowtitle})
+	xbmc.Player().play('http://%s/content/%s'%(server,vurl), item)
+	xbmc.sleep(2000)
+	if   use_sub1: xbmc.Player().setSubtitles(sub1_url)
+	elif use_sub2: xbmc.Player().setSubtitles(sub2_url)
+
+def GetNews():
+	http = Get(SITE_URL + 'ShowRSS/')
+	if http == None:
+		showMessage(__language__(30014),__language__(30003))
+		return False
+	item_blocks = GetRegion(http, 'item', True)
+	if item_blocks == None:
+		showMessage(__language__(30008),__language__(30019))
+		xbmc.output('[%s] GetNews() ERROR: Unable to find "item" region' % (PLUGIN_NAME))
+		xbmc.output('HTTP=%s'%http)
+		return False
+	x = 1
+	for itemblock in item_blocks:
+		link    = GetRegion(itemblock, 'link')
+		if link == None:
+			showMessage(__language__(30008),__language__(30019))
+			xbmc.output('[%s] GetNews() ERROR: Unable to find "link" region' % (PLUGIN_NAME))
+			xbmc.output('HTTP=%s'%http)
+			return False
+		title   = GetRegion(itemblock, 'title')
+		if title == None:
+			showMessage(__language__(30008),__language__(30019))
+			xbmc.output('[%s] GetNews() ERROR: Unable to find "title" region' % (PLUGIN_NAME))
+			xbmc.output('HTTP=%s'%http)
+			return False
+		pubdate = GetRegion(itemblock, 'pubDate')
+		if pubdate == None:
+			showMessage(__language__(30008),__language__(30019))
+			xbmc.output('[%s] GetNews() ERROR: Unable to find "pubDate" region' % (PLUGIN_NAME))
+			xbmc.output('HTTP=%s'%http)
+			return False
+		Title = clean('%s. %s' % (str(x), title))
+		Plot = clean(pubdate)
+		Target = link + 'XML/'
+		Target = Target.replace('ShowEpisode','GetEpisodeLink')
+		uri = sys.argv[0] + '?mode=ShowEpisode'
+		uri += '&url='   + urllib.quote_plus(Target)
+		uri += '&theme=' + urllib.quote_plus(__language__(30010).encode('utf-8'))
+		uri += '&info='  + urllib.quote_plus(Plot)
+		item=xbmcgui.ListItem(Title, iconImage=thumb, thumbnailImage=thumb)
+		item.setInfo(type='video', infoLabels={'title': Title, 'plot': Plot, 'aired': Plot})
+		item.setProperty('IsPlayable', 'true')
+		xbmcplugin.addDirectoryItem(handle,uri,item)
+		x += 1
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.endOfDirectory(handle)
+
+
+def ShowNEW():
+	use_russian = (__language__(30000) == 'Russian')
+	http = Get(SITE_URL + 'ShowSeries/new/XML/')
+	if http == None:
+		showMessage(__language__(30014),__language__(30003))
+		return False
+	series_raw = re.compile('<series id=\'(.*?)\'>(.*?)</item></series>',re.DOTALL|re.IGNORECASE).findall(http)
+	if len(series_raw) == 0:
+		showMessage(__language__(30008),__language__(30018))
+		return False
+	for id_series0, series_region in series_raw:
+		series_region += '</item>'
+		seriesinfo = GetRegion(series_region, 'seriesinfo')
+		if seriesinfo == None:
+			showMessage(__language__(30008),__language__(30019))
+			xbmc.output('[%s] ShowNEW() ERROR: Unable to find "seriesinfo" region' % (PLUGIN_NAME))
+		else:
+			(id_series,title,etitle,theme,info,fpimg,pimg,mark,enable,pos,isclosed) = parse_series_item(seriesinfo)
+			t1 = etitle
+			t2 = title
+			if use_russian:
+				t1 = title
+				t2 = etitle
+			common_data = re.sub('(?is)<seriesinfo>.*?</seriesinfo>','',series_region,re.DOTALL|re.IGNORECASE)
+			items = GetRegion(common_data, 'item', True)
+			if items == None:
+				showMessage(__language__(30008),__language__(30019))
+				xbmc.output('[%s] ShowNEW() ERROR: Unable to find "item" region' % (PLUGIN_NAME))
+			else:
+				for itemblock in items:
+					(id_episodes,series,snum,enum,vnum,title,etitle,tmark,enable,defsnd,addsnd,sub1,sub2,mark0,server,vurl) = parse_playable_item(itemblock)
+					if use_russian: t0 = title
+					else: t0 = etitle
+					item_title = '%s : s%se%s : %s'%(t1, snum, enum, t0)
+					(sc,s1_mp3,s2_mp3,sub1,sub2) = parse_content_urls(mark, snum, enum)
+					uri = sys.argv[0] + '?mode=ShowEpisode'
+					uri += '&url='   + urllib.quote_plus('%sGetEpisodeLink/%s/XML/'%(SITE_URL, id_episodes))
+					uri += '&theme=' + urllib.quote_plus(theme)
+					uri += '&info='  + urllib.quote_plus(info)
+					item=xbmcgui.ListItem(item_title, iconImage=sc, thumbnailImage=sc)
+					item.setInfo( type='video', infoLabels={'title':       item_title,
+										'genre':       theme,
+										'plot':        info,
+										'season':      int(snum),
+										'episode':     int(enum),
+										'aired':       tmark,
+										'tvshowtitle': '%s (%s)'%(t1, t2)})
+					#item.setProperty('IsPlayable', 'true')
+					item.setProperty('fanart_image', pimg)
+					xbmcplugin.addDirectoryItem(handle,uri,item)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_EPISODE)
+	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
+	xbmcplugin.endOfDirectory(handle)
 
 if run_once():
 	params = get_params()
 	mode  = None
-	url   = ''
-	title = ''
-	ref   = ''
-	img   = ''
+	url   = SITE_URL + 'ShowSeries/all/XML/'
+	theme = ''
+	info  = ''
+	tvshowtitle = ''
 
-	try:
-		mode  = urllib.unquote_plus(params["mode"])
-	except:
-		pass
+	try: mode  = urllib.unquote_plus(params['mode'])
+	except: pass
+	try: url   = urllib.unquote_plus(params['url'])
+	except: pass
+	try: theme = urllib.unquote_plus(params['theme'])
+	except: pass
+	try: tvshowtitle  = urllib.unquote_plus(params['tvshowtitle'])
+	except: pass
+	try: info  = urllib.unquote_plus(params['info'])
+	except: pass
 
-	try:
-		url  = urllib.unquote_plus(params["url"])
-	except:
-		pass
+	if (mode == 'ShowSeries') or (mode == None):
+		if mode == None:
+			uri = sys.argv[0] + '?mode=GetNews'
+			item = xbmcgui.ListItem(__language__(30011), iconImage=thumb, thumbnailImage=thumb)
+			xbmcplugin.addDirectoryItem(handle,uri,item, True)
 
-	try:
-		title  = urllib.unquote_plus(params["title"])
-	except:
-		pass
-	try:
-		img  = urllib.unquote_plus(params["img"])
-	except:
-		pass
+			uri  = sys.argv[0] + '?mode=ShowNEW'
+			item = xbmcgui.ListItem(__language__(30012), iconImage=thumb, thumbnailImage=thumb)
+			xbmcplugin.addDirectoryItem(handle,uri,item, True)
 
-	if mode == None:
-		ShowSeries(__language__(30008))
-		AddGetBalance(SITE_URL)
-		addGetNews()
-		xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
-		xbmcplugin.endOfDirectory(handle)
+			uri  = sys.argv[0] + '?url=' + urllib.unquote_plus(SITE_URL + 'ShowSeries/my/XML/')
+			uri += '&mode=ShowSeries'
+			item = xbmcgui.ListItem(__language__(30013), iconImage=thumb, thumbnailImage=thumb)
+			xbmcplugin.addDirectoryItem(handle,uri,item, True)
+			ShowSeries(url, True)
+		else:
+			ShowSeries(url)
 
 	elif mode == 'ShowEpisodes':
-		ShowEpisodes(url, title)
-		xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
-		xbmcplugin.endOfDirectory(handle)
+		ShowEpisodes(url)
 
 	elif mode == 'ShowEpisode':
-		ShowEpisode(url, title, img)
-
-	elif mode == 'ShowProfile':
-		ShowProfile(url)
+		ShowEpisode(url, theme, tvshowtitle, info)
 
 	elif mode == 'GetNews':
-		GetNews(url)
-		xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
-		xbmcplugin.endOfDirectory(handle)
+		GetNews()
+
+	elif mode == 'ShowNEW':
+		ShowNEW()
+
+	elif mode == 'openSettings':
+		__settings__.openSettings()
+		xbmc.sleep(50)
+		xbmc.executebuiltin('Container.Refresh')
+
+	elif mode == 'ExecURL':
+		Get(url)
+		xbmc.sleep(50)
+		xbmc.executebuiltin('Container.Refresh')
+
