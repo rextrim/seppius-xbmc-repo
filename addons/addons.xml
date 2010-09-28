@@ -18,48 +18,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.bee.fm"
-       name="Bee.FM"
-       version="1.0.0"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary lang="en">http://www.bee.fm - a radio that you do it yourself</summary>
-    <summary lang="ru">http://www.bee.fm - радио, которое Вы делаете сами</summary>
-    <description lang="en">Are you tired to spend hours searching for your favorite music on the Internet, when all the links lead to pay sites or file-exchange network?
-
-You love music, but you have neither the time nor the energy to search for your favorite songs and compiling the collection?
-
-You do not want to pay, buying a disc in the store, not knowing how you like it or not?
-
-Forget all that you no longer need! Present to your attention:
-Bee.FM - a unique project that combines the largest music archive and a social network. Listening to music has now become much easier: You simply choose the online album that you would like to listen to, and press the PLAY! Playback begins immediately, and you do not have to wait until the files downloaded to your PC.
-
-Also Bee.FM collects favorite tracks in their own playlists and listen to them anytime from anywhere in the world in high quality absolutely free! You can share music lists with other users of the site, leave comments on their lists and get them to her, send links to friends and listening to music with them.
-Adopt your blog on Bee.FM, create community and gather around him all the fans favorite teams. Stay together for their creativity and share your views.
-Bee.FM - is more than just music!</description>
-    <description lang="ru">Вам надоело тратить долгие часы на поиски любимой музыки в интернете, когда все ссылки ведут на платные сайты или файло-обменные сети?
-
-Вы любите слушать музыку, но у Вас нет ни времени, ни сил на поиски любимых песен и составление коллекции?
-
-Вы не желаете платить, покупая диск в магазине, не зная, понравится он Вам или нет?
-
-Забудьте, всё это Вам больше не понадобится! Представляем Вашему вниманию:
-Bee.FM – уникальный в своём роде проект, объединяющий в себе крупнейший музыкальный архив и социальную сеть. Слушать музыку теперь стало значительно проще: Вы просто выбираете на сайте альбом, который Вам хотелось бы слушать, и нажимаете PLAY! Воспроизведение начинается немедленно, и Вам не нужно ждать, пока файлы загрузится на Ваш ПК.
-
-Также Bee.FM позволяет собирать любимые треки в собственные плейлисты и слушать их в любое время из любой точки мира в хорошем качестве совершенно бесплатно! Вы можете обмениваться музыкальными списками с другими пользователями сайта, оставлять комментарии к их спискам и получать от них к своим; посылать ссылки друзьям и слушать музыку вместе с ними.
-Заведите свой блог на Bee.FM, создайте сообщество и соберите вокруг себя всех поклонников любимых групп. Следите вместе за их творчеством и обменивайтесь мнениями.
-Bee.FM – это больше чем просто музыка!</description>
-  </extension>
-</addon>
-
 <addon id="plugin.video.tvjam.ru"
        name="TVJAM.RU"
        version="1.0.0"
@@ -435,25 +393,6 @@ Bee.FM – это больше чем просто музыка!</description>
   <extension point="xbmc.addon.metadata">
     <summary>Moovie.ru - Фильмы онлайн, высокое качество.</summary>
     <description>Вы находитесь на первом в России онлайн-кинотеатре, показывающим фильмы онлайн в хорошем качестве. Мы проделали долгий путь от небольшого сайта с онлайн фильмами до одного из самых популярных кинотеатров, который показывает хорошее кино, включая последние новинки и легальные фильмы.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.yatv.ru"
-       name="YaTV.RU"
-       version="1.0.0"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите телеканалы с сайта http://yatv.ru</summary>
-    <description>Смотрите телеканалы с сайта http://yatv.ru</description>
     <platform>all</platform>
   </extension>
 </addon>
