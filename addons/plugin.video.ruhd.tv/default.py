@@ -525,6 +525,7 @@ if run_once():
 
 	elif mode == 'openSettings':
 		__settings__.openSettings()
+		__settings__.setSetting('cookie', '')
 		xbmc.sleep(50)
 		xbmc.executebuiltin('Container.Refresh')
 
