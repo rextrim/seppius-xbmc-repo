@@ -39,10 +39,10 @@ def getURL(url):
 def root(url):
 	http = getURL(url)
 
-	r1 = re.compile('<div class="chlogo"><a href=(.*?)><img src="(.*?)" alt="(.*?)" title="(.*?)"></a></div>\s*<div class="chdesc"><h2>(.*?)</h2></div>').findall(http)
-	for rURL, rTHUMB, rALT, rTITLE, rDESCR in r1:
+	r1 = re.compile('<div class="chlogo"><a href=(.*?)><img src="(.*?)" alt="(.*?)" title="(.*?)"></div>').findall(http)
+	for rURL, rTHUMB, rALT, rTITLE in r1:
 		title = rTITLE
-		description = re.sub('(?is)<.*?>', '', rDESCR, re.DOTALL)
+		description = rTITLE
 		thumbnail = rTHUMB.replace('./', url)
 		uri = sys.argv[0] + '?mode=BIG'
 		uri += '&url='+urllib.quote_plus(url + rURL)
