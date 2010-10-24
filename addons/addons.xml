@@ -96,7 +96,7 @@
 
 <addon id="plugin.video.debilizator.tv"
        name="Debilizator.TV"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
