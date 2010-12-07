@@ -67,7 +67,7 @@ def GetRegion(data, region, modeall=False, defval=None):
 	except: return defval
 
 def GET(target_url, postdata = None):
-	xbmc.output('* * * GET URL='+target_url)
+	#xbmc.output('* * * GET URL='+target_url)
 
 	try:
 		req = urllib2.Request(target_url, postdata)
@@ -80,13 +80,13 @@ def GET(target_url, postdata = None):
 		return None
 
 def MakeItem(url, addfnd = True):
-	xbmc.output('******* MakeItem(%s, %s)'%(url, addfnd))
+	#xbmc.output('******* MakeItem(%s, %s)'%(url, addfnd))
 	http = GET(url)
 	if http == None:
 		showMessage(__language__(30030),__language__(30031))
 		return False
 
-	print http
+	#print http
 
 
 	item_blocks = GetRegion(http, 'item', True)
@@ -109,8 +109,8 @@ def MakeItem(url, addfnd = True):
 		if isFolder:
 			uri = sys.argv[0] + '?mode=OpenItem' + '&url='+item_url.encode("hex")
 
-		print 'ADD item_url =' + item_url
-		print 'ADD URI =' + uri
+		#print 'ADD item_url =' + item_url
+		#print 'ADD URI =' + uri
 
 		item = xbmcgui.ListItem(item_label, iconImage = item_Image, thumbnailImage = item_Image)
 		item_type = GetRegion(item_block, 'type')
@@ -181,9 +181,9 @@ try:    url   = params['url'].decode("hex")
 except: pass
 
 
-print 'start mode=%s' % mode
-print 'start  url=%s' % url
-print 'start  url=' + url
+#print 'start mode=%s' % mode
+#print 'start  url=%s' % url
+#print 'start  url=' + url
 
 if mode == 'Search':
 	pass_keyboard = xbmc.Keyboard()
