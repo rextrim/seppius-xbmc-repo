@@ -77,7 +77,7 @@ Russia.ru делает передачи для самой разной ауди�
   </extension>
 </addon>
 
-<addon id="plugin.video.russia.ru"
+<addon id="plugin.video.russia.ru.old"
        name="RUSSIA.RU.OLD"
        version="1.0.2"
        provider-name="seppius">
@@ -451,25 +451,6 @@ Russia.ru делает передачи для самой разной ауди�
     <platform>all</platform>
     <summary>Слушай радио Online.FM: rock, jazz, house music, rnb, relax music, шансон, trance. FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио - online.fm</summary>
     <description>Online.FM - слушай радио онлайн. Русский рок, Украинский поп и рок, Trance, Party, Disco, RnB, Latino, Classic rock, House, Relax, Jazz, Шансон, музыка фестиваля Sziget и еще 40 радио каналов. Слушай FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио</description>
-  </extension>
-</addon>
-
-<addon id="plugin.video.luxport.ru"
-       name="LuxPort.RU"
-       version="1.0.0"
-       provider-name="none">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите телеканалы с сайта http://luxport.ru/</summary>
-    <description>Смотрите телеканалы с сайта http://luxport.ru/</description>
-    <platform>all</platform>
   </extension>
 </addon>
 
