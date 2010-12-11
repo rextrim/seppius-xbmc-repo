@@ -412,7 +412,7 @@ def GetNews():
 		uri += '&info='  + urllib.quote_plus(Plot)
 		item=xbmcgui.ListItem(Title, iconImage=thumb, thumbnailImage=thumb)
 		item.setInfo(type='video', infoLabels={'title': Title, 'plot': Plot, 'aired': Plot})
-		item.setProperty('IsPlayable', 'true')
+		#item.setProperty('IsPlayable', 'true')
 		xbmcplugin.addDirectoryItem(handle,uri,item)
 		x += 1
 	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
