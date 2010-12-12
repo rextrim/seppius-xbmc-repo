@@ -19,6 +19,7 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
+import socket
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin, urllib2, urllib, re, string, sys, os, traceback
 from urllib import urlretrieve, urlcleanup
 
@@ -28,28 +29,25 @@ __settings__ = xbmcaddon.Addon(id='plugin.audio.101.ru')
 __language__ = __settings__.getLocalizedString
 
 
-
 HEADER     = 'Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60'
 handle     = int(sys.argv[1])
-BASE_PLUGIN_THUMBNAIL_PATH = os.path.join( os.getcwd(), "resources" )
+BASE_PLUGIN_THUMBNAIL_PATH = os.path.join( os.getcwd().replace(';', ''), "resources" )
 play_thumb = os.path.join( BASE_PLUGIN_THUMBNAIL_PATH, "MusicPlay.png" )
 path_thumb = os.path.join( BASE_PLUGIN_THUMBNAIL_PATH, "MusicFolder.png" )
-url_101    = 'http://101.ru'
+thumb      = os.path.join( os.getcwd().replace(';', ''), "icon.png" )
+
+url_101    = 'http://www.101.ru'
 PLUGIN_NAME = '101.RU'
 url_chan_all = url_101 + '/?an=port_allchannels'
 url_cat_all  = url_101 + '/?an=port_groupchannels'
+socket.setdefaulttimeout(5)
 
 
-#lang = getdefaultlocale()[0][:2].lower()
-#if lang == 'ru':
-#	str_Qty_of 	= 'Настроить качество'
-#	str_hq 		= 'Высокое качество (96-128 kbps)'
-#	str_lq 		= 'Низкое качество (22-48 kbps)'
-#	str_Adjust_flow = 'Настроить поток'
-#	str_PreferMP3	= 'Предпочитать MP3'
-#	str_PreferWMA 	= 'Предпочитать WMA'
-#elif lang == 'en':
-#else:
+def showMessage(heading, message, times = 3000):
+#	heading = heading.encode('utf-8')
+#	message = message.encode('utf-8')
+	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, thumb))
+
 
 
 def get_params():
@@ -85,13 +83,14 @@ def getURL(url, ref = url_101 + '/'):
 		req.add_header('Accept-Language', 'ru,en;q=0.9')
 		req.add_header('Referer', ref)
 		response = urllib2.urlopen(req)
-		http = response.read()
+		http = response.read().decode('cp1251').encode('utf8')
 		response.close()
 	except urllib2.URLError, e:
 		xbmcgui.Dialog().ok('HTTP ERROR', str(e))
 		return None
 	else:
-		return http.decode('cp1251').encode('utf8')
+		#print http
+		return http
 
 
 
@@ -141,84 +140,117 @@ def getgroup(url, name, modeALL):
 		uri = sys.argv[0] + '?mode=getplay'
 		uri += '&name=' + urllib.quote_plus(ch_name)
 		uri += '&url=' + urllib.quote_plus(url_101 + target.replace(' ', '').replace('&amp;', '&'))
-		item.setProperty('IsPlayable', 'true')
-		xbmcplugin.addDirectoryItem(handle, uri, item, True)
+		#item.setProperty('IsPlayable', 'true')
+		xbmcplugin.addDirectoryItem(handle, uri, item, False)
 
 	http = getURL(url)
 	if http == None:
 		return False
 	s1 = re.compile('<div class="radio_list">(.+?)<div id="aux">', re.MULTILINE| re.DOTALL).findall(http)
 	if len(s1) == 0:
+		showMessage('ERROR', 'class="radio_list" - can not parsed')
 		return False
 	s2 = re.compile('<h2>(.+?)</div></li>\s\n</ul>', re.MULTILINE| re.DOTALL).findall(s1[0])
 	if len(s2) == 0:
+		showMessage('ERROR', 's2 block <h2> .. </ul> not found')
 		return False
 	for raw2 in s2:
 		cat_raw = re.compile('<img src=".*" width=".*" height=".*" alt=".*">(.+?)</h2>').findall(raw2)
-		if len(cat_raw) == 0: break
+		if len(cat_raw) == 0:
+			showMessage('ERROR', 'len(cat_raw) == 0')
+			break
 		cat_name = cat_raw[0]
 		if modeALL:
 			s3 = re.compile('<li><div class="schan">\s*<div class="play">(.+?)</div>\s*<div class="info">(.+?)</div></div>\s*</div>', re.DOTALL).findall(raw2)
 		else:
 			s3 = re.compile('<li><div class="schan">\s*<div class="play">(.+?)</div>\s*<div class="info">(.+?)</div></div>\s*<p>(.+?)</p>\s*</div>', re.DOTALL).findall(raw2)
 		if len(s3) == 0:
+			showMessage('ERROR', 's3 == 0')
 			break
 		x = 1
 		for raw3 in s3:
-			cat_url_raw = re.compile('OpenWin\(\'(.+?)\'.*title=".*"').findall(raw3[0])
-			if len(cat_url_raw) == 0: break
+			#cat_url_raw = re.compile('OpenWin\(\'(.+?)\'.*title=".*"').findall(raw3[0])
+			#if len(cat_url_raw) == 0:
+			#	showMessage('ERROR', 'len(cat_url_raw) == 0')
+			#	xbmc.output(raw3[0])
+			#	break
+			#	<a href="/?an=port_channel_mp3&amp;channel=104" target="channel">
+
+			cat_url_raw = re.compile('<a href="(.*?)" target="channel">').findall(raw3[0])
+
+			if len(cat_url_raw) == 0:
+				showMessage('ERROR', 'NEW len(cat_url_raw) == 0')
+				xbmc.output(raw3[0])
+				break
+
+			#xbmc.output('cat_url_raw=%s'%cat_url_raw)
+
+			plTarget = cat_url_raw[0].replace('&amp;', '&').replace('mp3', 'wma')
+
+			xbmc.output('plTarget=%s'%plTarget)
+
+
 			if modeALL:
 				chandescr = re.compile(';">(.+?)</a></p>\s*<div class="chandescr" id=".*">(.+?)<p>.*</p><div id=".*">', re.DOTALL).findall(raw3[1])
 				if len(chandescr) == 0: break
 				(ch_name, ch_plot) = chandescr[0]
-				addItemS(cat_url_raw[0], cat_name, ch_name, ch_plot, x)
+				addItemS(plTarget, cat_name, ch_name, ch_plot, x)
 			else:
 				onmouseover = re.compile('<h3><a href="(.+?)".*onmouseover.*;">(.+?)</a></h3>', re.DOTALL).findall(raw3[1])
 				if len(onmouseover) == 0: break
 				(ch_url, ch_name) = onmouseover[0]
-				addItemS(cat_url_raw[0], cat_name, ch_name, raw3[2], x)
+				addItemS(plTarget, cat_name, ch_name, raw3[2], x)
 			x += 1
 	xbmcplugin.endOfDirectory(handle)
 
 
 def get_play(url, name):
 	xbmc.output('>>> get_play(%s, %s)' % (url, name))
-	use_wma = True
-	use_mp3 = True
+	#use_wma = True
+	#use_mp3 = True
 
-	if use_wma:
-		wma_url = url.replace('port_playmp3','port_playwma')
-		wma0 = getURL(wma_url)
-		if wma0 != None:
-			wma1 = re.compile('<param name="URL" value="(.*?)">').findall(wma0)
-			if len(wma1) > 0:
-				wma2 = getURL(wma1[0].replace('&amp;','&'))
-				if wma2 != None:
-					wma3 = re.compile('<ref href = "(.*?)"/>').findall(wma2)
-					if len(wma3) > 0:
-						x = 1
-						for wma_purl in wma3:
-							item = xbmcgui.ListItem('Serv %s. %s (WMA)'%(x,name),iconImage=play_thumb,thumbnailImage=play_thumb)
-							item.setInfo(type='music',infoLabels={'title':name,'artist': '101.RU'})
-							xbmcplugin.addDirectoryItem(handle, wma_purl, item)
-							x += 1
+	playList = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
 
-	if use_mp3:
-		mp3_url = url.replace('port_playwma','port_playmp3')
-		mp0 = getURL(mp3_url)
-		if mp0 != None:
-			mp1 = re.compile('"pl":"(.*?)"').findall(mp0)
-			if len(mp1) > 0:
-				cur_mpu = mp1[0].replace('|','&')
-				mp2 = getURL(cur_mpu, 'http://101.ru/101player/uppod7.swf')
-				mp3 = re.compile('"file":"(.*?)"').findall(mp2)
-				if len(mp3) > 0:
+
+#	if use_wma:
+	#wma_url = url.replace('port_playmp3','port_playwma')
+	wma0 = getURL(url)
+	if wma0 != None:
+		wma1 = re.compile('<param name="URL" value="(.*?)">').findall(wma0)
+		if len(wma1) > 0:
+
+			#xbmc.Player().play(wma1[0].replace('&amp;','&'))
+
+
+			wma2 = getURL(wma1[0].replace('&amp;','&'))
+			if wma2 != None:
+				wma3 = re.compile('<ref href = "(.*?)"/>').findall(wma2)
+				if len(wma3) > 0:
 					x = 1
-					for streamer in mp3:
-						item = xbmcgui.ListItem('Serv %s. %s (MP3)'%(x,name),iconImage=play_thumb,thumbnailImage=play_thumb)
+					stacked_url = ''
+					for wma_purl in reversed(wma3):
+						item = xbmcgui.ListItem('%s [WMA Server %s])'%(name,x),iconImage=play_thumb,thumbnailImage=play_thumb)
 						item.setInfo(type='music',infoLabels={'title':name,'artist': '101.RU'})
-						xbmcplugin.addDirectoryItem(handle, streamer, item)
-	xbmcplugin.endOfDirectory(handle)
+						playList.add(wma_purl, item)
+					xbmc.Player().play(playList)
+
+
+#	if use_mp3:
+#		mp3_url = url.replace('port_playwma','port_playmp3')
+#		mp0 = getURL(mp3_url)
+#		if mp0 != None:
+#			mp1 = re.compile('"pl":"(.*?)"').findall(mp0)
+#			if len(mp1) > 0:
+#				cur_mpu = mp1[0].replace('|','&')
+#				mp2 = getURL(cur_mpu, 'http://101.ru/101player/uppod7.swf')
+#				mp3 = re.compile('"file":"(.*?)"').findall(mp2)
+#				if len(mp3) > 0:
+#					x = 1
+#					for streamer in mp3:
+#						item = xbmcgui.ListItem('Serv %s. %s (MP3)'%(x,name),iconImage=play_thumb,thumbnailImage=play_thumb)
+#						item.setInfo(type='music',infoLabels={'title':name,'artist': '101.RU'})
+#						xbmcplugin.addDirectoryItem(handle, streamer, item)
+#	xbmcplugin.endOfDirectory(handle)
 
 
 params = get_params()
