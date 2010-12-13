@@ -29,6 +29,13 @@ BASE_PLUGIN_THUMBNAIL_PATH = os.path.join( os.getcwd(), "resources" )
 play_thumb = os.path.join( BASE_PLUGIN_THUMBNAIL_PATH, "MusicPlay.png" )
 path_thumb = os.path.join( BASE_PLUGIN_THUMBNAIL_PATH, "MusicFolder.png" )
 url_RADIOSTYLE    = 'http://www.radiostyle.ru'
+thumb      = os.path.join( os.getcwd().replace(';', ''), "icon.png" )
+
+def showMessage(heading, message, times = 3000):
+#	heading = heading.encode('utf-8')
+#	message = message.encode('utf-8')
+	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, thumb))
+
 
 def get_params():
 	param=[]
@@ -92,20 +99,42 @@ def get_programs(url, name):
 		a = s_uni.encode('utf8')
 	except:
 		return
-	stage1 = re.compile("<td>(.*?)</td>\s*<td><a href=\"(.*?)\">(.*?)</a></td><td><a href='(.*?)'>(.*?)</a>.*</td><td>(.*?)</td>").findall(a)
+	stage1 = re.compile("<td>(.*?)</td>\s*<td><a href=\"(.*?)\">(.*?)</a>\s\s.*<a href='(.*?)'><img src='(.*?)'></a>\s*<a href='(.*?)'><img src='(.*?)'></a></td><td>(.*?)</td><td>(.*?)</td>").findall(a)
 	if len(stage1) > 0:
-		for row_index, row_URL, row_Name, row_urlplace, row_nameplace, row_rate in stage1:
-			stat_rawid = re.compile('viewstation=([0-9]*)').findall(row_URL)
-			if len(stat_rawid) > 0:
-				stat_id = stat_rawid[0]
-				row_Name = ('%s. %s (%s)' % (row_index, row_Name, row_nameplace))
-				listitem = xbmcgui.ListItem(row_Name, iconImage = play_thumb, thumbnailImage = play_thumb)
-				listitem.setInfo(type = "Music", infoLabels = {
-					"Title": 	row_Name,
-					"Album":	url_RADIOSTYLE,
-					"Genre": 	name } )
-				url = url_RADIOSTYLE+'/play.php?pltype=m3u&station=' + stat_id
-				xbmcplugin.addDirectoryItem(handle, url, listitem, False)
+		for IDX, BlogURL, NAME, M3URL, M3ICO, ASXURL, ASXICO, PlaceBlock, RATE in stage1:
+			BlogURL = url_RADIOSTYLE + '/' + BlogURL
+			M3URL   = url_RADIOSTYLE + '/' + M3URL
+			ASXURL  = url_RADIOSTYLE + '/' + ASXURL
+			M3ICO   = url_RADIOSTYLE + M3ICO
+			ASXICO  = url_RADIOSTYLE + ASXICO
+			PlaceBlock = PlaceBlock + '</a>'
+			#xbmc.output('_______IDX = [%s]'%IDX)
+			#xbmc.output('___BlogURL = [%s]'%BlogURL)
+			#xbmc.output('______NAME = [%s]'%NAME)
+			#xbmc.output('_____M3URL = [%s]'%M3URL)
+			#xbmc.output('_____M3ICO = [%s]'%M3ICO)
+			#xbmc.output('____ASXURL = [%s]'%ASXURL)
+			#xbmc.output('____ASXICO = [%s]'%ASXICO)
+			#xbmc.output('PlaceBlock = [%s]'%PlaceBlock)
+			#xbmc.output('______RATE = [%s]'%RATE)
+
+			plBlock = re.compile("<a href='(.*?)'>(.*?)</a>").findall(PlaceBlock)
+			Place = 'Unknown'
+			try:	Place = plBlock[0][1]
+			except: pass
+			try:	Place = plBlock[0][1] + '/' + plBlock[1][1]
+			except: pass
+
+			Title = '%s. %s (%s)' % (IDX, NAME, Place)
+
+			listitem = xbmcgui.ListItem(Title, iconImage = play_thumb, thumbnailImage = play_thumb)
+			listitem.setInfo(type = "Music", infoLabels = {
+				"Title": 	Title,
+				"Album":	url_RADIOSTYLE,
+				"Genre": 	name } )
+			xbmcplugin.addDirectoryItem(handle, M3URL, listitem, False)
+	else:
+		showMessage('ERROR', 'stage1 not found')
 
 	stage_pg = re.compile('</table>(.*?)&nbsp<br><br>').findall(a)
 	if len(stage_pg) > 0:
