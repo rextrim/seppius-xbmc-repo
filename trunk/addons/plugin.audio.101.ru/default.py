@@ -40,7 +40,7 @@ url_101    = 'http://www.101.ru'
 PLUGIN_NAME = '101.RU'
 url_chan_all = url_101 + '/?an=port_allchannels'
 url_cat_all  = url_101 + '/?an=port_groupchannels'
-socket.setdefaulttimeout(5)
+socket.setdefaulttimeout(10)
 
 
 def showMessage(heading, message, times = 3000):
@@ -210,7 +210,7 @@ def get_play(url, name):
 	#use_mp3 = True
 
 	playList = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
-
+	playList.clear()
 
 #	if use_wma:
 	#wma_url = url.replace('port_playmp3','port_playwma')
