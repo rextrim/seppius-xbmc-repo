@@ -261,7 +261,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.audio.101.ru"
        name="101.RU"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
