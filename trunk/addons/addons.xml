@@ -453,7 +453,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.audio.online.fm"
        name="online.fm"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

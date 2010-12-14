@@ -19,40 +19,17 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import urllib,urllib2,re,sys,os
-import xbmcplugin,xbmcgui
 
+import urllib2,os
+import xbmcplugin,xbmcgui
+import demjson
 
 pluginhandle = int(sys.argv[1])
 thumb = os.path.join(os.getcwd().replace(';', ''), "icon.png" )
 
-
-def showMessage(heading, message, times = 3000):
-	heading = heading.encode('utf-8')
-	message = message.encode('utf-8')
-	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, thumb))
-
-
-def get_params():
-	param=[]
-	paramstring=sys.argv[2]
-	if len(paramstring)>=2:
-		params=sys.argv[2]
-		cleanedparams=params.replace('?','')
-		if (params[len(params)-1]=='/'):
-			params=params[0:len(params)-2]
-		pairsofparams=cleanedparams.split('&')
-		param={}
-		for i in range(len(pairsofparams)):
-			splitparams={}
-			splitparams=pairsofparams[i].split('=')
-			if (len(splitparams))==2:
-				param[splitparams[0]]=splitparams[1]
-	return param
-
 def getURL(url):
 	req = urllib2.Request(url)
-	req.add_header('User-Agent', 'Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
+	req.add_header('User-Agent', 'Mozilla/5.0 (X11; U; Linux i686; ru; rv:1.9.2.12) Gecko/20101026 SUSE/3.6.12-0.7.1 Firefox/3.6.12')
 	req.add_header('Accept', 'text/html, application/xml, application/xhtml+xml, */*')
 	req.add_header('Accept-Language', 'ru,en;q=0.9')
 	response = urllib2.urlopen(req)
@@ -60,60 +37,11 @@ def getURL(url):
 	response.close()
 	return link
 
-def get_root():
-	def ParsePage(target):
-		http = getURL(target)
-		r1 = re.compile('<div class="public">(.*?)div class="clear">', re.DOTALL).findall(http)
-		if len(r1) > 0:
-			for r2 in r1:
-				(img, alt)         = re.compile('<img src="(.*?)" alt="(.*?)" />').findall(r2)[0]
-				(upf, alt2, Title) = re.compile('<a href="(.*?)" title="(.*?)">(.*?)</a>').findall(r2)[0]
-				img = img.replace(' ', '%20')
-				upf = upf.replace(' ', '%20')
-				uri = sys.argv[0] + '?mode=PlayStation'
-				uri += '&url='  + urllib.quote_plus('http://online.fm' + upf)
-				uri += '&name=' + urllib.quote_plus(alt)
-				uri += '&img='  + urllib.quote_plus(img)
-				item = xbmcgui.ListItem(alt, iconImage = img, thumbnailImage = img)
-				xbmcplugin.addDirectoryItem(pluginhandle, uri, item)
-		else:
-			showMessage('ERROR', 'No items found "public"')
-	ParsePage('http://online.fm/ru/')
-	ParsePage('http://online.fm/ru/fmradio/')
-	xbmcplugin.endOfDirectory(pluginhandle)
-
-def PlayStation(url, name, img):
-	http = getURL(url)
-	r1 = re.compile('<div class="tape"><a href="(.*?)">m3u</a></div>').findall(http)
-	if len(r1) > 0:
-		item = xbmcgui.ListItem(name, iconImage = img, thumbnailImage = img)
-		xbmc.Player().play('http://online.fm' + r1[0])
-	else:
-		showMessage('ERROR', 'No playlist found')
-
-params = get_params()
-mode =	None
-url  =	None
-name =	''
-img = thumb
-
-try:    mode = urllib.unquote_plus(params["mode"])
-except: pass
-
-try:    url = urllib.unquote_plus(params["url"])
-except: pass
-
-try:    name = urllib.unquote_plus(params["name"])
-except: pass
-
-try:    img = urllib.unquote_plus(params["img"])
-except: pass
-
-
-if mode == None: get_root()
-elif mode == 'PlayStation': PlayStation(url, name, img)
-
-
-
-
-
+djson = demjson.decode(getURL('http://online.fm/ext/config.json'))
+for channel in djson['channels']:
+	name = djson['channels'][channel]['name']
+	uris = djson['channels'][channel]['uris']
+	item = xbmcgui.ListItem(name, iconImage = thumb, thumbnailImage = thumb)
+	item.setInfo(type='music', infoLabels = {'title': name})
+	xbmcplugin.addDirectoryItem(pluginhandle, uris[0]+'/'+channel+' , '+uris[1]+'/'+channel, item, False)
+xbmcplugin.endOfDirectory(pluginhandle)
