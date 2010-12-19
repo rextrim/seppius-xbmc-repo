@@ -40,7 +40,7 @@ def getURL(url):
 
 def root(url):
 	http = getURL(url)
-	r1 = re.compile('<a href="(.*?)" onmouseover="changeTvThumb.*" id=".*"><img src="(.*?)".*" /><span class="ch-name">.*</span><span>(.*?)</span></a>').findall(http)
+	r1 = re.compile('<li id=".*">\s*<a href="(.*?)"  id=".*" class=".*">\s*<div class="chImg"><img src="(.*?)" width=".*" height=".*" /><span>.*</span></div>\s*(.*?)</a>\s*</li>').findall(http)
 	for rURL, rIMG, rTITLE in r1:
 		title = rTITLE
 		rURL = 'http://www.planeta-online.tv' + rURL
