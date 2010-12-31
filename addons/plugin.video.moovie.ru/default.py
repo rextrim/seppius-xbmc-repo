@@ -20,36 +20,47 @@
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
 import urllib,urllib2,cookielib,re,sys,os,time
-import xbmcplugin,xbmcgui,xbmcaddon
+import xbmcplugin,xbmcgui,xbmcaddon,xbmc
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.moovie.ru')
-__language__ = __settings__.getLocalizedString
-pluginhandle = int(sys.argv[1])
+h = int(sys.argv[1])
 fanart = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'fanart.jpg'))
-thumb = os.path.join(os.getcwd().replace(';', ''), "icon.png" )
-xbmcplugin.setPluginFanart(pluginhandle, fanart)
-swfobject = 'http://moovie.ru/i/flash/fms_moovie_player.swf'
+thumb  = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), "icon.png" ))
+SWF = 'http://moovie.ru/i/flash/fms_moovie_player.swf'
+RTS = 'rtmp://future.moovie.ru:1935/moovie/'
+
 
 def Get(url, ref=None, post = None):
-	#xbmc.output('Get URL=%s'%url)
 	cj = cookielib.CookieJar()
 	h  = urllib2.HTTPCookieProcessor(cj)
 	opener = urllib2.build_opener(h)
 	urllib2.install_opener(opener)
 	request = urllib2.Request(url, post)
 	request.add_header(     'User-Agent','Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
-	request.add_header(         'Accept','text/html, application/xml, application/xhtml+xml, */*')
 	request.add_header('Accept-Language','ru,en;q=0.9')
+	if post != None:
+		request.add_header('X-Requested-With','XMLHttpRequest')
+		request.add_header(    'Content-Type','application/x-www-form-urlencoded')
+		request.add_header(          'Accept', 'application/json, text/javascript, */*')
+	else:
+		request.add_header(         'Accept','text/html, application/xml, application/xhtml+xml, */*')
 	if ref != None:
 		request.add_header('Referer', ref)
+	POST_Cookie = ''
 	phpsessid = __settings__.getSetting('cookie')
-	if len(phpsessid) > 0:
-		request.add_header('Cookie', 'PHPSESSID=' + phpsessid)
+	if phpsessid != '':
+		POST_Cookie = 'PHPSESSID=%s; '%phpsessid
+	tokenssid = __settings__.getSetting('token')
+	if tokenssid != '':
+		POST_Cookie = 'token=%s; '%tokenssid
+	if POST_Cookie != '':
+		request.add_header('Cookie', POST_Cookie)
 	o = urllib2.urlopen(request)
 	for index, cookie in enumerate(cj):
-		cookraw = re.compile('<Cookie PHPSESSID=(.*?) for.*/>').findall(str(cookie))
-		if len(cookraw) > 0:
-			__settings__.setSetting('cookie', cookraw[0])
+		cookraw = re.compile('PHPSESSID=(.*?) ').findall(str(cookie))
+		if len(cookraw) > 0: __settings__.setSetting('cookie', cookraw[0])
+		tokraw = re.compile('token=(.*?) ').findall(str(cookie))
+		if len(tokraw) > 0: __settings__.setSetting('token', tokraw[0])
 	http = o.read()
 	o.close()
 	return http
@@ -62,28 +73,67 @@ def clean(name):
 		pname=pname.replace(trash, crap)
 	return pname
 
+def AUTH():
+	UserMail = __settings__.getSetting('usermail')
+	if UserMail == '':
+		mk = xbmc.Keyboard()
+		mk.setHeading('Ваш e-mail')
+		mk.doModal()
+		if (mk.isConfirmed()):
+			UserMail = mk.getText()
+			__settings__.setSetting('usermail', UserMail)
+		else:
+			return False
+	UserPass = __settings__.getSetting('password')
+	if UserPass == '':
+		pk = xbmc.Keyboard()
+		pk.setHeading('Ваш пароль')
+		pk.setHiddenInput(True)
+		pk.doModal()
+		if (pk.isConfirmed()):
+			UserPass = pk.getText()
+			__settings__.setSetting('password', UserPass)
+		else:
+			return False
+	http = Get('http://moovie.ru/user/login/', 'http://moovie.ru/', 'email=%s&remember=1&password=%s'%(UserMail, UserPass))
+	dialog = xbmcgui.Dialog()
+	if (http.find('"ok":') == -1):
+		dialog.ok('moovie.ru', 'Ошибка. Пробуй еще!')
+		#__settings__.setSetting('cookie', '')
+		__settings__.setSetting('token', '')
+		dialog.ok('Небольшой HELP', 'Если вы ошиблись с e-mail или паролем, то',
+			'их можно изменить в настройках дополнения',
+			'После чего войдите в moovie.ru снова.')
+	else: dialog.ok('moovie.ru 18+', 'Спецраздел открыт!')
+	return True
+
 def openROOT(url):
-	http = Get(url)
-	r1 = re.compile('<div id="genres-list" >(.*?)</div>', re.DOTALL).findall(http)
-	if len(r1) == 0:
-		return False
-	r2 = re.compile('<a href="(.*?)">(.*?)</a>').findall(r1[0])
-	for rURL, rNAME in r2:
-		uri = sys.argv[0] + '?mode=openGENRE'
-		uri += '&url='+urllib.quote_plus('http://moovie.ru' + rURL)
-		uri += '&name='+urllib.quote_plus(rNAME)
-		item=xbmcgui.ListItem(rNAME, iconImage=thumb, thumbnailImage=thumb)
-		item.setInfo(type='video', infoLabels={'title': rNAME})
-		xbmcplugin.addDirectoryItem(pluginhandle,uri,item,True)
+	try:
+		r2 = re.compile('<a href="(.*?)">(.*?)</a>').findall(re.compile('<div id="genres-list" >(.*?)</div>', re.DOTALL).findall(Get(url, 'http://moovie.ru/'))[0])
+		for url, genre in r2:
+			u = sys.argv[0] + '?mode=openGENRE'
+			u += '&url=%s'%urllib.quote_plus('http://moovie.ru%s'%url)
+			u += '&genre=%s'%urllib.quote_plus(genre)
+			i=xbmcgui.ListItem(genre, iconImage=thumb, thumbnailImage=thumb)
+			i.setInfo(type='video', infoLabels={'title': genre})
+			xbmcplugin.addDirectoryItem(h,u,i,True)
+	except:
+		pass
+	try:
+		u = sys.argv[0] + '?mode=openSEARCH'
+		i=xbmcgui.ListItem('Поиск', iconImage=fanart, thumbnailImage=fanart)
+		xbmcplugin.addDirectoryItem(h,u,i,True)
+	except:
+		pass
 
-	uri = sys.argv[0] + '?mode=openSEARCH'
-	item=xbmcgui.ListItem('Поиск', iconImage=fanart, thumbnailImage=fanart)
-	xbmcplugin.addDirectoryItem(pluginhandle,uri,item,True)
-	xbmcplugin.endOfDirectory(pluginhandle)
+	u = sys.argv[0] + '?mode=AUTH'
+	i=xbmcgui.ListItem('Авторизация', iconImage=fanart, thumbnailImage=fanart)
+	xbmcplugin.addDirectoryItem(h,u,i,True)
 
+	xbmcplugin.endOfDirectory(h)
 
 def openGENRE(url, name):
-	http = Get(url)
+	http = Get(url, 'http://moovie.ru/')
 	r1 = re.compile('<div class="(.*?)" id="movie_(.*?)">\s*<a href="(.*?)" class="block"><img src="(.*?)"></a>\s*<a href="(.*?)" class="block title">(.*?)</a>').findall(http)
 	if len(r1) == 0:
 		return False
@@ -96,8 +146,9 @@ def openGENRE(url, name):
 		uri += '&id='+urllib.quote_plus(movID)
 		uri += '&thumbnail='+urllib.quote_plus(img)
 		item=xbmcgui.ListItem(title, iconImage=img, thumbnailImage=img)
-		item.setInfo(type='video', infoLabels={'title': title})
-		xbmcplugin.addDirectoryItem(pluginhandle,uri,item)
+		item.setInfo(type='video', infoLabels={'title': title, 'genre': name})
+		item.setProperty('IsPlayable', 'true')
+		xbmcplugin.addDirectoryItem(h,uri,item)
 	try:
 		rp = re.compile('<div id="pages" class="pages"(.*?)</div>', re.DOTALL).findall(http)[0]
 		rp2 = re.compile('<a href="(.*?)" id="(.*?)" >(.*?)</a>').findall(rp)
@@ -105,40 +156,20 @@ def openGENRE(url, name):
 			uri = sys.argv[0] + '?mode=openGENRE'
 			uri += '&url='+urllib.quote_plus('http://moovie.ru' + rURL)
 			item=xbmcgui.ListItem('[ Страница %s ]'%rPN)
-			xbmcplugin.addDirectoryItem(pluginhandle,uri,item,True)
+			xbmcplugin.addDirectoryItem(h,uri,item,True)
 	except:
 		pass
+	xbmcplugin.endOfDirectory(h)
 
-	xbmcplugin.endOfDirectory(pluginhandle)
-
-def openFILE(url, name, movid, thumbnail):
-	http = Get(url)
-	try:
-		r1 = re.compile('<div class="stars">(.*?)</div>', re.DOTALL).findall(http)
-		(rname, stars) = re.compile('title="(.*?)" value="(.*?)" checked="checked"/>').findall(r1[0])[0]
-		rate = int(stars)
-	except: rate = 0
-	try:
-		r1 = re.compile('<div class="col-l p20">(.*?)<div class="col-r p20">', re.DOTALL).findall(http)[0]
-		plot = clean(r1)
-	except: plot = ''
-	http2=Get('http://moovie.ru/film/check/?movieId=%s&cache=%s'%(movid,str(time.time())[:10]), swfobject)
-	mov_params = get_params(http2)
-	try:    movie = urllib.unquote_plus(mov_params['movie'])
+def openFILE(movid):
+	web = Get('http://moovie.ru/film/check/?movieId=%s&cache=%s'%(movid,str(time.time())[:10]), SWF)
+	mP = get_params(web)
+	try:    PP = urllib.unquote_plus(mP['movie'])
 	except: return False
-	try:    genre = urllib.unquote_plus(mov_params['genre'])
-	except: genre = 'No genre'
-	try:    title = urllib.unquote_plus(mov_params['title'])
-	except: title = 'No title'
-	furl  = 'rtmp://future.moovie.ru:1935/moovie/' + movie
-	furl += ' swfurl='  + 'http://moovie.ru/i/flash/fms_moovie_player.swf'
-	furl += ' pageUrl=' + 'http://moovie.ru/film/frame/?id=1771&auto_play=false'
-	furl += ' tcUrl='   + 'rtmp://future.moovie.ru:1935/moovie'
-	furl += ' swfVfy=True'
-	item=xbmcgui.ListItem(title, iconImage=thumbnail, thumbnailImage=thumbnail)
-	item.setInfo(type='video', infoLabels={'title': title, 'genre': genre, 'plot': plot})
-	xbmc.Player().play(furl, item)
-
+	PU = 'http://moovie.ru/film/frame/?id=%s&auto_play=false'%movid
+	u = '%s PlayPath=%s swfurl=%s tcUrl=%s pageUrl=%s swfVfy=True'%(RTS, PP, SWF, RTS[:-1], PU)
+	i = xbmcgui.ListItem(path = u)
+	xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):
     param=[]
@@ -158,29 +189,22 @@ def get_params(paramstring):
 
 params=get_params(sys.argv[2])
 url='http://moovie.ru/'
-name=''
-plot=''
+genre=''
 mode=None
-thumbnail=fanart
-movid=None
+ID=None
 
 try: mode=params['mode']
 except: pass
 try: url=urllib.unquote_plus(params['url'])
 except: pass
-try: name=urllib.unquote_plus(params['name'])
+try: genre=urllib.unquote_plus(params['genre'])
 except: pass
-try: thumbnail=urllib.unquote_plus(params['thumbnail'])
-except: pass
-try: plot=urllib.unquote_plus(params['plot'])
-except: pass
-try: movid=urllib.unquote_plus(params['id'])
+try: ID=urllib.unquote_plus(params['id'])
 except: pass
 
-if mode=='openGENRE':
-	openGENRE(url, name)
-elif mode=='openFILE':
-	openFILE(url, name, movid, thumbnail)
+if   mode=='openGENRE': openGENRE(url, genre)
+elif mode=='AUTH': AUTH()
+elif mode=='openFILE': openFILE(ID)
 elif mode=='openSEARCH':
 	pass_keyboard = xbmc.Keyboard()
 	pass_keyboard.setHeading('Что ищем?')
@@ -191,6 +215,5 @@ elif mode=='openSEARCH':
 		openGENRE('http://moovie.ru/search/?q='+urllib.quote_plus(SearchStr), 'Поиск')
 	else:
 		exit
-
 else:
 	openROOT(url)
