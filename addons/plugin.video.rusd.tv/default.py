@@ -59,7 +59,6 @@ def run_once():
 	return True
 
 def Get(url, ref=None):
-	print url
 	use_auth = False
 	inter = 2
 	while inter:
