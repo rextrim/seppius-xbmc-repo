@@ -84,7 +84,7 @@ def Get(url, ref=None):
 				__settings__.setSetting('cookie', cookraw[0])
 		http = o.read()
 		o.close()
-		if (http.find('<form id="loginform" method="POST" action="/">') == -1):
+		if (http.find('<form id="loginform"') == -1): # 01.01.11 thanks SlavikZ xbmc.ru
 			return http
 		else:
 			use_auth = True
