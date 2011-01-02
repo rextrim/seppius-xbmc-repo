@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<setting id="savep" type="bool" label="Сохранить пароль? (это не безопасно)" default="false" />
+</settings>

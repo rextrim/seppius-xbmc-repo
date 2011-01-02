@@ -1,0 +1,22 @@
+# edpfkojsadj ### ### 3			#$#$
+#
+  # 			dfd
+	#efdfe s s ff as
+
+auto lo
+ iface lo inet loopback
+
+# dfd s
+ # dfvs
+ ####
+	#3333333333
+
+
+iface eth0 inet static
+   address 192.168.1.100
+	 netmask 255.255.255.0
+	gateway 192.168.1.1
+#####
+####
+##
+ #
