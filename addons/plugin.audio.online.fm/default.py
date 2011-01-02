@@ -20,12 +20,13 @@
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
 
-import urllib2,os
+import urllib,urllib2,os
 import xbmcplugin,xbmcgui
 import demjson
+import random
 
-pluginhandle = int(sys.argv[1])
-thumb = os.path.join(os.getcwd().replace(';', ''), "icon.png" )
+h = int(sys.argv[1])
+img = os.path.join(os.getcwd().replace(';', ''), "icon.png" )
 
 def getURL(url):
 	req = urllib2.Request(url)
@@ -37,11 +38,74 @@ def getURL(url):
 	response.close()
 	return link
 
-djson = demjson.decode(getURL('http://online.fm/ext/config.json'))
-for channel in djson['channels']:
-	name = djson['channels'][channel]['name']
-	uris = djson['channels'][channel]['uris']
-	item = xbmcgui.ListItem(name, iconImage = thumb, thumbnailImage = thumb)
-	item.setInfo(type='music', infoLabels = {'title': name})
-	xbmcplugin.addDirectoryItem(pluginhandle, uris[0]+'/'+channel+' , '+uris[1]+'/'+channel, item, False)
-xbmcplugin.endOfDirectory(pluginhandle)
+
+def GetRoot():
+	djson = demjson.decode(getURL('http://online.fm/ext/config.json'))
+	for ch in djson['channels']:
+		n = djson['channels'][ch]['name']
+		u = djson['channels'][ch]['uris']
+		i = xbmcgui.ListItem(n, iconImage=img, thumbnailImage=img)
+		i.setInfo(type='music', infoLabels = {'title': n})
+		uri = sys.argv[0] + '?mode=PLAY'
+		uri += '&first=%s'%urllib.quote_plus(u[0])
+		uri += '&secon=%s'%urllib.quote_plus(u[1])
+		uri += '&ch=%s'%urllib.quote_plus(ch)
+		i.setProperty('IsPlayable', 'true')
+		xbmcplugin.addDirectoryItem(h, uri, i)
+	xbmcplugin.endOfDirectory(h)
+
+
+def Play(first, secon, ch):
+	swfUrl  = 'http://online.fm/player/fm/flash/JSPlayer.swf'
+	pageUrl = 'http://online.fm/player/ru/%s'%ch
+	snb     = '%s/ PlayPath=%s swfurl=%s tcUrl=%s pageUrl=%s swfVfy=True'
+	if random.random() > 0.5: srv = first
+	else: srv = secon
+	p = snb%(srv, ch, swfUrl, srv, pageUrl)
+	i = xbmcgui.ListItem(path = p)
+	xbmcplugin.setResolvedUrl(h, True, i)
+
+
+def get_params(paramstring):
+	param=[]
+	if len(paramstring)>=2:
+		params=paramstring
+		cleanedparams=params.replace('?','')
+		if (params[len(params)-1]=='/'):
+			params=params[0:len(params)-2]
+		pairsofparams=cleanedparams.split('&')
+		param={}
+		for i in range(len(pairsofparams)):
+			splitparams={}
+			splitparams=pairsofparams[i].split('=')
+			if (len(splitparams))==2:
+				param[splitparams[0]]=splitparams[1]
+	return param
+
+params=get_params(sys.argv[2])
+mode = None
+first = ''
+secon = ''
+
+try:
+	mode = urllib.unquote_plus(params['mode'])
+except:
+	pass
+try:
+	first = urllib.unquote_plus(params['first'])
+except:
+	pass
+try:
+	secon = urllib.unquote_plus(params['secon'])
+except:
+	pass
+try:
+	ch = urllib.unquote_plus(params['ch'])
+except:
+	pass
+
+if mode == None:
+	GetRoot()
+if mode == 'PLAY':
+	Play(first, secon, ch)
+
