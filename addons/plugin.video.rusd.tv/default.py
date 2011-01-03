@@ -107,13 +107,44 @@ def get_params():
 				param[splitparams[0]]=splitparams[1]
 	return param
 
-def clean(name):
-	name = re.sub('(?is)<.*?>', '', name, re.DOTALL|re.IGNORECASE)
-	remove = [('mdash;',''),('&ndash;',''),('hellip;','\n'),('&amp;',''),('&quot;','"'),
-		  ('&#39;','\''),('&nbsp;',' '),('&laquo;','"'),('&raquo;','"'),('&#151;','-')]
-	for trash, crap in remove:
-		name=name.replace(trash, crap)
-	return name
+# http://xbmc.ru/showpost.php?p=6063&postcount=89
+def strip_html(text):
+	def fixup(m):
+		text = m.group(0)
+		if text[:1] == "<":
+			if text[1:3] == 'br':
+				return '\n'
+			else:
+				return "" # ignore tags
+		if text[:2] == "&#":
+			try:
+				if text[:3] == "&#x":
+					return chr(int(text[3:-1], 16))
+				else:
+					return chr(int(text[2:-1]))
+			except ValueError:
+				pass
+		elif text[:1] == "&":
+			import htmlentitydefs
+			if text[1:-1] == "mdash":
+				entity = " - "
+			elif text[1:-1] == "ndash":
+				entity = "-"
+			elif text[1:-1] == "hellip":
+				entity = "-"
+			else:
+				entity = htmlentitydefs.entitydefs.get(text[1:-1])
+			if entity:
+				if entity[:2] == "&#":
+					try:
+						return chr(int(entity[2:-1]))
+					except ValueError:
+						pass
+				else:
+					return entity
+		return text # leave as is
+	ret =  re.sub("(?s)<[^>]*>|&#?\w+;", fixup, text)
+	return re.sub("\n+", '\n' , ret)
 
 def GetRegion(data, region, modeall=False, defval=None):
 	try:
@@ -136,7 +167,7 @@ def parse_playable_item(data):
 	mark        = GetRegion(data, 'mark')
 	server      = GetRegion(data, 'server')
 	vurl        = GetRegion(data, 'vurl')
-	return id_episodes,series,snum,enum,vnum,clean(title),tmark,enable,sub,smark,mark,server,vurl
+	return id_episodes,series,snum,enum,vnum,strip_html(title),tmark,enable,sub,smark,mark,server,vurl
 
 def parse_series_item(data):
 	id_series = GetRegion(data, 'id_series')
@@ -151,7 +182,7 @@ def parse_series_item(data):
 	isclosed  = GetRegion(data, 'isclosed')
 	fpimg = SITE_URL + fpimg
 	pimg  = SITE_URL + pimg
-	return id_series,clean(title),clean(etitle),clean(info),fpimg,pimg,mark,enable,pos,isclosed
+	return id_series,strip_html(title),strip_html(etitle),strip_html(strip_html(info)),fpimg,pimg,mark,enable,pos,isclosed
 
 def parse_content_urls(mark, snum, enum):
 	snum0 = snum
@@ -361,8 +392,8 @@ def GetNews():
 			xbmc.output('[%s] GetNews() ERROR: Unable to find "pubDate" region' % (PLUGIN_NAME))
 			xbmc.output('HTTP=%s'%http)
 			return False
-		Title = clean('%s. %s' % (str(x), title))
-		Plot = clean(pubdate)
+		Title = strip_html('%s. %s' % (str(x), title))
+		Plot = strip_html(pubdate)
 		Target = link + 'XML/'
 		Target = Target.replace('ShowEpisode','GetEpisodeLink')
 		uri = sys.argv[0] + '?mode=ShowEpisode'
