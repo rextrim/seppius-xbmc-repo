@@ -201,7 +201,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.ivi.ru"
        name="IVI.RU"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

@@ -1,4 +1,23 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+#/*
+# *      Copyright (C) 2010 Kostynoy S. aka Seppius
+# *
+# *
+# *  This Program is free software; you can redistribute it and/or modify
+# *  it under the terms of the GNU General Public License as published by
+# *  the Free Software Foundation; either version 2, or (at your option)
+# *  any later version.
+# *
+# *  This Program is distributed in the hope that it will be useful,
+# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# *  GNU General Public License for more details.
+# *
+# *  You should have received a copy of the GNU General Public License
+# *  along with this program; see the file COPYING.  If not, write to
+# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+# *  http://www.gnu.org/copyleft/gpl.html
+# */
 import xbmc, xbmcgui, xbmcplugin, urllib2, urllib, re, string, sys, os, traceback, random
 from urllib import urlretrieve, urlcleanup
 
@@ -56,7 +75,7 @@ def ShowRoot():
 			url = '%s?mode=ShowList&url=%s&name=%s'%(sys.argv[0], urllib.quote_plus(ivihomepage_url + gu), urllib.quote_plus(gn))
 			xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 			y = 1
-			raw_2 = re.compile('<li><a href="(.*?)" title="">(.*?)</a></li>').findall(lev1)
+			raw_2 = re.compile('<li>\s*<a href="(.*?)" title="">(.*?)</a>\s*</li>').findall(lev1)
 			for rurl, subname in raw_2:
 				cgn = '%s : %s'%(gn,subname)
 				listitem = xbmcgui.ListItem('%s.%s. %s'%(str(x),str(y),cgn))
@@ -69,11 +88,13 @@ def ShowRoot():
 def ShowList(work_url, genre):
 	http = GET(work_url, [('Referer', ivihomepage_url)])
 	if http == None:
-		return
+		return False
 	r1 = re.compile('<div class="preview">(.*?)<div class="clearfix py024">', re.DOTALL).findall(http)
 	if len(r1) == 0:
 		r1 = re.compile('<div class="preview">(.*?)</p>', re.DOTALL).findall(http)
 	x = 1
+	if len(r1) == 0:
+		return False
 	for l1 in r1:
 		#xbmc.output(l1)
 		rate = 0
@@ -131,18 +152,19 @@ def ShowList(work_url, genre):
 		xbmcplugin.addDirectoryItem(handle, url, listitem, isDir)
 		x = x+1
 
-	try:	# PAGES
-                pages_block = re.compile('<ul class="pages">(.*?)</ul>', re.DOTALL).findall(http)
-                raw_pg = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(pages_block[0])
-                for pg_URL, pg_NAME in raw_pg:
-                        pg_URL   = pg_URL.replace('amp;', '')
-                        pg_NAME  = '> Страница ' + pg_NAME
-                        listitem = xbmcgui.ListItem(pg_NAME)
-                        url = sys.argv[0] + "?mode=showroot&url=" + urllib.quote_plus(pg_URL)
-                        url = '%s?mode=ShowList&url=%s&name=%s'%(sys.argv[0], urllib.quote_plus(ivihomepage_url + pg_URL), urllib.quote_plus(genre))
-                        xbmcplugin.addDirectoryItem(handle, url, listitem, True)
+	try:
+		pages_block = re.compile('<ul class="pages">(.*?)</ul>', re.DOTALL).findall(http)
+		raw_pg = re.compile('<li><a href="(.+?)">(.+?)</a></li>').findall(pages_block[0])
+		for pg_URL, pg_NAME in raw_pg:
+				pg_URL   = pg_URL.replace('amp;', '')
+				pg_NAME  = '> Страница ' + pg_NAME
+				listitem = xbmcgui.ListItem(pg_NAME)
+				url = sys.argv[0] + "?mode=showroot&url=" + urllib.quote_plus(pg_URL)
+				url = '%s?mode=ShowList&url=%s&name=%s'%(sys.argv[0], urllib.quote_plus(ivihomepage_url + pg_URL), urllib.quote_plus(genre))
+				xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 	except:
 		xbmc.output('get_root -> Except in add pages!')
+	return True
 
 
 def fnkeys(fnkeys_data):
@@ -300,9 +322,8 @@ elif mode == 'Search':
 	if (pass_keyboard.isConfirmed()):
 		SearchStr = pass_keyboard.getText()
 		dialog = xbmcgui.Dialog()
-		dialog.ok('Я хороший человек!', 'Если так - поблагодари программиста.')
-		ShowList('http://www.ivi.ru/search/simple/?q=' + urllib.quote_plus(SearchStr), 'Поиск')
-		xbmcplugin.endOfDirectory(handle)
+		r = ShowList('http://www.ivi.ru/search/simple/?q=' + urllib.quote_plus(SearchStr), 'Поиск')
+		if r: xbmcplugin.endOfDirectory(handle)
 	else:
 		exit
 
