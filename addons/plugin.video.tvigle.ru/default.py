@@ -23,7 +23,10 @@
 import urllib2, re, xbmc, xbmcgui, xbmcplugin, os, urllib, urllib2, socket
 import xml.dom.minidom
 
-socket.setdefaulttimeout(10)
+iSearch = 'http://www.tvigle.ru/iphone/iSearch.php?q=%s'
+iTree   = 'http://www.tvigle.ru/iphone/iTree.php'
+
+socket.setdefaulttimeout(12)
 
 h = int(sys.argv[1])
 
@@ -35,7 +38,6 @@ def showMessage(heading, message, times = 3000):
 def GET(url):
 	try:
 		req = urllib2.Request(url)
-		req.add_header('User-Agent', 'iTunes/7.4.1')
 		f = urllib2.urlopen(req)
 		a = f.read()
 		f.close()
@@ -50,7 +52,7 @@ def ADD_SEARCH():
 	xbmcplugin.addDirectoryItem(h, u, i, True)
 
 def ROOT():
-	http = GET('http://www.tvigle.ru/iphone/iTree.php')
+	http = GET(iTree)
 	if http == None: return False
 	Dom = xml.dom.minidom.parseString(http)
 	Rubricas = Dom.getElementsByTagName('rubrica')
@@ -70,7 +72,7 @@ def ROOT():
 
 
 def OPEN_RUBRICA(rubID):
-	http = GET('http://www.tvigle.ru/iphone/iTree.php')
+	http = GET(iTree)
 	if http == None: return False
 	Dom = xml.dom.minidom.parseString(http)
 	Rubricas = Dom.getElementsByTagName('rubrica')
@@ -80,6 +82,7 @@ def OPEN_RUBRICA(rubID):
 	for Rubrica in Rubricas:
 		R_ID = Rubrica.getAttribute('id')
 		if str(rubID) == str(R_ID):
+			genre = Rubrica.getAttribute('name').encode('utf-8')
 			Channels = Rubrica.getElementsByTagName('channels')
 			for Channel in Channels:
 				ch_id   = Channel.getAttribute('id')
@@ -89,13 +92,14 @@ def OPEN_RUBRICA(rubID):
 				u  = sys.argv[0] + '?mode=OPEN_CHANNEL'
 				u += '&chid=%s'%urllib.quote_plus(ch_id)
 				u += '&url=%s'%urllib.quote_plus('http://www.tvigle.ru/iphone/iList.php?cnl=%s'%ch_id)
+				u += '&genre=%s'%urllib.quote_plus(genre)
 				u += '&page=1'
 				xbmcplugin.addDirectoryItem(h, u, i, True)
 	ADD_SEARCH()
 	xbmcplugin.endOfDirectory(h)
 
 
-def OPEN_CHANNEL(url, page):
+def OPEN_CHANNEL(url, page, genre):
 	wurl = '%s&page=%d'%(url, page)
 	http = GET(wurl)
 	if http == None: return False
@@ -110,86 +114,63 @@ def OPEN_CHANNEL(url, page):
 		i = xbmcgui.ListItem('Далее >>', iconImage=icon, thumbnailImage=icon)
 		u  = sys.argv[0] + '?mode=OPEN_CHANNEL'
 		u += '&url=%s'%urllib.quote_plus(url)
+		u += '&genre=%s'%urllib.quote_plus(genre)
 		u += '&page=%d'%page
 		xbmcplugin.addDirectoryItem(h, u, i, True)
 
 	for video in videos:
-#		xbmc.output('============================ NEW VIDEO =============================')
-
-		video_id         = video.getAttribute('id')
-#		xbmc.output('OPEN_CHANNEL -> video_id = %s'%video_id)
-
-		video_cnl_name   = video.getAttribute('cnl_name').encode('utf-8')
-#		xbmc.output('OPEN_CHANNEL -> video_cnl_name = %s'%video_cnl_name)
-
-		video_cnl_id     = video.getAttribute('cnl_id')
-#		xbmc.output('OPEN_CHANNEL -> video_cnl_id = %s'%video_cnl_id)
-
+		#video_id         = video.getAttribute('id')
+		#video_cnl_id     = video.getAttribute('cnl_id')
 		video_name       = video.getAttribute('name').encode('utf-8')
-#		xbmc.output('OPEN_CHANNEL -> video_name = %s'%video_name)
-
 		video_text       = video.getAttribute('text').encode('utf-8')
-#		xbmc.output('OPEN_CHANNEL -> video_text = %s'%video_text)
+		#video_old        = video.getAttribute('old')
+		#video_url3gp     = video.getAttribute('url3gp')
+		video_urlmp4  = video.getAttribute('urlmp4')
+		video_sizemp4 = video.getAttribute('sizemp4')
+		if video_urlmp4 == '':
+			video_urlmp4  = video.getAttribute('urlmp4low')
+			video_sizemp4 = video.getAttribute('sizemp4low')
+		#video_vw1        = video.getAttribute('vw1')
+		#video_vw7        = video.getAttribute('vw7')
+		#video_vote_all   = video.getAttribute('vote-all')
+		#video_vote_plus  = video.getAttribute('vote-plus')
+		#video_vote_minus = video.getAttribute('vote-minus')
+		#video_geo_access = video.getAttribute('geo_access')
+		#video_under      = video.getAttribute('under')
+		try:
+			hours, remainder = divmod(int(video.getAttribute('duration'))//1000, 3600)
+			minutes, seconds = divmod(remainder, 60)
+			duration = '%s:%s:%s' % (hours, minutes, seconds)
+		except:
+			duration = ''
+		try:    size = int(video_sizemp4)
+		except: size = 0
+		try:    playcount = int(video.getAttribute('view'))
+		except: playcount = 0
 
-		video_Tags       = video.getAttribute('Tags').encode('utf-8')
-#		xbmc.output('OPEN_CHANNEL -> video_Tags = %s'%video_Tags)
-
-		video_img        = video.getAttribute('img')
-#		xbmc.output('OPEN_CHANNEL -> video_img = %s'%video_img)
-
-		video_list       = video.getAttribute('list')
-#		xbmc.output('OPEN_CHANNEL -> video_list = %s'%video_list)
-
-		video_old        = video.getAttribute('old')
-#		xbmc.output('OPEN_CHANNEL -> video_old = %s'%video_old)
-
-		video_url3gp     = video.getAttribute('url3gp')
-#		xbmc.output('OPEN_CHANNEL -> video_url3gp = %s'%video_url3gp)
-
-		video_urlmp4     = video.getAttribute('urlmp4')
-#		xbmc.output('OPEN_CHANNEL -> video_urlmp4 = %s'%video_urlmp4)
-
-		video_sizemp4    = video.getAttribute('sizemp4')
-#		xbmc.output('OPEN_CHANNEL -> video_sizemp4 = %s'%video_sizemp4)
-
-		video_duration   = video.getAttribute('duration')
-#		xbmc.output('OPEN_CHANNEL -> video_duration = %s'%video_duration)
-
-		video_urlmp4low  = video.getAttribute('urlmp4low')
-#		xbmc.output('OPEN_CHANNEL -> video_urlmp4low = %s'%video_urlmp4low)
-
-		video_sizemp4low = video.getAttribute('sizemp4low')
-#		xbmc.output('OPEN_CHANNEL -> video_sizemp4low = %s'%video_sizemp4low)
-
-		video_vw1        = video.getAttribute('vw1')
-#		xbmc.output('OPEN_CHANNEL -> video_vw1 = %s'%video_vw1)
-
-		video_vw7        = video.getAttribute('vw7')
-#		xbmc.output('OPEN_CHANNEL -> video_vw7 = %s'%video_vw7)
-
-		video_date       = video.getAttribute('date')
-#		xbmc.output('OPEN_CHANNEL -> video_date = %s'%video_date)
-
-		video_view       = video.getAttribute('view')
-#		xbmc.output('OPEN_CHANNEL -> video_view = %s'%video_view)
-
-		video_vote_all   = video.getAttribute('vote-all')
-#		xbmc.output('OPEN_CHANNEL -> video_vote_all = %s'%video_vote_all)
-
-		video_vote_plus  = video.getAttribute('vote-plus')
-#		xbmc.output('OPEN_CHANNEL -> video_vote_plus = %s'%video_vote_plus)
-
-		video_vote_minus = video.getAttribute('vote-minus')
-#		xbmc.output('OPEN_CHANNEL -> video_vote_minus = %s'%video_vote_minus)
-
-		video_geo_access = video.getAttribute('geo_access')
-#		xbmc.output('OPEN_CHANNEL -> video_geo_access = %s'%video_geo_access)
-
-		video_under      = video.getAttribute('under')
-#		xbmc.output('OPEN_CHANNEL -> video_under = %s'%video_under)
-
-		i = xbmcgui.ListItem(video_name, iconImage = video_list, thumbnailImage = video_img)
+		i = xbmcgui.ListItem(video_name, iconImage = video.getAttribute('list'), thumbnailImage = video.getAttribute('img'))
+		i.setInfo(type = 'video', infoLabels = {
+			'title':       video_name,
+			'studio':      video.getAttribute('cnl_name').encode('utf-8'),
+			'size':        size,
+			'genre':       genre,
+			'duration':    duration,
+			'tagline':     video.getAttribute('Tags').encode('utf-8'),
+			'plot':        video_text.replace('<br />', '\n'),
+			'playcount':   playcount,
+			#'rating':      float(GetRegion(item_block, 'rating',     False, '0')),
+			'date':        video.getAttribute('date'),
+		})
+		i.setProperty('fanart_image', video.getAttribute('old'))
 		xbmcplugin.addDirectoryItem(h, video_urlmp4, i)
+
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DURATION)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_GENRE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+
 	xbmcplugin.endOfDirectory(h)
 
 
@@ -223,7 +204,7 @@ if mode == 'OPEN_RUBRICA':
 	OPEN_RUBRICA(urllib.unquote_plus(params['rubID']))
 
 if mode == 'OPEN_CHANNEL':
-	OPEN_CHANNEL(urllib.unquote_plus(params['url']), int(urllib.unquote_plus(params['page'])))
+	OPEN_CHANNEL(urllib.unquote_plus(params['url']), int(urllib.unquote_plus(params['page'])), urllib.unquote_plus(params['genre']))
 
 if mode == 'SEARCH':
 	pass_keyboard = xbmc.Keyboard()
@@ -231,4 +212,4 @@ if mode == 'SEARCH':
 	pass_keyboard.doModal()
 	if (pass_keyboard.isConfirmed()):
 		SearchStr = pass_keyboard.getText()
-		OPEN_CHANNEL('http://www.tvigle.ru/iphone/iSearch.php?q=%s'%SearchStr, 1)
+		OPEN_CHANNEL(iSearch%SearchStr, 1, 'Поиск')
