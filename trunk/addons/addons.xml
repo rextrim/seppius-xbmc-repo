@@ -66,6 +66,25 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.rpod.ru"
+       name="Russian Podcasting"
+       version="1.0.0"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Russian Podcasting</summary>
+    <description>Russian Podcasting - первый и единственный свободный подкаст-терминал в Российском интернете. RPOD не делит подкасты на хорошие и плохие, не навязывает выбор странной группы лиц, не требует передавать исключительные права, а просто даёт возможность опубликовать свои подкасты любому, кто этого пожелает.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.russia.ru"
        name="RUSSIA.RU"
        version="1.0.3"
