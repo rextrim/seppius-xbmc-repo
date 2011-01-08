@@ -110,17 +110,37 @@ def ROOT():
 
 def podcasts(params):
 	url  = urllib.unquote_plus(params['url'])
-	name = urllib.unquote_plus(params['name'])
-	http = GET(url)
+	txt  = urllib.unquote_plus(params['name'])
+	try:    pageindex = int(params['page'])
+	except: pageindex = 1
+
+	http = GET('%s&page=%d'%(url,pageindex))
 	if http == None: return False
+
+	pindex = []
+	rpages = re.compile('"/podcasts/\?page=(.[0-9]*)"').findall(http)
+	for page in rpages:
+		try:    pindex.append(int(page))
+		except: pass
+
 	rows = re.compile('<a\s*amber\s*=\s*"(.+?)"\s*href\s*=\s*"(.+?)"\s*>(.+?)</a>').findall(http)
 	for amber, href, name in rows:
 		thumb = icon
-		rimg = re.compile('<img\s*src\s*=\s*"(.+?)".+?amber\s*=\s*"%s"\s*class\s*=\s*"avatar"\s*>'%amber).findall(http)
-		if len(rimg) > 0: thumb = rimg[0]
-		i = xbmcgui.ListItem(name, iconImage = thumb, thumbnailImage = thumb)
-		u  = '%s?mode=xmlpodcasts&url=%s&name=%s' % (sys.argv[0], urllib.quote_plus(href + 'rss.xml'), urllib.quote_plus(name))
+		rimg = re.compile('<img\s*src\s*=\s*"(.+?)".+?amber\s*=\s*"%s".+?class\s*=\s*"avatar"\s*>'%amber).findall(http)
+		if len(rimg) > 0:
+			thumb = rimg[0]
+			name = strip_html(name)
+			target = re.compile('http://(.+?)/').findall(href)
+			if len(target) > 0:
+				i = xbmcgui.ListItem(name, iconImage = thumb, thumbnailImage = thumb)
+				u  = '%s?mode=xmlpodcasts&url=%s&name=%s' % (sys.argv[0], urllib.quote_plus('http://%s/rss.xml'%target[0]), urllib.quote_plus(name))
+				xbmcplugin.addDirectoryItem(h, u, i, True)
+	if (pageindex < max(pindex)):
+		nextp = pageindex + 1
+		i = xbmcgui.ListItem('Далее, на страницу %d >>'%nextp, iconImage = icon, thumbnailImage = icon)
+		u  = '%s?mode=podcasts&url=%s&name=%s&page=%d' % (sys.argv[0], urllib.quote_plus(url), urllib.quote_plus(txt), nextp)
 		xbmcplugin.addDirectoryItem(h, u, i, True)
+
 	xbmcplugin.endOfDirectory(h)
 
 
