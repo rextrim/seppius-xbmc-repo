@@ -19,7 +19,7 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import urllib2, re, xbmc, xbmcgui, xbmcplugin, os, urllib, urllib2, socket
+import urllib2, re, xbmc, xbmcgui, xbmcplugin, os, urllib, urllib2, socket, xbmcaddon
 import xml.dom.minidom
 
 socket.setdefaulttimeout(12)
@@ -29,6 +29,11 @@ icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
+
+
+__settings__ = xbmcaddon.Addon(id='plugin.video.rpod.ru')
+__language__ = __settings__.getLocalizedString
+
 
 def strip_html(text):
 	def fixup(m):
@@ -80,6 +85,16 @@ def GET(url):
 		showMessage('Не могу открыть URL', url)
 		return None
 
+
+def removefav(params):
+	idx = int(params['idx'])
+	__settings__.setSetting('favurl%d' % idx, '')
+	__settings__.setSetting('favtxt%d' % idx, '')
+	__settings__.setSetting('favimg%d' % idx, '')
+	xbmc.sleep(50)
+	xbmc.executebuiltin('Container.Refresh')
+
+
 def ROOT():
 
 	def add_podcast(name, url):
@@ -87,9 +102,14 @@ def ROOT():
 		u  = '%s?mode=podcasts&url=%s&name=%s' % (sys.argv[0], urllib.quote_plus(url), urllib.quote_plus(name))
 		xbmcplugin.addDirectoryItem(h, u, i, True)
 
-	def add_xmlpodcast(name, url):
-		i = xbmcgui.ListItem(name, iconImage = icon, thumbnailImage = icon)
+	def add_xmlpodcast(name, url, x=0, img=''):
+		thumb = icon
+		if img != '': thumb=img
+		i = xbmcgui.ListItem(name, iconImage = thumb, thumbnailImage = thumb)
 		u  = '%s?mode=xmlpodcasts&url=%s&name=%s' % (sys.argv[0], urllib.quote_plus(url), urllib.quote_plus(name))
+		if x > 0:
+			uri2 = sys.argv[0] + '?mode=removefav&idx=%d'%x
+			i.addContextMenuItems([('* Убрать из закладок *', 'XBMC.RunPlugin(%s)'%uri2,)])
 		xbmcplugin.addDirectoryItem(h, u, i, True)
 
 	add_podcast('Подкасты : Личные (по популярности)',        'http://rpod.ru/podcasts/?sortby=subscribers')
@@ -102,11 +122,32 @@ def ROOT():
 	add_podcast('Подкасты : Каналы (по дате обновления)',     'http://rpod.ru/channels/?sortby=last')
 	add_podcast('Подкасты : Каналы (по дате основания)',      'http://rpod.ru/channels/?sortby=first')
 
-	add_xmlpodcast('Свежие аудиоподкасты','http://rpod.ru/audio/rss.xml')
-	add_xmlpodcast('Свежие видеоподкасты','http://rpod.ru/video/rss.xml')
+	add_xmlpodcast('Свежие аудиоподкасты','http://rpod.ru/audio/rss.xml', 0)
+	add_xmlpodcast('Свежие видеоподкасты','http://rpod.ru/video/rss.xml', 0)
+
+
+	for x in range(1, 128, 1):
+		turl = __settings__.getSetting('favurl%d'%x)
+		ttxt = __settings__.getSetting('favtxt%d'%x)
+		timg = __settings__.getSetting('favimg%d'%x)
+		if (len(turl) > 0) and (len(ttxt) > 0): add_xmlpodcast(ttxt,turl,x,timg)
 
 	xbmcplugin.endOfDirectory(h)
 
+
+def addtofav(params):
+	xbmc.executebuiltin( "ActivateWindow(busydialog)" )
+	for x in range(1, 128, 1):
+		turl = __settings__.getSetting('favurl%d'% x)
+		ttxt = __settings__.getSetting('favtxt%d'% x)
+		timg = __settings__.getSetting('favimg%d'% x)
+		if (len(turl) == 0) and (len(ttxt) == 0):
+			__settings__.setSetting('favurl%d' % x, urllib.unquote_plus(params['url']))
+			__settings__.setSetting('favtxt%d' % x, urllib.unquote_plus(params['name']))
+			__settings__.setSetting('favimg%d' % x, urllib.unquote_plus(params['img']))
+			xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+			showMessage('ДОБАВЛЕНО', urllib.unquote_plus(params['name']), 1500)
+			return True
 
 def podcasts(params):
 	url  = urllib.unquote_plus(params['url'])
@@ -118,7 +159,7 @@ def podcasts(params):
 	if http == None: return False
 
 	pindex = []
-	rpages = re.compile('"/podcasts/\?page=(.[0-9]*)"').findall(http)
+	rpages = re.compile('page=(.[0-9]*)"').findall(http)
 	for page in rpages:
 		try:    pindex.append(int(page))
 		except: pass
@@ -134,12 +175,16 @@ def podcasts(params):
 			if len(target) > 0:
 				i = xbmcgui.ListItem(name, iconImage = thumb, thumbnailImage = thumb)
 				u  = '%s?mode=xmlpodcasts&url=%s&name=%s' % (sys.argv[0], urllib.quote_plus('http://%s/rss.xml'%target[0]), urllib.quote_plus(name))
+				uri2 = '%s?mode=addtofav&url=%s&name=%s&img=%s' % (sys.argv[0], urllib.quote_plus('http://%s/rss.xml'%target[0]), urllib.quote_plus(name), urllib.quote_plus(thumb))
+				i.addContextMenuItems([('* Добавить в закладки *', 'XBMC.RunPlugin(%s)'%uri2,)])
 				xbmcplugin.addDirectoryItem(h, u, i, True)
-	if (pageindex < max(pindex)):
-		nextp = pageindex + 1
-		i = xbmcgui.ListItem('Далее, на страницу %d >>'%nextp, iconImage = icon, thumbnailImage = icon)
-		u  = '%s?mode=podcasts&url=%s&name=%s&page=%d' % (sys.argv[0], urllib.quote_plus(url), urllib.quote_plus(txt), nextp)
-		xbmcplugin.addDirectoryItem(h, u, i, True)
+
+	if len(pindex) > 0:
+		if (pageindex < max(pindex)):
+			nextp = pageindex + 1
+			i = xbmcgui.ListItem('Далее, на страницу %d >>'%nextp, iconImage = icon, thumbnailImage = icon)
+			u  = '%s?mode=podcasts&url=%s&name=%s&page=%d' % (sys.argv[0], urllib.quote_plus(url), urllib.quote_plus(txt), nextp)
+			xbmcplugin.addDirectoryItem(h, u, i, True)
 
 	xbmcplugin.endOfDirectory(h)
 
