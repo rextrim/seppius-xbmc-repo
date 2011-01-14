@@ -289,7 +289,6 @@ def WATCH(url):
 	else:
 		for x in range(spcn): list.append(rawFD[x][1])
 		s = xbmcgui.Dialog().select('Качество?', list)
-		s = 1
 	if s < 0: return
 	vp = rawFD[s][0]
 	vq = rawFD[s][1]
