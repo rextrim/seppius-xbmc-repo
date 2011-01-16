@@ -69,6 +69,9 @@ def Play(title, src1, src2):
 	elif selected == 1: xbmc.Player().play(src2)
 	else: return
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 params = get_params()
 try: mode  = urllib.unquote_plus(params["mode"])
 except: mode  = None

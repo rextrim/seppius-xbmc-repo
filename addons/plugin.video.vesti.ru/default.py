@@ -134,6 +134,9 @@ try:
 except:
 	pass
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 if mode == None:
 	listitem = xbmcgui.ListItem('1. VESTI.Live!', iconImage=vesti_thumb, thumbnailImage=vesti_thumb)
 	url = sys.argv[0] + "?mode=live"

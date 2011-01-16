@@ -234,6 +234,9 @@ try:
 except:
 	pass
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 if mode == None:
 	get_programs()
 	xbmcplugin.setPluginCategory(handle, 'TVJAM.RU')

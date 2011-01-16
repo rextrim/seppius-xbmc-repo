@@ -177,6 +177,9 @@ title = ''
 ref   = ''
 img   = ''
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 try:
 	mode  = urllib.unquote_plus(params["mode"])
 except:

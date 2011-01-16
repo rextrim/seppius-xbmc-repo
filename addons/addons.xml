@@ -68,7 +68,7 @@
 
 <addon id="plugin.video.tvjam.ru"
        name="TVJAM.RU"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -106,7 +106,7 @@
 
 <addon id="plugin.video.russia.ru"
        name="RUSSIA.RU"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -165,7 +165,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.ts-tv.ru"
        name="TS-TV.RU"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -184,7 +184,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.tvigle.ru"
        name="Tvigle"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -299,7 +299,7 @@ Author - Vlad Svoka aka Shchvova</description>
 
 <addon id="plugin.video.turbofilm.tv"
        name="Turbofilm.TV"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -430,7 +430,7 @@ Author - Vlad Svoka aka Shchvova</description>
 
 <addon id="plugin.video.rutube.ru"
        name="RuTube"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -531,7 +531,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.tv-here.ru"
        name="TV-HERE.RU"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -587,7 +587,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.vesti.ru"
        name="VESTI.RU"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
