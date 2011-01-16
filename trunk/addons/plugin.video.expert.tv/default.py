@@ -328,6 +328,9 @@ except:
 
 handle = int(sys.argv[1])
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 if mode == None:
 	show_root()
 	xbmcplugin.setPluginCategory(handle, title)

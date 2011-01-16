@@ -315,6 +315,9 @@ params=get_params(sys.argv[2])
 mode = None
 ifac = None
 
+import adanalytics
+adanalytics.main(sys.argv[0], h, sys.argv[2])
+
 try:
 	mode = urllib.unquote_plus(params['mode'])
 	xbmc.output('### INITIAL MODE = %s' % mode)

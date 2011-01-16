@@ -172,6 +172,10 @@ params = get_params()
 list_url    = None
 list_speeds = 0
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
+
 try:
 	list_url = urllib.unquote_plus(params["list"])
 except:

@@ -109,6 +109,9 @@ plot=''
 mode=None
 thumbnail=fanart
 
+import adanalytics
+adanalytics.main(sys.argv[0], pluginhandle, sys.argv[2])
+
 try: mode=params['mode']
 except: pass
 try: url=urllib.unquote_plus(params['url'])

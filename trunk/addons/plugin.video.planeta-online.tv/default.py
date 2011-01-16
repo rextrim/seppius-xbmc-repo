@@ -107,6 +107,9 @@ name=''
 thumbnail=fanart
 mode=None
 
+import adanalytics
+adanalytics.main(sys.argv[0], pluginhandle, sys.argv[2])
+
 try:
     mode=params["mode"]
 except:

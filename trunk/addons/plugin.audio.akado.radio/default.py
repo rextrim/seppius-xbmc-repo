@@ -63,4 +63,7 @@ def root(url):
 			xbmcplugin.addDirectoryItem(pluginhandle,uri,item)
 	xbmcplugin.endOfDirectory(pluginhandle)
 
+import adanalytics
+adanalytics.main(sys.argv[0], pluginhandle, sys.argv[2])
+
 root('http://radio.akado.ru/')

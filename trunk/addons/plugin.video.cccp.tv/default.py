@@ -145,6 +145,9 @@ def get_params(paramstring):
 
 params=get_params(sys.argv[2])
 
+import adanalytics
+adanalytics.main(sys.argv[0], h, sys.argv[2])
+
 mode = None
 
 try:

@@ -152,6 +152,9 @@ url  =	None
 mode =	None
 name =	''
 
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
+
 try:
 	url = urllib.unquote_plus(params["url"])
 except:
