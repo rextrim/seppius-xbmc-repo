@@ -258,8 +258,12 @@ url  =	None
 mode =	None
 name =	''
 
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
+
 
 try:
 	url = urllib.unquote_plus(params["url"])

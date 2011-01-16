@@ -107,8 +107,11 @@ params = get_params()
 mode   = None
 url    = ''
 
-import adanalytics
-adanalytics.main(sys.argv[0], h, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
 
 try: mode    = urllib.unquote_plus(params['mode'])
 except: pass

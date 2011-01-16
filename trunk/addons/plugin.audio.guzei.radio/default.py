@@ -172,8 +172,12 @@ params = get_params()
 list_url    = None
 list_speeds = 0
 
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
+
 
 
 try:

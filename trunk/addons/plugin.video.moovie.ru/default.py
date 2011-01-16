@@ -202,8 +202,11 @@ except: pass
 try: ID=urllib.unquote_plus(params['id'])
 except: pass
 
-import adanalytics
-adanalytics.main(sys.argv[0], h, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
 
 if   mode=='openGENRE': openGENRE(url, genre)
 elif mode=='AUTH': AUTH()
