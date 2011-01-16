@@ -109,8 +109,12 @@ plot=''
 mode=None
 thumbnail=fanart
 
-import adanalytics
-adanalytics.main(sys.argv[0], pluginhandle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
+
 
 try: mode=params['mode']
 except: pass

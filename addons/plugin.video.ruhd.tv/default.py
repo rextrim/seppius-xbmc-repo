@@ -503,8 +503,11 @@ def ShowNEW():
 	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
 	xbmcplugin.endOfDirectory(handle)
 
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
 
 if run_once():
 	params = get_params()

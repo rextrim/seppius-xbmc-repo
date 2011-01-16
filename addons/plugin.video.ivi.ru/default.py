@@ -282,6 +282,11 @@ mode = 'ShowRoot'
 url  = 'http://www.ivi.ru/videos/'
 name = 'None'
 
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
 
 try:
 	mode  = urllib.unquote_plus(params["mode"])
@@ -295,9 +300,6 @@ try:
 	name  = urllib.unquote_plus(params["name"])
 except:
 	pass
-
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
 
 if mode == 'ShowRoot':
 	ShowRoot()

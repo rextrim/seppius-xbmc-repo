@@ -180,8 +180,11 @@ try:    url   = params['url'].decode("hex")
 	#url   = params['url']
 except: pass
 
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
 
 #print 'start mode=%s' % mode
 #print 'start  url=%s' % url

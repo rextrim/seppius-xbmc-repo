@@ -140,8 +140,12 @@ def get_list():
 			"genre":	prog } )
 	        xbmcplugin.addDirectoryItem(handle, play_file, listitem, False)
 
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
+
 
 get_list()
 

@@ -620,8 +620,11 @@ def Watch(url, title, img):
 	xbmc.Player().play(dest, item)
 	#xbmc.Player().setSubtitles(subtitles_en_sources)
 
-import adanalytics
-adanalytics.main(sys.argv[0], handle, sys.argv[2])
+try:
+	import adanalytics
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+except Exception, e:
+	print(e)
 
 if run_once():
 	params = get_params()
