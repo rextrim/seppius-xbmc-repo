@@ -304,6 +304,8 @@ url    = '/'
 genre  = 'Фильм'
 studio = 'ZOOMBY.RU'
 
+import adanalytics
+adanalytics.main(sys.argv[0], h, sys.argv[2])
 
 try: mode    = urllib.unquote_plus(params['mode'])
 except: pass
