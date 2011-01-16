@@ -296,6 +296,9 @@ try:
 except:
 	pass
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 if mode == 'ShowRoot':
 	ShowRoot()
 	AddSearch()

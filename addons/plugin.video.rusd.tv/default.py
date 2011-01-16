@@ -462,6 +462,10 @@ def ShowNEW():
 	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
 	xbmcplugin.endOfDirectory(handle)
 
+
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 if run_once():
 	params = get_params()
 	mode  = None

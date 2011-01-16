@@ -106,6 +106,10 @@ def get_play(url):
 params = get_params()
 mode   = None
 url    = ''
+
+import adanalytics
+adanalytics.main(sys.argv[0], h, sys.argv[2])
+
 try: mode    = urllib.unquote_plus(params['mode'])
 except: pass
 try: url     = urllib.unquote_plus(params['url'])

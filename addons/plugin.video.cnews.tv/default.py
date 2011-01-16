@@ -140,6 +140,9 @@ def get_list():
 			"genre":	prog } )
 	        xbmcplugin.addDirectoryItem(handle, play_file, listitem, False)
 
+import adanalytics
+adanalytics.main(sys.argv[0], handle, sys.argv[2])
+
 get_list()
 
 xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_DATE)

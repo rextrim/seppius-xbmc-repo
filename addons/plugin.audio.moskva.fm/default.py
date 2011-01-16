@@ -417,6 +417,9 @@ url  =	None
 mode =	None
 name =	''
 
+import adanalytics
+adanalytics.main(sys.argv[0], pluginhandle, sys.argv[2])
+
 try:
 	url = urllib.unquote_plus(params["url"])
 except:
