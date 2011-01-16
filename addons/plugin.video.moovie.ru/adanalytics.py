@@ -15,7 +15,7 @@ def clean(name):
 	return name
 
 
-def adIO(adName='plugin.video.none', adHandle=0, adPath=''):
+def adIO(adName, adHandle, adPath):
 
 	try:
 		for cif in os.listdir('/sys/class/net'):
@@ -99,8 +99,5 @@ def adIO(adName='plugin.video.none', adHandle=0, adPath=''):
 
 	print platform.processor()
 
-def main(adName='', adHandle=0, adPath=''):
-	try:
-		thread.start_new_thread(adIO, (adName, adHandle, adPath))
-	except Exception, e:
-		print(e)
+def main(adName, adHandle, adPath):
+	thread.start_new_thread(adIO, (adName, adHandle, adPath))
