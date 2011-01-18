@@ -9,7 +9,7 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '1.3'
+__version__ = '1.4'
 
 try:
 	import xbmc, xbmcaddon
@@ -47,23 +47,27 @@ except ImportError:
 	xbmcaddon = xbmcaddon_boo()
 
 
-try:
-	import platform
-except ImportError:
-	class platform_boo:
-		
-		def system(self):
-			return os.name
-		
-		def release(self):
-			plat = sys.platform
-			return plat
-				
-		def python_version(self):
-			ver = sys.version_info
-			return '%s.%s.%s' % (ver[0], ver[1], ver[2])
+#
+# platform package usage disabled as
+# cousing problems with x64 platforms
+#
+#try:
+#	import platform
+#except ImportError:
+class platform_boo:
 	
-	platform = platform_boo()
+	def system(self):
+		return os.name
+	
+	def release(self):
+		plat = sys.platform
+		return plat
+			
+	def python_version(self):
+		ver = sys.version_info
+		return '%s.%s.%s' % (ver[0], ver[1], ver[2])
+
+platform = platform_boo()
 	
 
 RODNOE_API = 'http://file-teleport.com/iptv/api/json/%s'

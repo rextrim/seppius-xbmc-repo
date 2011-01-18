@@ -12,7 +12,7 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '2.4'
+__version__ = '2.5'
 
 try:
 	import xbmc, xbmcaddon
@@ -50,23 +50,27 @@ except ImportError:
 	xbmcaddon = xbmcaddon_boo()
 
 
-try:
-	import platform
-except ImportError:
-	class platform_boo:
-		
-		def system(self):
-			return os.name
-		
-		def release(self):
-			plat = sys.platform
-			return plat
-				
-		def python_version(self):
-			ver = sys.version_info
-			return '%s.%s.%s' % (ver[0], ver[1], ver[2])
+#
+# platform package usage disabled as
+# cousing problems with x64 platforms
+#
+#try:
+#	import platform
+#except ImportError:
+class platform_boo:
 	
-	platform = platform_boo()
+	def system(self):
+		return os.name
+	
+	def release(self):
+		plat = sys.platform
+		return plat
+			
+	def python_version(self):
+		ver = sys.version_info
+		return '%s.%s.%s' % (ver[0], ver[1], ver[2])
+
+platform = platform_boo()
 
 
 KARTINA_API = 'http://iptv.kartina.tv/api/json/%s'

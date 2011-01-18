@@ -1,0 +1,5 @@
+[B]1.0.1[/B]
+Fixed a problem with Win32 running on x64 platforms
+
+[B]1.0.0[/B]
+Initial release
