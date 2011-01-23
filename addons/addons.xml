@@ -660,7 +660,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.guzei.tv"
        name="GUZEI.TV"
-       version="1.0.4"
+       version="1.0.5"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
