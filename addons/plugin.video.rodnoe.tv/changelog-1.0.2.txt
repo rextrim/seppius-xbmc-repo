@@ -1,3 +1,6 @@
+[B]1.0.2[/B]
+Session cookies migrated into the cookie jar
+
 [B]1.0.1[/B]
 Fixed a problem with Win32 running on x64 platforms
 

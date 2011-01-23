@@ -248,7 +248,7 @@ def WatchTV(plugin, id, title, params):
 			xbmcplugin.setResolvedUrl(handle = handle, succeeded=True, listitem=item)
 			
 		if __settings__.getSetting('showcurrent') == 'true' and not gmt:
-			uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s%s' % (id, TRANSSID)
+			uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s' % (id)
 			xbmc.output('[%s] WatchTV: Setting callback for hint to %s' % (PLUGIN_NAME, uri))
 			xbmc.executebuiltin("RunPlugin("+uri+")")
 	else:
@@ -278,7 +278,7 @@ def ShowNowNextHint(plugin, chid):
 			
 
 def ShowRoot(plugin):
-	uri = sys.argv[0] + '?mode=%%s%s' % TRANSSID
+	uri = sys.argv[0] + '?mode=%s'
 	
 	tv_title = ' [  %s  ] ' % __language__(30012)
 	tv=xbmcgui.ListItem(tv_title)
@@ -363,7 +363,7 @@ if PLUGIN_CORE.testAuth() == False:
 	__settings__.openSettings()
 else:
 	
-	TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
+	#TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
 	
 	if 'mode' in params:
 		mode = params['mode']
