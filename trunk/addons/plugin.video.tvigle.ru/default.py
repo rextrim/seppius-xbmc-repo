@@ -196,10 +196,14 @@ mode = None
 ifac = None
 
 try:
-	import adanalytics
-	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+	import adanalytics, thread
+	a_lock = thread.allocate_lock()
+	a_lock.acquire()
+	xbmc.output('adIO main: lock allocated, thread started')
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2], a_lock)
 except Exception, e:
 	print(e)
+	xbmc.output('adIO main: thread exception')
 
 try:
 	mode = urllib.unquote_plus(params['mode'])
@@ -219,3 +223,7 @@ if mode == 'SEARCH':
 	if (pass_keyboard.isConfirmed()):
 		SearchStr = pass_keyboard.getText()
 		OPEN_CHANNEL(iSearch%SearchStr, 1, 'Поиск')
+
+xbmc.output('adIO main: waiting for release lock')
+while a_lock.locked(): xbmc.sleep(100)
+xbmc.output('adIO main: finished')
