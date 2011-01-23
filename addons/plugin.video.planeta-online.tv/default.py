@@ -108,10 +108,14 @@ thumbnail=fanart
 mode=None
 
 try:
-	import adanalytics
-	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+	import adanalytics, thread
+	a_lock = thread.allocate_lock()
+	a_lock.acquire()
+	xbmc.output('adIO main: lock allocated, thread started')
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2], a_lock)
 except Exception, e:
 	print(e)
+	xbmc.output('adIO main: thread exception')
 
 try:
     mode=params["mode"]
@@ -136,3 +140,7 @@ if mode=='BIG':
 	playVideo(url, name, thumbnail)
 else:
 	root('http://www.planeta-online.tv/')
+
+xbmc.output('adIO main: waiting for release lock')
+while a_lock.locked(): xbmc.sleep(100)
+xbmc.output('adIO main: finished')

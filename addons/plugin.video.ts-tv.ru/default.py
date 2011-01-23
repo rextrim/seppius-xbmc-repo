@@ -70,10 +70,14 @@ def Play(title, src1, src2):
 	else: return
 
 try:
-	import adanalytics
-	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2])
+	import adanalytics, thread
+	a_lock = thread.allocate_lock()
+	a_lock.acquire()
+	xbmc.output('adIO main: lock allocated, thread started')
+	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2], a_lock)
 except Exception, e:
 	print(e)
+	xbmc.output('adIO main: thread exception')
 
 params = get_params()
 try: mode  = urllib.unquote_plus(params["mode"])
@@ -86,3 +90,7 @@ try: secon  = urllib.unquote_plus(params["secon"])
 except: title = ''
 if mode == None: ShowRoot()
 elif mode == 'Play':  Play(title, first, secon)
+
+xbmc.output('adIO main: waiting for release lock')
+while a_lock.locked(): xbmc.sleep(100)
+xbmc.output('adIO main: finished')
