@@ -280,7 +280,7 @@ Author - Vlad Svoka aka Shchvova</description>
 
 <addon id="plugin.video.ivi.ru"
        name="IVI.RU"
-       version="1.0.6"
+       version="1.0.7"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
