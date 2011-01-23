@@ -24,6 +24,9 @@ except ImportError:
 		
 		def getInfoLabel(self, param):
 			return '%s unknown' % param
+		
+		def translatePath(self, param):
+			return param
 	
 	class xbmcaddon_foo:
 		def __init__(self, id):
@@ -46,7 +49,6 @@ except ImportError:
 	xbmc = xbmc_boo()
 	xbmcaddon = xbmcaddon_boo()
 
-
 #
 # platform package usage disabled as
 # cousing problems with x64 platforms
@@ -68,7 +70,18 @@ class platform_boo:
 		return '%s.%s.%s' % (ver[0], ver[1], ver[2])
 
 platform = platform_boo()
-	
+
+COOKIEJAR = None
+COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.rodnoe.tv.txt')
+
+try:											# Let's see if cookielib is available
+	import cookielib            
+except ImportError:
+	xbmc.output('[RodnoeTV] cookielib is not available..')
+	pass
+else:
+	COOKIEJAR = cookielib.LWPCookieJar()		# This is a subclass of FileCookieJar that has useful load and save methods
+
 
 RODNOE_API = 'http://file-teleport.com/iptv/api/json/%s'
 
@@ -82,6 +95,14 @@ class rodnoe:
 		
 		self.SID = SID
 		self.SID_NAME = SID_NAME
+		self.AUTH_OK = False
+		
+		if COOKIEJAR != None:
+			if os.path.isfile(COOKIEFILE):
+				COOKIEJAR.load(COOKIEFILE)
+        	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(COOKIEJAR))
+        	urllib2.install_opener(opener)
+		
 		self.media_key = None
 		self.login = login
 		self.password = password
@@ -95,7 +116,7 @@ class rodnoe:
 		
 	def _request(self, cmd, params, inauth = None):
 		
-		if self.SID == None:
+		if self.AUTH_OK == False:
 			if inauth == None:
 				self._auth(self.login, self.password)
 		
@@ -119,12 +140,12 @@ class rodnoe:
 		
 		req = urllib2.Request(url, None, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'})
 		
-		if (self.SID != None):
+		if COOKIEJAR == None and (self.SID != None):
 			req.add_header("Cookie", self.SID_NAME + "=" + self.SID + ";")
 		
 		rez = urllib2.urlopen(req).read()
 		
-		xbmc.output('[Rodnoe.TV] Got %s' % rez)
+		#xbmc.output('[Rodnoe.TV] Got %s' % rez)
 		
 		
 		try:
@@ -136,6 +157,10 @@ class rodnoe:
 		
 		self._errors_check(res)
 		
+		if COOKIEJAR != None:
+			xbmc.output('[Rodnoe.TV] Saving cookies: %s' % COOKIEFILE)
+			COOKIEJAR.save(COOKIEFILE)
+		
 		return res
 	
 	def _auth(self, user, password):
@@ -143,11 +168,18 @@ class rodnoe:
 		md5pass = md5(md5(self.login).hexdigest() + md5(self.password).hexdigest()).hexdigest()
 		
 		response = self._request('login', 'login=%s&pass=%s' % (self.login, md5pass), 1)
+		self.AUTH_OK = False
 		
 		if response['sid']:
 			self.media_key = response['media_key']
 			self.SID = response['sid']
 			self.SID_NAME = response['sid_name']
+			
+			#if COOKIEJAR != None:
+			#	auth_cookie = cookielib.Cookie(version=0, name=self.SID_NAME, value=self.SID)
+			#	COOKIEJAR.set_cookie(auth_cookie)
+			
+			self.AUTH_OK = True
 				
 	def _errors_check(self, json):
 		if 'error' in json:
@@ -157,18 +189,17 @@ class rodnoe:
 				if message == None:
 					message = err['code']
 				xbmc.output('[Rodnoe.TV] ERROR: %s' % message.encode('utf8'))
-				self.SID = None
+				self.AUTH_OK = False
 	
 	
 	def testAuth(self):
-		if self.SID:
-			account = self._request('get_settings', '')
-		if self.SID == None:
+		self.AUTH_OK = True
+		account = self._request('get_settings', '')
+			
+		if not self.AUTH_OK:
 			self._auth(self.login, self.password)
 		
-		if self.SID != None:
-			return True
-		return False
+		return self.AUTH_OK
 	
 	def getChannelsList(self):
 		response = self._request('get_list_tv', '')
@@ -225,8 +256,6 @@ class rodnoe:
 		return res
 	
 	def getStreamUrl(self, id, gmt = None, code = None): 
-		if self.SID == None:
-			self._auth(self.login, self.password)
 		
 		params = 'cid=%s' % id
 		if gmt != None:
