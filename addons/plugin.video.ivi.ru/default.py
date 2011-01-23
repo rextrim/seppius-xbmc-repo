@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #/*
 # *      Copyright (C) 2010 Kostynoy S. aka Seppius
 # *
@@ -311,7 +312,7 @@ if mode == 'ShowRoot':
 	AddSearch()
 	xbmcplugin.endOfDirectory(handle)
 
-if mode == 'ShowList':
+elif mode == 'ShowList':
 	ShowList(url, name)
 	AddSearch()
 	xbmcplugin.endOfDirectory(handle)
