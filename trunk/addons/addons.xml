@@ -296,7 +296,7 @@
 
 <addon id="plugin.video.kartina.tv"
        name="Kartina.TV"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="Eugene Bond">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
