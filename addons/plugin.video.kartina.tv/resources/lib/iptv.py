@@ -97,7 +97,7 @@ class kartina:
 		self.login = login
 		self.password = password
 		self.addonid = addonid
-		self.timeshift = None
+		self.timeshift = 0
 		self.AUTH_OK = False
 		
 		if COOKIEJAR != None:
@@ -177,7 +177,9 @@ class kartina:
 			err = json['error']
 			if 'message' in err:
 				xbmc.output('[Kartina.TV] ERROR: %s' % err['message'])
-			
+			if COOKIEJAR != None:
+				cookie = cookielib.Cookie(0, self.SID_NAME, None, '80', False, 'iptv.kartina.tv', True, False, '/', True, False, time() - 600, False, None, None, {})
+				COOKIEJAR.set_cookie(cookie)
 			self.AUTH_OK = False
 	
 	
@@ -375,6 +377,10 @@ class kartina:
 			
 		if not self.AUTH_OK:
 			self._auth(self.login, self.password)
+		
+		if self.AUTH_OK:
+			value, options = self.getSettingCurrent('timeshift')
+			self.timeshift = int(value) * 3600
 		
 		return self.AUTH_OK
 		

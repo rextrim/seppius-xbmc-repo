@@ -1,3 +1,6 @@
+[B]1.0.3[/B]
+Sessions issue hot fix
+
 [B]1.0.2[/B]
 Fixed an auth issue (causing "account is already used" problem)
 Added current program duration and %% (thanks to Alexandr Dubovikov)
