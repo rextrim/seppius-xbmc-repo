@@ -72,6 +72,17 @@ class platform_boo:
 
 platform = platform_boo()
 
+COOKIEJAR = None
+COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.kartina.tv.txt')
+
+try:											# Let's see if cookielib is available
+	import cookielib            
+except ImportError:
+	xbmc.output('[RodnoeTV] cookielib is not available..')
+	pass
+else:
+	COOKIEJAR = cookielib.LWPCookieJar()		# This is a subclass of FileCookieJar that has useful load and save methods
+
 
 KARTINA_API = 'http://iptv.kartina.tv/api/json/%s'
 
@@ -87,13 +98,20 @@ class kartina:
 		self.password = password
 		self.addonid = addonid
 		self.timeshift = None
-		#, 
+		self.AUTH_OK = False
+		
+		if COOKIEJAR != None:
+			if os.path.isfile(COOKIEFILE):
+				COOKIEJAR.load(COOKIEFILE)
+        	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(COOKIEJAR))
+        	urllib2.install_opener(opener)
+		
 		self.supported_settings = {'stream_server': {'name': 'stream_server', 'language_key': 34001, 'lookup': 'ip', 'display': 'descr'}, 'timeshift': {'name': 'timeshift', 'language_key': 34002}, 'bitrate': {'name': 'bitrate', 'language_key': 34004}, 'timezone': {'name': 'timezone', 'language_key': 34003, 'defined': [('-12', '-12 GMT (New Zealand Standard Time)'), ('-11', '-11 GMT (Midway Islands Time)'), ('-10', '-10 GMT (Hawaii Standard Time)'), ('-9', '-9 GMT (Alaska Standard Time)'), ('-8', '-8 GMT (Pacific Standard Time)'), ('-7', '-7 GMT (Mountain Standard Time)'), ('-6', '-6 GMT (Central Standard Time)'), ('-5', '-5 GMT (Eastern Standard Time)'), ('-4', '-4 GMT (Puerto Rico and US Virgin Islands Time)'), ('-3', '-3 GMT (Argentina Standard Time)'), ('-2', '-2 GMT'), ('-1', '-1 GMT (Central African Time)'), ('0', '0 GMT (Greenwich Mean Time)'), ('1', '+1 GMT (European Central Time)'), ('2', '+2 GMT (Eastern European Time)'), ('3', '+3 GMT (Eastern African Time)'), ('4', '+4 GMT (Near East Time)'), ('5', '+5 GMT (Pakistan Lahore Time)'), ('6', '+6 GMT (Bangladesh Standard Time)'), ('7', '+7 GMT (Vietnam Standard Time)'), ('8', '+8 GMT (China Taiwan Time)'), ('9', '+9 GMT (Japan Standard Time)'), ('10', '+10 GMT (Australia Eastern Time)'), ('11', '+11 GMT (Solomon Standard Time)')]}}
 	
-	def _request(self, cmd, params):
+	def _request(self, cmd, params, inauth = None):
 		
-		if self.SID == None:
-			if cmd != 'login':
+		if self.AUTH_OK == False:
+			if inauth == None:
 				self._auth(self.login, self.password)
 		
 		url = KARTINA_API % cmd
@@ -117,7 +135,7 @@ class kartina:
 		
 		req = urllib2.Request(url, None, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest'})
 		
-		if (self.SID != None):
+		if COOKIEJAR == None and (self.SID != None):
 			req.add_header("Cookie", self.SID_NAME + "=" + self.SID + ";")
 		
 		rez = urllib2.urlopen(req).read()
@@ -133,30 +151,45 @@ class kartina:
 		
 		self._errors_check(res)
 		
+		if COOKIEJAR != None:
+			xbmc.output('[Kartina.TV] Saving cookies: %s' % COOKIEFILE)
+			COOKIEJAR.save(COOKIEFILE)
+		
 		return res
 	
 	def _auth(self, user, password):
-		response = self._request('login', 'login=%s&pass=%s' % (user, password))
+		response = self._request('login', 'login=%s&pass=%s' % (user, password), 1)
+		self.AUTH_OK = False
 		
 		if 'sid' in response:
 			self.SID = response['sid']
 			self.SID_NAME = response['sid_name']
+			self.AUTH_OK = True
+			if COOKIEJAR != None:
+				cookie = cookielib.Cookie(0, self.SID_NAME, self.SID, '80', False, 'iptv.kartina.tv', True, False, '/', True, False, time() + 600, False, None, None, {})
+				COOKIEJAR.set_cookie(cookie)
 			value, options = self.getSettingCurrent('timeshift')
 			self.timeshift = int(value) * 3600
 		
 	
 	def _errors_check(self, json):
-		
-		if 'message' in json:
-			xbmc.output('[Kartina.TV] ERROR: %s' % json['message'])
-			#xbmc.Notification('Error', json['message'], 3)
-			self.SID = None
+		if 'error' in json:
+			err = json['error']
+			if 'message' in err:
+				xbmc.output('[Kartina.TV] ERROR: %s' % err['message'])
 			
+			self.AUTH_OK = False
 	
 	
 	def getChannelsList(self):
 		if self.channels_ttl < time():
 			jsonChannels = self._request('channel_list', '')
+
+			if 'servertime' in jsonChannels:
+				servertime = int(jsonChannels['servertime']); 
+			else:
+				servertime = time();
+
 			self.channels = []
 			
 			for channelGroup in jsonChannels['groups']:
@@ -167,6 +200,20 @@ class kartina:
 					programm += "\n"
 					prog, desc = programm.split("\n", 1)
 					
+					epg_start = 0;
+					epg_end = 0;
+					if 'epg_start' in channel:
+						epg_start = int(channel['epg_start'])
+
+					if 'epg_end' in channel:
+						epg_end = int(channel['epg_end'])
+
+ 					
+					duration = epg_end - epg_start
+					percent = 0
+					if duration > 0 :
+						percent = (servertime - epg_start) * 100 / duration
+					
 					channel2add = { 
 							'title':	channel['name'],
 							'id':		channel['id'],
@@ -176,6 +223,8 @@ class kartina:
 							'is_video':	('is_video' in channel) and (channel['is_video']),
 							'have_archive': ('have_archive' in channel) and channel['have_archive'],
 							'have_epg':	('epg_start' in channel) and (channel['epg_start']),
+							'percent':	percent,
+							'duration':	(duration / 60),
 							'is_protected': ('protected' in channel) and (channel['protected']),
 							'source':	channel,
 							'genre':	channelGroup['name']
@@ -209,7 +258,6 @@ class kartina:
 		result = self._request('epg', params)
 		res = []
 		for epg in result['epg']:
-			xbmc.output('[Kartina.TV] EPG item: %s' % epg)
 			programm = ""
 			if 'progname' in epg:
 				programm = epg['progname']
@@ -322,14 +370,14 @@ class kartina:
 	
 	
 	def testAuth(self):
-		if self.SID:
-			account = self._request('account', '')
-		if self.SID == None:
+		self.AUTH_OK = True
+		account = self._request('account', '')
+			
+		if not self.AUTH_OK:
 			self._auth(self.login, self.password)
-		if self.SID != None:
-			return True
-		return False
-
+		
+		return self.AUTH_OK
+		
 if __name__ == '__main__':
 	foo = kartina('147', '741')
 	foo.test()

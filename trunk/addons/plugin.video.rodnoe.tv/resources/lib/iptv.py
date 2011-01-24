@@ -7,9 +7,10 @@ import demjson
 from md5 import md5
 import datetime
 import re, os, sys
+from time import time
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '1.4'
+__version__ = '1.5'
 
 try:
 	import xbmc, xbmcaddon
@@ -203,10 +204,27 @@ class rodnoe:
 	
 	def getChannelsList(self):
 		response = self._request('get_list_tv', '')
+		if 'servertime' in response:
+			servertime = int(response['servertime']); 
+		else:
+			servertime = time();
 		res = []
 		for group in response['groups']:
 			for channel in group['channels']:
 				icon = re.sub('%ICON%', channel['icon'], response['icons']['w40h30'])
+				epg_start = 0;
+				epg_end = 0;
+				if 'epg_current_start' in channel and channel['epg_current_start']:
+					epg_start = int(channel['epg_current_start'])
+
+				if 'epg_current_end' in channel and channel['epg_current_end']:
+					epg_end = int(channel['epg_current_end'])
+					
+				duration = epg_end - epg_start
+				percent = 0
+				if duration > 0:
+					percent = (servertime - epg_start) * 100 / duration					
+
 				res.append({ 
 					'title':	channel['name'],
 					'id':		channel['id'],
@@ -216,6 +234,8 @@ class rodnoe:
 					'is_video':	('is_video' in channel) and (int(channel['is_video'])),
 					'have_archive': ('has_archive' in channel) and (int(channel['has_archive'])),
 					'have_epg':	True,
+					'percent':	percent,
+					'duration':	(duration / 60),
 					'is_protected': ('protected' in channel) and (int(channel['protected'])),
 					'source':	channel,
 					'genre':	group['name'] or ""

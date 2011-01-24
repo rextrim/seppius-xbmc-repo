@@ -1,3 +1,6 @@
+[B]1.0.3[/B]
+Added current program duration and %% (thanks to Alexandr Dubovikov)
+
 [B]1.0.2[/B]
 Session cookies migrated into the cookie jar
 
