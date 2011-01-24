@@ -1,0 +1,9 @@
+[B]1.0.2[/B]
+Fixed an auth issue (causing "account is already used" problem)
+Added current program duration and %% (thanks to Alexandr Dubovikov)
+
+[B]1.0.1[/B]
+Fixed a problem with Win32 running on x64 platforms
+
+[B]1.0.0[/B]
+Initial release

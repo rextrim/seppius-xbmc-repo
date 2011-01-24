@@ -141,6 +141,7 @@ def Archive(plugin, id, params):
 	xbmcplugin.addDirectoryItem(handle,uri,goahead,True)
 	
 	xbmcplugin.endOfDirectory(handle, True, in_arch)
+	xbmc.executebuiltin( "Container.SetViewMode(51)")
 
 
 def resetAlarms(plugin, mode):
@@ -171,10 +172,13 @@ def ShowChannelsList(plugin):
 				else:
 					overlay = 0
 			
+			
 			item=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
-			item.setLabel(channel['title'] + '. ' + channel['subtitle'] + ' ' + channel['info'])
-			item.setIconImage(channel['icon'])
-			item.setInfo( type='video', infoLabels={'title': channel['title'] + '. ' +channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'overlay': overlay})
+			
+			label = '[B] [COLOR blue]%s[/COLOR]. [%s%%[/B]]. %s %s' % (channel['title'], channel['percent'], channel['subtitle'], channel['info'])
+			item.setLabel(label)			
+ 			item.setIconImage(channel['icon'])
+			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay})
 			
 			item.setProperty('IsPlayable', 'true')
 			
@@ -205,7 +209,8 @@ def ShowChannelsList(plugin):
 	xbmcplugin.endOfDirectory(handle, cacheToDisc=(__settings__.getSetting('always_refresh') == 'false'))
 	
 	if refresh_rate > 0:
-		xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))	
+		xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))
+	xbmc.executebuiltin( "Container.SetViewMode(51)")
 
 def WatchTV(plugin, id, title, params):
 	if 'ts' in params:
@@ -363,6 +368,7 @@ if PLUGIN_CORE.testAuth() == False:
 	__settings__.openSettings()
 else:
 	
+	xbmc.executebuiltin( "Container.SetViewMode(51)")
 	#TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
 	
 	if 'mode' in params:

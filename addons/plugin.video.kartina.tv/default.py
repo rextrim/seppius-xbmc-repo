@@ -137,6 +137,7 @@ def Archive(plugin, id, params):
 	xbmcplugin.addDirectoryItem(handle,uri,goahead,True)
 	
 	xbmcplugin.endOfDirectory(handle, True, in_arch)
+	xbmc.executebuiltin( "Container.SetViewMode(51)")
 	
 
 def resetAlarms(plugin, mode):
@@ -166,9 +167,12 @@ def ShowChannelsList(plugin):
 					overlay = 0
 			
 			item=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
-			item.setLabel(channel['title'] + '. ' + channel['subtitle'] + ' ' + channel['info'])
-			item.setIconImage(channel['icon'])
-			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'overlay': overlay})
+			
+			label = '[B] [COLOR blue]%s[/COLOR]. [%s%%[/B]]. %s %s' % (channel['title'], channel['percent'], channel['subtitle'], channel['info'])
+			item.setLabel(label)			
+ 			item.setIconImage(channel['icon'])
+			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay})
+			
 			item.setProperty('IsPlayable', 'true')
 			popup = []
 			
@@ -198,7 +202,7 @@ def ShowChannelsList(plugin):
 	
 	if refresh_rate > 0:
 		xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))
-
+	xbmc.executebuiltin( "Container.SetViewMode(51)")
 
 
 def Video(plugin, params):
@@ -323,14 +327,14 @@ def WatchTV(plugin, id, params):
 			xbmcplugin.setResolvedUrl(handle = handle, succeeded=True, listitem=item)
 		
 		if __settings__.getSetting('showcurrent') == 'true' and not gmt:
-			uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s%s' % (id, TRANSSID)
+			uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s' % (id)
 			xbmc.output('[%s] WatchTV: Setting callback for hint to %s' % (PLUGIN_NAME, uri))
 			xbmc.executebuiltin("RunPlugin("+uri+")")
 	else:
 		xbmc.executebuiltin("XBMC.Notification(" + __language__(30025).encode('utf8') + ", " + __language__(30025).encode('utf8') + ", 8000)");
 
 def ShowRoot(plugin):
-	uri = sys.argv[0] + '?mode=%%s%s' % TRANSSID
+	uri = sys.argv[0] + '?mode=%s'
 	
 	tv_title = ' [  %s  ] ' % __language__(30012)
 	tv=xbmcgui.ListItem(tv_title)
@@ -441,7 +445,8 @@ if PLUGIN_CORE.testAuth() == False:
 	__settings__.openSettings()
 else:
 	
-	TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
+	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
 	
 	if 'mode' in params:
 		mode = params['mode']
