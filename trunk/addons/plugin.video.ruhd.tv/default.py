@@ -503,16 +503,6 @@ def ShowNEW():
 	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
 	xbmcplugin.endOfDirectory(handle)
 
-try:
-	import adanalytics, thread
-	a_lock = thread.allocate_lock()
-	a_lock.acquire()
-	xbmc.output('adIO main: lock allocated, thread started')
-	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2], a_lock)
-except Exception, e:
-	print(e)
-	xbmc.output('adIO main: thread exception')
-
 if run_once():
 	params = get_params()
 	mode  = None
@@ -573,6 +563,9 @@ if run_once():
 		xbmc.sleep(50)
 		xbmc.executebuiltin('Container.Refresh')
 
-xbmc.output('adIO main: waiting for release lock')
-while a_lock.locked(): xbmc.sleep(100)
-xbmc.output('adIO main: finished')
+try:
+	import adanalytics
+	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
+except:
+	xbmc.output(' === unhandled exception in adIO === ')
+	pass

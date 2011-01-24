@@ -22,16 +22,6 @@
 import urllib,urllib2,cookielib,re,sys,os,time
 import xbmcplugin,xbmcgui,xbmcaddon,xbmc
 
-try:
-	import adanalytics, thread
-	a_lock = thread.allocate_lock()
-	a_lock.acquire()
-	xbmc.output('adIO main: lock allocated, thread started')
-	adanalytics.main(sys.argv[0], sys.argv[1], sys.argv[2], a_lock)
-except Exception, e:
-	print(e)
-	xbmc.output('adIO main: thread exception')
-
 __settings__ = xbmcaddon.Addon(id='plugin.video.moovie.ru')
 h = int(sys.argv[1])
 fanart = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'fanart.jpg'))
@@ -230,9 +220,8 @@ else:
 	openROOT(url)
 
 try:
-	xbmc.output('adIO main: waiting for release lock')
-	while a_lock.locked(): xbmc.sleep(100)
-	xbmc.output('adIO main: finished')
+	import adanalytics
+	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
 except:
-	xbmc.output('adIO main: release Exception!')
+	xbmc.output(' === unhandled exception in adIO === ')
 	pass
