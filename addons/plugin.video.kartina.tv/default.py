@@ -167,8 +167,14 @@ def ShowChannelsList(plugin):
 					overlay = 0
 			
 			item=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
+			color = channel['color']
 			
-			label = '[B] [COLOR blue]%s[/COLOR]. [%s%%[/B]]. %s %s' % (channel['title'], channel['percent'], channel['subtitle'], channel['info'])
+			if channel['duration']:
+				played = ' [%s%%]' % channel['percent']
+			else:
+				played = ''
+			
+			label = '[B] [COLOR %s]%s[/COLOR].%s[/B] %s %s' % (color, channel['title'], played, channel['subtitle'], channel['info'])
 			item.setLabel(label)			
  			item.setIconImage(channel['icon'])
 			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay})

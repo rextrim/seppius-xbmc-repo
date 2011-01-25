@@ -1,3 +1,8 @@
+[B]1.0.4[/B]
+Fixed "missing icon" crash
+Colorizing improved and matches to original channel groups colors
+Removed percentage block for items without duration
+
 [B]1.0.3[/B]
 Sessions issue hot fix
 
