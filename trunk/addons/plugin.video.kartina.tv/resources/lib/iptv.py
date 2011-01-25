@@ -12,7 +12,7 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '2.5'
+__version__ = '2.6'
 
 try:
 	import xbmc, xbmcaddon
@@ -107,6 +107,8 @@ class kartina:
         	urllib2.install_opener(opener)
 		
 		self.supported_settings = {'stream_server': {'name': 'stream_server', 'language_key': 34001, 'lookup': 'ip', 'display': 'descr'}, 'timeshift': {'name': 'timeshift', 'language_key': 34002}, 'bitrate': {'name': 'bitrate', 'language_key': 34004}, 'timezone': {'name': 'timezone', 'language_key': 34003, 'defined': [('-12', '-12 GMT (New Zealand Standard Time)'), ('-11', '-11 GMT (Midway Islands Time)'), ('-10', '-10 GMT (Hawaii Standard Time)'), ('-9', '-9 GMT (Alaska Standard Time)'), ('-8', '-8 GMT (Pacific Standard Time)'), ('-7', '-7 GMT (Mountain Standard Time)'), ('-6', '-6 GMT (Central Standard Time)'), ('-5', '-5 GMT (Eastern Standard Time)'), ('-4', '-4 GMT (Puerto Rico and US Virgin Islands Time)'), ('-3', '-3 GMT (Argentina Standard Time)'), ('-2', '-2 GMT'), ('-1', '-1 GMT (Central African Time)'), ('0', '0 GMT (Greenwich Mean Time)'), ('1', '+1 GMT (European Central Time)'), ('2', '+2 GMT (Eastern European Time)'), ('3', '+3 GMT (Eastern African Time)'), ('4', '+4 GMT (Near East Time)'), ('5', '+5 GMT (Pakistan Lahore Time)'), ('6', '+6 GMT (Bangladesh Standard Time)'), ('7', '+7 GMT (Vietnam Standard Time)'), ('8', '+8 GMT (China Taiwan Time)'), ('9', '+9 GMT (Japan Standard Time)'), ('10', '+10 GMT (Australia Eastern Time)'), ('11', '+11 GMT (Solomon Standard Time)')]}}
+		
+		self.COLORSCHEMA = {'Silver': 'ddefefef'}
 	
 	def _request(self, cmd, params, inauth = None):
 		
@@ -195,6 +197,7 @@ class kartina:
 			self.channels = []
 			
 			for channelGroup in jsonChannels['groups']:
+				color = self._resolveColor(channelGroup['color'])
 				for channel in channelGroup['channels']:
 					programm = ""
 					if 'epg_progname' in channel:
@@ -216,10 +219,15 @@ class kartina:
 					if duration > 0 :
 						percent = (servertime - epg_start) * 100 / duration
 					
+					if 'icon' in channel:
+						icon = 'http://iptv.kartina.tv%s' % channel['icon']
+					else:
+						icon = ''
+					
 					channel2add = { 
 							'title':	channel['name'],
 							'id':		channel['id'],
-							'icon':		'http://iptv.kartina.tv%s' % channel['icon'],
+							'icon':		icon,
 							'info':		desc,
 							'subtitle':	prog,
 							'is_video':	('is_video' in channel) and (channel['is_video']),
@@ -229,13 +237,25 @@ class kartina:
 							'duration':	(duration / 60),
 							'is_protected': ('protected' in channel) and (channel['protected']),
 							'source':	channel,
-							'genre':	channelGroup['name']
+							'genre':	channelGroup['name'],
+							'color':	color,
 						}
 					self.channels.append(channel2add)
 				
 			self.channels_ttl = time() + 600
 		
 		return self.channels
+	
+	def _resolveColor(self, color = False):
+		if color and color in self.COLORSCHEMA:
+			return self.COLORSCHEMA[color]
+		
+		if color:
+			p = re.compile('^#')
+			if re.match(p, str(color)):
+				return re.sub(p, 'ee', str(color))
+		
+		return 'eeffffff'	# almost white
 	
 	def getStreamUrl(self, id, gmt = None, code = None): 
 		params = 'cid=%s' % id
