@@ -115,6 +115,8 @@ class rodnoe:
 		
 		self.supported_settings = {'time_shift': {'name': 'time_shift', 'language_key': 34002, 'defined': [('0', '0'), ('60', '1'), ('120', '2'), ('180', '3'), ('240', '4'), ('300', '5'), ('360', '6'), ('420', '7'), ('480', '8'), ('540', '9'), ('600', '10'), ('660', '11'), ('720', '12')]}, 'time_zone': {'name': 'time_zone', 'language_key': 34003, 'defined': [('-720', '-12 GMT (New Zealand Standard Time)'), ('-660', '-11 GMT (Midway Islands Time)'), ('-600', '-10 GMT (Hawaii Standard Time)'), ('-540', '-9 GMT (Alaska Standard Time)'), ('-480', '-8 GMT (Pacific Standard Time)'), ('-420', '-7 GMT (Mountain Standard Time)'), ('-360', '-6 GMT (Central Standard Time)'), ('-300', '-5 GMT (Eastern Standard Time)'), ('-240', '-4 GMT (Puerto Rico and US Virgin Islands Time)'), ('-180', '-3 GMT (Argentina Standard Time)'), ('-120', '-2 GMT'), ('-60', '-1 GMT (Central African Time)'), ('0', '0 GMT (Greenwich Mean Time)'), ('60', '+1 GMT (European Central Time)'), ('120', '+2 GMT (Eastern European Time)'), ('180', '+3 GMT (Eastern African Time)'), ('240', '+4 GMT (Near East Time)'), ('300', '+5 GMT (Pakistan Lahore Time)'), ('360', '+6 GMT (Bangladesh Standard Time)'), ('420', '+7 GMT (Vietnam Standard Time)'), ('480', '+8 GMT (China Taiwan Time)'), ('540', '+9 GMT (Japan Standard Time)'), ('600', '+10 GMT (Australia Eastern Time)'), ('660', '+11 GMT (Solomon Standard Time)')]}}
 		
+		self.COLORSCHEMA = {'#000000': 'ddffffff'}	# default black looks not great on black background
+		
 	def _request(self, cmd, params, inauth = None):
 		
 		if self.AUTH_OK == False:
@@ -171,7 +173,7 @@ class rodnoe:
 		response = self._request('login', 'login=%s&pass=%s' % (self.login, md5pass), 1)
 		self.AUTH_OK = False
 		
-		if response['sid']:
+		if 'sid' in response:
 			self.media_key = response['media_key']
 			self.SID = response['sid']
 			self.SID_NAME = response['sid_name']
@@ -210,6 +212,7 @@ class rodnoe:
 			servertime = time();
 		res = []
 		for group in response['groups']:
+			color = self._resolveColor(group['color'])
 			for channel in group['channels']:
 				icon = re.sub('%ICON%', channel['icon'], response['icons']['w40h30'])
 				epg_start = 0;
@@ -238,10 +241,22 @@ class rodnoe:
 					'duration':	(duration / 60),
 					'is_protected': ('protected' in channel) and (int(channel['protected'])),
 					'source':	channel,
-					'genre':	group['name'] or ""
+					'genre':	group['name'] or "",
+					'color':	color,
 				})
 		
 		return res
+	
+	def _resolveColor(self, color = False):
+		if color and color in self.COLORSCHEMA:
+			return self.COLORSCHEMA[color]
+		
+		if color:
+			p = re.compile('^#')
+			if re.match(p, str(color)):
+				return re.sub(p, 'ee', str(color))
+		
+		return 'eeffffff'	# almost white
 	
 	def getEPG(self, chid, dt = None):
 		if dt == None:

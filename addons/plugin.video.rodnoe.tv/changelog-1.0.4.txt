@@ -1,3 +1,8 @@
+[B]1.0.4[/B]
+Fixed checking auth problem if login is not defined
+Added theoretical support of native RodnoeTV channels groups colorizing
+Removed percentage for the channels where duration is not available
+
 [B]1.0.3[/B]
 Added current program duration and %% (thanks to Alexandr Dubovikov)
 
