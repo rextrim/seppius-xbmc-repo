@@ -225,7 +225,7 @@
 				<expression>href="/level/19/film/(\d+)/"</expression>
 			</RegExp>
 			<!--POSTERS-->
-			<RegExp input="$$1" output="&lt;url function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+			<RegExp input="$$1" conditional="posters_from_kinopoisk" output="&lt;url function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
 				<expression>href="(/level/17/film/([0-9]+)/)"</expression>
 			</RegExp>
 			<!--TRAILER-->
@@ -257,13 +257,18 @@
 			<expression noclean="1"/>
 		</RegExp>
 	</GetDetails>
+	<GetPoster dest="4">
+		<RegExp input="$$1" output="&lt;details&gt;&lt;thumb preview=&quot;http://st.kinopoisk.ru/images/poster/sm_\1.jpg&quot;&gt;\2&lt;/thumb&gt;&lt;/details&gt;" dest="4">
+				<expression repeat="no" noclean="1">&lt;a href="/picture/([0-9]+)/"&gt;[^&lt;]+&lt;img.*?src="([^"]+)"</expression>
+		</RegExp>
+	</GetPoster>
 	<GMP dest="4">
 		<RegExp input="$$8" output="&lt;details&gt;\1&lt;/details&gt;" dest="4+">
-			<RegExp input="$$1" output="&lt;thumb preview=&quot;http://www.kinopoisk.ru/images/poster/sm_\1&quot;&gt;http://www.kinopoisk.ru/images/poster/\1&lt;/thumb&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;a href="/picture/[0-9]+/"&gt;&lt;img class="new" src="/images/poster/sm_([^"]+)" width</expression>
+			<RegExp input="$$1" output="&lt;url function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;a href="(/picture/[0-9]+/)"&gt;&lt;img class="new" src="http://st.[^"]+" width</expression>
 			</RegExp>
-			<RegExp input="$$1" output="&lt;thumb preview=&quot;http://www.kinopoisk.ru/images/poster/sm_\1&quot;&gt;http://www.kinopoisk.ru/images/poster/\1&lt;/thumb&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;a href="/picture/[0-9]+/"&gt;&lt;img  src="/images/poster/sm_([^"]+)" width</expression>
+			<RegExp input="$$1" output="&lt;url function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;a href="(/picture/[0-9]+/)"&gt;&lt;img  src="http://st.[^"]+" width</expression>
 			</RegExp>
 			<RegExp input="$$1" output="\1" dest="7">
 				<expression noclean="1">&lt;div class="navigator"&gt;(.*?)&lt;/div&gt;</expression>
@@ -276,8 +281,8 @@
 	</GMP>
 	<GMP_SINGLE dest="4">
 		<RegExp input="$$8" output="&lt;details&gt;\1&lt;/details&gt;" dest="4+">
-			<RegExp input="$$1" output="&lt;thumb preview=&quot;http://www.kinopoisk.ru/images/poster/sm_\1&quot;&gt;http://www.kinopoisk.ru/images/poster/\1&lt;/thumb&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;a href="/picture/[0-9]+/"&gt;&lt;img  src="/images/poster/sm_([^"]+)" width</expression>
+			<RegExp input="$$1" output="&lt;url function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;a href="(/picture/[0-9]+/)"&gt;&lt;img  src="http://st.[^"]+" width</expression>
 			</RegExp>
 			<expression noclean="1"/>
 		</RegExp>
