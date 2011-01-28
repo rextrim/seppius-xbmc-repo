@@ -461,14 +461,14 @@
 			<RegExp input="$$1" output="\1" dest="9">
 				<expression clear="yes" noclean="1">&lt;tr&gt;&lt;td colspan=3&gt;&lt;a name="actor"&gt;&lt;/td&gt;&lt;/tr&gt;.+?&lt;/table&gt;(.*?)&lt;table</expression>
 			</RegExp>
-			<RegExp conditional="!rus_actor_names" input="$$9" output="&lt;n&gt;\2&lt;r&gt;\3&lt;t&gt;http://www.kinopoisk.ru/images/actor/\1&lt;/e&gt;" dest="9">
-				<expression repeat="yes" trim="3">&lt;img src="/images/(?:sm_actor/([0-9]+.jpg)|no-poster.gif)" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;(.*?)&lt;/a&gt;&lt;b&gt;.*?&lt;/b&gt;... ([^&lt;,]+)</expression>
+			<RegExp conditional="!rus_actor_names" input="$$9" output="&lt;n&gt;\2&lt;r&gt;\3&lt;t&gt;http://st.kinopoisk.ru/images/actor/\1&lt;/e&gt;" dest="9">
+				<expression repeat="yes" trim="3">&lt;img src="http://st.kinopoisk.ru/images/(?:sm_actor/([0-9]+.jpg)|no-poster.gif)" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;(.*?)&lt;/a&gt;&lt;b&gt;.*?&lt;/b&gt;... ([^&lt;,]+)</expression>
 			</RegExp>
-			<RegExp conditional="rus_actor_names" input="$$9" output="&lt;n&gt;\2&lt;r&gt;\3&lt;t&gt;http://www.kinopoisk.ru/images/actor/\1&lt;/e&gt;" dest="9">
-				<expression repeat="yes" trim="3">&lt;img src="/images/(?:sm_actor/([0-9]+.jpg)|no-poster.gif)" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;([а-€ј-я][^&lt;]*)&lt;/a&gt;&lt;b&gt;.*?&lt;/b&gt;... ([^&lt;,]+)</expression>
+			<RegExp conditional="rus_actor_names" input="$$9" output="&lt;n&gt;\2&lt;r&gt;\3&lt;t&gt;http://st.kinopoisk.ru/images/actor/\1&lt;/e&gt;" dest="9">
+				<expression repeat="yes" trim="3">&lt;img src="http://st.kinopoisk.ru/images/(?:sm_actor/([0-9]+.jpg)|no-poster.gif)" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;([а-€ј-я][^&lt;]*)&lt;/a&gt;&lt;b&gt;.*?&lt;/b&gt;... ([^&lt;,]+)</expression>
 			</RegExp>
 			<RegExp input="$$9" output="&lt;actor&gt;&lt;name&gt;\1&lt;/name&gt;&lt;role&gt;\2&lt;/role&gt;&lt;thumb&gt;\3&lt;/thumb&gt;&lt;/actor&gt;" dest="7">
-				<expression repeat="yes" trim="3">&lt;n&gt;([^&lt;]+)&lt;r&gt;(?:играет |)([^&lt;]+)&lt;t&gt;(?:(http://www.kinopoisk.ru/images/actor/[0-9]+.jpg)&lt;/e&gt;|http://www.kinopoisk.ru/images/actor/&lt;/e&gt;)</expression>
+				<expression repeat="yes" trim="3">&lt;n&gt;([^&lt;]+)&lt;r&gt;(?:играет |)([^&lt;]+)&lt;t&gt;(?:(http://st.kinopoisk.ru/images/actor/[0-9]+.jpg)&lt;/e&gt;|http://st.kinopoisk.ru/images/actor/&lt;/e&gt;)</expression>
 			</RegExp>
 			<!-- remove &nbsp; from actor roles -->
 			<RegExp input="$$7" output="\1&amp;nbsp;" dest="7">
@@ -481,14 +481,14 @@
 			<RegExp input="$$1" output="\1" dest="8">
 				<expression clear="yes" noclean="1">&lt;tr&gt;&lt;td colspan=3&gt;&lt;a name="director"&gt;&lt;/td&gt;&lt;/tr&gt;.+?&lt;/table&gt;(.*?)&lt;table</expression>
 			</RegExp>
-			<RegExp input="$$8" output="&lt;director&gt;\2&lt;/director&gt;" dest="7+">
-				<expression repeat="yes" trim="3">&lt;img src="([^"]+)" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;([^&lt;]+)&lt;/a&gt;</expression>
+			<RegExp input="$$8" output="&lt;director&gt;\1&lt;/director&gt;" dest="7+">
+				<expression repeat="yes" trim="3">&lt;img src="[^"]+" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;([^&lt;]+)&lt;/a&gt;</expression>
 			</RegExp>
 			<RegExp input="$$1" output="\1" dest="8">
 				<expression clear="yes" noclean="1">&lt;tr&gt;&lt;td colspan=3&gt;&lt;a name="writer"&gt;&lt;/td&gt;&lt;/tr&gt;(.*?)&lt;table</expression>
 			</RegExp>
-			<RegExp input="$$8" output="&lt;credits&gt;\2&lt;/credits&gt;" dest="7+">
-				<expression repeat="yes" trim="3">&lt;img src="([^"]+)" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;([^&lt;]+)&lt;/a&gt;</expression>
+			<RegExp input="$$8" output="&lt;credits&gt;\1&lt;/credits&gt;" dest="7+">
+				<expression repeat="yes" trim="3">&lt;img src="[^"]+" alt=.+?&lt;p&gt;&lt;a href="/level/4/people/\d+/"&gt;([^&lt;]+)&lt;/a&gt;</expression>
 			</RegExp>
 			<expression noclean="1"/>
 		</RegExp>
