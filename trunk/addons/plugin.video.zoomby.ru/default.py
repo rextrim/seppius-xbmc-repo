@@ -54,7 +54,7 @@ def Get(url, ref=None, post=None):
 	opener = urllib2.build_opener(h)
 	urllib2.install_opener(opener)
 	request = urllib2.Request(url, post)
-	request.add_header('User-Agent', 'Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
+	request.add_header('User-Agent', 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00')
 	request.add_header('Host', SITE_HOSTNAME)
 	request.add_header('Accept', 'text/html, application/xml, application/xhtml+xml, */*')
 	request.add_header('Accept-Language', 'ru,en;q=0.9')
@@ -152,7 +152,7 @@ def ShowRoot(url):
 	if http == None:
 		return
 	AddSearch(http)
-	raw1 = re.compile('<ul class="mainmenu">(.*?)</ul>', re.DOTALL).findall(http)
+	raw1 = re.compile('<ul id="mainmenucls" class="mainmenu">(.*?)</ul>', re.DOTALL).findall(http)
 	if len(raw1) != 0:
 		raw2 = re.compile('<a href="(.*?)">(.*?)</a>\s*<div class="msubmenu">(.*?)</div>', re.DOTALL).findall(raw1[0])
 		if len(raw2) != 0:
@@ -277,7 +277,7 @@ def WATCH(url):
 		getplaylist = re.compile('flashVars="video=(.*?)&.*"').findall(embed)[0]
 		http2 = Get(getplaylist, swf)
 		sb = re.compile('<meta base="(.*?)"').findall(http2)[0]
-		rawFD = re.compile('<video src="(.*?)" system-bitrate="(.*?)"/>').findall(http2)
+		rawFD = re.compile('<video system-bitrate="(.*?)" src="(.*?)" />').findall(http2)
 	except:
 		xbmc.output('[%s] WATCH HTTP: %s' % (PLUGIN_NAME, http))
 		xbmc.output('[%s] WATCH ERR: embed processed failure' % (PLUGIN_NAME))
@@ -287,11 +287,11 @@ def WATCH(url):
 	spcn = len(rawFD)
 	if spcn == 1: s = 0
 	else:
-		for x in range(spcn): list.append(rawFD[x][1])
+		for x in range(spcn): list.append(rawFD[x][0])
 		s = xbmcgui.Dialog().select('Качество?', list)
 	if s < 0: return
-	vp = rawFD[s][0]
-	vq = rawFD[s][1]
+	vp = rawFD[s][1]
+	vq = rawFD[s][0]
 	p = '%s PlayPath=%s swfurl=%s tcUrl=%s swfVfy=True'%(sb, vp, swf, sb)
 	i = xbmcgui.ListItem(path = p)
 	xbmcplugin.setResolvedUrl(h, True, i)
