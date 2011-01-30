@@ -4,7 +4,6 @@
 # kartina tv XML/json api
 
 import urllib2
-import demjson
 
 from time import time
 import datetime
@@ -12,7 +11,7 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '2.6'
+__version__ = '2.7'
 
 try:
 	import xbmc, xbmcaddon
@@ -78,11 +77,20 @@ COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.kartina
 try:											# Let's see if cookielib is available
 	import cookielib            
 except ImportError:
-	xbmc.output('[RodnoeTV] cookielib is not available..')
+	xbmc.output('[KartinaTV] cookielib is not available..')
 	pass
 else:
 	COOKIEJAR = cookielib.LWPCookieJar()		# This is a subclass of FileCookieJar that has useful load and save methods
 
+
+try:
+	import json
+except ImportError:
+	xbmc.output('[KartinaTV] module json is not available. using demjson')
+	import demjson
+	JSONDECODE = demjson.decode
+else:
+	JSONDECODE = json.loads
 
 KARTINA_API = 'http://iptv.kartina.tv/api/json/%s'
 
@@ -145,7 +153,7 @@ class kartina:
 		xbmc.output('[Kartina.TV] Got %s' % rez)
 		
 		try:
-			res = demjson.decode(rez)
+			res = JSONDECODE(rez)
 		except:
 			xbmc.output('[Kartina.TV] Error.. :(')
 			
@@ -238,6 +246,9 @@ class kartina:
 							'is_protected': ('protected' in channel) and (channel['protected']),
 							'source':	channel,
 							'genre':	channelGroup['name'],
+							'epg_start': epg_start,
+							'epg_end':	epg_end,
+							'servertime': servertime,
 							'color':	color,
 						}
 					self.channels.append(channel2add)
