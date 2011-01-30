@@ -153,7 +153,7 @@ def ShowChannelsList(plugin):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
 
 	channels = plugin.getChannelsList()
-	
+	total_items = len(channels)
 	counter = 0
 	for channel in channels:
 		if __settings__.getSetting('show_protected') == 'false':
@@ -177,12 +177,38 @@ def ShowChannelsList(plugin):
 			
 			color = channel['color']
 			
-			if channel['duration']:
+			if __settings__.getSetting('show_played') != 'false' and channel['duration']:
 				played = ' [%s%%]' % channel['percent']
 			else:
 				played = ''
 			
-			label = '[B] [COLOR %s]%s[/COLOR].%s[/B] %s %s' % (color, channel['title'], played, channel['subtitle'], channel['info'])
+			timeFieldSetting = int(__settings__.getSetting('show_time_field'))
+			if timeFieldSetting == 1:
+				if channel['epg_start']:
+					channel['duration'] = int(datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H')) * 60 + int(datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%M'))
+				else:
+					channel['duration'] = 0
+			elif timeFieldSetting == 2:
+				if channel['epg_end']:
+					channel['duration'] = int(datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H')) * 60 + int(datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%M'))
+				else:
+					channel['duration'] = 0
+			elif timeFieldSetting == 3:
+				pass
+			elif timeFieldSetting == 4:
+				if channel['epg_end']:
+					channel['duration'] = (channel['epg_end'] - channel['servertime']) / 60
+				else:
+					channel['duration'] = 0
+			else:
+				channel['duration'] = 0
+			
+			if __settings__.getSetting('colorize_groups') == 'false':
+				channel_title = channel['title']
+			else:
+				channel_title = '[COLOR %s]%s[/COLOR]' % (color, channel['title'])
+			
+			label = '[B] %s.%s[/B] %s %s' % (channel_title, played, channel['subtitle'], channel['info'])
 			
 			item.setLabel(label)			
  			item.setIconImage(channel['icon'])
@@ -207,7 +233,7 @@ def ShowChannelsList(plugin):
 			
 			item.addContextMenuItems(popup, True)
 			
-			xbmcplugin.addDirectoryItem(handle,uri,item, False)
+			xbmcplugin.addDirectoryItem(handle,uri,item, False, total_items)
 	
 	#xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TRACKNUM)
 	#xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)

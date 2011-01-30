@@ -1,3 +1,9 @@
+[B]1.0.5[/B]
+Improved JSON parsing speed on AppleTV 2
+Minor channels list rendering tuning
+Channel list display options extended
+Addon settings divided into sections
+
 [B]1.0.4[/B]
 Fixed "missing icon" crash
 Colorizing improved and matches to original channel groups colors

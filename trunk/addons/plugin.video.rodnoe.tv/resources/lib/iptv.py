@@ -3,14 +3,13 @@
 # eugene.bond@gmail.com
 
 import urllib2
-import demjson
 from md5 import md5
 import datetime
 import re, os, sys
 from time import time
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '1.5'
+__version__ = '1.6'
 
 try:
 	import xbmc, xbmcaddon
@@ -83,6 +82,14 @@ except ImportError:
 else:
 	COOKIEJAR = cookielib.LWPCookieJar()		# This is a subclass of FileCookieJar that has useful load and save methods
 
+try:
+	import json
+except ImportError:
+	xbmc.output('[RodnoeTV] module json is not available. using demjson')
+	import demjson
+	JSONDECODE = demjson.decode
+else:
+	JSONDECODE = json.loads
 
 RODNOE_API = 'http://file-teleport.com/iptv/api/json/%s'
 
@@ -152,7 +159,7 @@ class rodnoe:
 		
 		
 		try:
-			res = demjson.decode(rez)
+			res = JSONDECODE(rez)
 		except:
 			xbmc.output('[Rodnoe.TV] Error.. :(')
 			
@@ -242,6 +249,9 @@ class rodnoe:
 					'is_protected': ('protected' in channel) and (int(channel['protected'])),
 					'source':	channel,
 					'genre':	group['name'] or "",
+					'epg_start': epg_start,
+					'epg_end':	epg_end,
+					'servertime': servertime,
 					'color':	color,
 				})
 		
