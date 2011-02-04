@@ -22,7 +22,7 @@
 import xbmc, xbmcgui, xbmcplugin, urllib2, urllib, re, string, sys, os, traceback, random
 from urllib import urlretrieve, urlcleanup
 
-Header_UserAgent = "Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60"
+Header_UserAgent = 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00'
 Header_Host      = "www.ivi.ru"
 Header_AccLang   = "ru, *"
 
@@ -67,23 +67,22 @@ def ShowRoot():
 		return
 	raw_1 = re.compile('<li class="clearfix">(.*?)</div>', re.DOTALL).findall(http)
 	x = 1
-	for lev1 in raw_1:
-		raw_2 = re.compile('<a href="(.*?)" title=".*" class="clearfix">(.*?)<span class="white">', re.DOTALL).findall(lev1)
-		if len(raw_2) > 0:
-			(gu, gn) = raw_2[0]
+	if len(raw_1) > 0:
+		raw_2 = re.compile('<li class="clearfix">.+?<a href="(.+?)" title="+?">(.+?)</a>(.+?)</li>', re.DOTALL).findall(raw_1[0])
+		for gu, gn, fev1 in raw_2:
 			gn = gn.replace('\n', '').replace(' ', '')
 			listitem = xbmcgui.ListItem('%s. %s'%(x, gn))
 			url = '%s?mode=ShowList&url=%s&name=%s'%(sys.argv[0], urllib.quote_plus(ivihomepage_url + gu), urllib.quote_plus(gn))
 			xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 			y = 1
-			raw_2 = re.compile('<li>\s*<a href="(.*?)" title="">(.*?)</a>\s*</li>').findall(lev1)
+			raw_2 = re.compile('<a href="(.*?)" title="">(.*?)</a>').findall(fev1)
 			for rurl, subname in raw_2:
 				cgn = '%s : %s'%(gn,subname)
 				listitem = xbmcgui.ListItem('%s.%s. %s'%(str(x),str(y),cgn))
 				url = '%s?mode=ShowList&url=%s&name=%s'%(sys.argv[0], urllib.quote_plus(ivihomepage_url + rurl), urllib.quote_plus(cgn))
 				xbmcplugin.addDirectoryItem(handle, url, listitem, True)
 				y += 1
-		x += 1
+			x += 1
 
 
 def ShowList(work_url, genre):
@@ -99,7 +98,7 @@ def ShowList(work_url, genre):
 	for l1 in r1:
 		#xbmc.output(l1)
 		rate = 0
-		rrate = re.compile('<span class="rate png">(.*?)</span>').findall(l1)
+		rrate = re.compile('<span class="rate png">(.[0-9]*)</span>').findall(l1)
 		if len(rrate) > 0: rate = int(rrate[0])
 		pupt = re.compile('<a href="(.*?)" title="">(.*?)</a>').findall(l1)
 		if len(pupt) == 0:
@@ -198,6 +197,7 @@ def GET(target_url, target_header, postdata = None):
 		f = urllib2.urlopen(req)
 		a = f.read()
 		f.close()
+		#print a
 		return a
 	except:
 		dialog = xbmcgui.Dialog()
@@ -262,7 +262,7 @@ def PlayURL(wurl, img, name):
 	listitem = xbmcgui.ListItem(name, iconImage = img, thumbnailImage = img)
 
 	h_1 = '|Referer=' + urllib.quote_plus(real_swf_url)
-	h_2 = '&User-Agent=' + urllib.quote_plus('Opera/9.80 (X11; Linux i686; U; ru) Presto/2.6.30 Version/10.70')
+	h_2 = '&User-Agent=' + urllib.quote_plus('Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00')
 	h_3 = '&Accept=' + urllib.quote_plus('text/html, application/xml, application/xhtml+xml, */*')
 	h_4 = '&Accept-Language=' + urllib.quote_plus('ru,en;q=0.9')
 	h_5 = '&Accept-Charset=' + urllib.quote_plus('iso-8859-1, utf-8, utf-16, *;q=0.1')
