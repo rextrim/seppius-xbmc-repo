@@ -62,9 +62,8 @@ def adIO(adName, adHandle, adPath):
 	SHMAC = ''
 	MAC_ADDR = GetHWAddr()
 	if MAC_ADDR != None:
-		import sha
-		SHMAC = sha.new(MAC_ADDR).hexdigest().upper()
-
+		import hashlib
+		SHMAC = hashlib.sha1(MAC_ADDR).hexdigest().upper()
 	def addElement(Doc, pChild, keyname, keyval):
 		newNode = Doc.createElement(keyname)
 		newNode.appendChild(Doc.createTextNode(urllib.quote_plus(str(keyval))))
@@ -74,42 +73,49 @@ def adIO(adName, adHandle, adPath):
 
 	rootelem = doc.createElement('analytics')
 
-	PyChild = doc.createElement('platform_python')
-	addElement(doc, PyChild, 'build', platform.python_build())
-	addElement(doc, PyChild, 'compiler', platform.python_compiler())
-	addElement(doc, PyChild, 'version', platform.python_version())
-	rootelem.appendChild(PyChild)
+	try:
+		PyChild = doc.createElement('platform_python')
+		addElement(doc, PyChild, 'build', platform.python_build())
+		addElement(doc, PyChild, 'compiler', platform.python_compiler())
+		addElement(doc, PyChild, 'version', platform.python_version())
+		rootelem.appendChild(PyChild)
+	except:
+		pass
 
-	#SyChild = doc.createElement('platform_system')
-	#addElement(doc, SyChild, 'architecture', platform.architecture())
-	#addElement(doc, SyChild, 'machine', platform.machine())
-	#addElement(doc, SyChild, 'node', platform.node())
-	#addElement(doc, SyChild, 'platform', platform.platform())
-	#addElement(doc, SyChild, 'processor', platform.processor())
-	#addElement(doc, SyChild, 'release', platform.release())
-	#addElement(doc, SyChild, 'system', platform.system())
-	#addElement(doc, SyChild, 'version', platform.version())
-	#addElement(doc, SyChild, 'uname', platform.uname())
-	#rootelem.appendChild(SyChild)
+	try:
+		SyChild = doc.createElement('platform_system')
+		addElement(doc, SyChild, 'architecture', platform.architecture())
+		addElement(doc, SyChild, 'machine', platform.machine())
+		addElement(doc, SyChild, 'node', platform.node())
+		addElement(doc, SyChild, 'platform', platform.platform())
+		addElement(doc, SyChild, 'processor', platform.processor())
+		addElement(doc, SyChild, 'release', platform.release())
+		addElement(doc, SyChild, 'system', platform.system())
+		addElement(doc, SyChild, 'version', platform.version())
+		addElement(doc, SyChild, 'uname', platform.uname())
+		rootelem.appendChild(SyChild)
+	except:
+		pass
 
-	AdChild = doc.createElement('addon')
-	addElement(doc, AdChild, 'name', adName)
-	addElement(doc, AdChild, 'handle', adHandle)
-	addElement(doc, AdChild, 'path', adPath)
-	addElement(doc, AdChild, 'shmac', SHMAC)
-	rootelem.appendChild(AdChild)
+	try:
+		AdChild = doc.createElement('addon')
+		addElement(doc, AdChild, 'name', adName)
+		addElement(doc, AdChild, 'handle', adHandle)
+		addElement(doc, AdChild, 'path', adPath)
+		addElement(doc, AdChild, 'shmac', SHMAC)
+		rootelem.appendChild(AdChild)
+	except:
+		pass
 
 	doc.appendChild(rootelem)
 
 	import httplib
 	conn =   httplib.HTTPConnection(host='xbmcstat.co.cc', port=80)
 	conn.request(method='POST', url='/cgi-bin/adc.py', body=doc.toxml(encoding='utf-8'))
-	#response = conn.getresponse()
+	response = conn.getresponse()
 	#hdrs = response.getheader('Set-Cookie')
 	#if hdrs != None: print 'Save %s'%hdrs
 	#print 'Set-Cookie %s'%hdrs
-	#print 'status %d'%response.status
-	#print 'reason %s'%response.reason
-	print 'adIO: %s'%response.read()
+	print 'adIO STATUS: %d REASON: %s DATA: %s' % (response.status, response.reason, response.read())
 	conn.close()
 
