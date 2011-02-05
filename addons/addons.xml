@@ -567,25 +567,6 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.expert.tv"
-       name="EXPERT.TV"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с http://tv.expert.ru</summary>
-    <description>Все самое актуальное, с сайта http://tv.expert.ru</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.audio.moskva.fm"
        name="MOSKVA.FM"
        version="0.0.5"
