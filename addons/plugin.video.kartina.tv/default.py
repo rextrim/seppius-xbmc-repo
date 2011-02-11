@@ -137,7 +137,13 @@ def Archive(plugin, id, params):
 	xbmcplugin.addDirectoryItem(handle,uri,goahead,True)
 	
 	xbmcplugin.endOfDirectory(handle, True, in_arch)
-	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmc.executebuiltin( "Container.SetViewMode(51)")
+	if currentProg:
+		try:
+			win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+			win.getControl(win.getFocusId()).selectItem(currentProg+1)
+		except:
+			xbmc.output('[%s] cannot to select %s item', PLUGIN_NAME, currentProg)
 	
 
 def resetAlarms(plugin, mode):
@@ -208,6 +214,10 @@ def ShowChannelsList(plugin):
 			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay})
 			
 			item.setProperty('IsPlayable', 'true')
+			
+			if 'aspect_ratio' in channel and channel['aspect_ratio']:
+				item.setProperty('AspectRatio', channel['aspect_ratio'])
+			
 			popup = []
 			
 			if channel['have_epg'] != False:
@@ -236,7 +246,7 @@ def ShowChannelsList(plugin):
 	
 	if refresh_rate > 0:
 		xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))
-	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmc.executebuiltin( "Container.SetViewMode(51)")
 
 
 def Video(plugin, params):
@@ -479,7 +489,7 @@ if PLUGIN_CORE.testAuth() == False:
 	__settings__.openSettings()
 else:
 	
-	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmc.executebuiltin( "Container.SetViewMode(51)")
 	#TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
 	
 	if 'mode' in params:

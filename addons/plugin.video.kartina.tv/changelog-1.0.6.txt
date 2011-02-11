@@ -1,3 +1,10 @@
+[B]1.0.6[/B]
+Autoselection of active programme in EPG/Archive view
+Stoped forcing of full list mode
+Auth via HTTP POST (to remove sensitive data from the log)
+Reduced info logging (some stuff moved into debug log level)
+Minor code refactoring 
+
 [B]1.0.5[/B]
 Improved JSON parsing speed on AppleTV 2
 Minor channels list rendering tuning

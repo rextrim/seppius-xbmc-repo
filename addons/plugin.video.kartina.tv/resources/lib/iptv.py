@@ -11,7 +11,10 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '2.7'
+__version__ = '2.8'
+
+IPTV_DOMAIN = 'iptv.kartina.tv'
+IPTV_API = 'http://%s/api/json/%%s' % IPTV_DOMAIN
 
 try:
 	import xbmc, xbmcaddon
@@ -21,7 +24,7 @@ except ImportError:
 		def __init__(self):
 			self.nonXBMC = True
 		
-		def output(self, data):
+		def output(self, data, level=''):
 			print data
 		
 		def getInfoLabel(self, param):
@@ -72,7 +75,7 @@ class platform_boo:
 platform = platform_boo()
 
 COOKIEJAR = None
-COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.kartina.tv.txt')
+COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % IPTV_DOMAIN)
 
 try:											# Let's see if cookielib is available
 	import cookielib            
@@ -91,8 +94,6 @@ except ImportError:
 	JSONDECODE = demjson.decode
 else:
 	JSONDECODE = json.loads
-
-KARTINA_API = 'http://iptv.kartina.tv/api/json/%s'
 
 
 class kartina:
@@ -124,8 +125,12 @@ class kartina:
 			if inauth == None:
 				self._auth(self.login, self.password)
 		
-		url = KARTINA_API % cmd
-		url = url + '?' + params
+		url = IPTV_API % cmd
+		if inauth:
+			postparams = params
+		else:
+			url = url + '?' + params
+			postparams = None
 		
 		#log.info('Requesting %s' % url)
 		xbmc.output('[Kartina.TV] REQUESTING: %s' % url)
@@ -143,22 +148,22 @@ class kartina:
 		
 		xbmc.output('[Kartina.TV] UA: %s' % ua)
 		
-		req = urllib2.Request(url, None, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest'})
+		req = urllib2.Request(url, postparams, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest'})
 		
 		if COOKIEJAR == None and (self.SID != None):
 			req.add_header("Cookie", self.SID_NAME + "=" + self.SID + ";")
 		
 		rez = urllib2.urlopen(req).read()
 		
-		xbmc.output('[Kartina.TV] Got %s' % rez)
+		xbmc.output('[Kartina.TV] Got %s' % rez, level=xbmc.LOGDEBUG)
 		
 		try:
 			res = JSONDECODE(rez)
 		except:
 			xbmc.output('[Kartina.TV] Error.. :(')
-			
-		xbmc.output('[Kartina.TV] Got JSON: %s' % res)
 		
+		#xbmc.output('[Kartina.TV] Got JSON: %s' % res)
+			
 		self._errors_check(res)
 		
 		if COOKIEJAR != None:
@@ -176,7 +181,7 @@ class kartina:
 			self.SID_NAME = response['sid_name']
 			self.AUTH_OK = True
 			if COOKIEJAR != None:
-				cookie = cookielib.Cookie(0, self.SID_NAME, self.SID, '80', False, 'iptv.kartina.tv', True, False, '/', True, False, time() + 600, False, None, None, {})
+				cookie = cookielib.Cookie(0, self.SID_NAME, self.SID, '80', False, IPTV_DOMAIN, True, False, '/', True, False, time() + 600, False, None, None, {})
 				COOKIEJAR.set_cookie(cookie)
 			value, options = self.getSettingCurrent('timeshift')
 			self.timeshift = int(value) * 3600
@@ -188,7 +193,7 @@ class kartina:
 			if 'message' in err:
 				xbmc.output('[Kartina.TV] ERROR: %s' % err['message'])
 			if COOKIEJAR != None:
-				cookie = cookielib.Cookie(0, self.SID_NAME, None, '80', False, 'iptv.kartina.tv', True, False, '/', True, False, time() - 600, False, None, None, {})
+				cookie = cookielib.Cookie(0, self.SID_NAME, None, '80', False, IPTV_DOMAIN, True, False, '/', True, False, time() - 600, False, None, None, {})
 				COOKIEJAR.set_cookie(cookie)
 			self.AUTH_OK = False
 	
@@ -228,7 +233,7 @@ class kartina:
 						percent = (servertime - epg_start) * 100 / duration
 					
 					if 'icon' in channel:
-						icon = 'http://iptv.kartina.tv%s' % channel['icon']
+						icon = 'http://%s%s' % (IPTV_DOMAIN, channel['icon'])
 					else:
 						icon = ''
 					
@@ -339,7 +344,7 @@ class kartina:
 				'info':			vod['description'],
 				'is_video':		1,
 				'id':			vod['id'],
-				'icon':			'http://iptv.kartina.tv%s' % vod['poster'],
+				'icon':			'http://%s%s' % (IPTV_DOMAIN, vod['poster']),
 				'source':		vod
 			})
 			

@@ -141,7 +141,13 @@ def Archive(plugin, id, params):
 	xbmcplugin.addDirectoryItem(handle,uri,goahead,True)
 	
 	xbmcplugin.endOfDirectory(handle, True, in_arch)
-	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmc.executebuiltin( "Container.SetViewMode(51)")
+	if currentProg:
+		try:
+			win = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+			win.getControl(win.getFocusId()).selectItem(currentProg+1)
+		except:
+			xbmc.output('[%s] cannot to select %s item', PLUGIN_NAME, currentProg)
 
 
 def resetAlarms(plugin, mode):
@@ -210,11 +216,15 @@ def ShowChannelsList(plugin):
 			
 			label = '[B] %s.%s[/B] %s %s' % (channel_title, played, channel['subtitle'], channel['info'])
 			
-			item.setLabel(label)			
+			item.setLabel(label)
+			#item.setLabel2('xxxx')
  			item.setIconImage(channel['icon'])
 			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay})
-			
+			#, 'ChannelNumber': str(counter), 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M'), 'tvshowtitle': channel['title']
 			item.setProperty('IsPlayable', 'true')
+			
+			if 'aspect_ratio' in channel and channel['aspect_ratio']:
+				item.setProperty('AspectRatio', channel['aspect_ratio'])
 			
 			popup = []
 			
@@ -244,7 +254,9 @@ def ShowChannelsList(plugin):
 	
 	if refresh_rate > 0:
 		xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))
-	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmcplugin.setContent(handle, 'TVShows')
+	#xbmcplugin.setContent(handle=handle, content='episodes')
 
 def WatchTV(plugin, id, title, params):
 	if 'ts' in params:
@@ -402,7 +414,7 @@ if PLUGIN_CORE.testAuth() == False:
 	__settings__.openSettings()
 else:
 	
-	xbmc.executebuiltin( "Container.SetViewMode(51)")
+	#xbmc.executebuiltin( "Container.SetViewMode(51)")
 	#TRANSSID = '&_s=%s&_sn=%s' % (PLUGIN_CORE.SID, PLUGIN_CORE.SID_NAME)
 	
 	if 'mode' in params:
