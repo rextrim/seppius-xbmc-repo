@@ -9,7 +9,11 @@ import re, os, sys
 from time import time
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '1.6'
+__version__ = '1.7'
+
+IPTV_DOMAIN = 'file-teleport.com'
+IPTV_API = 'http://%s/iptv/api/json/%%s' % IPTV_DOMAIN
+
 
 try:
 	import xbmc, xbmcaddon
@@ -72,7 +76,7 @@ class platform_boo:
 platform = platform_boo()
 
 COOKIEJAR = None
-COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.rodnoe.tv.txt')
+COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % IPTV_DOMAIN)
 
 try:											# Let's see if cookielib is available
 	import cookielib            
@@ -90,9 +94,6 @@ except ImportError:
 	JSONDECODE = demjson.decode
 else:
 	JSONDECODE = json.loads
-
-RODNOE_API = 'http://file-teleport.com/iptv/api/json/%s'
-
 
 class rodnoe:
 	
@@ -130,8 +131,12 @@ class rodnoe:
 			if inauth == None:
 				self._auth(self.login, self.password)
 		
-		url = RODNOE_API % cmd
-		url = url + '?' + params
+		url = IPTV_API % cmd
+		if inauth:
+			postparams = params
+		else:
+			url = url + '?' + params
+			postparams = None
 		
 		xbmc.output('[Rodnoe.TV] Requesting %s' % url);
 		
@@ -148,14 +153,14 @@ class rodnoe:
 		
 		xbmc.output('[Rodnoe.TV] UA: %s' % ua)
 		
-		req = urllib2.Request(url, None, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'})
+		req = urllib2.Request(url, postparams, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'})
 		
 		if COOKIEJAR == None and (self.SID != None):
 			req.add_header("Cookie", self.SID_NAME + "=" + self.SID + ";")
 		
 		rez = urllib2.urlopen(req).read()
 		
-		#xbmc.output('[Rodnoe.TV] Got %s' % rez)
+		xbmc.output('[Rodnoe.TV] Got %s' % rez, level=xbmc.LOGDEBUG)
 		
 		
 		try:
@@ -163,7 +168,7 @@ class rodnoe:
 		except:
 			xbmc.output('[Rodnoe.TV] Error.. :(')
 			
-		xbmc.output('[Rodnoe.TV] Got JSON: %s' % res)
+		#xbmc.output('[Rodnoe.TV] Got JSON: %s' % res)
 		
 		self._errors_check(res)
 		
@@ -233,7 +238,11 @@ class rodnoe:
 				duration = epg_end - epg_start
 				percent = 0
 				if duration > 0:
-					percent = (servertime - epg_start) * 100 / duration					
+					percent = (servertime - epg_start) * 100 / duration
+				
+				aspect_ratio = None
+				if 'aspect_ratio' in channel:
+					aspect_ratio = channel['aspect_ratio']				
 
 				res.append({ 
 					'title':	channel['name'],
@@ -251,6 +260,7 @@ class rodnoe:
 					'genre':	group['name'] or "",
 					'epg_start': epg_start,
 					'epg_end':	epg_end,
+					'aspect_ratio': aspect_ratio,
 					'servertime': servertime,
 					'color':	color,
 				})
