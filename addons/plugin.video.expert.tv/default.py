@@ -29,7 +29,7 @@ icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png')
 h = int(sys.argv[1])
 
 def showMessage(heading, message, times = 3000):
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, 'http://www.expert.ru/d/expert.ru/img/logo.png'))
+    xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, 'http://expert.ru/d/expert.ru/img/logo.png'))
 
 def strip_html(text):
 	def fixup(m):
@@ -71,12 +71,12 @@ def strip_html(text):
 
 
 def GET(target):
-	targeturl = 'http://www.expert.ru' + target
+	targeturl = 'http://expert.ru' + target
 	#xbmc.output('targeturl='+targeturl)
 	try:
 		req = urllib2.Request(targeturl)
 		req.add_header(     'User-Agent','Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00')
-		req.add_header(           'Host','www.expert.ru')
+		req.add_header(           'Host','expert.ru')
 		req.add_header(         'Accept','text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*')
 		req.add_header('Accept-Language','ru-RU,ru;q=0.9,en;q=0.8')
 		req.add_header( 'Accept-Charset','utf-8, utf-16, *;q=0.1')
@@ -128,7 +128,7 @@ def getprogram(params):
 	for curli in s1:
 		try:
 			img1 = re.compile('<img src="(.*?)" ').findall(curli)
-			thumb = 'http://www.expert.ru' + img1[0]
+			thumb = 'http://expert.ru' + img1[0]
 		except: thumb = icon
 		try:
 			dat1 = re.compile('<div class="tl-date">(.*?)</div>').findall(curli)
@@ -180,7 +180,7 @@ def play(params):
 	try:
 		http = GET(urllib.unquote_plus(params['href']))
 		u = re.compile('files.push\("(.*?)"\);').findall(http)[0]
-		i = xbmcgui.ListItem(path = 'http://www.expert.ru' + u)
+		i = xbmcgui.ListItem(path = 'http://expert.ru' + u)
 		xbmcplugin.setResolvedUrl(h, True, i)
 	except Exception, e:
 		showMessage('НЕ МОГУ ВОСПРОИЗВЕСТИ', e, 3000)
