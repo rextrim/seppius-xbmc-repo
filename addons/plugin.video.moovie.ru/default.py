@@ -36,7 +36,7 @@ def Get(url, ref=None, post = None):
 	opener = urllib2.build_opener(h)
 	urllib2.install_opener(opener)
 	request = urllib2.Request(url, post)
-	request.add_header(     'User-Agent','Opera/10.60 (X11; openSUSE 11.3/Linux i686; U; ru) Presto/2.6.30 Version/10.60')
+	request.add_header(     'User-Agent','Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.01')
 	request.add_header('Accept-Language','ru,en;q=0.9')
 	if post != None:
 		request.add_header('X-Requested-With','XMLHttpRequest')
@@ -99,7 +99,6 @@ def AUTH():
 	dialog = xbmcgui.Dialog()
 	if (http.find('"ok":') == -1):
 		dialog.ok('moovie.ru', 'Ошибка. Пробуй еще!')
-		#__settings__.setSetting('cookie', '')
 		__settings__.setSetting('token', '')
 		dialog.ok('Небольшой HELP', 'Если вы ошиблись с e-mail или паролем, то',
 			'их можно изменить в настройках дополнения',
@@ -109,7 +108,8 @@ def AUTH():
 
 def openROOT(url):
 	try:
-		r2 = re.compile('<a href="(.*?)">(.*?)</a>').findall(re.compile('<div id="genres-list" >(.*?)</div>', re.DOTALL).findall(Get(url, 'http://moovie.ru/'))[0])
+		http = Get(url, 'http://moovie.ru/')
+		r2 = re.compile('<a href="(.*?)">(.*?)</a>').findall(re.compile('<div id="genres-list" >(.*?)</div>', re.DOTALL).findall(http)[0])
 		for url, genre in r2:
 			u = sys.argv[0] + '?mode=openGENRE'
 			u += '&url=%s'%urllib.quote_plus('http://moovie.ru%s'%url)
@@ -119,6 +119,7 @@ def openROOT(url):
 			xbmcplugin.addDirectoryItem(h,u,i,True)
 	except:
 		pass
+
 	try:
 		u = sys.argv[0] + '?mode=openSEARCH'
 		i=xbmcgui.ListItem('Поиск', iconImage=fanart, thumbnailImage=fanart)
@@ -133,8 +134,11 @@ def openROOT(url):
 	xbmcplugin.endOfDirectory(h)
 
 def openGENRE(url, name):
+
 	http = Get(url, 'http://moovie.ru/')
-	r1 = re.compile('<div class="(.*?)" id="movie_(.*?)">\s*<a href="(.*?)" class="block"><img src="(.*?)"></a>\s*<a href="(.*?)" class="block title">(.*?)</a>').findall(http)
+	r0 = re.compile('<div class="col-l p20">(.*?)<div class="clear">', re.DOTALL).findall(http)
+	r1 = re.compile('<div class="(.*?)" id="movie_(.*?)">\s*<a href="(.*?)" class="block"><img src="(.*?)"></a>\s*<a href="(.*?)" class="block title">(.*?)</a>').findall(r0[0])
+
 	if len(r1) == 0:
 		return False
 	for rCLS, movID, rURL, rIMG, rURL2, rNAME in r1:
