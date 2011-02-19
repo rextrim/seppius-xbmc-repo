@@ -269,31 +269,65 @@ def GetSeries(url, genre = 'Фильм', studio = 'http://www.zoomby.ru/'):
 
 
 def WATCH(url):
+	import xml.dom.minidom
 	xbmc.output('[%s] WATCH(%s)' % (PLUGIN_NAME, url))
-	try:
-		http  = Get(url)
-		embed = re.compile('<embed(.*?)</embed>', re.DOTALL).findall(http)[0]
-		swf   = re.compile('src="(.*?)"').findall(embed)[0]
-		getplaylist = re.compile('flashVars="video=(.*?)&.*"').findall(embed)[0]
-		http2 = Get(getplaylist, swf)
-		sb = re.compile('<meta base="(.*?)"').findall(http2)[0]
-		rawFD = re.compile('<video system-bitrate="(.*?)" src="(.*?)" />').findall(http2)
-	except:
-		xbmc.output('[%s] WATCH HTTP: %s' % (PLUGIN_NAME, http))
-		xbmc.output('[%s] WATCH ERR: embed processed failure' % (PLUGIN_NAME))
-		showMessage('ОШИБКА', 'Не могу воспроизвести этот элемент')
+
+	http  = Get(url)
+	embed = re.compile('<embed(.*?)</embed>', re.DOTALL).findall(http)[0]
+	swf   = re.compile('src="(.*?)"').findall(embed)[0]
+	getplaylist = re.compile('flashVars="video=(.*?)&.*"').findall(embed)[0]
+	http2 = Get(getplaylist, swf)
+
+	Dom     = xml.dom.minidom.parseString(http2)
+	switchs = Dom.getElementsByTagName('switch')
+
+	rtmp       = switchs[0].getAttribute('rtmp')
+	start_time = switchs[0].getAttribute('start_time')
+	title      = switchs[0].getAttribute('title').encode('utf8')
+	descr      = switchs[0].getAttribute('descr').encode('utf8')
+	rating     = switchs[0].getAttribute('rating')
+	content_id = switchs[0].getAttribute('content_id')
+	preview    = switchs[0].getAttribute('preview')
+	#xbmc.output('switch -> rtmp       = %s' % rtmp)
+	#xbmc.output('switch -> start_time = %s' % start_time)
+	#xbmc.output('switch -> title      = %s' % title)
+	#xbmc.output('switch -> descr      = %s' % descr)
+	#xbmc.output('switch -> rating     = %s' % rating)
+	#xbmc.output('switch -> content_id = %s' % content_id)
+	#xbmc.output('switch -> preview    = %s' % preview)
+	videos = switchs[0].getElementsByTagName('video')
+
+	pda = []
+	signa = []
+	labela = []
+	for video in videos:
+		video_rtmp    = video.getAttribute('rtmp')
+		video_pd      = video.getAttribute('pd')
+		video_sysbit  = video.getAttribute('system-bitrate')
+		video_sign    = video.getAttribute('sign')
+		video_label   = video.getAttribute('label').encode('utf8')
+		video_primary = video.getAttribute('primary')
+		#xbmc.output('video_rtmp    = %s' % video_rtmp)
+		#xbmc.output('video_pd      = %s' % video_pd)
+		#xbmc.output('video_sysbit  = %s' % video_sysbit)
+		#xbmc.output('video_sign    = %s' % video_sign)
+		#xbmc.output('video_label   = %s' % video_label)
+		#xbmc.output('video_primary = %s' % video_primary)
+		pda.append(video_pd)
+		signa.append(video_sign)
+		labela.append(video_label)
+
+	s = xbmcgui.Dialog().select('Качество?', labela)
+	if s < 0:
 		return False
-	list = []
-	spcn = len(rawFD)
-	if spcn == 1: s = 0
-	else:
-		for x in range(spcn): list.append(rawFD[x][0])
-		s = xbmcgui.Dialog().select('Качество?', list)
-	if s < 0: return
-	vp = rawFD[s][1]
-	vq = rawFD[s][0]
-	p = '%s PlayPath=%s swfurl=%s tcUrl=%s swfVfy=True'%(sb, vp, swf, sb)
-	i = xbmcgui.ListItem(path = p)
+
+	uri  = pda[s]
+	uri += '|Referer=%s'    % urllib.quote_plus(swf)
+	uri += '&User-Agent=%s' % urllib.quote_plus('Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00')
+
+	#print uri
+
+	i = xbmcgui.ListItem(path = uri)
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 
