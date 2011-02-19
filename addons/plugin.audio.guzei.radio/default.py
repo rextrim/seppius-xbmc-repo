@@ -146,9 +146,22 @@ def get_play(url, rate, name, city, plot, genre):
 	except:
 		return
 
-	xbmc.output(a)
+	#xbmc.output(a)
 
-	play_url = re.compile("<script>player\(\'(.*?)\'\,'\.*'\)</script>", re.DOTALL).findall(a)[0]
+
+	play_url = None
+
+	r0 = re.compile('<embed.*src="(.*?)".*</embed>', re.DOTALL).findall(a)
+	cnt = len(r0)
+
+
+	if cnt > 0:
+		play_url = r0[cnt-1]
+	else: return False
+	if play_url == None: return False
+
+	#play_url = re.compile("<script>player\(\'(.*?)\'\,'\.*'\)</script>", re.DOTALL).findall(a)[0]
+
 	if len(play_url) == 0:
 		return
 	playList = xbmc.PlayList(xbmc.PLAYLIST_MUSIC)
