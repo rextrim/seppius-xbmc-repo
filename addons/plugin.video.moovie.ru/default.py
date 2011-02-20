@@ -137,6 +137,8 @@ def openGENRE(url, name):
 
 	http = Get(url, 'http://moovie.ru/')
 	r0 = re.compile('<div class="col-l p20">(.*?)<div class="clear">', re.DOTALL).findall(http)
+	if len(r0) == 0:
+		r0 = re.compile('<div id="search-results">(.*?)<div class="clear">', re.DOTALL).findall(http)
 	r1 = re.compile('<div class="(.*?)" id="movie_(.*?)">\s*<a href="(.*?)" class="block"><img src="(.*?)"></a>\s*<a href="(.*?)" class="block title">(.*?)</a>').findall(r0[0])
 
 	if len(r1) == 0:
