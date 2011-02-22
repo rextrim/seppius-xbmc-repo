@@ -118,7 +118,7 @@ def Archive(plugin, id, params):
 		if can_play:
 			item.setProperty('IsPlayable', 'true')
 			item.setIconImage(os.path.join(os.getcwd(), 'resources', 'icons', 'play.png'))
-			uri = sys.argv[0] + '?mode=WatchTV&channel=%s&title=%s&ts=%s' % (id, prog['title'], prog['source']['ut_start']) 
+			uri = sys.argv[0] + '?mode=WatchTV&channel=%s&title=%s&ts=%s' % (id, prog['title'], prog['time']) 
 		else:
 			item.setIconImage(os.path.join(os.getcwd(), 'resources', 'icons', 'play-stop.png'))
 			item.setProperty('IsPlayable', 'false')
@@ -151,19 +151,30 @@ def resetAlarms(plugin, mode):
 	xbmc.executebuiltin("XBMC.CancelAlarm(%s,True)" % refreshAlarmId)
 	
 
-def ShowChannelsList(plugin):
+def ShowChannelsList(plugin, mode = 'TV'):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
 	
 	channels = plugin.getChannelsList()
 	counter = 0
+	favs = __settings__.getSetting('favourites').split(',')
+	
+	if len(favs) < 2:
+		mode = 'TV'
+	
+	xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
+	
 	total_items = len(channels)
 	for channel in channels:
 		if __settings__.getSetting('show_protected') == 'false':
 			if channel['is_protected']:
 				continue
 		 
+		if mode == 'FAV':
+			if str(channel['id']) not in favs:
+				continue
+		
 		if channel['is_video']:
-			uri = sys.argv[0] + '?mode=WatchTV&channel=%s&title=%s' % (channel['id'], channel['title'])
+			uri = sys.argv[0] + '?mode=WatchTV&as=%s&channel=%s&title=%s' % (mode, channel['id'], channel['title'])
 			if channel['is_protected']:
 				uri = '%s&code=%s' % (uri, __settings__.getSetting('protected_code'))
 				overlay = 3
@@ -172,6 +183,9 @@ def ShowChannelsList(plugin):
 					overlay = 1
 				else:
 					overlay = 0
+					
+			if str(channel['id']) in favs:
+				overlay = 7
 			
 			item=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
 			color = channel['color']
@@ -181,6 +195,7 @@ def ShowChannelsList(plugin):
 			else:
 				played = ''
 			
+			timerange = ''
 			timeFieldSetting = int(__settings__.getSetting('show_time_field'))
 			
 			if timeFieldSetting == 1:
@@ -200,18 +215,26 @@ def ShowChannelsList(plugin):
 					channel['duration'] = (channel['epg_end'] - channel['servertime']) / 60
 				else:
 					channel['duration'] = 0
+			elif timeFieldSetting == 5:
+				if channel['epg_start']:
+					timerange = '%s - %s ' % (datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M'))
+					channel['duration'] = 0
 			else:
 				channel['duration'] = 0
+			
+			rating = 0
+			if str(channel['id']) in favs:
+				rating = 10
 			
 			if __settings__.getSetting('colorize_groups') == 'false':
 				channel_title = channel['title']
 			else:
 				channel_title = '[COLOR %s]%s[/COLOR]' % (color, channel['title'])
 			
-			label = '[B] %s.%s[/B] %s %s' % (channel_title, played, channel['subtitle'], channel['info'])
+			label = '%s[B] %s.%s[/B] %s %s' % (timerange, channel_title, played, channel['subtitle'], channel['info'])
 			item.setLabel(label)			
  			item.setIconImage(channel['icon'])
-			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay})
+			item.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plotoutline': channel['info'], 'plot': channel['info'], 'genre': channel['genre'], 'duration': str(channel['duration']),  'overlay': overlay, 'ChannelNumber': str(counter), 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M'), 'rating': rating})
 			
 			item.setProperty('IsPlayable', 'true')
 			
@@ -230,9 +253,21 @@ def ShowChannelsList(plugin):
 			
 			popup.append((__language__(30021), 'Container.Refresh',))
 			
+			uri2 = sys.argv[0] + '?mode=Favourite&channel=%s' % (channel['id'])
+			if str(channel['id']) in favs:
+				fav_label = __language__(30038)
+			else:
+				fav_label = __language__(30037)
+			popup.append((fav_label, 'RunPlugin(%s)'%uri2,))
+			
 			if __settings__.getSetting('start_with_tv') == 'true':
 				uriP = 'XBMC.Container.Update(%s)' % (sys.argv[0] + '?mode=%s')
-				popup.append((__language__(30016), uriP % 'Video',))
+				if mode == 'TV':
+					popup.append((__language__(30041), uriP % 'FAV',))
+				
+				if mode == 'FAV':
+					popup.append((__language__(30042), uriP % 'TV',))
+				
 				popup.append((__language__(30004), uriP % 'Settings',))
 			
 			item.addContextMenuItems(popup, True)
@@ -362,18 +397,91 @@ def WatchTV(plugin, id, params):
 		xbmc.output('[%s] WatchTV: Opening channel %s as %s' % (PLUGIN_NAME, id, url))
 		item=xbmcgui.ListItem(params['title'], path=url)
 		item.setInfo( type='video', infoLabels={'title': params['title']})
+		
+		if 'as' in params:
+			mode = params['as']
+		else:
+			mode = 'TV'
+		
+		favs = __settings__.getSetting('favourites').split(',')
+		
+		if len(favs) < 2:
+			mode = 'TV'
+		
+		player = xbmc.Player()
+		pls = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+		if not gmt and pls.size() < 2:
+			pls.clear()
+			
+			xbmc.output('[%s] WatchTV: Generating playlist' % (PLUGIN_NAME))
+			all = plugin.getLast()
+			index = 0
+			toplay = -1
+			
+			for channel in all:
+				if mode == 'FAV' and str(channel['id']) not in favs:
+					index += 1
+					continue
+				if channel['is_video']:
+					if toplay > -1 or id == str(channel['id']):
+						url2 = sys.argv[0] + '?mode=WatchTV&as=%s&channel=%s&title=%s' % (mode, channel['id'], channel['title'])
+						if channel['is_protected']:
+							url2 = '%s&code=%s' % (url2, __settings__.getSetting('protected_code'))
+						if id == str(channel['id']):
+							path = url
+						else:
+							path = url2
+						ch=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
+						ch.setIconImage(channel['icon'])
+						ch.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
+						ch.setProperty('IsPlayable', 'true')
+						if 'aspect_ratio' in channel and channel['aspect_ratio']:
+							ch.setProperty('AspectRatio', channel['aspect_ratio'])
+						pls.add(path, ch, index)
+						if id == str(channel['id']):
+							item = ch
+							toplay = index	
+					index += 1
+			
+			for channel in all[0:toplay]:
+				if mode == 'FAV' and str(channel['id']) not in favs:
+					continue
+				if channel['is_video']:
+					url2 = sys.argv[0] + '?mode=WatchTV&as=%s&channel=%s&title=%s' % (mode, channel['id'], channel['title'])
+					if channel['is_protected']:
+						url2 = '%s&code=%s' % (url2, __settings__.getSetting('protected_code'))
+					path = url2
+					ch=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
+					ch.setIconImage(channel['icon'])
+					ch.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
+					ch.setProperty('IsPlayable', 'true')
+					if 'aspect_ratio' in channel and channel['aspect_ratio']:
+						ch.setProperty('AspectRatio', channel['aspect_ratio'])
+					pls.add(path, ch, index)
+					index += 1
+			doVidInfo = False
+		else:
+			doVidInfo = True
+		
+		xbmc.executebuiltin("XBMC.PlayerControl(repeatall)")
+		
 		if handle == -1:		
-			player = xbmc.Player()
 			xbmc.output('[%s] WatchTV: handle is -1, starting player' % (PLUGIN_NAME))
-			player.play(url, item)
+			if pls:
+				player.play(pls)
+			else:
+				player.play(url, item)
 		else:
 			xbmc.output('[%s] WatchTV: handle is %s, setting resolved url' % (PLUGIN_NAME, handle))
 			xbmcplugin.setResolvedUrl(handle = handle, succeeded=True, listitem=item)
 		
 		if __settings__.getSetting('showcurrent') == 'true' and not gmt:
-			uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s' % (id)
-			xbmc.output('[%s] WatchTV: Setting callback for hint to %s' % (PLUGIN_NAME, uri))
-			xbmc.executebuiltin("RunPlugin("+uri+")")
+			if doVidInfo:
+				xbmc.executebuiltin("XBMC.ActivateWindow(10142)")
+			else:
+				uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s' % (id)
+				xbmc.output('[%s] WatchTV: Setting callback for hint to %s' % (PLUGIN_NAME, uri))
+				xbmc.executebuiltin("RunPlugin("+uri+")")
 	else:
 		xbmc.executebuiltin("XBMC.Notification(" + __language__(30025).encode('utf8') + ", " + __language__(30025).encode('utf8') + ", 8000)");
 
@@ -386,6 +494,15 @@ def ShowRoot(plugin):
 	tv.setProperty('IsPlayable', 'false')
 	tv.setInfo( type='video', infoLabels={'title': tv_title, 'plot': __language__(30012)})
 	xbmcplugin.addDirectoryItem(handle,uri % 'TV',tv,True)
+	
+	favs = __settings__.getSetting('favourites').split(',')
+	if len(favs) > 1:
+		fv_title = ' [  %s  ] ' % __language__(30041)
+		fv=xbmcgui.ListItem(fv_title)
+		fv.setLabel(fv_title)
+		fv.setProperty('IsPlayable', 'false')
+		fv.setInfo( type='video', infoLabels={'title': fv_title, 'plot': __language__(30041)})
+		xbmcplugin.addDirectoryItem(handle,uri % 'FAV',fv,True)
 	
 	vod_title = ' [  %s  ] ' % __language__(30016)
 	vod = xbmcgui.ListItem(vod_title)
@@ -410,6 +527,17 @@ def ShowRoot(plugin):
 	
 	
 	xbmcplugin.endOfDirectory(handle,True,False)
+
+def Favourite(plugin, id):
+	favs = __settings__.getSetting('favourites').split(',')
+	if not favs:
+		favs = []
+	if id not in favs:
+		favs.append(id)
+	else:
+		favs.remove(id)
+	__settings__.setSetting('favourites', ",".join(favs[:]))
+	xbmc.executebuiltin("XBMC.Container.Refresh")
 
 def ProcessSettings(plugin, params):
 	if 'name' in params:
@@ -535,9 +663,12 @@ else:
 	elif mode == 'openSettings':
 		__settings__.openSettings()
 
-	elif mode == 'TV':
-		ShowChannelsList(PLUGIN_CORE)
+	elif mode in ('TV', 'FAV'):
+		ShowChannelsList(PLUGIN_CORE, mode)
 
+	elif mode == 'Favourite':
+		Favourite(PLUGIN_CORE, channel)
+	
 	elif mode == 'Settings':
 		ProcessSettings(PLUGIN_CORE, params)
 

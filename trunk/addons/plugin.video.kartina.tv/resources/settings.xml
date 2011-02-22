@@ -13,7 +13,7 @@
 		<setting id="show_protected" type="bool" label="30015" default="true" />
 		<setting id="autorefresh_rate" type="enum" values="0|1|2|3|5|10" label="30027" default="2" />
 		<setting id="always_refresh" type="bool" label="30028" default="true" />
-		<setting id="show_time_field" type="enum" lvalues="30031|30032|30033|30034|30035" label="30036" default="4" />
+		<setting id="show_time_field" type="enum" lvalues="30031|30032|30033|30034|30035|30040" label="30036" default="5" />
 		<setting id="colorize_groups" type="bool" label="30030" default="true" />
 		<setting id="show_played" type="bool" label="30029" default="true" />
 	</category>

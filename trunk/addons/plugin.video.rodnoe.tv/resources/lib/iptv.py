@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 # Rodnoe.TV python class
 # (c) Eugene Bond, 2010
 # eugene.bond@gmail.com
@@ -9,7 +10,7 @@ import re, os, sys
 from time import time
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '1.7'
+__version__ = '1.8'
 
 IPTV_DOMAIN = 'file-teleport.com'
 IPTV_API = 'http://%s/iptv/api/json/%%s' % IPTV_DOMAIN
@@ -22,6 +23,7 @@ except ImportError:
 		
 		def __init__(self):
 			self.nonXBMC = True
+			self.LOGDEBUG = 1
 		
 		def output(self, data):
 			print data
@@ -77,11 +79,12 @@ platform = platform_boo()
 
 COOKIEJAR = None
 COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % IPTV_DOMAIN)
+LASTLISTFILE = os.path.join(xbmc.translatePath('special://temp/'), 'last.%s.json' % IPTV_DOMAIN)
 
 try:											# Let's see if cookielib is available
 	import cookielib            
 except ImportError:
-	xbmc.output('[RodnoeTV] cookielib is not available..')
+	xbmc.output('[Rodnoe.TV] cookielib is not available..')
 	pass
 else:
 	COOKIEJAR = cookielib.LWPCookieJar()		# This is a subclass of FileCookieJar that has useful load and save methods
@@ -89,11 +92,13 @@ else:
 try:
 	import json
 except ImportError:
-	xbmc.output('[RodnoeTV] module json is not available. using demjson')
+	xbmc.output('[Rodnoe.TV] module json is not available. using demjson')
 	import demjson
 	JSONDECODE = demjson.decode
+	JSONENCODE = demjson.encode
 else:
 	JSONDECODE = json.loads
+	JSONENCODE = json.dumps
 
 class rodnoe:
 	
@@ -120,6 +125,8 @@ class rodnoe:
 		self.timeshift = 0
 		self.addonid = addonid
 		self.last_settings = None
+		
+		self.last_list = None
 		
 		self.supported_settings = {'time_shift': {'name': 'time_shift', 'language_key': 34002, 'defined': [('0', '0'), ('60', '1'), ('120', '2'), ('180', '3'), ('240', '4'), ('300', '5'), ('360', '6'), ('420', '7'), ('480', '8'), ('540', '9'), ('600', '10'), ('660', '11'), ('720', '12')]}, 'time_zone': {'name': 'time_zone', 'language_key': 34003, 'defined': [('-720', '-12 GMT (New Zealand Standard Time)'), ('-660', '-11 GMT (Midway Islands Time)'), ('-600', '-10 GMT (Hawaii Standard Time)'), ('-540', '-9 GMT (Alaska Standard Time)'), ('-480', '-8 GMT (Pacific Standard Time)'), ('-420', '-7 GMT (Mountain Standard Time)'), ('-360', '-6 GMT (Central Standard Time)'), ('-300', '-5 GMT (Eastern Standard Time)'), ('-240', '-4 GMT (Puerto Rico and US Virgin Islands Time)'), ('-180', '-3 GMT (Argentina Standard Time)'), ('-120', '-2 GMT'), ('-60', '-1 GMT (Central African Time)'), ('0', '0 GMT (Greenwich Mean Time)'), ('60', '+1 GMT (European Central Time)'), ('120', '+2 GMT (Eastern European Time)'), ('180', '+3 GMT (Eastern African Time)'), ('240', '+4 GMT (Near East Time)'), ('300', '+5 GMT (Pakistan Lahore Time)'), ('360', '+6 GMT (Bangladesh Standard Time)'), ('420', '+7 GMT (Vietnam Standard Time)'), ('480', '+8 GMT (China Taiwan Time)'), ('540', '+9 GMT (Japan Standard Time)'), ('600', '+10 GMT (Australia Eastern Time)'), ('660', '+11 GMT (Solomon Standard Time)')]}}
 		
@@ -206,6 +213,23 @@ class rodnoe:
 				xbmc.output('[Rodnoe.TV] ERROR: %s' % message.encode('utf8'))
 				self.AUTH_OK = False
 	
+	def getLast(self):
+		if self.last_list and 'ttl' in self.last_list:
+			if int(self.last_list['ttl']) < time():
+				xbmc.output('[Rodnoe.TV] Last list expired')
+				self.last_list = None
+		if not self.last_list:
+			f = open(LASTLISTFILE, 'rb')
+			try:
+				self.last_list = JSONDECODE(f.read())
+			except Exception, e:
+				xbmc.output('[Rodnoe.TV] Error loading last list %s' % e)
+				res = self.getChannelsList()
+			else:
+				xbmc.output('[Rodnoe.TV] last list loaded')
+			f.close()
+			
+		return self.last_list['channels']
 	
 	def testAuth(self):
 		self.AUTH_OK = True
@@ -256,7 +280,7 @@ class rodnoe:
 					'percent':	percent,
 					'duration':	(duration / 60),
 					'is_protected': ('protected' in channel) and (int(channel['protected'])),
-					'source':	channel,
+					#'source':	channel,
 					'genre':	group['name'] or "",
 					'epg_start': epg_start,
 					'epg_end':	epg_end,
@@ -264,6 +288,17 @@ class rodnoe:
 					'servertime': servertime,
 					'color':	color,
 				})
+		
+		self.last_list = self.last_list = {'channels': res, 'ttl': time() + 600}
+		f = open(LASTLISTFILE, 'wb')
+		try:
+			jsave = JSONENCODE(self.last_list, encoding='utf8')
+			f.write(jsave)
+		except Exception, e:
+			xbmc.output('[Rodnoe.TV] Error saving last list %s' % e)
+		else:
+			xbmc.output('[Rodnoe.TV] last list stored')
+		f.close()
 		
 		return res
 	
@@ -290,8 +325,7 @@ class rodnoe:
 					'title':		epg['title'],
 					'time':			epg['begin'],
 					'info':			epg['info'],
-					'is_video':		0,
-					'source':		epg
+					'is_video':		0
 				})
 		return res   
 	
