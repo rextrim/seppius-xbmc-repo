@@ -1,3 +1,8 @@
+[B]1.1.0[/B]
+Jumping across next-previous channel (AKA TV mode)
+Favourite channels + Favourite channels list
+Current programme time infront of channel name option
+
 [B]1.0.6[/B]
 Autoselection of active programme in EPG/Archive view
 Stoped forcing of full list mode
@@ -12,15 +17,16 @@ Channel list display options extended
 Addon settings divided into sections
 
 [B]1.0.4[/B]
-Fixed checking auth problem if login is not defined
-Added theoretical support of native RodnoeTV channels groups colorizing
-Removed percentage for the channels where duration is not available
+Fixed "missing icon" crash
+Colorizing improved and matches to original channel groups colors
+Removed percentage block for items without duration
 
 [B]1.0.3[/B]
-Added current program duration and %% (thanks to Alexandr Dubovikov)
+Sessions issue hot fix
 
 [B]1.0.2[/B]
-Session cookies migrated into the cookie jar
+Fixed an auth issue (causing "account is already used" problem)
+Added current program duration and %% (thanks to Alexandr Dubovikov)
 
 [B]1.0.1[/B]
 Fixed a problem with Win32 running on x64 platforms

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 # (c) Eugene Bond
 # eugene.bond@gmail.com
 #
@@ -11,7 +12,7 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '2.8'
+__version__ = '2.9'
 
 IPTV_DOMAIN = 'iptv.kartina.tv'
 IPTV_API = 'http://%s/api/json/%%s' % IPTV_DOMAIN
@@ -23,12 +24,17 @@ except ImportError:
 		
 		def __init__(self):
 			self.nonXBMC = True
+			self.LOGDEBUG = 1
 		
 		def output(self, data, level=''):
 			print data
 		
 		def getInfoLabel(self, param):
 			return '%s unknown' % param
+		
+		def translatePath(self, param):
+			return param
+		
 	
 	class xbmcaddon_foo:
 		def __init__(self, id):
@@ -76,6 +82,7 @@ platform = platform_boo()
 
 COOKIEJAR = None
 COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % IPTV_DOMAIN)
+LASTLISTFILE = os.path.join(xbmc.translatePath('special://temp/'), 'last.%s.json' % IPTV_DOMAIN)
 
 try:											# Let's see if cookielib is available
 	import cookielib            
@@ -92,8 +99,10 @@ except ImportError:
 	xbmc.output('[KartinaTV] module json is not available. using demjson')
 	import demjson
 	JSONDECODE = demjson.decode
+	JSONENCODE = demjson.encode
 else:
 	JSONDECODE = json.loads
+	JSONENCODE = json.dumps
 
 
 class kartina:
@@ -108,6 +117,8 @@ class kartina:
 		self.addonid = addonid
 		self.timeshift = 0
 		self.AUTH_OK = False
+		
+		self.last_list = None
 		
 		if COOKIEJAR != None:
 			if os.path.isfile(COOKIEFILE):
@@ -186,6 +197,23 @@ class kartina:
 			value, options = self.getSettingCurrent('timeshift')
 			self.timeshift = int(value) * 3600
 		
+	def getLast(self):
+		if self.last_list and 'ttl' in self.last_list:
+			if int(self.last_list['ttl']) < time():
+				xbmc.output('[Kartina.TV] Last list expired')
+				self.last_list = None
+		if not self.last_list:
+			f = open(LASTLISTFILE, 'rb')
+			try:
+				self.last_list = JSONDECODE(f.read())
+			except Exception, e:
+				xbmc.output('[Kartina.TV] Error loading last list %s' % e)
+				res = self.getChannelsList()
+			else:
+				xbmc.output('[Kartina.TV] last list loaded')
+			f.close()
+			
+		return self.last_list['channels']
 	
 	def _errors_check(self, json):
 		if 'error' in json:
@@ -259,7 +287,18 @@ class kartina:
 					self.channels.append(channel2add)
 				
 			self.channels_ttl = time() + 600
-		
+			
+			self.last_list = {'channels': self.channels, 'ttl': time() + 600}
+			f = open(LASTLISTFILE, 'wb')
+			try:
+				jsave = JSONENCODE(self.last_list, encoding='utf8')
+				f.write(jsave)
+			except Exception, e:
+				xbmc.output('[Kartina.TV] Error saving last list %s' % e)
+			else:
+				xbmc.output('[Kartina.TV] last list stored')
+			f.close()
+			
 		return self.channels
 	
 	def _resolveColor(self, color = False):
