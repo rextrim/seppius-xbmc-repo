@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-	<setting id="usermail" type="text" label="Ваш e-mail" default="" />
-	<setting id="password" type="text" label="Пароль" option="hidden" default="" />
-</settings>
