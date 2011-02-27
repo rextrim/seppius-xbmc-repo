@@ -1,3 +1,6 @@
+[B]1.1.1[/B]
+Improved stability of previous/next navigation
+
 [B]1.1.0[/B]
 Jumping across next-previous channel (AKA TV mode)
 Favourite channels + Favourite channels list

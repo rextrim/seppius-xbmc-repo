@@ -1,3 +1,7 @@
+[B]1.1.1[/B]
+Improved stability of previous/next navigation
+Videoteka is back in context menu (was removed by mistake)
+
 [B]1.1.0[/B]
 Jumping across next-previous channel (AKA TV mode)
 Favourite channels + Favourite channels list

@@ -268,6 +268,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 				if mode == 'FAV':
 					popup.append((__language__(30042), uriP % 'TV',))
 				
+				popup.append((__language__(30016), uriP % 'Video',))
 				popup.append((__language__(30004), uriP % 'Settings',))
 			
 			item.addContextMenuItems(popup, True)
@@ -276,7 +277,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 			counter = counter + 1
 	
 	refresh_rate = int(__settings__.getSetting('autorefresh_rate'))
-	
+	xbmcplugin.setContent(handle, 'Movies')
 	xbmcplugin.endOfDirectory(handle, cacheToDisc=(__settings__.getSetting('always_refresh') == 'false'))
 	
 	if refresh_rate > 0:
@@ -408,8 +409,13 @@ def WatchTV(plugin, id, params):
 		if len(favs) < 2:
 			mode = 'TV'
 		
+		doVidInfo = False
+		
 		player = xbmc.Player()
 		pls = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+		xbmcplugin.setContent(handle, 'Movies')
+		if gmt:
+			pls.clear()
 		if not gmt and pls.size() < 2:
 			pls.clear()
 			
@@ -433,13 +439,14 @@ def WatchTV(plugin, id, params):
 							path = url2
 						ch=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
 						ch.setIconImage(channel['icon'])
-						ch.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
+						ch.setInfo( type='video', infoLabels={'Studio': channel['title'], 'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
 						ch.setProperty('IsPlayable', 'true')
 						if 'aspect_ratio' in channel and channel['aspect_ratio']:
 							ch.setProperty('AspectRatio', channel['aspect_ratio'])
 						pls.add(path, ch, index)
 						if id == str(channel['id']):
-							item = ch
+							item.setIconImage(channel['icon'])
+							item.setInfo( type='video', infoLabels={'Studio': channel['title'], 'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
 							toplay = index	
 					index += 1
 			
@@ -453,21 +460,27 @@ def WatchTV(plugin, id, params):
 					path = url2
 					ch=xbmcgui.ListItem(channel['subtitle'], channel['title'], iconImage=channel['icon'], thumbnailImage=channel['icon'])
 					ch.setIconImage(channel['icon'])
-					ch.setInfo( type='video', infoLabels={'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
+					ch.setInfo( type='video', infoLabels={'Studio': channel['title'], 'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
 					ch.setProperty('IsPlayable', 'true')
 					if 'aspect_ratio' in channel and channel['aspect_ratio']:
 						ch.setProperty('AspectRatio', channel['aspect_ratio'])
 					pls.add(path, ch, index)
 					index += 1
-			doVidInfo = False
-		else:
+			doVidInfo = True
+		elif not gmt:
+			all = plugin.getLast()
+			for channel in all:
+				if id == str(channel['id']):
+					item.setIconImage(channel['icon'])
+					item.setInfo( type='video', infoLabels={'Studio': channel['title'], 'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre']})
+					break
 			doVidInfo = True
 		
 		xbmc.executebuiltin("XBMC.PlayerControl(repeatall)")
 		
 		if handle == -1:		
 			xbmc.output('[%s] WatchTV: handle is -1, starting player' % (PLUGIN_NAME))
-			if pls:
+			if pls and pls.size():
 				player.play(pls)
 			else:
 				player.play(url, item)
@@ -475,13 +488,10 @@ def WatchTV(plugin, id, params):
 			xbmc.output('[%s] WatchTV: handle is %s, setting resolved url' % (PLUGIN_NAME, handle))
 			xbmcplugin.setResolvedUrl(handle = handle, succeeded=True, listitem=item)
 		
-		if __settings__.getSetting('showcurrent') == 'true' and not gmt:
-			if doVidInfo:
-				xbmc.executebuiltin("XBMC.ActivateWindow(10142)")
-			else:
-				uri = sys.argv[0] + '?mode=ShowNowNextHint&channel=%s' % (id)
-				xbmc.output('[%s] WatchTV: Setting callback for hint to %s' % (PLUGIN_NAME, uri))
-				xbmc.executebuiltin("RunPlugin("+uri+")")
+		if __settings__.getSetting('showcurrent') == 'true' and not gmt and doVidInfo:
+			xbmc.sleep(5000)
+			dialog = xbmcgui.Window(10142)
+			dialog.show()
 	else:
 		xbmc.executebuiltin("XBMC.Notification(" + __language__(30025).encode('utf8') + ", " + __language__(30025).encode('utf8') + ", 8000)");
 
