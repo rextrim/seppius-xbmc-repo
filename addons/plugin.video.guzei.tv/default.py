@@ -97,11 +97,19 @@ def get_play(url):
 		showMessage('HTTP ERROR','Не могу открыть %s'%url)
 		return False
 	try:
-		pblock = re.compile('player\("(.*?)"').findall(a)
+		play_url = None
+		r0 = re.compile('<embed.*src="(.*?)".*</embed>', re.DOTALL).findall(a)
+		cnt = len(r0)
+		if cnt > 0:
+			play_url = r0[cnt-1]
+		else: return False
+		if play_url == None: return False
+		if len(play_url) == 0:
+			return False
 	except:
-		showMessage('ERROR','Не могу найти player(...)')
+		showMessage('ERROR','Не могу найти embed')
 		return False
-	i = xbmcgui.ListItem(path = pblock[0])
+	i = xbmcgui.ListItem(path = play_url)
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 params = get_params()
