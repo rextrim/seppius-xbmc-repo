@@ -222,17 +222,9 @@ Russia.ru делает передачи для самой разной ауди�
   </extension>
 </addon>
 
-<addon id="plugin.video.debilizator.tv"
-       name="Debilizator.TV"
-       version="1.0.6"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>video</provides>
-  </extension>
+<addon id="plugin.video.debilizator.tv" name="Debilizator.TV" version="1.0.7" provider-name="seppius">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>http://debilizator.tv/</summary>
     <description>http://debilizator.tv/</description>
