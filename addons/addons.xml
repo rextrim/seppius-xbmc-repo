@@ -123,16 +123,9 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.russia.ru"
-       name="RUSSIA.RU"
-       version="1.0.6"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
+<addon id="plugin.video.russia.ru" name="RUSSIA.RU" version="1.0.7" provider-name="seppius">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">

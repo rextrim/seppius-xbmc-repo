@@ -1,7 +1,8 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 #/*
-# *      Copyright (C) 2010 Kostynoy S. aka Seppius
-# *
+# *   Copyright (с) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# *   Writer (C) 03/03/2011, Kostynoy S.A., E-mail: seppius2@gmail.com
 # *
 # *  This Program is free software; you can redistribute it and/or modify
 # *  it under the terms of the GNU General Public License as published by
@@ -16,33 +17,33 @@
 # *  You should have received a copy of the GNU General Public License
 # *  along with this program; see the file COPYING.  If not, write to
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *  http://www.gnu.org/copyleft/gpl.html
+# *  http://www.gnu.org/licenses/gpl.html
 # */
+
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
-import urllib2, urllib, urlparse, re, os
-import base64
+import urllib2, urllib, os, xml.dom.minidom
 
-handle = int(sys.argv[1])
-api_URL = 'http://russia.ru/xbmc/menu/list.xml'
-fnd_URL = 'http://russia.ru/xbmc/search/videolist.xml?q='
-russia_url = 'http://www.russia.ru/'
-PLUGIN_NAME = 'RUSSIA.RU'
+import socket
+socket.setdefaulttimeout(15)
 
-thumb  = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+h = int(sys.argv[1])
+icon   = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
 fanart = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'fanart.jpg'))
-xbmcplugin.setPluginFanart(handle, fanart)
+xbmcplugin.setPluginFanart(h, fanart)
+
+api_URL = 'http://russia.ru/xbmc/menu/list.xml'
+api_FND = 'http://russia.ru/xbmc/search/videolist.xml'
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.russia.ru')
 __language__ = __settings__.getLocalizedString
-
 vqual = int(__settings__.getSetting('quality'))+1
 lsize = (int(__settings__.getSetting('size'))+1)*10
-ppup = 'pagesize=%s&quality=%s'%(lsize,vqual)
+argss = 'pagesize=%d&quality=%d'%(lsize,vqual)
 
 def showMessage(heading, message, times = 3000):
-	heading = heading.encode('utf-8')
-	message = message.encode('utf-8')
-	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, thumb))
+	#heading = heading.encode('utf-8')
+	#message = message.encode('utf-8')
+	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, icon))
 
 def clean(name):
 	remove = [('mdash;',''),('&ndash;',''),('hellip;','\n'),('&amp;',''),('&quot;','"'),
@@ -59,104 +60,114 @@ def CleanURL(name):
 	return name
 
 
-def GetRegion(data, region, modeall=False, defval=None):
+def GET(target):
+	#print target
 	try:
-		ret_val = re.compile('<%s>(.*?)</%s>'%(region,region),re.DOTALL|re.IGNORECASE).findall(data)
-		if modeall: return ret_val
-		else: return ret_val[0]
-	except: return defval
-
-def GET(target_url, postdata = None):
-	#xbmc.output('* * * GET URL='+target_url)
-
-	try:
-		req = urllib2.Request(target_url, postdata)
+		req = urllib2.Request(target)
+		req.add_header('User-Agent','XBMC/10-series (Python addon; XBMC-Russia; HD-lab Team; 2011; http://www.xbmc.org)')
+		req.add_header(           'Host','russia.ru')
+		req.add_header(         'Accept','text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*')
+		req.add_header('Accept-Language','ru-RU,ru')
+		#req.add_header( 'Accept-Charset','utf-8')
+		req.add_header('Accept-Encoding','identity')
+		req.add_header(     'Connection','Keep-Alive')
 		f = urllib2.urlopen(req)
 		a = f.read()
 		f.close()
-		#a = a.encode('utf-8')
+		#print a
 		return a
-	except:
+	except Exception, e:
+		showMessage(target, e, 5000)
 		return None
 
-def MakeItem(url, addfnd = True):
-	#xbmc.output('******* MakeItem(%s, %s)'%(url, addfnd))
-	http = GET(url)
-	if http == None:
-		showMessage(__language__(30030),__language__(30031))
-		return False
-
-	#print http
+def getsearch(params):
+	KB = xbmc.Keyboard()
+	KB.setHeading(__language__(30021))
+	KB.doModal()
+	if (KB.isConfirmed()):
+		getitems({ 'url': urllib.quote_plus(api_FND + '?' + argss + '&q=' + urllib.quote_plus(KB.getText()))})
 
 
-	item_blocks = GetRegion(http, 'item', True)
+def getitems(params):
+	try:    initurl = urllib.unquote_plus(params['url'])
+	except: initurl = api_URL + '?' + argss
+	http = GET(initurl)
+	if http == None: return False
+	document = xml.dom.minidom.parseString(http)
+	for item in document.getElementsByTagName('item'):
+		info = {}
+		try:	label = item.getElementsByTagName('label')[0].firstChild.data
+		except: label = ''
+		try:	isFolder = item.getElementsByTagName('isFolder')[0].firstChild.data
+		except: isFolder = '0'
+		try:	Image = CleanURL(item.getElementsByTagName('thumbnailImage')[0].firstChild.data)
+		except: Image = icon
+		try: 	url = CleanURL(item.getElementsByTagName('url')[0].firstChild.data.encode('utf-8','replace'))
+		except: url = api_URL
+		try:    ifanart = item.getElementsByTagName('fanart')[0].firstChild.data
+		except: ifanart = fanart
+		try:	itype = item.getElementsByTagName('type')[0].firstChild.data
+		except: itype = 'video'
+		try:    info['date'] = item.getElementsByTagName('date')[0].firstChild.data
+		except: info['date'] = ''
+		try:	info['genre'] = item.getElementsByTagName('genre')[0].firstChild.data
+		except: info['genre'] = ''
+		try:	info['year'] = int(item.getElementsByTagName('year')[0].firstChild.data)
+		except: info['year'] = 0
+		try:	info['rating'] = float(item.getElementsByTagName('rating')[0].firstChild.data)
+		except: info['rating'] = 0
+		try:	info['playcount'] = int(item.getElementsByTagName('playcount')[0].firstChild.data)
+		except: info['playcount'] = 0
+		try:	info['director'] = item.getElementsByTagName('director')[0].firstChild.data
+		except: info['director'] = ''
+		try:	info['plot'] = item.getElementsByTagName('plot')[0].firstChild.data
+		except: info['plot'] = ''
+		try:	info['plotoutline'] = item.getElementsByTagName('plotoutline')[0].firstChild.data
+		except: info['plotoutline'] = ''
+		try:	info['title'] = item.getElementsByTagName('title')[0].firstChild.data
+		except: info['title'] = label
+		try:	info['duration'] = item.getElementsByTagName('duration')[0].firstChild.data
+		except: info['duration'] = ''
+		try:	info['studio'] = item.getElementsByTagName('studio')[0].firstChild.data
+		except: info['studio'] = 'RUSSIA.RU'
+		try:	info['tagline'] = item.getElementsByTagName('tagline')[0].firstChild.data
+		except: info['tagline'] = ''
+		try:	info['writer'] = item.getElementsByTagName('writer')[0].firstChild.data
+		except: info['writer'] = ''
+		IsFolder = (isFolder == '1')
 
-	if (item_blocks==None) or (len(item_blocks)==0):
-		showMessage(__language__(30030),__language__(30032))
-		return False
+		if IsFolder:
+			uri = '%s?mode=getitems&url=%s' % (sys.argv[0], urllib.quote_plus(url))
+		else: uri = url
+		li = xbmcgui.ListItem(label, iconImage = Image, thumbnailImage = Image)
+		li.setInfo(type = itype, infoLabels = info)
 
-	for item_block in item_blocks:
-		item_label    = clean(GetRegion(item_block, 'label',          False, ''))
-		item_isFolder = GetRegion(item_block, 'isFolder',       False, '0')
-		item_Image    = GetRegion(item_block, 'thumbnailImage', False, thumb)
-		item_url      = GetRegion(item_block, 'url',            False, api_URL)
+		if ifanart != None: li.setProperty('fanart_image', ifanart)
+		xbmcplugin.addDirectoryItem(h, uri, li, IsFolder)
 
-		item_url = CleanURL(item_url)
-		item_Image = CleanURL(item_Image)
+	uris = sys.argv[0] + '?mode=getsearch'
+	items = xbmcgui.ListItem(__language__(30020), iconImage = icon, thumbnailImage = icon)
+	items.setProperty('fanart_image', fanart)
+	xbmcplugin.addDirectoryItem(h,uris,items,True)
 
-		isFolder = (item_isFolder == '1')
-		uri = item_url
-		if isFolder:
-			uri = sys.argv[0] + '?mode=OpenItem' + '&url='+item_url.encode("hex")
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DURATION)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_GENRE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_LABEL)
+	xbmcplugin.endOfDirectory(h)
 
-		#print 'ADD item_url =' + item_url
-		#print 'ADD URI =' + uri
 
-		item = xbmcgui.ListItem(item_label, iconImage = item_Image, thumbnailImage = item_Image)
-		item_type = GetRegion(item_block, 'type')
-		if (item_type != None):
-			item.setInfo(type = item_type, infoLabels = {
-				'title':       clean(GetRegion(item_block, 'title',      False, '')),
-				'director':          GetRegion(item_block, 'director',   False, ''),
-				'writer':            GetRegion(item_block, 'writer',     False, ''),
-				'studio':            GetRegion(item_block, 'studio',     False, 'RUSSIA.RU'),
-				'genre':             GetRegion(item_block, 'genre',      False, ''),
-				'year':          int(GetRegion(item_block, 'year',       False, '1970')),
-				'duration':          GetRegion(item_block, 'duration',   False, ''),
-				'tagline':           GetRegion(item_block, 'tagline',    False, ''),
-				'plotoutline': clean(GetRegion(item_block, 'plotoutline',False, '')),
-				'plot':        clean(GetRegion(item_block, 'plot',       False, '')),
-				'playcount':     int(GetRegion(item_block, 'playcount',  False, '0')),
-				'rating':      float(GetRegion(item_block, 'rating',     False, '0')),
-				'date':              GetRegion(item_block, 'date',       False, ''),
-			})
-		item.setProperty('fanart_image', GetRegion(item_block, 'fanart',     False, fanart))
-		xbmcplugin.addDirectoryItem(handle,uri,item,isFolder)
 
-	if addfnd:
-		uris = sys.argv[0] + '?mode=Search'
-		items = xbmcgui.ListItem(__language__(30020), iconImage = thumb, thumbnailImage = thumb)
-		item.setProperty('fanart_image', fanart)
-		xbmcplugin.addDirectoryItem(handle,uris,items,True)
-
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_UNSORTED)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_DATE)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_DURATION)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_GENRE)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_VIDEO_TITLE)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-	xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_LABEL)
-
-	xbmcplugin.endOfDirectory(handle)
-
-def get_params():
+def get_params(paramstring):
 	param=[]
-	paramstring=sys.argv[2]
 	if len(paramstring)>=2:
-		params=sys.argv[2]
+		params=paramstring
 		cleanedparams=params.replace('?','')
 		if (params[len(params)-1]=='/'):
 			params=params[0:len(params)-2]
@@ -169,36 +180,12 @@ def get_params():
 				param[splitparams[0]]=splitparams[1]
 	return param
 
-
-params = get_params()
+params = get_params(sys.argv[2])
 mode   = None
-url    = api_URL + '?' + ppup
-
-try:    mode  = params['mode']
-except: pass
-try:    url   = params['url'].decode("hex")
-	#url   = params['url']
-except: pass
-
-#print 'start mode=%s' % mode
-#print 'start  url=%s' % url
-#print 'start  url=' + url
-
-if mode == 'Search':
-	pass_keyboard = xbmc.Keyboard()
-	pass_keyboard.setHeading(__language__(30021))
-	pass_keyboard.doModal()
-	if (pass_keyboard.isConfirmed()):
-		MakeItem(fnd_URL + pass_keyboard.getText() + '&' + ppup, False)
-		# urllib.unquote_plus(
-	else:
-		exit
-else:
-	MakeItem(url)
-
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.output(' === unhandled exception in adIO === ')
-	pass
+func   = None
+try:    mode = urllib.unquote_plus(params['mode'])
+except: getitems(params)
+if mode != None:
+	try:    func = globals()[mode]
+	except: pass
+	if func: func(params)
