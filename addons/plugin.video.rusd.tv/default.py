@@ -519,11 +519,3 @@ if run_once():
 		Get(url)
 		xbmc.sleep(50)
 		xbmc.executebuiltin('Container.Refresh')
-
-
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.output(' === unhandled exception in adIO === ')
-	pass

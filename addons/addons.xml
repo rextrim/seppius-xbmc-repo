@@ -139,7 +139,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.ruhd.tv"
        name="RuHD.TV"
-       version="1.1.9"
+       version="1.2.0"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -227,7 +227,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.rusd.tv"
        name="RuSD.TV"
-       version="1.1.9"
+       version="1.2.0"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
