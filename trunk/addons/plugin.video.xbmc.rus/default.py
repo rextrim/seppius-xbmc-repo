@@ -20,7 +20,9 @@
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 import os, urllib, urllib2, cookielib, xml.dom.minidom, base64
-import socket, hashlib
+import socket
+#hashlib
+import sha
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmc.rus')
 __language__ = __settings__.getLocalizedString
@@ -67,7 +69,8 @@ def GET(href, post=None):
 		if sendpw:
 			cooks += '; %s=%s'%('token1',urllib.quote_plus(token1))
 			cooks += '; %s=%s'%('user',urllib.quote_plus(username))
-			cooks += '; %s=%s'%('hash',urllib.quote_plus(hashlib.sha1(':%s:%s:%s:%s:'%(token0, token1, password, href)).hexdigest()))
+			#cooks += '; %s=%s'%('hash',urllib.quote_plus(hashlib.sha1(':%s:%s:%s:%s:'%(token0, token1, password, href)).hexdigest()))
+			cooks += '; %s=%s'%('hash',urllib.quote_plus(sha.new(':%s:%s:%s:%s:'%(token0, token1, password, href)).hexdigest()))
 			cooks += '; %s=%d'%('quality',vquality)
 			cooks += '; %s=%d'%('length',listsize)
 		req.add_header('Cookie', cooks[2:])
