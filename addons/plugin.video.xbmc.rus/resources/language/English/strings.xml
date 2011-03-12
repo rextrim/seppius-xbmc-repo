@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="30000">aHR0cDovL3hibWNydXNzaWEubWF0c3VzaGl0YS5sb2N1bS5ydS8=</string>
+	<string id="30001">Your name in the service XBMC-Russia</string>
+	<string id="30002">Your password in the service XBMC-Russia</string>
+	<string id="30003">Preferred video quality</string>
+	<string id="30004">Preferred list size</string>
+	<string id="30005">Wait time server (seconds)</string>
+
+	<string id="30101">Default</string>
+	<string id="30102">Low</string>
+	<string id="30103">Average</string>
+	<string id="30104">High</string>
+	<string id="30105">HD 720</string>
+	<string id="30106">HD 1080</string>
+</strings>
