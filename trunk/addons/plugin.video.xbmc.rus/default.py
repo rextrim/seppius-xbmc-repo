@@ -1,24 +1,22 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-#/*
-# *   Copyright (с) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
-# *   Writer (C) 12/03/2011, Kostynoy S.A., E-mail: seppius2@gmail.com
-# *
-# *  This Program is free software; you can redistribute it and/or modify
-# *  it under the terms of the GNU General Public License as published by
-# *  the Free Software Foundation; either version 2, or (at your option)
-# *  any later version.
-# *
-# *  This Program is distributed in the hope that it will be useful,
-# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *  GNU General Public License for more details.
-# *
-# *  You should have received a copy of the GNU General Public License
-# *  along with this program; see the file COPYING.  If not, write to
-# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *  http://www.gnu.org/licenses/gpl.html
-# */
+#
+#   Copyright (c) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+#   Writer (c) 12/03/2011, Kostynoy S.A., E-mail: seppius2@gmail.com
+#
+#   This Program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2, or (at your option)
+#   any later version.
+#
+#   This Program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; see the file COPYING.  If not, write to
+#   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#   http://www.gnu.org/licenses/gpl.html
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 import os, urllib, urllib2, cookielib, xml.dom.minidom, base64
@@ -42,8 +40,8 @@ token0 = __settings__.getSetting('token0')
 token1 = __settings__.getSetting('token1')
 
 
-def showMessage(heading, message, times = 3000):
-	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
+def showMessage(heading, message, times = 3000, pics = icon):
+	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, pics))
 
 
 def builtin(params):
@@ -180,6 +178,7 @@ def getitems(params):
 		li.setProperty('fanart_image', fanartimage)
 		li.setProperty('IsPlayable',   IsPlayable)
 		xbmcplugin.addDirectoryItem(h, uri, li, IsFolder)
+
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DURATION)
@@ -191,6 +190,16 @@ def getitems(params):
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_LABEL)
 	xbmcplugin.endOfDirectory(h)
+
+	for advt in document.getElementsByTagName('advertising'):
+		adtype = advt.getElementsByTagName('type')[0].firstChild.data.lower()
+		if adtype == 'showmessage':
+			heading = advt.getElementsByTagName('heading')[0].firstChild.data.encode('utf-8', 'replace')
+			message = advt.getElementsByTagName('message')[0].firstChild.data.encode('utf-8', 'replace')
+			delay = advt.getElementsByTagName('delay')[0].firstChild.data.encode('utf-8', 'replace')
+			picture = advt.getElementsByTagName('picture')[0].firstChild.data.encode('utf-8', 'replace')
+			showMessage(heading, message, delay, picture)
+
 
 
 def directplay(params):
@@ -205,7 +214,12 @@ def directplay(params):
 def play(params):
 	try:
 		http = GET(urllib.unquote_plus(params['target']))
-		i = xbmcgui.ListItem(path = base64.b64decode(http))
+		if http == None:
+			return False
+		document = xml.dom.minidom.parseString(http)
+		item=document.getElementsByTagName('item')[0]
+		ppath = item.getElementsByTagName('next_uri')[0].firstChild.data
+		i = xbmcgui.ListItem(path = ppath)
 		xbmcplugin.setResolvedUrl(h, True, i)
 	except:
 		showMessage('DATA ERROR', 'I can not play this item')
