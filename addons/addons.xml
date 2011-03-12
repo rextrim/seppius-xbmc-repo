@@ -508,7 +508,7 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.0.0" provider-name="seppius">
+<addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.0.1" provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
