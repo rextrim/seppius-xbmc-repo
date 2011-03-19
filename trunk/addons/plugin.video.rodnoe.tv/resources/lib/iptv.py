@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*
 # Rodnoe.TV python class
-# (c) Eugene Bond, 2010
+# (c) Eugene Bond, 2010-2011
 # eugene.bond@gmail.com
 
 import urllib2
@@ -10,7 +10,7 @@ import re, os, sys
 from time import time
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '1.8'
+__version__ = '1.9'
 
 IPTV_DOMAIN = 'file-teleport.com'
 IPTV_API = 'http://%s/iptv/api/json/%%s' % IPTV_DOMAIN
@@ -128,7 +128,7 @@ class rodnoe:
 		
 		self.last_list = None
 		
-		self.supported_settings = {'time_shift': {'name': 'time_shift', 'language_key': 34002, 'defined': [('0', '0'), ('60', '1'), ('120', '2'), ('180', '3'), ('240', '4'), ('300', '5'), ('360', '6'), ('420', '7'), ('480', '8'), ('540', '9'), ('600', '10'), ('660', '11'), ('720', '12')]}, 'time_zone': {'name': 'time_zone', 'language_key': 34003, 'defined': [('-720', '-12 GMT (New Zealand Standard Time)'), ('-660', '-11 GMT (Midway Islands Time)'), ('-600', '-10 GMT (Hawaii Standard Time)'), ('-540', '-9 GMT (Alaska Standard Time)'), ('-480', '-8 GMT (Pacific Standard Time)'), ('-420', '-7 GMT (Mountain Standard Time)'), ('-360', '-6 GMT (Central Standard Time)'), ('-300', '-5 GMT (Eastern Standard Time)'), ('-240', '-4 GMT (Puerto Rico and US Virgin Islands Time)'), ('-180', '-3 GMT (Argentina Standard Time)'), ('-120', '-2 GMT'), ('-60', '-1 GMT (Central African Time)'), ('0', '0 GMT (Greenwich Mean Time)'), ('60', '+1 GMT (European Central Time)'), ('120', '+2 GMT (Eastern European Time)'), ('180', '+3 GMT (Eastern African Time)'), ('240', '+4 GMT (Near East Time)'), ('300', '+5 GMT (Pakistan Lahore Time)'), ('360', '+6 GMT (Bangladesh Standard Time)'), ('420', '+7 GMT (Vietnam Standard Time)'), ('480', '+8 GMT (China Taiwan Time)'), ('540', '+9 GMT (Japan Standard Time)'), ('600', '+10 GMT (Australia Eastern Time)'), ('660', '+11 GMT (Solomon Standard Time)')]}}
+		self.supported_settings = {'media_server_id': {'name': 'media_server_id', 'language_key': 34001, 'lookup_in': 'media_servers', 'lookup': 'id', 'display': 'title'}, 'time_shift': {'name': 'time_shift', 'language_key': 34002, 'defined': [('0', '0'), ('60', '1'), ('120', '2'), ('180', '3'), ('240', '4'), ('300', '5'), ('360', '6'), ('420', '7'), ('480', '8'), ('540', '9'), ('600', '10'), ('660', '11'), ('720', '12')]}, 'time_zone': {'name': 'time_zone', 'language_key': 34003, 'defined': [('-720', '-12 GMT (New Zealand Standard Time)'), ('-660', '-11 GMT (Midway Islands Time)'), ('-600', '-10 GMT (Hawaii Standard Time)'), ('-540', '-9 GMT (Alaska Standard Time)'), ('-480', '-8 GMT (Pacific Standard Time)'), ('-420', '-7 GMT (Mountain Standard Time)'), ('-360', '-6 GMT (Central Standard Time)'), ('-300', '-5 GMT (Eastern Standard Time)'), ('-240', '-4 GMT (Puerto Rico and US Virgin Islands Time)'), ('-180', '-3 GMT (Argentina Standard Time)'), ('-120', '-2 GMT'), ('-60', '-1 GMT (Central African Time)'), ('0', '0 GMT (Greenwich Mean Time)'), ('60', '+1 GMT (European Central Time)'), ('120', '+2 GMT (Eastern European Time)'), ('180', '+3 GMT (Eastern African Time)'), ('240', '+4 GMT (Near East Time)'), ('300', '+5 GMT (Pakistan Lahore Time)'), ('360', '+6 GMT (Bangladesh Standard Time)'), ('420', '+7 GMT (Vietnam Standard Time)'), ('480', '+8 GMT (China Taiwan Time)'), ('540', '+9 GMT (Japan Standard Time)'), ('600', '+10 GMT (Australia Eastern Time)'), ('660', '+11 GMT (Solomon Standard Time)')]}}
 		
 		self.COLORSCHEMA = {'#000000': 'ddffffff'}	# default black looks not great on black background
 		
@@ -233,7 +233,7 @@ class rodnoe:
 	
 	def testAuth(self):
 		self.AUTH_OK = True
-		account = self._request('get_settings', '')
+		account = self._request('get_account_info', '')
 			
 		if not self.AUTH_OK:
 			self._auth(self.login, self.password)
@@ -366,12 +366,16 @@ class rodnoe:
 			server_setting = self.last_settings[setting_name]
 			
 			oplist = []
+			lookup_in = 'list'
+			if 'lookup_in' in setting:
+				lookup_in = setting['lookup_in']
+			
 			if 'defined' in setting:
 				oplist = setting['defined']	
-			elif 'list' in server_setting:
-				for set in server_setting['list']:
+			elif lookup_in in self.last_settings:
+				for set in self.last_settings[lookup_in]:
 					if 'lookup' in setting:
-						oplist.append((str(set[setting['lookup']]), str(set[setting['display']])))
+						oplist.append((str(set[setting['lookup']]), set[setting['display']].encode('utf8')))
 					else:
 						oplist.append((str(set), str(set)))
 		else:
