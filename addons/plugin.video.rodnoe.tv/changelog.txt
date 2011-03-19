@@ -1,3 +1,6 @@
+[B]1.1.2[/B]
+"Broadcasting server" setting added
+
 [B]1.1.1[/B]
 Improved stability of previous/next navigation
 

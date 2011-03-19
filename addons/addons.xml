@@ -379,7 +379,7 @@
 
 <addon id="plugin.video.rodnoe.tv"
        name="Rodnoe.TV"
-       version="1.1.1"
+       version="1.1.2"
        provider-name="Eugene Bond">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
