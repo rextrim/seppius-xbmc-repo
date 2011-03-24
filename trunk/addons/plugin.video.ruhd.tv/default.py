@@ -29,7 +29,7 @@ USERPASS = __settings__.getSetting('password')
 handle = int(sys.argv[1])
 
 PLUGIN_NAME   = 'RuHD.TV'
-SITE_URL      = 'http://ruhd.tv/'
+SITE_URL = 'http://188.40.139.23/'
 thumb = os.path.join(os.getcwd().replace(';', ''), "icon.png" )
 
 def showMessage(heading, message, times = 3000):
