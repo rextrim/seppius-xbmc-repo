@@ -210,19 +210,49 @@ def showroot(params):
 	xbmcplugin.endOfDirectory(h)
 
 
+
+
+
+
+
+# GET /my/series/seen 						Список сериалов, которые пользователь когда-либо смотрел
+# GET /my/subscriptions 					Возвращает список подписок на фильмы/сериалы
+# GET /my/subscriptions/films 				Возвращает список подписок на фильмы
+# GET /my/subscriptions/films/unreaded 		Возвращает список подписок на фильмы, которые пользователь еще не отметил просмотренными
+# GET /my/subscriptions/series 				Возвращает список подписок на сериалы
+# GET /my/trackers 							Список отслеживаемых пользователем трекеров
+
+
 def openuserprofile(params):
 
-	# GET /my/series/seen 						Список сериалов, которые пользователь когда-либо смотрел
-	# GET /my/subscriptions 					Возвращает список подписок на фильмы/сериалы
-	# GET /my/subscriptions/films 				Возвращает список подписок на фильмы
-	# GET /my/subscriptions/films/unreaded 		Возвращает список подписок на фильмы, которые пользователь еще не отметил просмотренными
-	# GET /my/subscriptions/series 				Возвращает список подписок на сериалы
-	# GET /my/trackers 							Список отслеживаемых пользователем трекеров
+	xbmc.output('=== def openuserprofile(%s): ==='%(params))
 
-	xbmcplugin.endOfDirectory(h)
+	try:    action = info['action']
+	except: action = None
+
+	if action == None:
+		li = xbmcgui.ListItem('Список просмотренных сериалов', iconImage=icon, thumbnailImage=icon)
+		xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
+
+		li = xbmcgui.ListItem('Ваши подписки (фильмы и сериалы)', iconImage=icon, thumbnailImage=icon)
+		xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
+
+		li = xbmcgui.ListItem('Ваши подписки на фильмы', iconImage=icon, thumbnailImage=icon)
+		xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
+
+		li = xbmcgui.ListItem('Ваши подписки на фильмы (не просмотренные)', iconImage=icon, thumbnailImage=icon)
+		xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
+
+		li = xbmcgui.ListItem('Ваши подписки на сериалы', iconImage=icon, thumbnailImage=icon)
+		xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
+
+		li = xbmcgui.ListItem('Список отслеживаемых вами трекеров', iconImage=icon, thumbnailImage=icon)
+		xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
+
+		xbmcplugin.endOfDirectory(h)
 
 
-# Работа с закачками rTorrent
+
 def rtcshowdl(params):
 
 	dlds = []
@@ -357,6 +387,161 @@ def showtrackers(params):
 	xbmcplugin.endOfDirectory(h)
 
 
+# -------------------------------------------------------------------------------------- #
+
+
+
+def getmetadata(data):
+	info = {'count': data['id']}
+
+	try:    info['title'] = data['name'].encode('utf-8')
+	except: info['title'] = 'Название не указано'
+
+	original_name = data['original_name']
+	if (original_name != None):
+		if len(original_name) > 0:
+			info['plotoutline'] = 'Оригинальное название: "%s"' % original_name.encode('utf-8')
+	try:    info['year'] = int(data['year'])
+	except: pass
+	try:
+		film_duration = int(data['duration'])
+		if (film_duration > 0):
+			if film_duration > 59: tstr = '%s:%s:00' % (film_duration/60, film_duration%60)
+			else: tstr = '%s:00' % film_duration
+			info['duration'] = tstr
+	except: pass
+
+	try:    info['plot'] = data['description'].encode('utf-8')
+	except: info['plot'] = ''
+	if data['budget'] == None: plo_budget = ''
+	else: plo_budget = 'Бюджет: %s $\n' % data['budget']
+	if data['revenue_usa'] == None: plo_rev_usa = ''
+	else: plo_rev_usa = 'Доход в США: %s $\n' % data['revenue_usa']
+	if data['revenue_world'] == None: plo_rev_world = ''
+	else: plo_rev_world = 'Доход в мире: %s $\n' % data['revenue_world']
+	if data['revenue_russia'] == None: plo_rev_russia = ''
+	else: plo_rev_russia = 'Доход в России: %s $\n' % data['revenue_russia']
+
+
+	film_countries = data['countries']
+	if film_countries != None:
+		scountry = ''
+		for country in film_countries:
+			country_id   = country['id']
+			country_name = country['name'].encode('utf-8')
+			scountry += ', %s'%country_name
+		if len(scountry) > 0:
+			scountry = 'Страна:%s' % (scountry[1:])
+			info['plot'] = scountry + '\n' + info['plot']
+
+	a4 = ''
+	a5 = ''
+	a6 = ''
+
+	film_participants = data['participants']
+
+	if film_participants != None:
+
+
+		if film_participants['actor'] != None:
+			a1 = []
+			for actor in film_participants['actor']: a1.append(actor['name'].encode('utf-8'))
+			info['cast'] = a1
+
+		if film_participants['director'] != None:
+			if len(film_participants['director']) > 0:
+				a2 = ''
+				for director in film_participants['director']: a2 += ', %s' % director['name'].encode('utf-8')
+				info['director'] = a2[2:]
+
+		if film_participants['writer'] != None:
+			if len(film_participants['writer']) > 0:
+				a3 = ''
+				for writer in film_participants['writer']: a3 += ', %s' % writer['name'].encode('utf-8')
+				info['writer'] = a3[2:]
+
+		if film_participants['producer'] != None:
+			if len(film_participants['producer']) > 0:
+				for producer in film_participants['producer']: a4 += ', %s'%producer['name'].encode('utf-8')
+				a4 = 'Продюсер: %s\n' % a4[2:]
+
+		if film_participants['operator'] != None:
+			if len(film_participants['operator']) > 0:
+				for operator in film_participants['operator']: a5 += ', %s'%operator['name'].encode('utf-8')
+				a5 = 'Оператор: %s\n' % a5[2:]
+
+		if film_participants['composer'] != None:
+			if len(film_participants['composer']) > 0:
+				for composer in film_participants['composer']: a6 += ', %s'%composer['name'].encode('utf-8')
+				a6 = 'Композитор: %s\n' % a6[2:]
+
+	info['credits'] = a6
+
+	if data['genres'] != None:
+		genre = ''
+		for gArray in data['genres']:
+			genre_name = gArray['name'].encode('utf-8')
+			genre += ', %s'%(genre_name)
+		if len(genre) > 0:
+			info['genre'] = genre[2:]
+			info['tagline'] = info['genre'].replace(',','')
+
+	fbtqs = ''
+	fbtq = data['best_torrent_quality']
+	if fbtq != None:
+		fbtq = fbtq.encode('utf-8')
+		fbtq = fbtq.replace('low','Низкое')
+		fbtq = fbtq.replace('medium','Среднее')
+		fbtq = fbtq.replace('high','Высокое')
+		fbtq = fbtq.replace('hd','HD 720 или выше')
+		fbtqs = 'Качество: %s, ' % fbtq
+
+	info['plot'] = fbtqs + info['plot'] + plo_budget + plo_rev_usa + plo_rev_world + plo_rev_russia + a4 + a5 + a6
+
+	film_ratings = data['ratings'] # array
+
+	if film_ratings != None:
+
+		arates = []
+		avotes = []
+
+		rstring = ''
+
+		imdb_com     = film_ratings['imdb.com']
+		if imdb_com != None:
+			arates.append(imdb_com['rate'])
+			avotes.append(imdb_com['votes'])
+			rstring += 'Рейтинг imdb.com: %s, голосов: %s\n'%(imdb_com['rate'], imdb_com['votes'])
+
+		kinopoisk_ru = film_ratings['kinopoisk.ru']
+		if imdb_com != None:
+			arates.append(kinopoisk_ru['rate'])
+			avotes.append(kinopoisk_ru['votes'])
+			rstring += 'Рейтинг kinopoisk.ru: %s, голосов: %s\n'%(kinopoisk_ru['rate'], kinopoisk_ru['votes'])
+
+		tv_com       = film_ratings['tv.com']
+		if imdb_com != None:
+			arates.append(tv_com['rate'])
+			avotes.append(tv_com['votes'])
+			rstring += 'Рейтинг tv.com: %s, голосов: %s\n'%(tv_com['rate'], tv_com['votes'])
+
+		rstring = rstring.replace('None','Нет')
+		info['votes'] = str(max(avotes))
+		try: info['rating'] = float(max(arates))
+		except: pass
+		if rstring != '': info['plot'] = info['plot'] + '\n' + rstring
+
+	info['iconImage'] = 'http://media.kinobaza.tv/films/%s/poster/60.jpg'%data['id']
+	info['thumbnailImage'] = 'http://media.kinobaza.tv/films/%s/poster/207.jpg'%data['id']
+
+	return info
+
+
+
+
+#===============================================================#
+
+
 
 def filmsbrowse(params):
 	xbmc.output('=== def filmsbrowse(%s): ==='%(params))
@@ -376,147 +561,7 @@ def filmsbrowse(params):
 	djson = demjson.decode(response.read())
 	for cur in djson:
 
-		info = {}
-
-		film_id   = cur['id']
-		info['count'] = film_id
-		try:    info['title'] = cur['name'].encode('utf-8')
-		except: info['title'] = 'Название не указано'
-		film_type = cur['type'].encode('utf-8')
-		#if film_type == 'series':
-		#	info['tvshowtitle'] = info['title']
-
-		original_name = cur['original_name']
-		if original_name != None:
-			if len(original_name) > 0:
-				info['plotoutline'] = 'Оригинальное название: "%s"' % original_name.encode('utf-8')
-
-		try:    info['year'] = int(cur['year'])
-		except: pass
-
-		try:
-			film_duration = int(cur['duration'])
-			if film_duration > 0:
-				if film_duration > 59: tstr = '%s:%s:00' % (film_duration/60, film_duration%60)
-				else: tstr = '%s:00' % film_duration
-				info['duration'] = tstr
-		except: pass
-
-		#info['album'] = 'Кинобаза'
-		#film_best_torrent_quality = cur['best_torrent_quality']
-		#if film_best_torrent_quality != None:
-		#	if len(film_best_torrent_quality) > 0:
-		#		info['album'] = '%s Максимальное качество торрента: %s'%(info['album'], film_best_torrent_quality.encode('utf-8'))
-
-		try:    info['plot'] = cur['description'].encode('utf-8')
-		except: info['plot'] = ''
-
-		plo_budget = ''
-		film_budget = cur['budget']
-		if film_budget != None: plo_budget = 'Бюджет: %s $\n' % film_budget
-
-		plo_rev_usa = ''
-		film_revenue_usa = cur['revenue_usa']
-		if film_revenue_usa != None: plo_rev_usa = 'Доход в США: %s $\n' % film_revenue_usa
-
-		plo_rev_world = ''
-		film_revenue_world = cur['revenue_world']
-		if film_revenue_world != None: plo_rev_world = 'Доход в мире: %s $\n' % film_revenue_world
-
-		plo_rev_russia = ''
-		film_revenue_russia = cur['revenue_russia']
-		if film_revenue_russia != None: plo_rev_russia = 'Доход в России: %s $\n' % film_revenue_russia
-
-		scountry = ''
-		film_countries = cur['countries'] # array
-		if film_countries != None:
-			for country in film_countries:
-				country_id   = country['id']
-				country_name = country['name'].encode('utf-8')
-				scountry += ', %s'%country_name
-			if len(scountry) > 0:
-				scountry = 'Страна:%s' % (scountry[1:])
-				info['plot'] = scountry + '\n' + info['plot']
-		a1 = []
-		a2 = ''
-		a3 = ''
-		a4 = ''
-		a5 = ''
-		a6 = ''
-
-		film_participants = cur['participants']
-		if film_participants != None:
-			actors = film_participants['actor'] # актер
-			if actors != None:
-				for actor in actors: a1.append(actor['name'].encode('utf-8'))
-				info['cast'] = a1
-
-			directors = film_participants['director']
-			if directors != None:
-				for director in directors: a2 += ', %s' % director['name'].encode('utf-8')
-				info['director'] = a2[2:]
-
-			writers = film_participants['writer'] # автор
-			if writers != None:
-				for writer in writers: a3 += ', %s' % writer['name'].encode('utf-8')
-				info['writer'] = a3[2:]
-
-			producers = film_participants['producer'] # продюсер
-			if producers != None:
-				if len(producers) > 0:
-					for producer in producers: a4 += ', %s'%producer['name'].encode('utf-8')
-					a4 = 'Продюсер: %s\n' % a4[2:]
-
-			operators = film_participants['operator'] # Оператор
-			if operators != None:
-				if len(operators) > 0:
-					for operator in operators: a5 += ', %s'%operator['name'].encode('utf-8')
-					a5 = 'Оператор: %s\n' % a5[2:]
-
-			composers = film_participants['composer'] # композитор
-			if composers != None:
-				if len(composers) > 0:
-					for composer in composers: a6 += ', %s'%composer['name'].encode('utf-8')
-					a6 = 'Композитор: %s\n' % a6[2:]
-
-		info['credits'] = a6
-
-		genre = ''
-		film_genres  = cur['genres']  # array
-		if film_genres != None:
-			for gArray in film_genres:
-				genre_id   = gArray['id']
-				genre_name = gArray['name'].encode('utf-8')
-				genre += ', %s'%(genre_name)
-			if len(genre) > 0:
-				info['genre'] = genre[2:]
-				info['tagline'] = info['genre'].replace(',','')
-
-		arates = []
-		avotes = []
-		film_ratings = cur['ratings'] # array
-		imdb_com     = film_ratings['imdb.com']
-		arates.append(imdb_com['rate'])
-		avotes.append(imdb_com['votes'])
-		rstring = 'Рейтинг imdb.com: %s, голосов: %s\n'%(imdb_com['rate'], imdb_com['votes'])
-		kinopoisk_ru = film_ratings['kinopoisk.ru']
-		arates.append(kinopoisk_ru['rate'])
-		avotes.append(kinopoisk_ru['votes'])
-		rstring += 'Рейтинг kinopoisk.ru: %s, голосов: %s\n'%(kinopoisk_ru['rate'], kinopoisk_ru['votes'])
-		tv_com       = film_ratings['tv.com']
-		arates.append(tv_com['rate'])
-		avotes.append(tv_com['votes'])
-		rstring += 'Рейтинг tv.com: %s, голосов: %s\n'%(tv_com['rate'], tv_com['votes'])
-		rstring = rstring.replace('None','Нет')
-		info['votes'] = str(max(avotes))
-		try: info['rating'] = float(max(arates))
-		except: pass
-		info['plot'] = a4+a5+a6+info['plot']+'\n'+plo_budget+plo_rev_usa+plo_rev_world+plo_rev_russia+'\n'+rstring
-
-		iconI  = 'http://media.kinobaza.tv/films/%d/poster/60.jpg'%film_id
-		thumbI = 'http://media.kinobaza.tv/films/%d/poster/207.jpg'%film_id
-		#фотография актера/режисера/пр.: /persons/<person_id>/photo/60.jpg
-		#аватар пользователя: /users/<user_id>/avatar/<width>.png (width = 150, 30)
+		info = getmetadata(cur)
 
 		try:
 			rdir = '%s/disk1/%s'%(rtc.get_directory(),film_id)
@@ -525,23 +570,18 @@ def filmsbrowse(params):
 				info['title'] = '[DL] %s'%info['title']
 		except: pass
 
-		li = xbmcgui.ListItem(label = info['title'], iconImage=iconI, thumbnailImage=thumbI)
-		li.setInfo(type='video', infoLabels = info)
+		li = xbmcgui.ListItem(label = info['title'], iconImage = info['iconImage'], thumbnailImage = info['thumbnailImage'])
+		li.setInfo(type = 'video', infoLabels = info)
 
-		if film_type == 'movie':
-			#isFolder = False
+		if cur['type'] == 'movie':
 			li.setProperty('IsPlayable', 'true')
-			uri = '%s?mode=openfilm&film_id=%s'%(sys.argv[0],film_id)
+			uri = '%s?mode=openfilm&film_id=%s'%(sys.argv[0], cur['id'])
 			if not xbmcplugin.addDirectoryItem(h, uri, li, isFolder=False): break
-		elif film_type == 'series':
-			#isFolder = True
-			uri = '%s?mode=openseasons&series_id=%s'%(sys.argv[0],film_id)
+		elif cur['type'] == 'series':
+			uri = '%s?mode=openseasons&series_id=%s'%(sys.argv[0], cur['id'])
 			if not xbmcplugin.addDirectoryItem(h, uri, li, isFolder=True): break
 		else:
 			showMessage('Ой, "%s"' % film_type, 'Не могу добавить этот тип фильма')
-			#isFolder = False
-			#uri = ''
-
 
 
 	if len(djson) == int(params['limit']):
