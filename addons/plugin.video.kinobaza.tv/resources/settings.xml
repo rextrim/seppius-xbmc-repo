@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<category label="Аккаунт">
+		<setting id="email" type="text" label="Ваш E-mail" default="" />
+		<setting id="password" type="text" label="Ваш пароль" option="hidden" default="" />
+		<setting type="sep" />
+		<setting id="consumer_key"    type="text" label="Ключ consumer_key"    option="" default="7ce8ee604b2fbe4aec73a82e8ea3d73a04d73df3c" />
+		<setting id="consumer_secret" type="text" label="Ключ consumer_secret" option="" default="7ee24aef8480ff96ffa072f79245802a" />
+	</category>
+
+	<category label="rTorrent">
+		<setting id="rtc_uri" type="text" label="rTorrent URI (scgi://addr:port)" default="scgi://127.0.0.1:5000" />
+		<setting id="rtc_basepath" type="folder" label="Базовый каталог загрузки" default="/part/" />
+		<setting id="rtc_select" type="bool" label="Выбирать подкаталог в базовом каталоге?" default="true" />
+	</category>
+
+</settings>
