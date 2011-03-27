@@ -156,18 +156,6 @@ Russia.ru делает передачи для самой разной ауди�
   </extension>
 </addon>
 
-<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.1" provider-name="seppius">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Кинобаза: Что смотреть? Где скачать?</summary>
-    <description>У нас на сайте вы можете найти новинки фильмов в хорошем качестве или HD быстро и без регистрации. Фильмы в HD качестве и DVDRip. Каждый день новые добавления. У нас можно найти что посмотреть сегодня вечером и получить уведомления о появлении новых серий и фильмов в Сети. больше не нужно ждать когда появится фильм онлайн, можно пордписаться на уведомление о выходе</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.russia.ru.old"
        name="RUSSIA.RU.OLD"
        version="1.0.4"
