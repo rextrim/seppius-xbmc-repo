@@ -268,7 +268,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 				if mode == 'FAV':
 					popup.append((__language__(30042), uriP % 'TV',))
 				
-				popup.append((__language__(30016), uriP % 'Video',))
+				popup.append((__language__(30016), uriP % 'VideoLib',))
 				popup.append((__language__(30004), uriP % 'Settings',))
 			
 			item.addContextMenuItems(popup, True)
@@ -519,7 +519,7 @@ def ShowRoot(plugin):
 	vod.setLabel(vod_title)
 	vod.setProperty('IsPlayable', 'false')
 	vod.setInfo( type='video', infoLabels={'title': vod_title, 'plot': __language__(30016)})
-	xbmcplugin.addDirectoryItem(handle,uri % 'Video',vod,True)
+	xbmcplugin.addDirectoryItem(handle,uri % 'VideoLib',vod,True)
 	
 	set_title = ' [  %s  ] ' % __language__(30004)
 	set = xbmcgui.ListItem(set_title)
@@ -535,6 +535,21 @@ def ShowRoot(plugin):
 	set.setInfo( type='video', infoLabels={'title': set_title, 'plot': __language__(30005)})
 	xbmcplugin.addDirectoryItem(handle,uri % 'openSettings',set,True)
 	
+	
+#	set_title = ' [  Test  ] '
+#	set = xbmcgui.ListItem(set_title)
+#	set.setLabel(set_title)
+#	set.setProperty('IsPlayable', 'false')
+#	set.setInfo( type='video', infoLabels={'title': set_title, 'plot': "Test"})
+#	xbmcplugin.addDirectoryItem(handle,uri % 'MovieLib&do=Update',set,True)
+#	
+#	
+#	set_title = ' [  Test 2 ] '
+#	set = xbmcgui.ListItem(set_title)
+#	set.setLabel(set_title)
+#	set.setProperty('IsPlayable', 'false')
+#	set.setInfo( type='video', infoLabels={'title': set_title, 'plot': "Test 2"})
+#	xbmcplugin.addDirectoryItem(handle,uri % 'MovieLib&do=Cleanup',set,True)
 	
 	xbmcplugin.endOfDirectory(handle,True,False)
 
@@ -608,6 +623,145 @@ def ShowNowNextHint(plugin, chid):
 				text = prog['title'].encode('utf8')
 				xbmc.executebuiltin("XBMC.Notification(" + titl.encode('utf8') + ", " + text + ", 12000)");
 
+def VideoLib(plugin, params):
+	
+	do = ''
+	if 'do' in params:
+		do = params['do']
+	
+	uri = sys.argv[0] + '?mode=VideoLib&do=%s'
+	
+	tv_title = ' [  %s  ] ' % __language__(32011)
+	tv=xbmcgui.ListItem(tv_title)
+	tv.setLabel(tv_title)
+	tv.setProperty('IsPlayable', 'false')
+	tv.setInfo( type='video', infoLabels={'title': tv_title, 'plot': __language__(30012)})
+	xbmcplugin.addDirectoryItem(handle,uri % 'Play',tv,True)
+	
+	vod_title = ' [  %s  ] ' % __language__(32003)
+	vod = xbmcgui.ListItem(vod_title)
+	vod.setLabel(vod_title)
+	vod.setProperty('IsPlayable', 'false')
+	vod.setInfo( type='video', infoLabels={'title': vod_title, 'plot': __language__(30016)})
+	xbmcplugin.addDirectoryItem(handle,uri % 'Update',vod,True)
+	
+	set_title = ' [  %s  ] ' % __language__(32000)
+	set = xbmcgui.ListItem(set_title)
+	set.setLabel(set_title)
+	set.setProperty('IsPlayable', 'false')
+	set.setInfo( type='video', infoLabels={'title': set_title, 'plot': __language__(30004)})
+	xbmcplugin.addDirectoryItem(handle,uri % 'Cleanup',set,True)
+	
+	xbmcplugin.endOfDirectory(handle,True,do != '')
+	#xbmcplugin.endOfDirectory(handle,False,True)
+	
+	
+	if do == 'Play':
+	
+		last_update = __settings__.getSetting('video_last_update') or '0000-00-00 00:00:00'
+		if last_update == '0000-00-00 00:00:00':
+			dialog = xbmcgui.Dialog()
+			if dialog.yesno(__language__(32008), __language__(32010)):
+				MovieLib(plugin, 'Update')
+				
+		elif last_update < datetime.datetime.fromtimestamp(time.time() - 60*60*24*7).strftime('%Y-%m-%d %H:%M:%S'):
+			dialog = xbmcgui.Dialog()
+			if dialog.yesno(__language__(32009), __language__(32010)):
+				MovieLib(plugin, 'Update')
+		
+		smartPlsFile = xbmc.translatePath('special://profile/playlists/video') + '/' + str(PLUGIN_ID) + '.xsp'
+		xbmc.output('[%s] checking smart playlist at %s' % (PLUGIN_NAME, smartPlsFile))
+		if not os.path.exists(smartPlsFile):
+			xbmc.output('[%s] smart playlist not found' % (PLUGIN_NAME))
+			smartPls = open(smartPlsFile, "w")
+			smartPls.write('''<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+	<smartplaylist type="movies">
+		<name>%s</name>
+		<match>all</match>
+		<rule field="path" operator="is">plugin://%s/</rule>
+	</smartplaylist>''' % (PLUGIN_NAME, PLUGIN_ID))
+			smartPls.close()
+	
+		xbmc.executebuiltin("XBMC.ActivateWindow(VideoLibrary,Movies)")
+	elif do != '':
+		xbmc.output('[%s] calling movielib %s' % (PLUGIN_NAME, do))
+		MovieLib(plugin, do)
+
+	
+def MovieLib(plugin, do):
+	import movielib
+	m = movielib.movielib()
+	
+	if do == 'Cleanup':
+		dialog = xbmcgui.Dialog()
+		if dialog.yesno(__language__(32000), __language__(32012)):
+			m.vdbCleanUp(sys.argv[0])
+			__settings__.setSetting('video_last_update', '0000-00-00 00:00:00')
+			__settings__.setSetting('in_vod', 'false')
+			dialog = xbmcgui.Dialog()
+			dialog.ok( __language__(32000), __language__(32001))
+	elif do == 'Update':
+		__settings__.setSetting('in_vod', 'false')
+		progress = xbmcgui.DialogProgress()
+		progress.create(__language__(32003))
+		progress.update(10, __language__(32004))
+		vlist = plugin.getVideoList('last', 1, 500)
+		progress.update(20, __language__(32005))
+		toprocess = []
+		last_update = __settings__.getSetting('video_last_update') or '0000-00-00 00:00:00'
+		for vod in vlist:
+			info = sys.argv[0] + '?mode=VideoInfo&vod=%s' % vod['id']
+			if m.vdbMovieByPathAndTrailer(sys.argv[0], info):
+				xbmc.output('[%s] skipping %s?' % (PLUGIN_NAME, info), level=xbmc.LOGDEBUG)
+				continue
+			else:
+				xbmc.output('[%s] new vod %s?' % (PLUGIN_NAME, info))
+			toprocess.append(vod)
+		if len(toprocess):
+			stepSize = float(60.0 / len(toprocess))
+		else:
+			stepSize = 1
+		xbmc.output('[%s] progress step size set to %s as 60 / %s' % (PLUGIN_NAME, stepSize, len(toprocess)), level=xbmc.LOGDEBUG)
+		counter = 0
+		for vod in toprocess:
+			info = plugin.getVideoInfo(vod['id'])
+			film = movielib.movielibmovie(sys.argv[0])
+			film.setTitle(vod['title'])
+			film.setDescription(vod['info'])
+			film.setImage(vod['icon'])
+			for genre in vod['genre'].split(', '):
+				film.addGenre(genre)
+			for actor in info['actors'].split(', '):
+				film.addActor(actor)
+			film.setYear(info['year'])
+			if info['rate_imdb']:
+				rating = info['rate_imdb']
+			else:
+				rating = info['rate_kinopoisk']
+			film.setRating(rating)
+			film.setDirector(info['director'])
+			film.setWritter(info['scenario'])
+			film.setStudio(info['studio'])
+			film.setCountry(info['country'])
+			film.setTrailer(sys.argv[0] + '?mode=VideoInfo&vod=%s' % vod['id'])
+			for part in info['videos']:
+				uri = '?mode=WatchVOD&vod=%s&title=%s' % (part['id'], vod['title'])
+				film.addFile(uri, part['title'])
+			m.addMovie(film)
+			progress.update(40 + int(counter * stepSize), __language__(32006) % vod['title'])
+			counter += 1
+			xbmc.sleep(250)
+			if progress.iscanceled():
+				break
+		progress.update(100, __language__(32001))
+		if not progress.iscanceled():
+			__settings__.setSetting('video_last_update', datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+		progress.close()
+		dialog = xbmcgui.Dialog()
+		dialog.ok( __language__(32003), __language__(32007) % counter)
+	else:
+		xbmc.output('[%s] unknown movie lib command: "%s"' % (PLUGIN_NAME, do))
+
 
 xbmc.output('[%s] Loaded' % (PLUGIN_NAME))
 
@@ -658,6 +812,9 @@ else:
 	elif mode == 'Archive':
 		Archive(PLUGIN_CORE, channel, params)
 
+	elif mode == 'VideoLib':
+		VideoLib(PLUGIN_CORE, params)
+
 	elif mode == 'Video':
 		Video(PLUGIN_CORE, params)
 
@@ -681,7 +838,13 @@ else:
 	
 	elif mode == 'Settings':
 		ProcessSettings(PLUGIN_CORE, params)
-
+	
+	elif mode == 'MovieLib':
+		do = ''
+		if 'do' in params:
+			do = params['do']
+		MovieLib(PLUGIN_CORE, do)
+		
 	elif mode == 'ExecURL':
 		Get(url)
 		xbmc.sleep(50)
