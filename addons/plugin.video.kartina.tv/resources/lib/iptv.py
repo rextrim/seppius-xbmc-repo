@@ -377,12 +377,13 @@ class kartina:
 		result = self._request('vod_list', params)
 		res = []
 		for vod in result['rows']:
-			xbmc.output('[Kartina.TV] VOD item: %s' % vod)
+			xbmc.output('[Kartina.TV] VOD item: %s' % vod, level=xbmc.LOGDEBUG)
 			res.append({
 				'title':		vod['name'],
 				'info':			vod['description'],
 				'is_video':		1,
 				'id':			vod['id'],
+				'genre':		vod['genre_str'],
 				'icon':			'http://%s%s' % (IPTV_DOMAIN, vod['poster']),
 				'source':		vod
 			})
