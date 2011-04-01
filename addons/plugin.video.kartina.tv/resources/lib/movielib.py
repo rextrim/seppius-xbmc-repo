@@ -195,7 +195,9 @@ class movielib:
 					self._vdbAddSetToMovie(sid, mid)
 				
 			self.connection.commit()
-		return mid	
+			return mid
+		else:
+			xbmc.output('[movielib] movie is here, but files are not here.. skipping %s' % movie.title.encode('utf-8'))
 	
 	def _vdbDeleteMovie(self, mid):
 		xbmc.output('[movielib] removing movie #%s' % mid)
@@ -269,8 +271,6 @@ class movielib:
 			if cache:
 				THUMB_CACHE_PATH   = os.path.join( xbmc.translatePath( "special://profile/" ), "Thumbnails", "Video" )
 				cache = os.path.join(THUMB_CACHE_PATH, cache[0], cache)
-				import pprint
-				pprint.pprint(path)
 				xbmc.output('[movielib] downloading image %s to cache %s' % (img, cache))
 				urllib.urlretrieve(img, cache)
 	
@@ -389,9 +389,11 @@ class movielib:
 		return self.db.fetchone()		
 	
 	def _addSlashAtEnd(self, path):
+		# disabled for now as plugins on Windows uses non-system slashes?
 		if not path.endswith(os.path.sep):
-			path += os.path.sep
-		
+			#path += os.path.sep
+			xbmc.output('[movielib] path %s was not translated to %s' % (path, path + os.path.sep))
+			
 		return path
 	
 	
