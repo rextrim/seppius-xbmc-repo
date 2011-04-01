@@ -1,3 +1,7 @@
+[B]1.2.1[/B]
+Minor update to fix a problem with import of empty (no files) movies
++ workaround to check a problem with posters on windows boxes
+
 [B]1.2.0[/B]
 Merging of KartinaTV video library into native XBMC VideoLib
 
