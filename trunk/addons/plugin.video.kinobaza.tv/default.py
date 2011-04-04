@@ -30,7 +30,7 @@ socket.setdefaulttimeout(15)
 
 import Cookie
 import demjson
-import oauth2 as oauth
+#import oauth2 as oauth
 import xmlrpc2scgi
 
 
@@ -55,27 +55,11 @@ rtorimg  = xbmc.translatePath(os.path.join(img_base, 'rtorrent.png'))
 __settings__ = xbmcaddon.Addon(id = 'plugin.video.kinobaza.tv')
 __language__ = __settings__.getLocalizedString
 
-access_token        = __settings__.getSetting('access_token')
-access_token_secret = __settings__.getSetting('access_token_secret')
-consumer_key        = __settings__.getSetting('consumer_key')
-consumer_secret     = __settings__.getSetting('consumer_secret')
-password            = __settings__.getSetting('password')
-email               = __settings__.getSetting('email')
-user_id             = __settings__.getSetting('user_id')
-username            = __settings__.getSetting('username')
 rtc_uri             = __settings__.getSetting('rtc_uri')
 rtc_basepath        = __settings__.getSetting('rtc_basepath')
 rtc_select          = __settings__.getSetting('rtc_select').lower()
 
 print 'initial info...'
-print 'INIT access_token        = [%s]' % len(access_token)
-print 'INIT access_token_secret = [%s]' % len(access_token_secret)
-print 'INIT consumer_key        = [%s]' % consumer_key
-print 'INIT consumer_secret     = [%s]' % consumer_secret
-print 'INIT password            = [%s]' % len(password)
-print 'INIT email               = [%s]' % len(email)
-print 'INIT user_id             = [%s]' % user_id
-print 'INIT username            = [%s]' % len(username)
 print 'INIT rtc_uri             = [%s]' % rtc_uri
 print 'INIT rtc_basepath        = [%s]' % rtc_basepath
 print 'INIT rtc_select          = [%s]' % rtc_select
@@ -101,63 +85,41 @@ except:
 
 
 
-def KBREQUEST(url, params = {}, method='POST'):
-	print 'KBREQUEST -> URL    = [%s]' % url
-	print 'KBREQUEST -> params = [%s]' % params
-	print 'KBREQUEST -> method = [%s]' % method
+def KBREQUEST(target, post_params = None):
 
-	oauth_consumer = oauth.Consumer(consumer_key, consumer_secret)
-	base_params = {'oauth_nonce':oauth.generate_nonce(),'oauth_timestamp':int(time.time())}
-	token = oauth.Token(key = access_token, secret = access_token_secret)
-	req = oauth.Request(method = method, url = url, parameters = dict(base_params, **params))
-	req.sign_request(oauth.SignatureMethod_HMAC_SHA1(), oauth_consumer, token)
+	print 'KBREQUEST -> URL         = [%s]' % target
+	print 'KBREQUEST -> post_params = [%s]' % params
+
+	if post_params == None:
+		method = 'GET'
+		post = None
+	else:
+		method = 'POST'
+		post = urllib.urlencode(post_params)
+
 	connection = httplib.HTTPConnection(API_SERV)
-	postdata = req.to_postdata()
+
 	PHPSESSID = __settings__.getSetting('PHPSESSID')
 	if PHPSESSID != '': headers['Cookie'] = 'PHPSESSID='+PHPSESSID
-	connection.request(method, url=url, body=postdata, headers=headers)
+
+	connection.request(method, target, post, headers = headers)
 	response = connection.getresponse()
+
 	try:
 		sc = Cookie.SimpleCookie()
 		sc.load(response.msg.getheader('Set-Cookie'))
 		__settings__.setSetting('PHPSESSID', sc['PHPSESSID'].value)
 	except: pass
-	return response
 
-def KBAUTH():
-	connection = httplib.HTTPConnection("%s:%d"%(API_SERV, 80))
-	postdata = urllib.urlencode({'consumer_key':consumer_key,'email':email,'password':password})
-	connection.request('POST', '/auth/login-by-email', postdata, headers=headers)
-	response = connection.getresponse()
-	try:
-		sc = Cookie.SimpleCookie()
-		sc.load(response.msg.getheader('Set-Cookie'))
-		__settings__.setSetting('PHPSESSID', sc['PHPSESSID'].value)
-	except: pass
-	djson = demjson.decode(response.read())
-	try:
-		code = djson['code']
-		message = djson['message']
-		showMessage('Ошибка авторизации %d'%code, message.encode('utf-8'), 5000)
-		print message.encode('utf-8')
-		return False
-	except: pass
-	try:
-		user_id = str(djson['user_id'])
-		username = djson['username']
-		access_token = djson['access_token']
-		access_token_secret = djson['access_token_secret']
-		__settings__.setSetting('user_id', user_id)
-		__settings__.setSetting('username', username)
-		__settings__.setSetting('access_token', access_token)
-		__settings__.setSetting('access_token_secret', access_token_secret)
-		showMessage('Спасибо за регистрацию!', 'Имя: %s, ID: %s'%(username.encode('utf-8'),user_id), 5000)
-		return True
-	except: return False
+	http = response.read()
 
+	if response.status != 200:
+		print 'response.status != 200, response.reason = %s' % response.reason
+		showMessage('oops', 'response.reason = %s' % response.reason, 5000)
+		print http
+		return None
 
-
-
+	return http
 
 
 
@@ -183,10 +145,10 @@ def get_params(paramstring):
 
 def showroot(params):
 
-	if (access_token == '') or (access_token_secret == '') or (username == '') or (user_id == ''):
-		if (len(consumer_key) != 41) or (len(consumer_secret) != 32) or (email == '') or (password == ''):
-			showMessage('Проверьте настройки', 'Ключи consumer, e-mail и пароль')
-		else: KBAUTH()
+#	if (access_token == '') or (access_token_secret == '') or (username == '') or (user_id == ''):
+#		if (len(consumer_key) != 41) or (len(consumer_secret) != 32) or (email == '') or (password == ''):
+#			showMessage('Проверьте настройки', 'Ключи consumer, e-mail и пароль')
+#		else: KBAUTH()
 
 #	li = xbmcgui.ListItem('Список доступных жанров', iconImage=icon, thumbnailImage=icon)
 #	xbmcplugin.addDirectoryItem(h, '%s?mode=showgenres'%sys.argv[0], li, True)
@@ -212,9 +174,9 @@ def showroot(params):
 	li = xbmcgui.ListItem('Поиск сериалов', iconImage=icon, thumbnailImage=icon)
 	xbmcplugin.addDirectoryItem(h, '%s?mode=filmssearch&fields_mask=63&limit=50&offset=0&type=series&href=%s'%(sys.argv[0], urllib.quote_plus('http://%s/films/search'%API_SERV)), li, True)
 
-	user_image = 'http://media.kinobaza.tv/users/%s/avatar/150.png' % user_id
-	li = xbmcgui.ListItem('%s / %s [%s]'%(username, email, user_id), iconImage = user_image, thumbnailImage = user_image)
-	xbmcplugin.addDirectoryItem(h, '%s?mode=openuserprofile'%(sys.argv[0]), li, True)
+#	user_image = 'http://media.kinobaza.tv/users/%s/avatar/150.png' % user_id
+#	li = xbmcgui.ListItem('%s / %s [%s]'%(username, email, user_id), iconImage = user_image, thumbnailImage = user_image)
+#	xbmcplugin.addDirectoryItem(h, '%s?mode=openuserprofile'%(sys.argv[0]), li, True)
 
 	li = xbmcgui.ListItem('Ваши загрузки', iconImage = rtorimg, thumbnailImage = rtorimg)
 	xbmcplugin.addDirectoryItem(h, '%s?mode=rtcshowdl'%(sys.argv[0]), li, True)
@@ -446,8 +408,8 @@ def filmssearch(params):
 
 
 def showgenres(params):
-	response = KBREQUEST('http://%s/genres/'%API_SERV, method='GET')
-	djson = demjson.decode(response.read())
+	http = KBREQUEST('http://%s/genres/'%API_SERV)
+	djson = demjson.decode(http)
 	for cur in djson:
 		genre_id   = cur['id']
 		genre_name = cur['name'].encode('utf-8')
@@ -457,8 +419,8 @@ def showgenres(params):
 
 
 def showcountries(params):
-	response = KBREQUEST('http://%s/countries/'%API_SERV, method = 'GET')
-	djson = demjson.decode(response.read())
+	http = KBREQUEST('http://%s/countries/'%API_SERV)
+	djson = demjson.decode(http)
 	for cur in djson:
 		country_id   = cur['id']
 		country_name = cur['name'].encode('utf-8')
@@ -469,8 +431,8 @@ def showcountries(params):
 
 
 def showlanguages(params):
-	response = KBREQUEST('http://%s/languages'%API_SERV, method='GET')
-	djson = demjson.decode(response.read())
+	http = KBREQUEST('http://%s/languages'%API_SERV)
+	djson = demjson.decode(http)
 	for cur in djson:
 		lang_id   = cur['id']
 		lang_name = cur['name'].encode('utf-8')
@@ -480,8 +442,8 @@ def showlanguages(params):
 
 
 def showtrackers(params):
-	response = KBREQUEST('http://%s/trackers'%API_SERV, method='GET')
-	djson = demjson.decode(response.read())
+	http = KBREQUEST('http://%s/trackers'%API_SERV)
+	djson = demjson.decode(http)
 	for cur in djson:
 		tracker_id   = cur['id']
 		tracker_name = cur['url'].encode('utf-8')
@@ -688,9 +650,9 @@ def filmsbrowse(params):
 	del GL['href']
 
 	#url =
-	response = KBREQUEST('%s?%s'%(href,urllib.urlencode(GL)), method='GET')
+	http = KBREQUEST('%s?%s'%(href,urllib.urlencode(GL)))
 
-	djson = demjson.decode(response.read())
+	djson = demjson.decode(http)
 
 	#print djson
 
@@ -755,14 +717,14 @@ def openseasons(params):
 	xbmc.output('=== def openseasons(%s): ==='%(params))
 
 	mtarget = 'http://%s/films/%s?fields_mask=63' % (API_SERV, params['series_id'])
-	mresponse = KBREQUEST(mtarget, method = 'GET')
-	mdjson = demjson.decode(mresponse.read())
+	http0 = KBREQUEST(mtarget)
+	mdjson = demjson.decode(http0)
 	minfo = getmetadata(mdjson, params['series_id'])
 
 
 	target = 'http://%s/films/%s/seasons' % (API_SERV, params['series_id'])
-	response = KBREQUEST(target, method = 'GET')
-	djson = demjson.decode(response.read())
+	http1 = KBREQUEST(target)
+	djson = demjson.decode(http1)
 
 	series_id     = djson['series_id'] # int
 	seasons       = djson['seasons'] # array
@@ -817,8 +779,8 @@ def openepisodes(params):
 	xbmc.output('=== def openepisodes(%s): ==='%(params))
 
 	mtarget = 'http://%s/films/%s?fields_mask=63' % (API_SERV, params['series_id'])
-	mresponse = KBREQUEST(mtarget, method = 'GET')
-	mdjson = demjson.decode(mresponse.read())
+	http0 = KBREQUEST(mtarget)
+	mdjson = demjson.decode(http0)
 	minfo = getmetadata(mdjson, params['series_id'])
 
 	target = 'http://%s/films/%s/seasons/%s/episodes' % (API_SERV, params['series_id'], params['season_num'])
@@ -826,8 +788,8 @@ def openepisodes(params):
 
 	#print target
 
-	response = KBREQUEST(target, method = 'GET')
-	djson = demjson.decode(response.read())
+	http1 = KBREQUEST(target)
+	djson = demjson.decode(http1)
 
 	#print djson
 
@@ -919,8 +881,8 @@ def openfilm(params):
 			print '====== NOT ФИЛЬМ (EXCEPT) ======'
 			return False
 
-	response = KBREQUEST(target, method = 'GET')
-	djson = demjson.decode(response.read())
+	http2 = KBREQUEST(target)
+	djson = demjson.decode(http2)
 
 	#print djson
 
@@ -1124,8 +1086,8 @@ def openfilm(params):
 
 		url_gt = 'http://%s/torrents/%s/direct-link'%(API_SERV,dhash)
 		print 'url_gt GET: %s' % url_gt
-		response2 = KBREQUEST(url_gt, method='GET')
-		djson2 = demjson.decode(response2.read())
+		http3 = KBREQUEST(url_gt)
+		djson2 = demjson.decode(http3)
 
 
 
@@ -1171,8 +1133,8 @@ def openfilm(params):
 
 
 		mtarget = 'http://%s/films/%s?fields_mask=63' % (API_SERV, meta_id)
-		mresponse = KBREQUEST(mtarget, method = 'GET')
-		mdjson = demjson.decode(mresponse.read())
+		http4 = KBREQUEST(mtarget)
+		mdjson = demjson.decode(http4)
 		minfo = getmetadata(mdjson, film_id)
 
 		minfo['title'] = minfo['title'] + series_dl_append
