@@ -156,7 +156,7 @@ Russia.ru делает передачи для самой разной ауди�
   </extension>
 </addon>
 
-<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.1" provider-name="seppius">
+<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.2" provider-name="seppius">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
