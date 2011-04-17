@@ -23,7 +23,7 @@ sys.path.append(os.path.join(os.getcwd(), 'resources', 'lib'))
 import iptv
 
 import datetime, time
-import urllib
+import urllib, threading, re
 
 PLUGIN_ID = 'plugin.video.kartina.tv'
 __settings__ = xbmcaddon.Addon(id=PLUGIN_ID)
@@ -54,6 +54,10 @@ def get_params():
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
+
+
+INFOTIMER_SHOW = None
+INFOTIMER_HIDE = None
 
 
 def Archive(plugin, id, params):
@@ -149,6 +153,7 @@ def Archive(plugin, id, params):
 def resetAlarms(plugin, mode):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
 	xbmc.executebuiltin("XBMC.CancelAlarm(%s,True)" % refreshAlarmId)
+	resetInfoTimers()
 	
 
 def ShowChannelsList(plugin, mode = 'TV'):
@@ -443,10 +448,21 @@ def WatchTV(plugin, id, params):
 						ch.setProperty('IsPlayable', 'true')
 						if 'aspect_ratio' in channel and channel['aspect_ratio']:
 							ch.setProperty('AspectRatio', channel['aspect_ratio'])
+						elif __settings__.getSetting('guess_aspect_ratio'):
+							if channel['subtitle'].find('16:9') > -1 or channel['info'].find('16:9') > -1:
+								xbmc.output('[%s] WatchTV: guessing aspect ratio as 16:9' % (PLUGIN_NAME))
+								ch.setProperty('AspectRatio', '1.20 : 1')
 						pls.add(path, ch, index)
 						if id == str(channel['id']):
 							item.setIconImage(channel['icon'])
 							item.setInfo( type='video', infoLabels={'Studio': channel['title'], 'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre'], 'ChannelName': channel['title'], 'StartTime': datetime.datetime.fromtimestamp(channel['epg_start']).strftime('%H:%M'), 'EndTime': datetime.datetime.fromtimestamp(channel['epg_end']).strftime('%H:%M')})
+							if 'aspect_ratio' in channel and channel['aspect_ratio']:
+								ch.setProperty('AspectRatio', channel['aspect_ratio'])
+							elif __settings__.getSetting('guess_aspect_ratio'):
+								if channel['subtitle'].find('16:9') > -1 or channel['info'].find('16:9') > -1:
+									xbmc.output('[%s] WatchTV: guessing aspect ratio as 16:9' % (PLUGIN_NAME))
+									item.setProperty('AspectRatio', '1.20 : 1')
+									xbmc.output('[%s] WatchTV: forcing aspect ratio as 16:9' % (PLUGIN_NAME))
 							toplay = index	
 					index += 1
 			
@@ -464,6 +480,10 @@ def WatchTV(plugin, id, params):
 					ch.setProperty('IsPlayable', 'true')
 					if 'aspect_ratio' in channel and channel['aspect_ratio']:
 						ch.setProperty('AspectRatio', channel['aspect_ratio'])
+					elif __settings__.getSetting('guess_aspect_ratio'):
+						if channel['subtitle'].find('16:9') > -1 or channel['info'].find('16:9') > -1:
+							xbmc.output('[%s] WatchTV: guessing aspect ratio as 16:9' % (PLUGIN_NAME))
+							ch.setProperty('AspectRatio', '1.20 : 1')
 					pls.add(path, ch, index)
 					index += 1
 			doVidInfo = True
@@ -473,6 +493,12 @@ def WatchTV(plugin, id, params):
 				if id == str(channel['id']):
 					item.setIconImage(channel['icon'])
 					item.setInfo( type='video', infoLabels={'Studio': channel['title'], 'title': channel['subtitle'], 'plot': channel['info'], 'genre': channel['genre']})
+					if 'aspect_ratio' in channel and channel['aspect_ratio']:
+						ch.setProperty('AspectRatio', channel['aspect_ratio'])
+					elif __settings__.getSetting('guess_aspect_ratio'):
+						if channel['subtitle'].find('16:9') > -1 or channel['info'].find('16:9') > -1:
+							xbmc.output('[%s] WatchTV: forsing aspect ratio as 16:9' % (PLUGIN_NAME))
+							item.setProperty('AspectRatio', '1.20 : 1')
 					break
 			doVidInfo = True
 		
@@ -489,11 +515,42 @@ def WatchTV(plugin, id, params):
 			xbmcplugin.setResolvedUrl(handle = handle, succeeded=True, listitem=item)
 		
 		if __settings__.getSetting('showcurrent') == 'true' and not gmt and doVidInfo:
-			xbmc.sleep(5000)
-			dialog = xbmcgui.Window(10142)
-			dialog.show()
+			SetupInfoTimer()
+			#xbmc.sleep(5000)
+			#dialog = xbmcgui.Window(10142)
+			#dialog.show()
 	else:
 		xbmc.executebuiltin("XBMC.Notification(" + __language__(30025).encode('utf8') + ", " + __language__(30025).encode('utf8') + ", 8000)");
+
+def resetInfoTimers():
+	if INFOTIMER_SHOW:
+		if INFOTIMER_SHOW.isAlive():
+			INFOTIMER_SHOW.cancel()
+	if INFOTIMER_HIDE:
+		if INFOTIMER_HIDE.isAlive():
+			INFOTIMER_HIDE.cancel()
+
+def SetupInfoTimer():
+	resetInfoTimers()
+	INFOTIMER_SHOW = threading.Timer(10.0, ShowNowPlayingInfo)
+	xbmc.output('[%s] Info timer is set' % (PLUGIN_NAME))
+	INFOTIMER_SHOW.start()
+
+def ShowNowPlayingInfo():
+	resetInfoTimers()
+	if xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
+		INFOTIMER_HIDE = threading.Timer(6.0, HideNowPlayingInfo)
+		xbmc.output('[%s] Showing info' % (PLUGIN_NAME))
+		INFOTIMER_HIDE.start()
+		dialog = xbmcgui.Window(10142)
+		dialog.show()
+	
+
+def HideNowPlayingInfo():
+	resetInfoTimers()
+	xbmc.output('[%s] Hidding info' % (PLUGIN_NAME))
+	xbmc.executebuiltin("Dialog.Close(10142)")
+
 
 def ShowRoot(plugin):
 	uri = sys.argv[0] + '?mode=%s'
@@ -705,7 +762,7 @@ def MovieLib(plugin, do):
 		progress = xbmcgui.DialogProgress()
 		progress.create(__language__(32003))
 		progress.update(10, __language__(32004))
-		vlist = plugin.getVideoList('last', 1, 500)
+		vlist = plugin.getVideoList('last', 1, 'all')
 		progress.update(20, __language__(32005))
 		toprocess = []
 		last_update = __settings__.getSetting('video_last_update') or '0000-00-00 00:00:00'

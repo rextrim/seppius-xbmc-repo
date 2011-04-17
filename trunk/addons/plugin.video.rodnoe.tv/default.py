@@ -27,6 +27,7 @@ __settings__ = xbmcaddon.Addon(id=PLUGIN_ID)
 
 import iptv
 import datetime, time
+import threading
 
 __language__ = __settings__.getLocalizedString
 USERNAME = __settings__.getSetting('username')
@@ -55,6 +56,9 @@ def get_params():
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
+
+INFOTIMER_SHOW = None
+INFOTIMER_HIDE = None
 
 def Archive(plugin, id, params):
 	
@@ -152,7 +156,7 @@ def Archive(plugin, id, params):
 def resetAlarms(plugin, mode):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
 	xbmc.executebuiltin("XBMC.CancelAlarm(%s,True)" % refreshAlarmId)
-
+	resetInfoTimers()
 
 def ShowChannelsList(plugin, mode = 'TV'):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
@@ -425,23 +429,38 @@ def WatchTV(plugin, id, title, params):
 			#doVidInfo = True
 		
 		if __settings__.getSetting('showcurrent') == 'true' and not gmt and doVidInfo:
-			#timeout = 0
-			xbmc.sleep(5000)
-			#busy = xbmcgui.Window(10138)
-			#xbmc.output('[%s] WatchTV: busy is %s' % (PLUGIN_NAME, busy.IsActive()))
-			#xbmc.sleep(5000)
-			#xbmc.output('[%s] WatchTV: busy is %s' % (PLUGIN_NAME, busy.IsActive()))
-			#while xbmcgui.getCurrentWindowId() == 10138 and timeout < 3000:
-			#	xbmc.output('[%s] WatchTV: waiting while busy' % (PLUGIN_NAME))
-			#	timeout += 100
-			#	xbmc.sleep(100)
-			#xbmc.sleep(1000)
-			#xbmc.output('[%s] WatchTV: showing current video info' % (PLUGIN_NAME))
-			#xbmc.executebuiltin("XBMC.ActivateWindow(10142)")
-			dialog = xbmcgui.Window(10142)
-			dialog.show()
+			SetupInfoTimer()
 	else:
 		xbmc.executebuiltin("XBMC.Notification(" + __language__(30025).encode('utf8') + ", " + __language__(30025).encode('utf8') + ", 8000)");
+
+def resetInfoTimers():
+	if INFOTIMER_SHOW:
+		if INFOTIMER_SHOW.isAlive():
+			INFOTIMER_SHOW.cancel()
+	if INFOTIMER_HIDE:
+		if INFOTIMER_HIDE.isAlive():
+			INFOTIMER_HIDE.cancel()
+
+def SetupInfoTimer():
+	resetInfoTimers()
+	INFOTIMER_SHOW = threading.Timer(10.0, ShowNowPlayingInfo)
+	xbmc.output('[%s] Info timer is set' % (PLUGIN_NAME))
+	INFOTIMER_SHOW.start()
+
+def ShowNowPlayingInfo():
+	resetInfoTimers()
+	if xbmc.getCondVisibility('VideoPlayer.IsFullscreen'):
+		INFOTIMER_HIDE = threading.Timer(6.0, HideNowPlayingInfo)
+		xbmc.output('[%s] Showing info' % (PLUGIN_NAME))
+		INFOTIMER_HIDE.start()
+		dialog = xbmcgui.Window(10142)
+		dialog.show()
+	
+
+def HideNowPlayingInfo():
+	resetInfoTimers()
+	xbmc.output('[%s] Hidding info' % (PLUGIN_NAME))
+	xbmc.executebuiltin("Dialog.Close(10142)")
 
 def Favourite(plugin, id):
 	favs = __settings__.getSetting('favourites').split(',')

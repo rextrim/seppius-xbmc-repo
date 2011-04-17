@@ -261,7 +261,9 @@ class kartina:
 						percent = (servertime - epg_start) * 100 / duration
 					
 					if 'icon' in channel:
-						icon = 'http://%s%s' % (IPTV_DOMAIN, channel['icon'])
+						icon = channel['icon']
+						if icon[:4] != 'http':
+							icon = 'http://%s%s' % (IPTV_DOMAIN, icon)
 					else:
 						icon = ''
 					
@@ -373,10 +375,25 @@ class kartina:
 		return res
 	
 	def getVideoList(self, mode, page, pagesize=15, search={}):
+		if pagesize == 'all':
+			pagesize = 999
+			page = 1
+			params = 'type=%s&nums=%s&page=%s' % (mode, 1, 1)
+			result = self._request('vod_list', params)
+			if 'total' in result:
+				pagesize = result['total'] 
+			xbmc.output('[Kartina.TV] pagesize set to %s to reflect "all" param' % pagesize)
+		
 		params = 'type=%s&nums=%s&page=%s' % (mode, pagesize, page)
 		result = self._request('vod_list', params)
 		res = []
 		for vod in result['rows']:
+			if 'poster' in vod:
+				icon = vod['poster']
+				if icon[:4] != 'http':
+					icon = 'http://%s%s' % (IPTV_DOMAIN, icon)
+			else:
+				icon = ''
 			xbmc.output('[Kartina.TV] VOD item: %s' % vod, level=xbmc.LOGDEBUG)
 			res.append({
 				'title':		vod['name'],
@@ -384,7 +401,7 @@ class kartina:
 				'is_video':		1,
 				'id':			vod['id'],
 				'genre':		vod['genre_str'],
-				'icon':			'http://%s%s' % (IPTV_DOMAIN, vod['poster']),
+				'icon':			icon,
 				'source':		vod
 			})
 			

@@ -1,3 +1,7 @@
+[B]1.2.2[/B]
+Current playing video info auto-disapearing
+Videolib importing improvements and fix for absolute poster urls
+
 [B]1.2.1[/B]
 Minor update to fix a problem with import of empty (no files) movies
 + workaround to check a problem with posters on windows boxes

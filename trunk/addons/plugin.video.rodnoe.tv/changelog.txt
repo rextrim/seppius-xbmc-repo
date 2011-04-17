@@ -1,3 +1,6 @@
+[B]1.1.3[/B]
+Current playing video info auto-disapearing
+
 [B]1.1.2[/B]
 "Broadcasting server" setting added
 
