@@ -25,6 +25,9 @@ import socket
 socket.setdefaulttimeout(50)
 
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
+siteUrl = 'www.filmy.net.ua'
+httpSiteUrl = 'http://' + siteUrl
+__settings__ = xbmcaddon.Addon(id='plugin.video.filmy.net.ua')
 
 h = int(sys.argv[1])
 
@@ -82,7 +85,7 @@ sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_fil
 
 def GET(target, referer, post_params = None):
 	try:
-		connection = httplib.HTTPConnection('www.filmy.net.ua')
+		connection = httplib.HTTPConnection(siteUrl)
 
 		if post_params == None:
 			method = 'GET'
@@ -111,7 +114,7 @@ def GET(target, referer, post_params = None):
 		except: pass
 
 		http = response.read()
-		http = http.decode('koi8-r').encode('utf8')
+		http = http.decode('koi8-r').encode('utf-8')
 
 		return http
 	except Exception, e:
@@ -120,18 +123,42 @@ def GET(target, referer, post_params = None):
 
 
 def getitems(params):
-	http = GET('http://www.filmy.net.ua/film/', 'http://www.filmy.net.ua')
+	http = GET(httpSiteUrl + '/film/', httpSiteUrl)
 	if http == None: return False
+
+	href = httpSiteUrl + '/rating/'
+	li = xbmcgui.ListItem("[ Топ скачиваний ]", iconImage = icon, thumbnailImage = icon)
+	uri = sys.argv[0] + '?mode=getfilms'
+	uri += '&href='+urllib.quote_plus(href)
+	uri += '&referer='+urllib.quote_plus(httpSiteUrl)
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	href = httpSiteUrl + '/last/'
+	li = xbmcgui.ListItem("[ Последние поступления ]", iconImage = icon, thumbnailImage = icon)
+	uri = sys.argv[0] + '?mode=getfilms'
+	uri += '&href='+urllib.quote_plus(href)
+	uri += '&referer='+urllib.quote_plus(httpSiteUrl)
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	name = "Все"
+	href = httpSiteUrl + '/film/all/add/'
+	li = xbmcgui.ListItem(name, iconImage = icon, thumbnailImage = icon)
+	uri = sys.argv[0] + '?mode=getfilms'
+	uri += '&href='+urllib.quote_plus(href)
+	uri += '&name='+urllib.quote_plus(name)
+	uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/film')
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 	s1 = re.compile('href=\"/film/(.*?)/add/1/(.*?)/\"').findall(http)
 	if len(s1) > 0:
 		for href, name in s1:
 			name = strip_html(name)
-			href = 'http://www.filmy.net.ua/film/%s/add/' % href
+			href = httpSiteUrl + '/film/%s/add/' % href
 			li = xbmcgui.ListItem(name, iconImage = icon, thumbnailImage = icon)
 			uri = sys.argv[0] + '?mode=getfilms'
 			uri += '&href='+urllib.quote_plus(href)
 			uri += '&name='+urllib.quote_plus(name)
-			uri += '&referer='+urllib.quote_plus('http://www.filmy.net.ua/film')
+			uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/film')
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 		li = xbmcgui.ListItem('[ ПОИСК ]', iconImage = icon, thumbnailImage = icon)
@@ -152,18 +179,18 @@ def runsearch(params):
 	skbd.doModal()
 	if (skbd.isConfirmed()):
 		SearchStr = skbd.getText()
-		http = GET('http://www.filmy.net.ua/?com=search','http://www.filmy.net.ua', {'text':SearchStr.decode('utf-8').encode('koi8-r')})
+		http = GET(httpSiteUrl + '/?com=search','http://www.filmy.net.ua', {'text':SearchStr.decode('utf-8').encode('koi8-r')})
 		if http == None: return False
 		http = http.replace('\t','') #.replace('\n','')
 		s1 = re.compile('<a href="(.*?)" title="Фильм.+?" class="kommen".+?>\s(.*?)</a>').findall(http)
 		if len(s1) > 0:
 			for href, name in s1:
 				name = strip_html(name)
-				href = 'http://www.filmy.net.ua' + href
+				href = httpSiteUrl + href
 				li = xbmcgui.ListItem(name, iconImage = icon, thumbnailImage = icon)
 				uri = sys.argv[0] + '?mode=play'
 				uri += '&href='+urllib.quote_plus(href)
-				uri += '&referer='+urllib.quote_plus('http://www.filmy.net.ua/?com=search')
+				uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/?com=search')
 				li.setProperty('IsPlayable', 'true')
 				li.setInfo(type='video', infoLabels={'title':name,'genre':'Результат поиска',})
 				xbmcplugin.addDirectoryItem(h, uri, li, False)
@@ -171,6 +198,9 @@ def runsearch(params):
 
 
 def getfilms(params):
+	showAltTitle = __settings__.getSetting("Show alt title") == "true"
+	showQuality = __settings__.getSetting("Show quality") == "true"
+
 	try:
 		name = urllib.unquote_plus(params['name'])
 	except:
@@ -188,7 +218,7 @@ def getfilms(params):
 		if http == None: return False
 	except: return False
 
-	s1 = re.compile('(<div id="mainfilm">.*?</div>)', re.DOTALL).findall(http)
+	s1 = re.compile('(<div id="mainfilm\d*"\s*[^>]*>.*?</div>)', re.DOTALL).findall(http)
 	if len(s1) == 0:
 		showMessage('ОШИБКА ДИЗАЙНА', 'Нет <div id="mainfilm">.*?</div>', 3000)
 		return False
@@ -196,40 +226,82 @@ def getfilms(params):
 	headers['Referer'] = target
 	happend = '|%s' % urllib.urlencode(headers)
 
+	titleRegexp = re.compile('<h2><a href="(.*?)" title=".*?" class="tfilm">(.*?)</a>')
+	iconRegexp = re.compile('<img src="(.*?)" alt=".*?".+?></a>')
+	altNameQualityRegexp = re.compile('<font size="1">(.*?) \((.*?)\)')
+	genreYearRegexp = re.compile('<font size="1">(.*?)\. (.*?) год\.')
+	ratingRegex = re.compile('<img src=".*?" title="(.*?)/10">')
+	plotRegexp = re.compile('<div id="mainfilm2">(.*?)</div>')
+	downloadCountRegexp = re.compile('Скачали: (\d+)')
 	for curli in s1:
 
 		try:
-			(nhref, ntitle) = re.compile('<h2><a href="(.*?)" title=".*?" class="tfilm">(.*?)</a></h2>').findall(curli)[0]
-			nhref  = 'http://www.filmy.net.ua' + nhref
-			ntitle = strip_html(ntitle)
+			(nhref, ntitle) = titleRegexp.findall(curli)[0]
+			nhref  = httpSiteUrl + nhref
+			ntitle = strip_html(ntitle).decode("utf-8")
 		except:
 			nhref  = None
 			ntitle = None
 
 		try:
-			img1 = re.compile('<img src="(.*?)" alt=".*?".+?></a>').findall(curli)[0]
-			thumb = 'http://www.filmy.net.ua' + img1.replace('_60x90','_650x') + happend
+			img1 = iconRegexp.findall(curli)[0]
+			thumb = httpSiteUrl + img1.replace('_60x90','_650x') + happend
 		except:
 			thumb = icon
 
-		if (nhref != None) and (ntitle != None):
+		try:
+			(altTitle, quality) = altNameQualityRegexp.findall(curli)[0]
+			if(showAltTitle and altTitle):
+				ntitle += "/" + strip_html(altTitle)
+			if(showQuality and quality):
+				ntitle += " [" + quality + "]"
+		except:
+			altTitle = None
+			quality = None
+
+		try:
+			(genre, year) = genreYearRegexp.findall(curli)[0]
+			if(year):
+				year = int(year)				
+		except:
+			genre = None
+			year = None
+
+		try:
+			rating = ratingRegex.findall(curli)[0]
+			if(rating):
+				rating = float(rating)
+		except:
+			rating = None
+		
+		try:
+			downloaded = downloadCountRegexp.findall(curli)[0]
+		except:
+			downloaded = None
+
+		try:
+			plot = strip_html(plotRegexp.findall(curli)[0])
+		except:
 			plot  = strip_html(curli)
+
+		if (nhref != None) and (ntitle != None):
 			uri = sys.argv[0] + '?mode=play'
 			uri += '&href='+urllib.quote_plus(nhref)
 			uri += '&referer='+target
 			item = xbmcgui.ListItem(ntitle, iconImage=thumb, thumbnailImage=thumb)
-			item.setInfo(type='video', infoLabels={'title':ntitle,'genre':name,'plot':plot})
+			item.setInfo(type='video', infoLabels={'title':ntitle,'genre':genre,'plot':plot,'year':year,'rating':rating,'votes':downloaded})			
 			item.setProperty('IsPlayable', 'true')
 			xbmcplugin.addDirectoryItem(h,uri,item)
 
-	page += 1
-	li = xbmcgui.ListItem('Далее, на страницу %d >' % page, iconImage = icon, thumbnailImage = icon)
-	uri = sys.argv[0] + '?mode=getfilms'
-	uri += '&href='+params['href']
-	uri += '&name='+params['name']
-	uri += '&referer='+target
-	uri += '&page=%d'%page
-	xbmcplugin.addDirectoryItem(h, uri, li, True)
+	if name:
+		page += 1
+		li = xbmcgui.ListItem('Далее, на страницу %d >' % page, iconImage = icon, thumbnailImage = icon)
+		uri = sys.argv[0] + '?mode=getfilms'
+		uri += '&href='+params['href']
+		uri += '&name='+params['name']
+		uri += '&referer='+target
+		uri += '&page=%d'%page
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 
 	xbmcplugin.endOfDirectory(h)

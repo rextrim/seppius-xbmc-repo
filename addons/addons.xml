@@ -500,7 +500,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.filmy.net.ua"
        name="ua-ix"
-       version="0.0.1"
+       version="0.0.2"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
