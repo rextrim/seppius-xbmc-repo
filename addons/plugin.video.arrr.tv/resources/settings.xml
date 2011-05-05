@@ -1,0 +1,4 @@
+<settings>
+    <setting id="Show title" type="enum" label="30001" default="2" values="ru|en|both"/>
+    <setting id="Use fast start" type="bool" label="30002" default="false"/>
+</settings>
