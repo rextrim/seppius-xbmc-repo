@@ -70,11 +70,11 @@ def GET(target, referer, post_params = None):
 		response = connection.getresponse()
 
 		try:
-				sc = Cookie.SimpleCookie()
-				sc.load(response.msg.getheader('Set-Cookie'))
-				fh = open(sid_file, 'w')
-				fh.write(sc['session'].value)
-				fh.close()
+			sc = Cookie.SimpleCookie()
+			sc.load(response.msg.getheader('Set-Cookie'))
+			fh = open(sid_file, 'w')
+			fh.write(sc['session'].value)
+			fh.close()
 		except: pass
 
 		http = response.read()
@@ -90,6 +90,8 @@ def getshows(params):
 	http = GET(httpSiteUrl + '/all/', httpSiteUrl)
 	if http == None: return False
 
+	processedShows = [];
+
 	beautifulSoup = BeautifulSoup(http)
 	shows = beautifulSoup.findAll('div', 'cover')
 
@@ -100,26 +102,30 @@ def getshows(params):
 		for show in shows:
 			try:
 				showId = show['id']
-				originalName = showId.replace('id_', '').replace('-', ' ')
-				originalName = originalName[0].upper() + originalName[1:]
+				try:
+					processedShows.index(showId)
+				except:
+					processedShows.append(showId)
+					originalName = showId.replace('id_', '').replace('-', ' ')
+					originalName = originalName[0].upper() + originalName[1:]
 
-				href = show.find('a')['href']
-				name = show.find('h3').string
-				cover = httpSiteUrl + show.find('img', 'fluffy_shadow')['src']
+					href = show.find('a')['href']
+					name = show.find('h3').string
+					cover = httpSiteUrl + show.find('img', 'fluffy_shadow')['src']
 				
-				title = originalName
-				showTitleType = __settings__.getSetting("Show title")
-				if showTitleType == "0":
-					title = name
-				if showTitleType == "2":
-					title += '/' + name
+					title = originalName
+					showTitleType = __settings__.getSetting("Show title")
+					if showTitleType == "0":
+						title = name
+					if showTitleType == "2":
+						title += '/' + name
 
-				li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
-				uri = sys.argv[0] + '?mode=getseries'
-				uri += '&href='+urllib.quote_plus(href)
-				uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/all/')
-				uri += '&tvshow='+urllib.quote_plus(originalName)
-				xbmcplugin.addDirectoryItem(h, uri, li, True)
+					li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
+					uri = sys.argv[0] + '?mode=getseries'
+					uri += '&href='+urllib.quote_plus(href)
+					uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/all/')
+					uri += '&tvshow='+urllib.quote_plus(originalName)
+					xbmcplugin.addDirectoryItem(h, uri, li, True)
 			except:
 				pass
 
@@ -185,18 +191,17 @@ def detectUrl(episodeId):
 	qualities = ['p480', 'p720']
 	languages = ['ru', 'en']
 	cdns = ['http://cdn2.arrr.tv/', 'http://video8.neetee.tv/atv/']
-	for server in cdns:
+	
+	for language in languages:
 		for quality in qualities:
 			for format in formats:
-				for language in languages:
+				for server in cdns:
 					url = server + episodeId + ':' + quality + ':' + language + '.' + format
-					if(isRemoteFile(url)): 
+					if(isRemoteFile(url)):
 						return url
 	return False
 
 def isRemoteFile(url):
-	#TODO: add setting for autodetection here.
-	#TODO: add setting for prefered quality and language here
 	if __settings__.getSetting("Use fast start") == "true":	
 		return True
 	else:
