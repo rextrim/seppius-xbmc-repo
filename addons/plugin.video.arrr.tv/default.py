@@ -99,6 +99,7 @@ def getshows(params):
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
 	else:
+		showTitleType = __settings__.getSetting("Show title")
 		for show in shows:
 			try:
 				showId = show['id']
@@ -112,9 +113,8 @@ def getshows(params):
 					href = show.find('a')['href']
 					name = show.find('h3').string
 					cover = httpSiteUrl + show.find('img', 'fluffy_shadow')['src']
-				
 					title = originalName
-					showTitleType = __settings__.getSetting("Show title")
+					
 					if showTitleType == "0":
 						title = name
 					if showTitleType == "2":
@@ -160,14 +160,15 @@ def getseries(params):
 		poster = episode.find('img', 'poster')['src']
 		episodeDetails = episode.find('div', 'info').find('div', 'right').find('a').string
 		
-		(episodeNum, seasonNum) = episodeRegexp.findall(episodeDetails)[0]
+		(seasonNum, episodeNum) = episodeRegexp.findall(episodeDetails)[0]
 		episodeNum = int(episodeNum)
 		seasonNum = int(seasonNum)
 		
+		listName = "[s%de%02d] %s" % (seasonNum, episodeNum, name)
 		uri = sys.argv[0] + '?mode=play'
 		uri += '&href='+urllib.quote_plus(episodeId)
 		uri += '&referer='+params['href']
-		item = xbmcgui.ListItem(name, iconImage=poster, thumbnailImage=poster)
+		item = xbmcgui.ListItem(listName, iconImage=poster, thumbnailImage=poster)
 		item.setInfo(type='video', infoLabels={'title': name,'episode': episodeNum, 'season': seasonNum, 'tvshowtitle': tvshow})			
 		item.setProperty('IsPlayable', 'true')
 		xbmcplugin.addDirectoryItem(h,uri,item)
@@ -188,8 +189,15 @@ def play(params):
 
 def detectUrl(episodeId):
 	formats = ['mp4', 'ogv', 'webm']
+
 	qualities = ['p480', 'p720']
+	if __settings__.getSetting("Prefer 720p") == "1":
+		qualities = ['p720', 'p480']
+
 	languages = ['ru', 'en']
+	if __settings__.getSetting("Prefered language") == "1":
+		languages = ['en', 'ru']
+	
 	cdns = ['http://cdn2.arrr.tv/', 'http://video8.neetee.tv/atv/']
 	
 	for language in languages:
@@ -202,7 +210,7 @@ def detectUrl(episodeId):
 	return False
 
 def isRemoteFile(url):
-	if __settings__.getSetting("Use fast start") == "true":	
+	if __settings__.getSetting("Use fast start") == "true":
 		return True
 	else:
 		try:
