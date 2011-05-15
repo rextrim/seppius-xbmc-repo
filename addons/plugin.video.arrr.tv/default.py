@@ -19,9 +19,9 @@
 #   http://www.gnu.org/licenses/gpl.html
 
 import urllib, urllib2, re, sys, os, httplib, Cookie
-#import simplejson as json
+import simplejson as json
 import xbmcplugin, xbmcgui, xbmcaddon, xbmc
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import socket
 socket.setdefaulttimeout(50)
 
@@ -32,9 +32,11 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.arrr.tv')
 
 h = int(sys.argv[1])
 
+def htmlEntitiesDecode(string):
+	return BeautifulStoneSoup(string, convertEntities=BeautifulStoneSoup.HTML_ENTITIES).contents[0]
+
 def showMessage(heading, message, times = 3000):
 	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
-	#print "%s - %s" % (heading, message)
 
 headers  = {
 		'User-Agent' : 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00',
@@ -45,7 +47,6 @@ headers  = {
 	}
 
 sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_arrr_tv.sid')
-#sid_file = os.path.join('.', 'plugin_video_arrr_tv.sid')
 
 def GET(target, referer, post_params = None):
 	try:
@@ -85,9 +86,70 @@ def GET(target, referer, post_params = None):
 		showMessage(target, e, 5000)
 		return None
 
+def getCategories(params):
+	li = xbmcgui.ListItem('Tv Shows')
+	uri = sys.argv[0] + '?mode=getshows'
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	li = xbmcgui.ListItem('Movies')
+	uri = sys.argv[0] + '?mode=getmovies'
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	xbmcplugin.endOfDirectory(h)
+
+def getmovies(params):
+	http = GET(httpSiteUrl + '/movies/', httpSiteUrl)
+	if http == None: return False
+
+	beautifulSoup = BeautifulSoup(http)
+	movies = beautifulSoup.findAll('div', 'movie')
+
+	if len(movies) == 0:
+		showMessage('ОШИБКА', 'Неверная страница', 3000)
+		return False
+	else:
+		for movie in movies:
+			cover = movie.find('div', 'poster').find('img', 'fluffy_shadow')['src']
+			description = movie.find('div', 'description')
+			title = description.find('span', 'title').find('strong').string
+			href = description.find('a')['href']
+			plot = description.find('p').string
+
+			li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
+			li.setInfo(type='video', infoLabels={'title': title, 'plot':plot})
+			li.setProperty('IsPlayable', 'true')	
+			uri = sys.argv[0] + '?mode=playmovie'
+			uri += '&href='+urllib.quote_plus(href)
+			uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/movies/')
+			xbmcplugin.addDirectoryItem(h, uri, li)
+
+	xbmcplugin.endOfDirectory(h)
+
+def playmovie(params):
+	movieURI = urllib.unquote_plus(params['href'])
+	href = httpSiteUrl + movieURI
+
+	try:
+		http = GET(href, urllib.unquote_plus(params['referer']))
+		if http == None: return False
+	except: return False
+
+	headers['Referer'] = href
+
+	beautifulSoup = BeautifulSoup(http)
+
+	jsonRegexp = re.compile('var movie_data = {([^;]+)')
+	movieDataString = str(beautifulSoup.find(text = re.compile('var movie_data') ))
+	movieDetailsUnclean = '{' + jsonRegexp.findall(movieDataString)[0]
+	movieDetailsJson = cleanJson(movieDetailsUnclean)
+
+	movieId = re.sub('^/', '', movieURI)
+	movieId = re.sub('/$', '', movieId)
+	play({'episodeId': urllib.quote_plus(movieId), 'episodeData': urllib.quote_plus(movieDetailsJson), 'referer': params['referer']})
+	
 
 def getshows(params):
-	http = GET(httpSiteUrl + '/all/', httpSiteUrl)
+	http = GET(httpSiteUrl + '/shows/', httpSiteUrl)
 	if http == None: return False
 
 	processedShows = [];
@@ -123,7 +185,7 @@ def getshows(params):
 					li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
 					uri = sys.argv[0] + '?mode=getseries'
 					uri += '&href='+urllib.quote_plus(href)
-					uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/all/')
+					uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/shows/')
 					uri += '&tvshow='+urllib.quote_plus(originalName)
 					xbmcplugin.addDirectoryItem(h, uri, li, True)
 			except:
@@ -133,7 +195,6 @@ def getshows(params):
 
 
 def getseries(params):
-	#params = {'href': 'http://arrr.tv/show/dexter/', 'referer': 'http://arrr.tv/all/'}
 	href = httpSiteUrl + urllib.unquote_plus(params['href'])
 	try:
 		http = GET(href, urllib.unquote_plus(params['referer']))
@@ -146,28 +207,39 @@ def getseries(params):
 
 	beautifulSoup = BeautifulSoup(http)
 
-	#TODO: get qualities and formats from JSON string
-	#jsonRegexp = re.compile('var episodes = {([^;]+)')
-	#episodesDataString = str(beautifulSoup.find(text = re.compile('var episodes') ))
-	#episodesDataString = re.sub('\],[\s|\n|\t]*{', '] {',  jsonRegexp.findall(episodesDataString)[0])
-	#print json.loads('{' + jsonRegexp.findall(episodesDataString)[0] + '}')
+	jsonRegexp = re.compile('var episodes = {([^;]+)')
+	episodesDataString = str(beautifulSoup.find(text = re.compile('var episodes') ))
+	episodeDetailsUnclean = '{' + jsonRegexp.findall(episodesDataString)[0]
+	episodeDetailsJson = cleanJson(episodeDetailsUnclean)
+	
+	try:
+		episodeDetailsInfo = json.loads(episodeDetailsJson)
+	except:
+		pass
 
 	episodes = beautifulSoup.findAll('div', 'episode')
 	episodeRegexp = re.compile(u'Сезон (\d+), серия (\d+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
+
+	showLanguages = __settings__.getSetting("Show available languages") == "true"
 	for episode in episodes:
 		episodeId = episode['name']
-		name = episode.find('h3', 'title').find('a').string
+		name = htmlEntitiesDecode(episode.find('h3', 'title').find('a').string)
 		poster = episode.find('img', 'poster')['src']
-		episodeDetails = episode.find('div', 'info').find('div', 'right').find('a').string
+		episodeDetails = episode.find('h4').find('a').string
 		
 		(seasonNum, episodeNum) = episodeRegexp.findall(episodeDetails)[0]
 		episodeNum = int(episodeNum)
 		seasonNum = int(seasonNum)
+
+		languages = detectLanguages(episodeDetailsInfo[episodeId])
 		
 		listName = "[s%de%02d] %s" % (seasonNum, episodeNum, name)
+		if showLanguages:
+			listName += " (" + ", ".join(languages) + ")"
 		uri = sys.argv[0] + '?mode=play'
-		uri += '&href='+urllib.quote_plus(episodeId)
+		uri += '&episodeId='+urllib.quote_plus(episodeId)
 		uri += '&referer='+params['href']
+		uri += '&episodeData=' + urllib.quote_plus( json.dumps(episodeDetailsInfo[episodeId]) )
 		item = xbmcgui.ListItem(listName, iconImage=poster, thumbnailImage=poster)
 		item.setInfo(type='video', infoLabels={'title': name,'episode': episodeNum, 'season': seasonNum, 'tvshowtitle': tvshow})			
 		item.setProperty('IsPlayable', 'true')
@@ -175,19 +247,42 @@ def getseries(params):
 
 	xbmcplugin.endOfDirectory(h)
 
-
 def play(params):
-	episodeId  = urllib.unquote_plus(params['href'])
+	episodeId  = urllib.unquote_plus(params['episodeId'])
+	episodeData = json.loads( urllib.unquote_plus(params['episodeData']) )
 	referer = urllib.unquote_plus(params['referer'])
 
-	movieFile = detectUrl(episodeId)
+	movieFile = detectUrl(episodeId, episodeData)
 	
 	headers['Referer'] = referer
 	i = xbmcgui.ListItem(path = movieFile)
 	i.setProperty('mimetype', 'video/x-msvideo')
 	xbmcplugin.setResolvedUrl(h, True, i)
 
-def detectUrl(episodeId):
+def cleanJson(jsonStr):
+	jsonStrClean = re.sub('\'', '"', jsonStr)
+	jsonStrClean = re.sub('\s+', ' ', jsonStrClean)	
+	jsonStrClean = re.sub(',\s*]', ']', jsonStrClean)
+	jsonStrClean = re.sub(',\s*}', '}', jsonStrClean)
+	jsonStrClean = jsonStrClean.replace('mp4', '"mp4"')
+	jsonStrClean = jsonStrClean.replace('ogv', '"ogv"')
+	jsonStrClean = jsonStrClean.replace('webm', '"webm"')
+	jsonStrClean = jsonStrClean.replace(';','')
+	jsonStrClean = jsonStrClean.replace('\n','')
+	jsonStrClean = jsonStrClean.replace('\t','')
+
+	return jsonStrClean
+
+def detectLanguages(episodeData):
+	detectedLangs = []
+	for format, languages in episodeData.iteritems():
+		for language, formats in languages.iteritems():
+			if len(formats) > 0 and language not in detectedLangs:
+				detectedLangs.append(language)
+
+	return detectedLangs
+
+def detectUrl(episodeId, episodeData):
 	formats = ['mp4', 'ogv', 'webm']
 
 	qualities = ['p480', 'p720']
@@ -199,25 +294,23 @@ def detectUrl(episodeId):
 		languages = ['en', 'ru']
 	
 	cdns = ['http://cdn2.arrr.tv/', 'http://video8.neetee.tv/atv/']
-	
+
 	for language in languages:
 		for quality in qualities:
 			for format in formats:
-				for server in cdns:
-					url = server + episodeId + ':' + quality + ':' + language + '.' + format
-					if(isRemoteFile(url)):
-						return url
+				if format in episodeData and language in episodeData[format] and quality in episodeData[format][language]:
+					for server in cdns:
+						url = server + episodeId + ':' + quality + ':' + language + '.' + format
+						if isRemoteFile(url):
+							return url
 	return False
 
 def isRemoteFile(url):
-	if __settings__.getSetting("Use fast start") == "true":
+	try:
+		f = urllib2.urlopen(urllib2.Request(url))
 		return True
-	else:
-		try:
-			f = urllib2.urlopen(urllib2.Request(url))
-			return True
-		except:
-			return False
+	except:
+		return False
 
 def get_params(paramstring):
 	param=[]
@@ -243,7 +336,7 @@ func   = None
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	getshows(params)
+	getCategories(params)
 
 if (mode != None):
 	try:

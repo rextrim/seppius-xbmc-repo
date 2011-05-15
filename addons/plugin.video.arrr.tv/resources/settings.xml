@@ -1,6 +1,6 @@
 <settings>
-    <setting id="Show title" type="enum" label="30001" default="2" values="ru|en|both"/>
-    <setting id="Use fast start" type="bool" label="30002" default="false"/>
-    <setting id="Prefer 720p" type="enum" label="30003" default="0" values="no|yes"/>
+    <setting id="Show title" type="enum" label="30001" default="2" values="ru|en|both_ru_first|both_en_first"/>
+    <setting id="Prefer 720p" type="bool" label="30003" default="false"/>
     <setting id="Prefered language" type="enum" label="30004" default="0" values="ru|en"/>
+    <setting id="Show available languages" type="bool" label="30005" default="true"/>
 </settings>
