@@ -62,12 +62,16 @@ def GET(targeturl):
 def getitems(params):
 	try:
 		http = GET('http://tvrain.ru/player/iframe.php')
+		#print http
 		r1 = re.compile('bitrates: \[(.*?)\]' ,re.DOTALL).findall(http)
 		if len(r1) > 0:
-			r2 = re.compile('url: "(.*?)"').findall(r1[0])
+			#print '1'
+			r2 = re.compile('url:.+?\"(.*?)\"').findall(r1[0])
 			if len(r2) > 0:
+				#print '2'
 				for cur_file in r2:
-					cur_file2 = urllib.unquote_plus(cur_file)
+					#cur_file2 = urllib.unquote_plus(cur_file)
+					cur_file2 = cur_file
 					if  '340k' in cur_file2:  title = 'ДОЖДЬ (340 kbps)'
 					elif '640k' in cur_file2: title = 'ДОЖДЬ (640 kbps)'
 					elif '1m' in cur_file2:   title = 'ДОЖДЬ (1 Mbps)'
