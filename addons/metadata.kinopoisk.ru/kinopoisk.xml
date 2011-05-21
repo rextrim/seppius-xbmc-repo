@@ -443,7 +443,7 @@
 				<expression noclean="1">&lt;b&gt;Производство:&lt;/b&gt;(.*?)&lt;/table&gt;</expression>
 			</RegExp>
 			<RegExp input="$$7" output="&lt;studio&gt;\1&lt;/studio&gt;" dest="7">
-				<expression repeat="yes">&lt;a href="/level/10/m_act\[studio\]/\d+/" class="all"&gt;(.+?)&lt;/a&gt;</expression>
+				<expression repeat="yes">&lt;a href="/level/10/m_act%5Bstudio%5D/\d+/" class="all"&gt;(.+?)&lt;/a&gt;</expression>
 			</RegExp>
 			<!--fix &nbsp-->
 			<RegExp input="$$7" output="\1&amp;nbsp;" dest="7">
