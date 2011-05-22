@@ -245,6 +245,26 @@ def getseries(params):
 		item.setProperty('IsPlayable', 'true')
 		xbmcplugin.addDirectoryItem(h,uri,item)
 
+	f = open('/tmp/xbmc.log', 'w')
+	try:
+		seasons = beautifulSoup.find(id='seasons').findAll('input')
+		for season in seasons:
+			f.write(str(season) + "\n" + "\n")
+			try:
+				season['disabled']
+			except:
+				li = xbmcgui.ListItem("[%s]" % season['id'].replace('_', ' '))
+				uri = sys.argv[0] + '?mode=getseries'
+				uri += '&href='+urllib.quote_plus(season['value'])
+				uri += '&referer='+urllib.quote_plus(href)
+				uri += '&tvshow='+urllib.quote_plus(tvshow)
+				xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	except:
+		f.write('Err')
+		pass
+
+	f.close()
 	xbmcplugin.endOfDirectory(h)
 
 def play(params):
