@@ -13,9 +13,11 @@ addon_name     = 'unknown addon'
 addon_version  = '0.0.0'
 addon_provider = 'unknown'
 
-addon_xml = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'addon.xml'))
-if os.path.isfile(addon_xml):
-	af = open(addon_xml, 'r')
+licf = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'LICENSE.UTF8.TXT'))
+icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+adxf = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'addon.xml'))
+if os.path.isfile(adxf):
+	af = open(adxf, 'r')
 	adom = xml.dom.minidom.parseString(af.read())
 	af.close()
 	areg = adom.getElementsByTagName('addon')
@@ -26,7 +28,6 @@ if os.path.isfile(addon_xml):
 
 __settings__ = xbmcaddon.Addon(id = addon_id)
 __language__ = __settings__.getLocalizedString
-icon   = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
 h = int(sys.argv[1])
 
 try:
@@ -40,16 +41,25 @@ try:
 except ImportError:
 	print '[%s]: Error import io, gzip. Setting plain accept encoding.' % addon_id
 	AcceptEncoding = 'plain'
+try:
+	import socket
+	socket.setdefaulttimeout([5,10,15,20,30,45,60,100][int(__settings__.getSetting('timeout'))])
+#except:
+except Exception, e:
+	print '[%s]: Error setting default timeout [%s]' % (addon_id, e)
 
-stimeout = [5,10,15,20,30,45,60,100][int(__settings__.getSetting('timeout'))]
-import socket
-socket.setdefaulttimeout(stimeout)
+
+	#print '[%s]: Error setting default timeout' % addon_id
+
 
 def showMessage(heading, message, times = 3000, pics = icon):
-	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8'), message.encode('utf-8'), times, pics))
-	except:
-		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, pics))
-		except: pass
+	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics))
+	except Exception, e:
+		print '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e)
+		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
+		except Exception, e:
+			print '[%s]: showMessage: exec failed [%s]' % (addon_id, e)
+
 
 class TextReader(xbmcgui.Window):
 	def __init__(self, txt_data):
@@ -79,32 +89,32 @@ def showtext(params):
 
 def builtin(params):
 	try: xbmc.executebuiltin(urllib.unquote_plus(params['href']))
-	except: pass
+	except Exception, e:
+		print '[%s]: builtin: exec failed [%s]' % (addon_id, e)
 
 def GET(href, post=None):
+	token0   = __settings__.getSetting('token0')
+	token1   = __settings__.getSetting('token1')
 	username = __settings__.getSetting('username')
 	password = __settings__.getSetting('password')
-	token0 = __settings__.getSetting('token0')
-	token1 = __settings__.getSetting('token1')
+	vquality = int(__settings__.getSetting('quality'))
+	listsize = [10,25,50,100,150,200,250,300][int(__settings__.getSetting('size'))]
+	aUA = 'XBMC/%s (%s; %s; %s; http://xbmc.ru; http://hd-lab.ru)' % (addon_id, urllib.quote_plus(addon_name), addon_version, addon_provider)
+	headers = {'Accept-Encoding':AcceptEncoding, 'User-Agent':aUA}
 	try:
-		sendpw = False
-		based = base64.b64decode(__language__(30000))
-		if href.startswith('http://') or href.startswith('https://'): target = href
+		if href.startswith('http://') or href.startswith('https://'):
+			target = href
+			sendpw = False
 		else:
-			target = based + href
+			target = base64.b64decode(__language__(30000)) + href
 			sendpw = True
 		CJ = cookielib.CookieJar()
-		CP = urllib2.HTTPCookieProcessor(CJ)
-		BO = urllib2.build_opener(CP)
-		urllib2.install_opener(BO)
-		aUA = 'XBMC/%s (%s; %s; %s; http://xbmc.ru)' % (addon_id, urllib.quote_plus(addon_name), addon_version, addon_provider)
-		headers = {'Accept-Encoding':AcceptEncoding, 'User-Agent':aUA}
-		if sendpw:
-			reqhash = sha.new(':%s:%s:%s:%s:'%(token0, token1, password, target)).hexdigest()
-			cooks = {'token0':token0, 'token1':token1, 'user':username, 'hash':reqhash}
-		else: cooks = {'token0':token0}
-		cookstr = urllib.urlencode(cooks)
-		headers['Cookie'] = cookstr.replace('&','; ')
+		urllib2.install_opener(urllib2.build_opener(urllib2.HTTPCookieProcessor(CJ)))
+		if sendpw: cooks = {'token0':token0, 'token1':token1, 'user':username, 'hash':sha.new(':%s:%s:%s:%s:'%(token0, token1, password, target)).hexdigest()}
+		else:      cooks = {'token0':token0}
+		cooks['size']  = listsize
+		cooks['grade'] = vquality
+		headers['Cookie'] = urllib.urlencode(cooks).replace('&','; ')
 		req = urllib2.Request(url = target, data = post, headers = headers)
 		resp = urllib2.urlopen(req)
 		CE = resp.headers.get('content-encoding')
@@ -124,7 +134,8 @@ def GET(href, post=None):
 			elif Cook.name == 'token1': __settings__.setSetting('token1', Cook.value)
 		resp.close()
 		return http
-	except:
+	except Exception, e:
+		print '[%s]: GET EXCEPT [%s]' % (addon_id, e)
 		showMessage('HTTP ERROR', href, 5000)
 
 def advt_show(jsdata):
@@ -136,9 +147,7 @@ def advt_show(jsdata):
 	else: print '[%s]: Unsupported adv type' % addon_id
 
 def getitems(params):
-	vquality = int(__settings__.getSetting('quality'))
-	listsize = [10,25,50,100,150,200,250,300][int(__settings__.getSetting('size'))]
-	try: href = '%s&size=%s&grade=%s' % (params['href'], listsize, vquality)
+	try: href = params['href']
 	except: href = ''
 	try:
 		usreq = params['usreq'].lower()
@@ -245,23 +254,22 @@ def getitems(params):
 		xbmcplugin.endOfDirectory(h)
 	else: return False
 
+
 def Play_Exec(jsdata):
-	#print 'jsdata = ' + jsdata
+
 	selects = []
 	jsdata = json.loads(jsdata)
 	for item in jsdata:
-		try:    title = item['title']
-		except: title = 'No title'
-		selects.append(title)
+		try:    selects.append(item['title'])
+		except: print '[%s]: Skipping element without name' % addon_id
 	if   len(selects) == 0: return False
 	elif len(selects) == 1: s = 0
 	else:
-		s = xbmcgui.Dialog().select('XBMC-Russia', selects)
+		s = xbmcgui.Dialog().select(addon_name, selects)
 		if s < 0: return False
 	sjs = jsdata[s]
 	advt_show(sjs) # advt
 	playables = []
-
 	def parse_plist_section(arrs):
 		if len(arrs) == 0: return
 		for carr in arrs:
@@ -280,32 +288,31 @@ def Play_Exec(jsdata):
 				except: pass
 			except: pass
 			playables.append(vid_url + pappends)
-
 	try:    parse_plist_section(sjs['video'])
 	except: pass
 	if len(playables) == 0: return False
-
 	play_path = ''
-
 	if len(playables) > 1:
 		play_path = 'stack://'
 		for pitem in playables: play_path += pitem.replace(',',',,') + ' , '
 		play_path = play_path[:-3]
 	elif len(playables) == 1:
 		play_path = playables[0]
-
 	i = xbmcgui.ListItem(path=play_path)
 	try:    i.setProperty('mimetype', sjs['mimetype'])
 	except: pass
 	xbmcplugin.setResolvedUrl(h, True, i)
 
+
 def directplay(params):
 	Play_Exec(params['href'])
+
 
 def play(params):
 	http = GET(urllib.unquote_plus(params['href']))
 	if http == None: return False
 	Play_Exec(http)
+
 
 def get_params(paramstring):
 	param=[]
@@ -326,30 +333,36 @@ def get_params(paramstring):
 			param[cur] = urllib.unquote_plus(param[cur])
 	return param
 
+
 def licenseshow(params):
-	LICENSE = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'LICENSE.UTF8.TXT'))
-	if os.path.isfile(LICENSE):
-		af = open(LICENSE, 'r')
-		TextReader(txt_data = af.read()).doModal()
-		af.close()
-	answer = xbmcgui.Dialog().yesno(addon_name, 'Вы прочитали, принимаете и обязуетесь', 'выполнять условия соглашения?', 'Без этого дополнение не будет работать.', 'Отказаться', 'Принять')
-	if answer:
+	af = open(licf, 'r')
+	TextReader(txt_data = af.read()).doModal()
+	af.close()
+	if xbmcgui.Dialog().yesno(addon_name, 'Вы прочитали, принимаете и обязуетесь', 'выполнять условия соглашения?', 'Без этого дополнение не будет работать.', 'Отказаться', 'Принять'):
+		print '[%s]: Has accepted license' % addon_id
 		__settings__.setSetting('LicenseApproved', 'true')
 		xbmc.executebuiltin('Container.Refresh')
+	else:
+		print '[%s]: User refused license' % addon_id
+
 
 def addon_main():
 	params = get_params(sys.argv[2])
 	try:
 		func = params['func']
 	except:
-		LicApp = __settings__.getSetting('LicenseApproved')
-		if LicApp == 'true':
-			getitems(params)
-			func = None
+		func = None
+		print '[%s]: Primary input' % addon_id
+		if os.path.isfile(licf):
+			if __settings__.getSetting('LicenseApproved') == 'true':
+				getitems(params)
+			else:
+				print '[%s]: License not approved!' % addon_id
+				xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], 'func=licenseshow'), xbmcgui.ListItem('Читать соглашение'), False)
+				xbmcplugin.endOfDirectory(h)
 		else:
-			xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], 'func=licenseshow'), xbmcgui.ListItem('Читать соглашение'), False)
-			xbmcplugin.endOfDirectory(h)
-			func = None
+			print '[%s]: The license file [%s] is missing!' % (addon_id, licf)
+			xbmcgui.Dialog().ok(addon_name, 'Лицензионный файл отсутствует', 'Переустановите дополнение')
 	if func != None:
 		try: pfunc = globals()[func]
 		except:
