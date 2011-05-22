@@ -1,6 +1,6 @@
 #encoding: utf-8
 import urllib,urllib2,re,os
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import xbmcplugin,xbmcaddon,xbmcgui
 
 __version__ = "1.0.0"
@@ -13,12 +13,16 @@ __language__ = __settings__.getLocalizedString
 THUMBNAIL_PATH = os.path.join(os.getcwd().replace( ";", "" ), 'resources', 'media')
 movielogo = os.path.join(THUMBNAIL_PATH, 'movies.png')
 gamelogo = os.path.join(THUMBNAIL_PATH, 'games.png')
+animelogo = os.path.join(THUMBNAIL_PATH, 'anime.png')
+tvlogo = os.path.join(THUMBNAIL_PATH, 'tv.png')
 nextIcon = os.path.join(THUMBNAIL_PATH, 'next.png')
 
 def MAIN():
-    addDir('Movie Trailers', 'http://kino-govno.com/news/trailers', 2, movielogo)
-    addDir('Game Trailers', 'http://kino-govno.com/news/games', 3, gamelogo)
-        
+    addDir('Movie Trailers', 'http://kino-govno.com/news/trailers', 'movies', movielogo)
+    addDir('Game Trailers', 'http://kino-govno.com/news/games', 'games', gamelogo)
+    addDir('Anime Trailers', 'http://kino-govno.com/news/anime', 'anime', animelogo)
+    addDir('Tv-show Trailers', 'http://kino-govno.com/news/tv', 'tv', tvlogo)
+
                                        
 def getURL(url):
     opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())
@@ -28,17 +32,17 @@ def getURL(url):
     return link
     
 
-def INDEX(url, isMovies):
+def htmlEntitiesDecode(string):
+    return string.replace('&laquo;', '"').replace('&raquo;', '"').replace('&minus;', ' - ')
+
+def INDEX(url, feedType):
     link=getURL(url.replace( " ", "%20" ))
     
     beautifulSoup = BeautifulSoup(link)
     news_titles = beautifulSoup.findAll('a', {'class': 'news_head'})
     news = beautifulSoup.findAll('div', {'class': 'news_text'})
     
-    if isMovies:
-        titleSearch = re.compile(r'<a href=\\?"/movies/\w+/trailers#\d+\\?">(.+?)</a>',re.IGNORECASE + re.DOTALL + re.MULTILINE)
-    else:
-        titleSearch = re.compile(r'<a href=\\?"/games/\w+/trailers#\d+\\?">(.+?)</a>',re.IGNORECASE + re.DOTALL + re.MULTILINE)
+    titleSearch = re.compile(r'<a href=\\?"/' + feedType + '/\w+/trailers#\d+\\?">(.+?)</a>',re.IGNORECASE + re.DOTALL + re.MULTILINE)
     
     thumbnailsSearch = re.compile(r'flashvars="image=([\w\d:/\.%-]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
     filesSearch = re.compile(r'&amp;file=([\w\d:/\.%-]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
@@ -85,11 +89,11 @@ def INDEX(url, isMovies):
                             for row in qualityLinksData:
                                 reqUrl = reqUrl + '|||' + row[0] + '||' + row[1]
                                 
-                            addDir('[MQ] ' + title, reqUrl.lstrip('|'), 5, thumb[0])
+                            addDir('[MQ] ' + htmlEntitiesDecode(title), reqUrl.lstrip('|'), 5, thumb[0])
                         else:
-                            addDir('[SQ] ' + title, file[0], 5, thumb[0])
+                            addDir('[SQ] ' + htmlEntitiesDecode(title), file[0], 5, thumb[0])
                     else:
-                        addDir(title, file[0], 5, thumb[0])
+                        addDir(htmlEntitiesDecode(title), file[0], 5, thumb[0])
                         
                     title = ''
                     qualityLinksData = []
@@ -105,14 +109,12 @@ def INDEX(url, isMovies):
             pass
  
     try:
-        nextp = []
-        if isMovies:
-            nextp=re.compile(r'<a href="(/news/trailers/\d+)">',re.IGNORECASE + re.DOTALL + re.MULTILINE).findall(link)
-        else:
-            nextp=re.compile(r'<a href="(/news/games/\d+)">',re.IGNORECASE + re.DOTALL + re.MULTILINE).findall(link)
-        addDir('[Older entries]', 'http://www.kino-govno.com' + nextp[0], 2, nextIcon)
-    except: 
-        pass
+        nextRegexp = re.compile('(\d+)')
+        nextPageNumber = int(nextRegexp.findall(url)[0]) + 15
+    except:
+        nextPageNumber = 15
+
+    addDir('[Older entries]', 'http://www.kino-govno.com/news/%s/%d' % (feedType, nextPageNumber), feedType, nextIcon)
 
 
 def VIDEO(name,url):
@@ -219,17 +221,15 @@ try:
 except:
     pass
 try:
-    mode=int(params["mode"])
+    mode=params["mode"]
 except:
     pass
 
 if mode==None or url==None or len(url)<1:
     MAIN()
-elif mode==2:
-    INDEX(url, 1)
-elif mode == 3: 
-    INDEX(url, 0)
-elif mode==5:
+elif mode != "5":
+    INDEX(url, mode)
+else:
     VIDEO(name,url)
 
 xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_NONE )
