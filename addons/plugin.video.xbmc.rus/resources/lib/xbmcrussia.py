@@ -26,9 +26,11 @@ if os.path.isfile(adxf):
 	addon_version  = areg[0].getAttribute('version')
 	addon_provider = areg[0].getAttribute('provider-name')
 
+
 __settings__ = xbmcaddon.Addon(id = addon_id)
 __language__ = __settings__.getLocalizedString
 h = int(sys.argv[1])
+
 
 try:
 	import json
@@ -44,12 +46,8 @@ except ImportError:
 try:
 	import socket
 	socket.setdefaulttimeout([5,10,15,20,30,45,60,100][int(__settings__.getSetting('timeout'))])
-#except:
 except Exception, e:
 	print '[%s]: Error setting default timeout [%s]' % (addon_id, e)
-
-
-	#print '[%s]: Error setting default timeout' % addon_id
 
 
 def showMessage(heading, message, times = 3000, pics = icon):
@@ -80,17 +78,21 @@ class TextReader(xbmcgui.Window):
 			self.NewsTextBox.scroll(self.scroll_pos)
 		elif aID in [9,10]: self.close()
 
+
 def directshowtext(params):
 	TextReader(txt_data = params['text']).doModal()
+
 
 def showtext(params):
 	http = GET(params['href'])
 	TextReader(txt_data = http).doModal()
 
+
 def builtin(params):
 	try: xbmc.executebuiltin(urllib.unquote_plus(params['href']))
 	except Exception, e:
 		print '[%s]: builtin: exec failed [%s]' % (addon_id, e)
+
 
 def GET(href, post=None):
 	token0   = __settings__.getSetting('token0')
@@ -138,6 +140,7 @@ def GET(href, post=None):
 		print '[%s]: GET EXCEPT [%s]' % (addon_id, e)
 		showMessage('HTTP ERROR', href, 5000)
 
+
 def advt_show(jsdata):
 	try:    adv = jsdata['advt']
 	except: return
@@ -145,6 +148,7 @@ def advt_show(jsdata):
 	elif adv['type'] == 'dialogOK':  xbmcgui.Dialog().ok(adv['heading'],adv['lines'])
 	elif adv['type'] == 'textbox':  TextReader(txt_data = adv['text']).doModal()
 	else: print '[%s]: Unsupported adv type' % addon_id
+
 
 def getitems(params):
 	try: href = params['href']
@@ -182,7 +186,6 @@ def getitems(params):
 			return False
 		href += '&answer=%s' % urllib.quote_plus(answer)
 	except: pass
-
 	http = GET(href)
 	if http == None: return False
 	jsdata = json.loads(http)
@@ -218,13 +221,14 @@ def getitems(params):
 			except: pass
 			try: del item['icons']
 			except: pass
+			print item
 			try:
 				conmenu = item['conmenu']
 				del item['conmenu']
 				cm = []
-				for curcm in conmenu:
-					cm.append((curcm['name'], 'xbmc.runPlugin(%s?%s)' % (sys.argv[0], curcm['uri'])))
-				i.addContextMenuItems(items=cm, replaceItems=True)
+				for curcm in conmenu['items']:
+					cm.append((curcm['name'].encode('utf8','ignore'), 'xbmc.runPlugin(%s?%s)' % (sys.argv[0], curcm['uri'])))
+				i.addContextMenuItems(items=cm, replaceItems=conmenu['replace'])
 			except: pass
 			try:
 				i.setProperty('mimetype', item['mimetype'])
@@ -239,7 +243,6 @@ def getitems(params):
 			dispitem += 1
 		else:
 			advt_show(item)
-
 	if dispitem > 0:
 		xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
 		xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
@@ -256,7 +259,6 @@ def getitems(params):
 
 
 def Play_Exec(jsdata):
-
 	selects = []
 	jsdata = json.loads(jsdata)
 	for item in jsdata:
