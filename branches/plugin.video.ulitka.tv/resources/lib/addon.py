@@ -157,16 +157,50 @@ def showepisodes(params):
 								xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'watch', 'href':div3.getAttribute('href')})), li, False)
 		xbmcplugin.endOfDirectory(h)
 
-
+def clean(s):
+	s = s + '|'
+	s = re.sub('\|\d+\|', '|', s)
+	s = re.sub('\|+', '|', s)
+	jsCode = 'jpg|mp4|over|so|style|addVariable|player|obj|var|function|http|getElementById|document|if|matte|height|window|width|else|seekFlag|100|true|currentState|new|setRequestHeader|id|param|aL|Content|length|currentPosition|sL|sT|sendEvent|ffffff|totalDuration|location|pL|setTimeout|plugins|480|contin|shortcuts|XMLHttpRequest|false|file|captions|ActiveXObject|640|addModelListener|addParam|150|url|current|381|uid|state|newstate|cid|urlencoded|Microsoft|XMLHTTP|index|php|STATE|TIME|Math|floor|playerReady|open|POST|Connection|close|send|position|total|form|type|application|www|duration|PLAY|lighttpd|slowmotion|donate|streamer|always|PLAYING|allowfullscreen|allowscriptaccess|40|xml|frontcolor|image|000000|backcolor|controlbar|over|player4|swf|getVideoUrl|VKontakteRu|cP|hostname|fp|getVideoUrlProxy|SEEK|500|BUFFERING|goto|write|protocol|SWFObject|misc|ww|8080|replace'.split('|')
+	for jsCodePart in jsCode:
+		s = s.replace('|' + jsCodePart + '|', '|')
+	
+	return s.split('|')
 
 def watch(params):
+	http = GET('http://www.ulitka.tv' + params['href'])
+	if http != None:
+		jsDataRegexp = re.compile("'\|\|\|([^']+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
+		jsData = jsDataRegexp.findall(http)
+		info = clean(jsData[0])
+		url = 'http://ww.ulitka.tv:8080/'
 
-	print ' = = = = = watch = = = = = '
-	print params
-	# TODO
-
-	#i = xbmcgui.ListItem(path = u)
-	#xbmcplugin.setResolvedUrl(h, True, i)
+		if(len(info) == 6): #1 word in name
+			fname = info[3]
+			url = url + '/' + fname + '/' + info[2] + '/' + fname + '.' + info[4]
+		
+		if(len(info) == 7): #2 words in name
+			fname = info[2] + '.' + info[3]
+			url = url + '/' + fname + '/' + info[4] + '/' + fname + '.' + info[5]
+		
+		if(len(info) == 8): #3 words in name
+			fname = info[5] + "." + info[3] + "." + info[2]
+			url = url + '/' + fname + '/' + info[4] + '/' + fname + '.' + info[6]
+		
+		if(len(info) == 9): #4 words in name
+			fname = info[5] + '.' + info[4] + '.' + info[3] + '.' + info[1]
+			url = url + '/' + fname + '/' + info[6] + '/' + fname + '.' + info[7]
+		
+		if(len(info) == 10): #5 words in name
+			showMessage('ERROR', 'Sorry, can not play')
+		
+		if(len(info) == 11): #6 words in name
+			fname = info[5] + '.' + info[7] + '.' + info[8] + '.' + info[6] + '.' + info[2] + '.' + info[4]
+			url = url + '/' + fname + '/' + info[3] + '/' + fname + '.' + info[9]
+		
+		url = url + '.mp4?start=0&id=4334&client=FLASH%20LNX%2010,2,159,1&version=4.3.132&width=640'
+		i = xbmcgui.ListItem(path = url)
+		xbmcplugin.setResolvedUrl(h, True, i)
 
 
 def get_params(paramstring):
