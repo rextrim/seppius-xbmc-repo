@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.zoomby.ru" name="Zoomby" version="1.2.0" provider-name="x86demon">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Zoomby - пересмотри свой взгляд на телевидение</summary>
+    <description>Zoomby портал, который дает возможность пользователю бесплатно в режиме онлайн просматривать любимые фильмы, сериалы, шоу и другие телевизионные передачи.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
