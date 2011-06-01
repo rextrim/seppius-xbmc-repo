@@ -26,6 +26,8 @@ import os, urllib, urllib2, httplib, xml.dom.minidom, cookielib
 import html5lib
 from html5lib import treebuilders
 
+from jsdecoder import unpack
+
 icon   = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
 h = int(sys.argv[1])
 
@@ -77,6 +79,9 @@ def GET(tu):
 def showroot():
 	http = GET('http://www.ulitka.tv/')
 	if http != None:
+		li = xbmcgui.ListItem("[Последние]")
+		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlatest'})), li, True)
+
 		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
 		for div0 in DT.getElementsByTagName('div'):
 			if div0.getAttribute('id') == 'menu':
@@ -90,6 +95,36 @@ def showroot():
 		xbmcplugin.endOfDirectory(h)
 
 
+def showlatest(params):
+	http = GET('http://www.ulitka.tv/')
+	if http != None:
+		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
+		for div0 in DT.getElementsByTagName('div'):
+			if div0.getAttribute('class') == 'aidanews':
+				for td in div0.getElementsByTagName('td'):
+					img = td.getElementsByTagName('img')[0]
+					episode = img.getAttribute('alt').encode('utf8', 'ignore')
+					imgSrc = img.getAttribute('src').split('/')
+
+					icon = 'http://www.ulitka.tv/images/posters/' + imgSrc[-1]
+					show = str(imgSrc[-1]).replace('.jpg', '').replace('-', ' ')
+					href = None
+
+					#for span in td.getElementsByTagName('span'):
+					#	if show == 'Unknown' and span.getAttribute('style') == ' font-size: 115%;':
+					#		f.write(str(span.firstChild.data.encode('utf8')))
+
+					for a in td.getElementsByTagName('a'):
+						if a.getAttribute('title'):
+							href = a.getAttribute('href')
+							show = str(href.split('/')[-2]).replace('-', ' ')
+
+					li = xbmcgui.ListItem("%season %s" % (show, episode), iconImage = icon, thumbnailImage = icon)
+					li.setInfo(type = 'video', infoLabels = {'tvshowtitle':show})
+					li.setProperty('IsPlayable', 'true')
+					xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'watch', 'href': href})), li, False)
+
+		xbmcplugin.endOfDirectory(h)
 
 def showserials(params):
 	http = GET('http://www.ulitka.tv' + params['href'])
@@ -157,48 +192,21 @@ def showepisodes(params):
 								xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'watch', 'href':div3.getAttribute('href')})), li, False)
 		xbmcplugin.endOfDirectory(h)
 
-def clean(s):
-	s = s + '|'
-	s = re.sub('\|\d+\|', '|', s)
-	s = re.sub('\|+', '|', s)
-	jsCode = 'jpg|mp4|over|so|style|addVariable|player|obj|var|function|http|getElementById|document|if|matte|height|window|width|else|seekFlag|100|true|currentState|new|setRequestHeader|id|param|aL|Content|length|currentPosition|sL|sT|sendEvent|ffffff|totalDuration|location|pL|setTimeout|plugins|480|contin|shortcuts|XMLHttpRequest|false|file|captions|ActiveXObject|640|addModelListener|addParam|150|url|current|381|uid|state|newstate|cid|urlencoded|Microsoft|XMLHTTP|index|php|STATE|TIME|Math|floor|playerReady|open|POST|Connection|close|send|position|total|form|type|application|www|duration|PLAY|lighttpd|slowmotion|donate|streamer|always|PLAYING|allowfullscreen|allowscriptaccess|40|xml|frontcolor|image|000000|backcolor|controlbar|over|player4|swf|getVideoUrl|VKontakteRu|cP|hostname|fp|getVideoUrlProxy|SEEK|500|BUFFERING|goto|write|protocol|SWFObject|misc|ww|8080|replace'.split('|')
-	for jsCodePart in jsCode:
-		s = s.replace('|' + jsCodePart + '|', '|')
-	
-	return s.split('|')
-
 def watch(params):
 	http = GET('http://www.ulitka.tv' + params['href'])
 	if http != None:
-		jsDataRegexp = re.compile("'\|\|\|([^']+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
+		jsDataRegexp = re.compile("function\(p,a,c,k,e,d\)\{([^\n]+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
 		jsData = jsDataRegexp.findall(http)
-		info = clean(jsData[0])
-		url = 'http://ww.ulitka.tv:8080/'
+		s = jsData[0]
+		s = s[s.find('}(')+1:-1]
+		initJs = eval('unpack' + s)
 
-		if(len(info) == 6): #1 word in name
-			fname = info[3]
-			url = url + '/' + fname + '/' + info[2] + '/' + fname + '.' + info[4]
-		
-		if(len(info) == 7): #2 words in name
-			fname = info[2] + '.' + info[3]
-			url = url + '/' + fname + '/' + info[4] + '/' + fname + '.' + info[5]
-		
-		if(len(info) == 8): #3 words in name
-			fname = info[5] + "." + info[3] + "." + info[2]
-			url = url + '/' + fname + '/' + info[4] + '/' + fname + '.' + info[6]
-		
-		if(len(info) == 9): #4 words in name
-			fname = info[5] + '.' + info[4] + '.' + info[3] + '.' + info[1]
-			url = url + '/' + fname + '/' + info[6] + '/' + fname + '.' + info[7]
-		
-		if(len(info) == 10): #5 words in name
-			showMessage('ERROR', 'Sorry, can not play')
-		
-		if(len(info) == 11): #6 words in name
-			fname = info[5] + '.' + info[7] + '.' + info[8] + '.' + info[6] + '.' + info[2] + '.' + info[4]
-			url = url + '/' + fname + '/' + info[3] + '/' + fname + '.' + info[9]
-		
-		url = url + '.mp4?start=0&id=4334&client=FLASH%20LNX%2010,2,159,1&version=4.3.132&width=640'
+		url = 'http://ww.ulitka.tv:8080'
+
+		fileRe = re.compile('so\.addVariable\("file",style\+"([^"]+)')
+		url = url + fileRe.findall(initJs)[0]
+
+		url = url + '?start=0&id=1&client=FLASH%20LNX%2010,2,159,1&version=4.3.132&width=640'
 		i = xbmcgui.ListItem(path = url)
 		xbmcplugin.setResolvedUrl(h, True, i)
 

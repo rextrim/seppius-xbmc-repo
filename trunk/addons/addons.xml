@@ -578,7 +578,7 @@ Author - Vlad Svoka aka Shchvova</description>
   </extension>
 </addon>
 
-<addon id="plugin.video.ulitka.tv" name="Ulitka.TV" version="0.0.1" provider-name="HD-Lab Team">
+<addon id="plugin.video.ulitka.tv" name="Ulitka.TV" version="1.0" provider-name="x86demon">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
