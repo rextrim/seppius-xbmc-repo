@@ -7,7 +7,9 @@ digits39 = string.digits + string.lowercase
 digits62 = string.digits + string.lowercase + string.uppercase
 
 def int2base(x, base):
-	digs = digits39 if base == 39 else digits62
+	digs = digits39
+	if base == 62:
+		digs = digits62
 	if x < 0: sign = -1
 	elif x==0: return '0'
 	else: sign = 1
