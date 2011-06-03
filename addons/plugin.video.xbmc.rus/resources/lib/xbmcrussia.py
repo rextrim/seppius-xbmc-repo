@@ -221,7 +221,6 @@ def getitems(params):
 			except: pass
 			try: del item['icons']
 			except: pass
-			print item
 			try:
 				conmenu = item['conmenu']
 				del item['conmenu']
@@ -264,7 +263,46 @@ def Play_Exec(jsdata):
 	for item in jsdata:
 		try:    selects.append(item['title'])
 		except: print '[%s]: Skipping element without name' % addon_id
-	if   len(selects) == 0: return False
+	if   len(selects) == 0:
+		script = None
+		sparam = None
+		try:
+			script = jsdata[0]['script']
+			sparam = jsdata[0]['params']
+		except: pass
+		if script != None:
+			code = compile(script, '<string>', 'exec')
+			ns = {}
+			exec code in ns
+			pdat = ns['getfiles'](sparam)
+			args1 = []
+			args2 = []
+			args3 = []
+			for arg1,arg2,arg3 in pdat:
+				args1.append(arg1)
+				args2.append(arg2)
+				args3.append(arg3)
+			if len(args1) > 0:
+				s = xbmcgui.Dialog().select(addon_name, args1)
+				if s < 0:
+					return False
+				else:
+					arg2 = args2[s]
+					arg3 = args3[s]
+					pappends = ''
+					if arg2.startswith('http://') or arg2.startswith('https://'):
+						for parg in arg3: pappends += '&%s=%s' % (parg, urllib.quote_plus(arg3[parg]))
+						if pappends != '':
+							pappends = '|' + pappends[1:]
+					elif arg2.startswith('rtmp://') or arg2.startswith('rtmpt://') or arg2.startswith('rtmpe://') or arg2.startswith('rtmpte://'):
+						for parg in arg3: pappends += ' %s=%s' % (parg, arg3[parg])
+					i = xbmcgui.ListItem(path = arg2 + pappends)
+					xbmcplugin.setResolvedUrl(h, True, i)
+					return True
+			else:
+				return False
+		else:
+			return False
 	elif len(selects) == 1: s = 0
 	else:
 		s = xbmcgui.Dialog().select(addon_name, selects)
