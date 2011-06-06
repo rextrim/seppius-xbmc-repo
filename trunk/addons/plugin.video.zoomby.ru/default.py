@@ -289,19 +289,18 @@ def decrypt(hex_arg1, hex_arg2):
 
 
 def WATCH(url):
+	if not url.startswith('http://'): url = 'http://www.zoomby.ru%s' % url
 	xbmc.output('[%s] WATCH(%s)' % (PLUGIN_NAME, url))
-	http  = Get(url)
+
+	http  = Get(url, 'http://www.zoomby.ru/')
 	flashvars = re.compile('video: "(.*?)",').findall(http)[0]
-	keys = flashvars.split('/')
-	cur_key = keys[len(keys)-2]
-	SMILPATH = 'http://www.zoomby.ru' + flashvars
-	REFE     = 'http://www.zoomby.ru' + url
-	http2 = decrypt(Get(SMILPATH, REFE), cur_key)
-	http2 = re.compile('(<smil.*?</smil>)', re.DOTALL).findall(http2)[0]
-
-	print http2
-
-	Dom     = xml.dom.minidom.parseString(http2.replace('&','&amp;'))
+	swfobject = re.compile('swfobject.embedSWF\("(.*?)",').findall(http)[0]
+	key = flashvars.split('/')[-1]
+	http2 = Get('http://www.zoomby.ru%s' % flashvars, swfobject)
+	smild = decrypt(http2, key)
+	smil  = re.compile('(<smil.*?</smil>)', re.DOTALL).findall(smild)[0]
+	smil = smil.replace('&','&amp;')
+	Dom     = xml.dom.minidom.parseString(smil)
 	switchs = Dom.getElementsByTagName('switch')
 	videos = switchs[0].getElementsByTagName('video')
 	pda = []
@@ -310,20 +309,24 @@ def WATCH(url):
 		video_pd      = video.getAttribute('stream')
 		video_sysbit  = video.getAttribute('system-bitrate').encode('utf8')
 		video_label   = video.getAttribute('label').encode('utf8')
-		pda.append(video_pd.split('?')[0])
+		pda.append(video_pd)
 		labela.append('%s (%s)' % (video_label, video_sysbit))
 	s = xbmcgui.Dialog().select('Качество?', labela)
 	if s < 0:
 		return False
 	uri  = pda[s]
 
-	if uri.find('http://') != -1:
-
-
-		uri += '|Referer=%s'    % urllib.quote_plus(REFE)
-		uri += '&User-Agent=%s' % urllib.quote_plus('Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00')
+	if uri.startswith('http://') or uri.startswith('https://'):
+		uri += '|Referer=%s'    % urllib.quote_plus(swfobject)
+		uri += '&User-Agent=%s' % urllib.quote_plus(UA)
 		i = xbmcgui.ListItem(path = uri)
 		xbmcplugin.setResolvedUrl(h, True, i)
+	else:
+		print 'Protocol not HTTP'
+		print 'flashvars=[%s]' % flashvars
+		print 'swfobject=[%s]' % swfobject
+		print '      key=[%s]' % key
+		print 'ZOOM smil=[%s]' % smil
 
 
 
