@@ -1,0 +1,3 @@
+<settings>
+    <setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
+</settings>
