@@ -6,56 +6,46 @@
 import sys, xbmc, xbmcgui, xbmcplugin, xbmcaddon
 import os, urllib, urllib2, datetime
 import xml.dom.minidom
-import time
 
-addon_id       = 'plugin.video.muzunga.tv'
-addon_name     = 'unknown addon'
-addon_version  = '0.0.0'
-addon_provider = 'unknown'
+__addon__ = xbmcaddon.Addon(id = 'plugin.video.muzunga.tv')
 
-icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
-adxf = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'addon.xml'))
-if os.path.isfile(adxf):
-	af = open(adxf, 'r')
-	adom = xml.dom.minidom.parseString(af.read())
-	af.close()
-	areg = adom.getElementsByTagName('addon')
-	addon_id       = areg[0].getAttribute('id')
-	addon_name     = areg[0].getAttribute('name')
-	addon_version  = areg[0].getAttribute('version')
-	addon_provider = areg[0].getAttribute('provider-name')
+addon_icon    = __addon__.getAddonInfo('icon')
+addon_fanart  = __addon__.getAddonInfo('fanart')
+addon_path    = __addon__.getAddonInfo('path')
+addon_type    = __addon__.getAddonInfo('type')
+addon_id      = __addon__.getAddonInfo('id')
+addon_author  = __addon__.getAddonInfo('author')
+addon_name    = __addon__.getAddonInfo('name')
+addon_version = __addon__.getAddonInfo('version')
 
+icon   = xbmc.translatePath(addon_icon)
+fanart = xbmc.translatePath(addon_fanart)
+sicon  = xbmc.translatePath(os.path.join(addon_path, 'search.png'))
 
-__settings__ = xbmcaddon.Addon(id = addon_id)
-__language__ = __settings__.getLocalizedString
 h = int(sys.argv[1])
 
-private_key = __settings__.getSetting('private_key')
-private_login = __settings__.getSetting('username')
-private_password = __settings__.getSetting('password')
+private_key      = __addon__.getSetting('private_key')
+private_login    = __addon__.getSetting('username')
+private_password = __addon__.getSetting('password')
 
-
-view_limit = 30
-
-
-
+try:
+	view_limit = [10,20,30,40,50][int(__addon__.getSetting('limit'))]
+except:
+	view_limit = 30
+	__addon__.setSetting('limit', 2)
 
 def showMessage(heading, message, times = 3000, pics = icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics))
 	except Exception, e:
-		print '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e)
 		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
 		except Exception, e:
 			print '[%s]: showMessage: exec failed [%s]' % (addon_id, e)
-
-
-
 
 def GET(targeturl):
 	#print '[%s]: GET [%s]' % (addon_id, targeturl)
 	try:
 		req = urllib2.Request(targeturl)
-		req.add_header(     'User-Agent','XBMC/ADDON (Python addon; XBMC)')
+		req.add_header(     'User-Agent', '%s/%s %s/%s/%s' % (addon_type, addon_id, addon_author, addon_version, urllib.quote_plus(addon_name)))
 		f = urllib2.urlopen(req)
 		CE = f.headers.get('content-encoding')
 		if CE:
@@ -71,9 +61,6 @@ def GET(targeturl):
 	except Exception, e:
 		print '[%s]: GET EXCEPT [%s]' % (addon_id, e)
 		showMessage('HTTP ERROR', href, 5000)
-
-
-
 
 def parse_meta(document):
 	mdata = {'title': document.getElementsByTagName('name')[0].firstChild.data}
@@ -148,26 +135,30 @@ def showroot(params): # IMPLEMENTED
 	user_found = int(document.getElementsByTagName('user_found')[0].firstChild.data)
 	if user_found == 0:
 		showMessage('Ошибка авторизации на сайте Muzunga.TV', 'Проверьте правильность логина и пароля', 10000)
-		__settings__.openSettings()
+		__addon__.openSettings()
 		return False
 	try:
 		new_key = document.getElementsByTagName('new_key')[0].firstChild.data
 		if len(new_key):
-			__settings__.setSetting('private_key', new_key)
+			__addon__.setSetting('private_key', new_key)
 			showMessage(u'Ключ: %s' % new_key, 'Пожалуйста привяжите его к вашему логину', 60000)
 	except: pass
 	#-----------------------------------------------------#
 	http = GET('http://muzunga.tv/stb/xml/category.php')
 	if not http: return False
-	i = xbmcgui.ListItem('[ Поиск ]', iconImage = icon, thumbnailImage = icon)
+	i = xbmcgui.ListItem('[ Поиск ]', iconImage = sicon, thumbnailImage = sicon)
+	i.setProperty('fanart_image', sicon)
 	xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showsearch'})), i, True)
 	i = xbmcgui.ListItem('[ Все категории ]', iconImage = icon, thumbnailImage = icon)
+	i.setProperty('fanart_image', icon)
 	xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlist', 'id':0})), i, True)
 	i = xbmcgui.ListItem('[ Сериалы ]', iconImage = icon, thumbnailImage = icon)
+	i.setProperty('fanart_image', icon)
 	xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlist', 'id':0, 'video_type':2})), i, True)
 	document = xml.dom.minidom.parseString(http)
 	for item in document.getElementsByTagName('item'):
 		i = xbmcgui.ListItem(item.getElementsByTagName('name')[0].firstChild.data, iconImage = icon, thumbnailImage = icon)
+		i.setProperty('fanart_image', icon)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlist', 'id':item.getElementsByTagName('id')[0].firstChild.data})), i, True)
 
 	i = xbmcgui.ListItem('[ Недосмотренное ]', iconImage = icon, thumbnailImage = icon)
@@ -178,8 +169,6 @@ def showroot(params): # IMPLEMENTED
 
 
 def finished(params):
-
-
 
 	uparam = {'device_type':'xbmc', 'detail_info':1, 'view_limit':view_limit}
 	if len(private_key): uparam['private_key'] = private_key
@@ -195,23 +184,26 @@ def finished(params):
 
 	if int(params['mode']) != 1:
 		i = xbmcgui.ListItem('[ Просмотренные полностью ]', iconImage = icon, thumbnailImage = icon)
-		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'finished', 'mode':1})), i, True)
+		i.setProperty('fanart_image', icon)
+		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'finished', 'mode':1, 'page':0})), i, True)
 
 	document = xml.dom.minidom.parseString(http)
 
 	items = document.getElementsByTagName('item')
 	for item in items:
 		item_id = item.getElementsByTagName('id')[0].firstChild.data
-		poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg' % (item_id)
+		poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (item_id,item_id)
 		mdata = parse_meta(item)
 		i = xbmcgui.ListItem(mdata['title'], iconImage = poster, thumbnailImage = poster)
 		i.setInfo(type = 'video', infoLabels = mdata)
+		i.setProperty('fanart_image', poster)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'id':item_id, 'season':0, 'episode':0})), i, True)
 
 
 	if len(items) == view_limit:
 		params['page'] = int(params['page']) + 1
 		i = xbmcgui.ListItem('[ ЕЩЕ! ]', iconImage = icon, thumbnailImage = icon)
+		i.setProperty('fanart_image', icon)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(params)), i, True)
 
 
@@ -236,15 +228,17 @@ def showsearch(params):
 	items = xml.dom.minidom.parseString(http).getElementsByTagName('item')
 	for item in items:
 		item_id = item.getElementsByTagName('id')[0].firstChild.data
-		img = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg' % (item_id)
+		poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (item_id,item_id)
 		mdata = parse_meta(item)
-		i = xbmcgui.ListItem(mdata['title'], iconImage = img, thumbnailImage = img)
+		i = xbmcgui.ListItem(mdata['title'], iconImage = poster, thumbnailImage = poster)
 		i.setInfo(type = 'video', infoLabels = mdata)
+		i.setProperty('fanart_image', poster)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'id':item_id, 'season':0, 'episode':0})), i, True)
 	if len(items) == view_limit:
 		params['page'] += 1
 		params['search'] = uparam['search']
 		i = xbmcgui.ListItem('[ ЕЩЕ! ]', iconImage = icon, thumbnailImage = icon)
+		i.setProperty('fanart_image', icon)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(params)), i, True)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
@@ -273,14 +267,16 @@ def showlist(params):
 	items = xml.dom.minidom.parseString(http).getElementsByTagName('item')
 	for item in items:
 		item_id = item.getElementsByTagName('id')[0].firstChild.data
-		img = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg' % (item_id)
+		poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (item_id,item_id)
 		mdata = parse_meta(item)
-		i = xbmcgui.ListItem(mdata['title'], iconImage = img, thumbnailImage = img)
+		i = xbmcgui.ListItem(mdata['title'], iconImage = poster, thumbnailImage = poster)
 		i.setInfo(type = 'video', infoLabels = mdata)
+		i.setProperty('fanart_image', poster)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'id':item_id, 'season':0, 'episode':0})), i, True)
 	if len(items) == view_limit:
 		params['page'] += 1
 		i = xbmcgui.ListItem('[ ЕЩЕ! ]', iconImage = icon, thumbnailImage = icon)
+		i.setProperty('fanart_image', icon)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(params)), i, True)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
 	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
@@ -311,9 +307,10 @@ def showseasons(params):
 			season_id = int(season.getElementsByTagName('id')[0].firstChild.data)
 			mdata = {'season': season_id}
 			mdata['title'] = u'Сезон %d (%s серий)' % (season_id, season.getElementsByTagName('episode_count')[0].firstChild.data)
-			img = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (params['id'], params['id'])
-			i = xbmcgui.ListItem(mdata['title'], iconImage = img, thumbnailImage = img)
+			poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (params['id'], params['id'])
+			i = xbmcgui.ListItem(mdata['title'], iconImage = poster, thumbnailImage = poster)
 			i.setInfo(type = 'video', infoLabels = mdata)
+			i.setProperty('fanart_image', poster)
 			xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showepisodes', 'id':params['id'], 'season_id':season_id})), i, True)
 		xbmcplugin.endOfDirectory(h)
 
@@ -326,7 +323,7 @@ def showepisodes(params):
 	http = GET('http://muzunga.tv/stb/xml/movie.php?%s' % urllib.urlencode(uparam))
 	if not http: return False
 	document = xml.dom.minidom.parseString(http)
-	img = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (params['id'], params['id'])
+	poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (params['id'], params['id'])
 	for season in document.getElementsByTagName('season'):
 		if season_id == int(season.getElementsByTagName('id')[0].firstChild.data):
 			for episode in season.getElementsByTagName('episode'):
@@ -335,8 +332,9 @@ def showepisodes(params):
 				mdata['title'] = '%d. %s' % (episode_id, mdata['title'])
 				mdata['season']  = season_id
 				mdata['episode'] = episode_id
-				i = xbmcgui.ListItem(mdata['title'], iconImage = img, thumbnailImage = img)
+				i = xbmcgui.ListItem(mdata['title'], iconImage = poster, thumbnailImage = poster)
 				i.setInfo(type = 'video', infoLabels = mdata)
+				i.setProperty('fanart_image', poster)
 				xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'id':params['id'], 'season':season_id, 'episode':episode_id})), i, True)
 	xbmcplugin.endOfDirectory(h)
 
@@ -374,9 +372,13 @@ def play(params):
 	poster = 'http://muzunga.tv/thumbs/%s/thumb/1.jpg?%s' % (item_id, item_id)
 
 	imgs = []
-	for snap in document.getElementsByTagName('snap'):
-		for big in snap.getElementsByTagName('big'):
-			if big.firstChild.data: imgs.append('http://muzunga.tv/thumbs/%s' % big.firstChild.data)
+	try:
+		for snap in document.getElementsByTagName('snap'):
+			try:
+				for big in snap.getElementsByTagName('big'):
+					if big.firstChild.data: imgs.append('http://muzunga.tv/thumbs/%s' % big.firstChild.data)
+			except: pass
+	except: pass
 
 	if use_episode:
 		mdata['tvshowtitle'] = mdata['title']
@@ -395,9 +397,15 @@ def play(params):
 	try:    streamer = document.getElementsByTagName('streamer')[0].firstChild.data
 	except: return False
 
-	try:
-		file_hd = document.getElementsByTagName('file_hd')[0].firstChild.data
-		path_hd = '%s app=%s playpath=%s' % (streamer, streamer.split('/')[-1], file_hd)
+
+	file_hd = document.getElementsByTagName('file_hd')
+	file_sd = document.getElementsByTagName('file_sd')
+
+
+	#try:
+	if file_hd:
+		#file_hd = document.getElementsByTagName('file_hd')[0].firstChild.data
+		#path_hd = '%s app=%s playpath=%s' % (streamer, streamer.split('/')[-1], file_hd)
 		img = poster
 		if len(imgs):
 			img = imgs[0]
@@ -405,13 +413,20 @@ def play(params):
 		i = xbmcgui.ListItem('Смотреть в HD', iconImage = img, thumbnailImage = img)
 		i.setInfo(type = 'video', infoLabels = mdata)
 		i.setProperty('IsPlayable', 'true')
-		np = {'func':'playstart', 'url':movie_url, 'path': path_hd}
-		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(np)), i)
-	except: path_hd = None
+		uparam['func'] = 'playstart'
+		uparam['hd'] = '1'
+		#uparam['path'] = path_hd
+		i.setProperty('fanart_image', poster)
+		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(uparam)), i)
+	#except: path_hd = None
 
-	try:
-		file_sd = document.getElementsByTagName('file_sd')[0].firstChild.data
-		path_sd = '%s app=%s playpath=%s' % (streamer, streamer.split('/')[-1], file_sd)
+	#try:
+	#if document.getElementsByTagName('file_sd'):
+
+
+	if file_sd:
+		#file_sd = document.getElementsByTagName('file_sd')[0].firstChild.data
+		#path_sd = '%s app=%s playpath=%s' % (streamer, streamer.split('/')[-1], file_sd)
 		img = poster
 		if len(imgs):
 			img = imgs[0]
@@ -419,13 +434,17 @@ def play(params):
 		i = xbmcgui.ListItem('Смотреть в SD', iconImage = img, thumbnailImage = img)
 		i.setInfo(type = 'video', infoLabels = mdata)
 		i.setProperty('IsPlayable', 'true')
-		np = {'func':'playstart', 'url':movie_url, 'path': path_sd}
-		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(np)), i)
-	except: path_sd = None
+		uparam['func'] = 'playstart'
+		uparam['hd'] = '0'
+		#uparam['audio'] = audio.getElementsByTagName('id')[0].firstChild.data
+		#uparam['path'] = path_sd
+		i.setProperty('fanart_image', poster)
+		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(uparam)), i)
+	#except: path_sd = None
 
 	audios = document.getElementsByTagName('audio')
 
-	if path_hd and audios and len(audios):
+	if file_hd and len(file_hd) and audios and len(audios):
 		for audio in audios:
 			img = poster
 			if len(imgs):
@@ -434,10 +453,13 @@ def play(params):
 			i = xbmcgui.ListItem(u'Смотреть в HD, звук: %s' % audio.getElementsByTagName('name')[0].firstChild.data, iconImage = img, thumbnailImage = img)
 			i.setInfo(type = 'video', infoLabels = mdata)
 			i.setProperty('IsPlayable', 'true')
-			np = {'func':'playstart', 'url':movie_url, 'path': '%s_%s' % (path_hd, audio.getElementsByTagName('id')[0].firstChild.data)}
-			xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(np)), i)
+			uparam['func'] = 'playstart'
+			uparam['hd'] = '1'
+			uparam['audio'] = audio.getElementsByTagName('id')[0].firstChild.data
+			i.setProperty('fanart_image', poster)
+			xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(uparam)), i)
 
-	if path_sd and audios and len(audios):
+	if file_sd and len(file_sd) and audios and len(audios):
 		for audio in audios:
 			img = poster
 			if len(imgs):
@@ -446,8 +468,11 @@ def play(params):
 			i = xbmcgui.ListItem(u'Смотреть в SD, звук:  %s' % audio.getElementsByTagName('name')[0].firstChild.data, iconImage = img, thumbnailImage = img)
 			i.setInfo(type = 'video', infoLabels = mdata)
 			i.setProperty('IsPlayable', 'true')
-			np = {'func':'playstart', 'url':movie_url, 'path': '%s_%s' % (path_sd, audio.getElementsByTagName('id')[0].firstChild.data)}
-			xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(np)), i)
+			uparam['func'] = 'playstart'
+			uparam['hd'] = '0'
+			uparam['audio'] = audio.getElementsByTagName('id')[0].firstChild.data
+			i.setProperty('fanart_image', poster)
+			xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(uparam)), i)
 
 	subtitles = document.getElementsByTagName('subtitle')
 	if subtitles and len(subtitles): showMessage('Субтитры', 'Этот фильм имеет субтитры', 3000)
@@ -457,7 +482,23 @@ def play(params):
 
 
 def playstart(params):
-	http = GET('http://muzunga.tv/stb/xml/movie.php?%s' % params['url'])
+
+	del params['func']
+
+	try: del params['detail_info']
+	except: pass
+
+	if params['hd'] == '1': vkey = 'file_hd'
+	else: vkey = 'file_sd'
+
+	del params['hd']
+
+	try:
+		audio = '_%s' % params['audio']
+		del params['audio']
+	except: audio = ''
+
+	http = GET('http://muzunga.tv/stb/xml/movie.php?%s' % urllib.urlencode(params))
 	if not http: return False
 	document = xml.dom.minidom.parseString(http)
 	try:
@@ -468,7 +509,15 @@ def playstart(params):
 	except:
 		print '[%s]: playstart: queue failed' % (addon_id)
 		pass
-	i = xbmcgui.ListItem(path = params['path'])
+
+	try:    streamer = document.getElementsByTagName('streamer')[0].firstChild.data
+	except: return False
+
+	vfile = document.getElementsByTagName(vkey)[0].firstChild.data
+	vpath = '%s app=%s playpath=%s%s' % (streamer, streamer.split('/')[-1], vfile, audio)
+
+
+	i = xbmcgui.ListItem(path = vpath)
 	xbmcplugin.setResolvedUrl(h, True, i)
 	xbmc.sleep(2000)
 	subtitles = document.getElementsByTagName('subtitle')
