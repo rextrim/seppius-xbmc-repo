@@ -57,6 +57,7 @@ def GET(targeturl):
 			else: a = f.read()
 		else: a = f.read()
 		f.close()
+		#print a
 		return a
 	except Exception, e:
 		print '[%s]: GET EXCEPT [%s]' % (addon_id, e)
@@ -357,6 +358,15 @@ def play(params):
 	if not http: return False
 
 	document = xml.dom.minidom.parseString(http)
+	try:
+		queue = int(document.getElementsByTagName('queue')[0].firstChild.data)
+		if queue:
+			showMessage('Пробуй немного позже', 'Место в очереди на подключение: %d' % queue, 2000)
+			return False
+	except:
+		print '[%s]: playstart: queue failed' % (addon_id)
+		pass
+
 
 	use_episode = 0
 	if document.getElementsByTagName('season'):
@@ -402,10 +412,7 @@ def play(params):
 	file_sd = document.getElementsByTagName('file_sd')
 
 
-	#try:
 	if file_hd:
-		#file_hd = document.getElementsByTagName('file_hd')[0].firstChild.data
-		#path_hd = '%s app=%s playpath=%s' % (streamer, streamer.split('/')[-1], file_hd)
 		img = poster
 		if len(imgs):
 			img = imgs[0]
@@ -415,18 +422,10 @@ def play(params):
 		i.setProperty('IsPlayable', 'true')
 		uparam['func'] = 'playstart'
 		uparam['hd'] = '1'
-		#uparam['path'] = path_hd
 		i.setProperty('fanart_image', poster)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(uparam)), i)
-	#except: path_hd = None
-
-	#try:
-	#if document.getElementsByTagName('file_sd'):
-
 
 	if file_sd:
-		#file_sd = document.getElementsByTagName('file_sd')[0].firstChild.data
-		#path_sd = '%s app=%s playpath=%s' % (streamer, streamer.split('/')[-1], file_sd)
 		img = poster
 		if len(imgs):
 			img = imgs[0]
@@ -436,11 +435,8 @@ def play(params):
 		i.setProperty('IsPlayable', 'true')
 		uparam['func'] = 'playstart'
 		uparam['hd'] = '0'
-		#uparam['audio'] = audio.getElementsByTagName('id')[0].firstChild.data
-		#uparam['path'] = path_sd
 		i.setProperty('fanart_image', poster)
 		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode(uparam)), i)
-	#except: path_sd = None
 
 	audios = document.getElementsByTagName('audio')
 
@@ -503,7 +499,7 @@ def playstart(params):
 	document = xml.dom.minidom.parseString(http)
 	try:
 		queue = int(document.getElementsByTagName('queue')[0].firstChild.data)
-		if not queue:
+		if queue:
 			showMessage('Пробуй немного позже', 'Место в очереди на подключение: %d' % queue, 2000)
 			return False
 	except:
