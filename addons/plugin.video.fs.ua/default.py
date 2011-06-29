@@ -153,6 +153,16 @@ def readcategory(params):
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
 	else:
+		if params['firstPage'] == 'yes':
+			#Add search list item
+			li = xbmcgui.ListItem("[ПОИСК]")
+			li.setProperty('IsPlayable', 'false')
+			uri = construct_request({
+				'mode': 'runsearch',
+				'section': params['section']
+			})
+			xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 		for item in items:
 			title = None
 			cover = None
@@ -253,12 +263,88 @@ def readdir(params):
 						type = 'music'
 					li.setInfo(type = type, infoLabels={'title': title})
 
-					uri = href
+					uri = construct_request({
+						'file': href,
+						'referer': folderUrl,
+						'mode': 'play'
+					})
 
 				xbmcplugin.addDirectoryItem(h, uri, li, isFolder)
 
 	xbmcplugin.endOfDirectory(h)
 
+def runsearch(params):
+	skbd = xbmc.Keyboard()
+	skbd.setHeading('Что ищем?')
+	skbd.doModal()
+	if skbd.isConfirmed():
+		SearchStr = skbd.getText()
+		searchUrl = '%s/%s/search/?search=%s' % (httpSiteUrl, params['section'], urllib.quote_plus(SearchStr))
+		params = {
+			'href': searchUrl,
+			'section': params['section']
+		}
+		return render_search_results(params)
+
+
+def render_search_results(params):
+	searchUrl = urllib.unquote_plus(params['href'])
+	http = GET(searchUrl, httpSiteUrl + '/' + params['section'])
+	if http == None: return False
+
+	beautifulSoup = BeautifulSoup(http)
+	items = beautifulSoup.find('div', 'main').findAll('tr')
+
+	if len(items) == 0:
+		showMessage('ОШИБКА', 'Ничего не найдено', 3000)
+		return False
+	else:
+		for item in items:
+			link = item.find('a', 'title')
+
+			title = link.string
+			href = httpSiteUrl + '/dl' + link['href']
+			cover = item.find('img')['src']
+
+			if title != None:
+				li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+				li.setProperty('IsPlayable', 'false')
+
+				isMusic = 'no'
+				if params['section'] == 'music':
+					isMusic = 'yes'
+
+				uri = construct_request({
+					'href': href,
+					'referer': params['href'],
+					'mode': 'readdir',
+					'cover': cover,
+					'isMusic': isMusic
+				})
+
+				xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+		nextPageLink = beautifulSoup.find('a', 'next-link')
+		if nextPageLink != None:
+			li = xbmcgui.ListItem('[NEXT PAGE >]')
+			li.setProperty('IsPlayable', 'false')
+			uri = construct_request({
+				'href': httpSiteUrl + nextPageLink['href'],
+				'mode': 'render_search_results',
+				'section': params['section']
+			})
+			xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	xbmcplugin.endOfDirectory(h)
+
+def play(params):
+	referer = urllib.unquote_plus(params['referer'])
+	file = urllib.unquote_plus(params['file'])
+
+	headers['Referer'] = referer
+
+	i = xbmcgui.ListItem(path = file)
+	xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):
 	param=[]
