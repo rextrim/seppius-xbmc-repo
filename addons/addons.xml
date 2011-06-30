@@ -506,7 +506,7 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.2"
+       version="1.3"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
