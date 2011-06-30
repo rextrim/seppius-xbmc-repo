@@ -18,8 +18,18 @@
 #   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #   http://www.gnu.org/licenses/gpl.html
 
-import urllib, urllib2, re, sys, os, httplib, Cookie
-import xbmcplugin, xbmcgui, xbmcaddon, xbmc
+import urllib
+import urllib2
+import re
+import sys
+import os
+import cookielib
+
+import xbmcplugin
+import xbmcgui
+import xbmcaddon
+import xbmc
+
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import socket
 socket.setdefaulttimeout(50)
@@ -28,6 +38,7 @@ icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png')
 siteUrl = 'fs.ua'
 httpSiteUrl = 'http://' + siteUrl
 __settings__ = xbmcaddon.Addon(id='plugin.video.fs.ua')
+cookiepath = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.fs.ua.cookies.lwp')
 
 h = int(sys.argv[1])
 
@@ -41,67 +52,80 @@ def showMessage(heading, message, times = 3000):
 	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
 headers  = {
-		'User-Agent' : 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00',
-		'Accept'     :' text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*',
-		'Accept-Language':'ru-RU,ru;q=0.9,en;q=0.8',
-		'Accept-Charset' :'utf-8, utf-16, *;q=0.1',
-		'Accept-Encoding':'identity, *;q=0'
-	}
+	'User-Agent' : 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00',
+	'Accept'     :' text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*',
+	'Accept-Language':'ru-RU,ru;q=0.9,en;q=0.8',
+	'Accept-Charset' :'utf-8, utf-16, *;q=0.1',
+	'Accept-Encoding':'identity, *;q=0'
+}
 
-sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_fs_ua.sid')
+def GET(url, referer, post_params = None):
+	headers['Referer'] = referer
 
-def GET(target, referer, post_params = None):
-	try:
-		connection = httplib.HTTPConnection(siteUrl)
+	if post_params != None:
+		post_params = urllib.urlencode(post_params)
+		headers['Content-Type'] = 'application/x-www-form-urlencoded'
+	elif headers.has_key('Content-Type'):
+		del headers['Content-Type']
 
-		if post_params == None:
-			method = 'GET'
-			post = None
+	jar = cookielib.LWPCookieJar(cookiepath)
+	if os.path.isfile(cookiepath):
+		jar.load()
+
+	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
+	urllib2.install_opener(opener)
+	req = urllib2.Request(url, post_params, headers)
+
+	response = opener.open(req)
+	the_page = response.read()
+	response.close()
+
+	jar.save()
+
+	return the_page
+
+def check_login():
+	login = __settings__.getSetting("Login")
+	password = __settings__.getSetting("Password")
+
+	if len(login) > 0:
+		http = GET(httpSiteUrl, httpSiteUrl)
+		if http == None: return False
+
+		beautifulSoup = BeautifulSoup(http)
+		userPanel = beautifulSoup.find('div', 'b-user-panel')
+
+		if userPanel == None:
+			loginResponse = GET(httpSiteUrl + '/login.aspx', httpSiteUrl, {
+				'login': login,
+				'passwd': password,
+				'remember': 1
+			})
+
+			loginSoup = BeautifulSoup(loginResponse)
+			userPanel = loginSoup.find('div', 'b-user-panel')
+			if userPanel == None:
+				showMessage('Login', 'Check login and password', 3000)
+			else:
+				return True
 		else:
-			method = 'POST'
-			post = urllib.urlencode(post_params)
-			headers['Content-Type'] = 'application/x-www-form-urlencoded'
+			return True
+	return False
 
-		if os.path.isfile(sid_file):
-			fh = open(sid_file, 'r')
-			csid = fh.read()
-			fh.close()
-			headers['Cookie'] = 'session=%s' % csid
-
-		headers['Referer'] = referer
-		connection.request(method, target, post, headers = headers)
-		response = connection.getresponse()
-
-		if response.status in (301, 302):
-			target = response.getheader('location', '')
-			return GET(httpSiteUrl + target, referer, post_params)
-
-		try:
-			sc = Cookie.SimpleCookie()
-			sc.load(response.msg.getheader('Set-Cookie'))
-			fh = open(sid_file, 'w')
-			fh.write(sc['session'].value)
-			fh.close()
-		except: pass
-
-		http = response.read()
-
-		return http
-
-	except Exception, e:
-		showMessage(target, e, 5000)
-		return None
-
-def getCategories(params):
+def getSortBy():
 	sortBy = __settings__.getSetting("Sort by")
 	sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
-	sortByString = '?sort=' + sortByMap[sortBy]
+	return '?sort=' + sortByMap[sortBy]
+
+def getCategories(params):
+	sortByString = getSortBy()
 
 	li = xbmcgui.ListItem('Tv Shows')
 	uri = construct_request({
 		'href': httpSiteUrl + '/serials' + sortByString,
 		'mode': 'readcategory',
 		'section': 'serials',
+		'filter': '',
 		'firstPage': 'yes'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
@@ -111,6 +135,7 @@ def getCategories(params):
 		'href': httpSiteUrl + '/films' + sortByString,
 		'mode': 'readcategory',
 		'section': 'films',
+		'filter': '',
 		'firstPage': 'yes'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
@@ -120,6 +145,7 @@ def getCategories(params):
 		'href': httpSiteUrl + '/clips' + sortByString,
 		'mode': 'readcategory',
 		'section': 'clips',
+		'filter': '',
 		'firstPage': 'yes'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
@@ -129,9 +155,58 @@ def getCategories(params):
 		'href': httpSiteUrl + '/music' + sortByString,
 		'mode': 'readcategory',
 		'section': 'music',
+		'filter': '',
 		'firstPage': 'yes'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	if check_login():
+		li = xbmcgui.ListItem('Favorites')
+		uri = construct_request({
+			'mode': 'readfavorites'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	xbmcplugin.endOfDirectory(h)
+
+def readfavorites(params):
+	sortByString = getSortBy()
+
+	favoritesUrl = httpSiteUrl + '/myfavourites.aspx' + sortByString
+	http = GET(favoritesUrl, httpSiteUrl)
+	if http == None: return False
+
+	beautifulSoup = BeautifulSoup(http)
+	items = beautifulSoup.findAll('div', 'b-poster')
+	if len(items) == 0:
+		showMessage('ОШИБКА', 'В избранном пусто', 3000)
+		return False
+	else:
+		for item in items:
+			coverRegexp = re.compile('url\s*\(([^\)]+)')
+			cover = coverRegexp.findall(str(item['style']))[0]
+			linkItem = item.find('a', 'details-link')
+
+			href = httpSiteUrl + '/dl' + linkItem['href']
+			title = re.sub('\s+', ' ', str(linkItem.string))
+			title = re.sub('(^\s+|\s+$)', '', title)
+
+			li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+			li.setProperty('IsPlayable', 'false')
+
+			isMusic = "no"
+			if re.search('music', href):
+				isMusic = "yes"
+
+			uri = construct_request({
+				'href': href,
+				'referer': favoritesUrl,
+				'mode': 'readdir',
+				'cover': cover,
+				'isMusic': isMusic
+			})
+
+			xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
 
@@ -209,6 +284,7 @@ def readcategory(params):
 			'href': httpSiteUrl + nextPageLink['href'],
 			'mode': 'readcategory',
 			'section': params['section'],
+			'filter': params['filter'],
 			'firstPage': 'no'
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
@@ -250,7 +326,7 @@ def readdir(params):
 
 					uri = construct_request({
 						'cover': cover,
-						'href': httpSiteUrl + href,
+						'href': httpSiteUrl + str(href.encode('utf-8')),
 						'referer': folderUrl,
 						'mode': 'readdir',
 						'isMusic': params['isMusic']
@@ -264,7 +340,7 @@ def readdir(params):
 					li.setInfo(type = type, infoLabels={'title': title})
 
 					uri = construct_request({
-						'file': href,
+						'file': str(href.encode('utf-8')),
 						'referer': folderUrl,
 						'mode': 'play'
 					})
