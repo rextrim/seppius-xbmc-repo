@@ -338,12 +338,15 @@ def readdir(params):
 					if params['isMusic'] == 'yes':
 						type = 'music'
 					li.setInfo(type = type, infoLabels={'title': title})
-
-					uri = construct_request({
-						'file': str(href.encode('utf-8')),
-						'referer': folderUrl,
-						'mode': 'play'
-					})
+					
+					if type == 'music' or __settings__.getSetting('Autoplay next') == 'true':
+						uri = construct_request({
+							'file': str(href.encode('utf-8')),
+							'referer': folderUrl,
+							'mode': 'play'
+						})
+					else:
+						uri = href
 
 				xbmcplugin.addDirectoryItem(h, uri, li, isFolder)
 
