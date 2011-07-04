@@ -1,5 +1,286 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
+<addon id="plugin.video.arrr.tv"
+       name="Arrr.tv"
+       version="0.3.1"
+       provider-name="x86demon">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.module.beautifulsoup"/>
+    <import addon="script.module.simplejson"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите сериалы и фильмы в высоком качестве на ARRR.tv</summary>
+    <description>Смотрите сериалы и фильмы в высоком качестве на ARRR.tv</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.tvrain.ru" name="Телеканал ДОЖДЬ" version="1.0.1" provider-name="HD-Lab Team">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>ДОЖДЬ — настоящий живой телеканал</summary>
+    <description>Наш девиз «Дайте телевидению еще один шанс!».
+Мы — телеканал для неравнодушных людей с активной гражданской позицией и острым чувством сопричастности, не утративших вкус к жизни, успешных, добившихся многого и не очерствевших. Мы для профессионалов в разных областях.
+Вещание 24 часа в сутки, более 50% времени — прямой эфир.
+ДОЖДЬ это
+новости о том, что происходит на самом деле;
+аналитика живым человеческим языком;
+дискуссии и круглые столы с теми, кто нам интересен, о том, что нам важно;
+авторские программы, концерты, художественные чтения и эксперименты;
+документальные фильмы на остросоциальные темы;
+видео-арт;
+социальные проекты;
+истории о людях и событиях, изменивших мир и повлиявших на нас.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.5" provider-name="seppius">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Кинобаза: Что смотреть? Где скачать?</summary>
+    <description>У нас на сайте вы можете найти новинки фильмов в хорошем качестве или HD быстро и без регистрации. Фильмы в HD качестве и DVDRip. Каждый день новые добавления. У нас можно найти что посмотреть сегодня вечером и получить уведомления о появлении новых серий и фильмов в Сети. больше не нужно ждать когда появится фильм онлайн, можно пордписаться на уведомление о выходе</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.akado.radio"
+       name="akado.radio"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>АКАДО.Радио</summary>
+    <description>АКАДО.Радио</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.russia.ru.old"
+       name="RUSSIA.RU.OLD"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта http://russia.ru/</summary>
+    <description>Смотрите видео с сайта http://russia.ru/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.vesti.ru"
+       name="VESTI.RU"
+       version="1.0.5"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта http://www.vesti.ru</summary>
+    <description>Видеосюжеты с актуальными новостями из RSS-ленты http://www.vesti.ru/vesti.rss</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.rodnoe.tv"
+       name="Rodnoe.TV"
+       version="1.1.3"
+       provider-name="Eugene Bond">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Онлайн-телевидение Rodnoe.TV</summary>
+    <description>Онлайн-телевидение Rodnoe.TV: более 100 русскоязычных каналов от 10 евро в месяц.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.mp3tales.ru" name="Аудиосказки" version="1.0.0" provider-name="seppius">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Аудиосказки из вашего детства</summary>
+    <description>Многие помнят пластинки, вырезанные из журналов и купленные в магазине фирмы "Мелодия", проигрыватель с трескучей иголкой. И этот особенный звук. Звук детства. Каждая сказка - целое музыкальное театрализованное представление с актерам, но без кукол. Если пластинки и могли остаться в пыльном шкафу, то проигрыватель - уже редкость. Но теперь сказки доступны для всех. Для взрослых, чтобы вспомнить детство, и сказки для детей.
+На этом сайте вы можете бесплатно послушать аудиосказки онлайн. На сайте собрана коллекция аудиосказок советских времен и не только. Все они оцифрованы с советских детских грампластинок и кассет.
+Для вашего удобства коллекция детских сказок на сайте представлена в виде каталога с названием и описанием сказки, отсортированного в алфавитном порядке. Вы также можете использовать поиск по каталогу аудиосказок. Ко многим сказкам прилагаются обложки от пластинок.
+Для всех аудиосказок доступна возможность онлайн прослушивания прямо на сайте!
+Все размещенные на этом сайте аудиозаписи предназначены исключительно для ознакомительного прослушивания; после прослушивания рекомендуется купить лицензионный продукт во избежание нарушения авторских прав производителя и смежных прав.</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.ruhd.tv"
+       name="RuHD.TV"
+       version="1.2.1"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта RuHD.TV</summary>
+    <description>Смотрите видео с сайта RuHD.TV</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.filmy.net.ua"
+       name="ua-ix"
+       version="0.0.2"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Фильмы в UA-IX - это огромная коллекция фильмов</summary>
+    <description>Фильмы в UA-IX - это огромная коллекция фильмов в высоком качестве, бесплатное скачивание по прямым ссылкам, высокая скорость загрузки, скриншоты к фильмам, постоянные обновления, биографии актеров, фото.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.debilizator.tv" name="Debilizator.TV" version="1.0.7" provider-name="seppius">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>http://debilizator.tv/</summary>
+    <description>http://debilizator.tv/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.svobodanews.ru"
+       name="Svobodanews"
+       version="1.0.6"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="ru">Радио Свободная Европа/Радио Свобода</summary>
+    <description lang="ru">Радио Свободная Европа/Радио Свобода - это частная некоммерческая информационная служба, финансируемая Конгрессом США, осуществляющая вещание на страны Восточной и Юго-Восточной Европы, Кавказа, Центральной Азии и Ближнего Востока и на Россию.
+Более 35 миллионов слушателей привыкли ежедневно полагаться на передаваемые РСЕ/РС сводки новостей, аналитические обзоры и тематические программы, посвященные последним событиям в их регионе и мире.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.rutube.ru"
+       name="RuTube"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Лучшие онлайн видео ролики, приколы, аниме и клипы.</summary>
+    <description>На RuTube Вы всегда сможете найти интересные ролики, новые клипы, anime и другое интересное видео. Каждый день наши пользователи загружают на сайт более 3500 новых роликов, лучшие из которых редакция сайта отбирает на главную страницу.
+Особой популярностью пользуются авторские видеоприколы. Если Вы снимаете действительно смешное видео и не боитесь выставить себя или друзей в нелепом свете - то быстро станете звездой RuTube. При загрузке видео желательно указать категорию, к которой он относится (например, "Юмор, развлечения"), чтобы пользователи, интересующиеся этой темой, могли быстро найти ваш видеоролик.
+RuTube - отличная стартовая площадка для независимых студий, начинающих кинорежиссеров и музыкальных групп. Концертное видео всегда привлекает внимание меломанов, которые любят слушать музыку онлайн и смотреть на выступление своей любимой команды. Помимо видео с концертов на RuTube есть музыкальные клипы, а также видео блоги популярных исполнителей, которые всегда рады непосредственному общению со своими фанатами. Один из самых популярных разделов RuTube - раздел кинотрейлеров. Раздел обновляется каждую неделю, в нем вы всегда можете посмотреть свежие трейлеры самых актуальных фильмов. Не обделены вниманием и мультики. Есть все: anime, современные интернет мульты, а также классические советские мультфильмы
+Видео хостинг RuTube занимает лидирующие позиции среди российских видео сайтов и входит в десятку самых посещаемых сайтов рунета. Здесь можно посмотреть видео ролики на любой вкус: от интервью с деятелями культуры и серьезных политических передач до видео приколов, записей автокатастроф и аварий. Смотрите в онлайн аниме, передачу "Наша Раша" и самое смешное видео из репертуара Comedy Club.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.fs.ua"
+       name="Fs.ua"
+       version="1.3.2"
+       provider-name="x86demon">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.module.beautifulsoup"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="audio, video"
+             library="default.py">
+    <provides>audio video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>
+РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+
+На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
+    </summary>
+    <description>
+РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+
+На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
+    </description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.kartina.tv"
+       name="Kartina.TV"
+       version="1.2.2"
+       provider-name="Eugene Bond">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Онлайн-телевидение Kartina.TV</summary>
+    <description>Онлайн-телевидение Kartina.TV: более 110 русскоязычных каналов и видеотека от 15 евро в месяц</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="metadata.kinopoisk.ru"
        name="KinoPoisk"
        version="1.0.34">
@@ -28,402 +309,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.101.ru"
-       name="101.RU"
-       version="1.0.8"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary lang="en">Internet radio station 101.RU</summary>
-    <summary lang="ru">Интернет-радиостанция 101.RU</summary>
-    <description lang="en">Listen to radio with only the best site http://www.101.ru</description>
-    <description lang="ru">Слушайте только лучшие радиоканалы с сайта http://www.101.ru</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.akado.radio"
-       name="akado.radio"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>АКАДО.Радио</summary>
-    <description>АКАДО.Радио</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.guzei.radio"
-       name="GUZEI.RADIO"
-       version="1.0.5"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary lang="en">Listen to the site http://guzei.com/online_radio/</summary>
-    <summary lang="ru">Прослушивание сайта http://guzei.com/online_radio/</summary>
-    <description lang="en">Listen to the site http://guzei.com/online_radio/</description>
-    <description lang="ru">Прослушивание сайта http://guzei.com/online_radio/</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.moskva.fm"
-       name="MOSKVA.FM"
-       version="0.0.5"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>MOSKVA.FM - песни на радио Москвы</summary>
-    <description>Не просто слушать радио Москвы, а выбирать композиции в соответствии с вашим вкусом или настроением. На сегодня в активе проекта MOSKVA.FM 57 радиостанций Москвы!</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.mp3tales.ru" name="Аудиосказки" version="1.0.0" provider-name="seppius">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" library="default.py">
-    <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Аудиосказки из вашего детства</summary>
-    <description>Многие помнят пластинки, вырезанные из журналов и купленные в магазине фирмы "Мелодия", проигрыватель с трескучей иголкой. И этот особенный звук. Звук детства. Каждая сказка - целое музыкальное театрализованное представление с актерам, но без кукол. Если пластинки и могли остаться в пыльном шкафу, то проигрыватель - уже редкость. Но теперь сказки доступны для всех. Для взрослых, чтобы вспомнить детство, и сказки для детей.
-На этом сайте вы можете бесплатно послушать аудиосказки онлайн. На сайте собрана коллекция аудиосказок советских времен и не только. Все они оцифрованы с советских детских грампластинок и кассет.
-Для вашего удобства коллекция детских сказок на сайте представлена в виде каталога с названием и описанием сказки, отсортированного в алфавитном порядке. Вы также можете использовать поиск по каталогу аудиосказок. Ко многим сказкам прилагаются обложки от пластинок.
-Для всех аудиосказок доступна возможность онлайн прослушивания прямо на сайте!
-Все размещенные на этом сайте аудиозаписи предназначены исключительно для ознакомительного прослушивания; после прослушивания рекомендуется купить лицензионный продукт во избежание нарушения авторских прав производителя и смежных прав.</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.online.fm"
-       name="online.fm"
-       version="1.0.6"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Слушай радио Online.FM: rock, jazz, house music, rnb, relax music, шансон, trance. FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио - online.fm</summary>
-    <description>Online.FM - слушай радио онлайн. Русский рок, Украинский поп и рок, Trance, Party, Disco, RnB, Latino, Classic rock, House, Relax, Jazz, Шансон, музыка фестиваля Sziget и еще 40 радио каналов. Слушай FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.radiostyle.ru"
-       name="RadioStyle"
-       version="1.0.5"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>Интернет-радиостанция http://www.radiostyle.ru/</summary>
-    <description>RadioStyle.ru предлагает Вам услуги по созданию собственной Интернет-радиостанции, либо ретрансляции FM станции в сети Интернет. Для использования нашего сервиса Вам не потребуются особые знания, поскольку мы имеем удобную панель управления, подробные инструкции, и мы предоставляем поддержку всем нашим клиентам.
-Пользователям уже надоел обычный статический контент сайтов, посетителя больше не удивишь хорошим текстом и красивыми картинками. Медиа-контент сайта - аудио и видеоинформация, в особенности живое вещание - вот что привлекает посетителя. Аудио и видео трансляция в сети Интернет - это будущее, которое уже сейчас доступно всем желающим благодаря нашему сервису!
-Музыканты при помощи нашего сервиса могут вещать в Интернет своё творчество. Возможны живые концерты в прямом эфире! Фан-клубы музыкальных групп просто обязаны иметь собственную радиостанцию, в эфире которой будет звучать их любимая группа.
-Мы можем часами объяснять все преимущества нашего сервиса - проще один раз попробовать. После регистрации Вы можете в течении 24 часов абсолютно БЕСПЛАТНО пользоваться нашим сервисом!</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.sradio.ru"
-       name="SRADIO.RU"
-       version="0.0.1"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <platform>all</platform>
-    <summary>SRADIO.RU: слушайте FM и интернет радио со всего мира</summary>
-    <description>SRADIO.RU: слушайте FM и интернет радио со всего мира</description>
-  </extension>
-</addon>
-
-<addon id="plugin.audio.svobodanews.ru"
-       name="Svobodanews"
-       version="1.0.6"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="ru">Радио Свободная Европа/Радио Свобода</summary>
-    <description lang="ru">Радио Свободная Европа/Радио Свобода - это частная некоммерческая информационная служба, финансируемая Конгрессом США, осуществляющая вещание на страны Восточной и Юго-Восточной Европы, Кавказа, Центральной Азии и Ближнего Востока и на Россию.
-Более 35 миллионов слушателей привыкли ежедневно полагаться на передаваемые РСЕ/РС сводки новостей, аналитические обзоры и тематические программы, посвященные последним событиям в их регионе и мире.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.akado.online"
-       name="akado.online"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>http://tv.akado.ru/online/</summary>
-    <description>http://tv.akado.ru/online/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.arrr.tv"
-       name="Arrr.tv"
-       version="0.3.1"
-       provider-name="x86demon">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-    <import addon="script.module.beautifulsoup"/>
-    <import addon="script.module.simplejson"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите сериалы и фильмы в высоком качестве на ARRR.tv</summary>
-    <description>Смотрите сериалы и фильмы в высоком качестве на ARRR.tv</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.cccp.tv"
-       name="CCCP TV"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Советское ТВ</summary>
-    <description>Советское ТВ</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.cnews.tv"
-       name="CNEWS.TV"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с CNEWS.TV</summary>
-    <description>Смотрите свежее видео с сайта http://tv.cnews.ru</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.debilizator.tv" name="Debilizator.TV" version="1.0.7" provider-name="seppius">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>http://debilizator.tv/</summary>
-    <description>http://debilizator.tv/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.e1.ru" name="E1" version="0.0.1" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</summary>
-    <description>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.filmy.net.ua"
-       name="ua-ix"
-       version="0.0.2"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Фильмы в UA-IX - это огромная коллекция фильмов</summary>
-    <description>Фильмы в UA-IX - это огромная коллекция фильмов в высоком качестве, бесплатное скачивание по прямым ссылкам, высокая скорость загрузки, скриншоты к фильмам, постоянные обновления, биографии актеров, фото.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.fs.ua"
-       name="Fs.ua"
-       version="1.3.1"
-       provider-name="x86demon">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-    <import addon="script.module.beautifulsoup"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="audio, video"
-             library="default.py">
-    <provides>audio video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>
-РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
-
-На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
-    </summary>
-    <description>
-РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
-
-На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
-    </description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.fv.rus"
-       name="FreeVideo"
-       version="1.0.0"
-       provider-name="www">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Бесплатное видео онлайн</summary>
-    <description>Бесплатное видео онлайн</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.guzei.tv"
-       name="GUZEI.TV"
-       version="1.0.7"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите online-видео с сайта http://guzei.com/live/tv/</summary>
-    <description>Смотрите online-видео с сайта http://guzei.com/live/tv/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.kartina.tv"
-       name="Kartina.TV"
-       version="1.2.2"
-       provider-name="Eugene Bond">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Онлайн-телевидение Kartina.TV</summary>
-    <description>Онлайн-телевидение Kartina.TV: более 110 русскоязычных каналов и видеотека от 15 евро в месяц</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.5" provider-name="seppius">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Кинобаза: Что смотреть? Где скачать?</summary>
-    <description>У нас на сайте вы можете найти новинки фильмов в хорошем качестве или HD быстро и без регистрации. Фильмы в HD качестве и DVDRip. Каждый день новые добавления. У нас можно найти что посмотреть сегодня вечером и получить уведомления о появлении новых серий и фильмов в Сети. больше не нужно ждать когда появится фильм онлайн, можно пордписаться на уведомление о выходе</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.kinogovno" name="KinoGovno" version="1.1.0" provider-name="x86demon">
-    <requires>
-        <import addon="xbmc.python" version="1.0"/>
-        <import addon="script.module.beautifulsoup" version="3.0.8"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Stream trailers from kinogovno.com</summary>
-        <description>Scrap trailers from http://kino-govno.com russian website</description>
-	<platform>all</platform>
-    </extension>
-</addon>
-
 <addon id="plugin.video.kiwi.kz" name="Kiwi.kz" version="1.0.0" provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -438,229 +323,12 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.mults.spb.ru"
-       name="Каталог мультфильмов"
-       version="1.0.0"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Лучшие мультфильмы из вашего детства</summary>
-    <description>На сайте http://mults.spb.ru/ вы можете бесплатно посмотреть мультфильмы онлайн, а также скачать мультики для просмотра на компьютере или телевизоре. На сайте собрана коллекция мультфильмов советских времен и не только. Самые лучшие мультики из вашего детства! Коллекция мультфильмов постоянно пополняется новыми и старыми мультиками.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.muzunga.tv" name="Muzunga.TV" version="1.0.3" provider-name="Muzunga.TV">
+<addon id="plugin.video.e1.ru" name="E1" version="0.0.1" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Фильмы, сериалы и телевидение в HD качестве онлайн</summary>
-    <description>Ресурс Muzunga.TV является общедоступным для всех зарегистрированных пользователей и осуществляет свою деятельность с соблюдением действующего законодательства Украины и на основании договора и лицензии на право вещания ДП "УААСП" КТ-3554 от 01.02.2011, обеспечивающим выплаты вознаграждений по авторским и смежным правам.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.0" provider-name="Myvi">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Муви.ру - Только лучшие ролики сети!</summary>
-    <description>Это бесплатный сервис для размещения, хранения и просмотра видеофайлов.
-Активное пользовательское сообщество поддерживается социальной сетью сайта с такими функциями, как оценка видео других авторов, участие в обсуждениях, объединение в сообщества по интересам.
-Автоматическая система учета пользовательских интересов (мы называем ее ласково «Моя прелесть») учитывает интересы посетителей, позволяя таргетировать контент под каждого пользователя. Фильтрация контента «Муви» осуществляется самими пользователями, что позволяет в автоматическом режиме отображать на сайте только самые интересные для аудитории ролики.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.planeta-online.tv"
-       name="Planeta-online.tv"
-       version="1.0.6"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>http://www.planeta-online.tv/</summary>
-    <description>http://www.planeta-online.tv/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.rodnoe.tv"
-       name="Rodnoe.TV"
-       version="1.1.3"
-       provider-name="Eugene Bond">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Онлайн-телевидение Rodnoe.TV</summary>
-    <description>Онлайн-телевидение Rodnoe.TV: более 100 русскоязычных каналов от 10 евро в месяц.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.rpod.ru"
-       name="Russian Podcasting"
-       version="1.0.7"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="audio, video"
-             library="default.py">
-    <provides>audio video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Russian Podcasting</summary>
-    <description>Russian Podcasting - первый и единственный свободный подкаст-терминал в Российском интернете. RPOD не делит подкасты на хорошие и плохие, не навязывает выбор странной группы лиц, не требует передавать исключительные права, а просто даёт возможность опубликовать свои подкасты любому, кто этого пожелает.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ruhd.ru"
-       name="RUHD.RU"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>RUHD.ru - Видео Высокого качества №1 в России!</summary>
-    <description>Цель нашего сайта, создать сообщество, которое позволит людям загружать или посматривать видео высокого качества, например, fullHD, прямо с нашего сайта - онлайн</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ruhd.tv"
-       name="RuHD.TV"
-       version="1.2.1"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта RuHD.TV</summary>
-    <description>Смотрите видео с сайта RuHD.TV</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.rusd.tv"
-       name="RuSD.TV"
-       version="1.2.0"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта RuSD.TV</summary>
-    <description>Смотрите видео с сайта RuSD.TV</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.russia.ru" name="RUSSIA.RU" version="1.0.7" provider-name="seppius">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://russia.ru/</summary>
-    <description>Russia.ru - первый российский телеканал, созданный для пользователей интернета. Открывшись в октябре 2007 года как арт-проект, он стал лидером российского интернет-телевидения и твердо занял первое место среди сетевых телепроектов. Ежемесячный охват аудитории Russia.ru - более 2 400 000 зрителей (исследования Gallup). Подавляющее их большинство – люди с быстрым подключением к сети и мощными компьютерами.
-Russia.ru делает передачи для самой разной аудитории, освещает темы, которые игнорирует традиционное телевидение. Нелинейный формат вещания позволяет зрителю самому выбирать интересные для себя сюжеты. Контент Russia.ru не устаревает и доступен в любое время в любом месте.
-Особое значение мы придаем сюжетам, посвященным жизни современной России. Во время войны в Южной Осетии телеканал каждый день размещал информацию о ходе военных действий, прогнозы специалистов и репортажи, которые делала съемочная группа в зоне конфликта. Фильм «Война 08.08.08» имел широкий общественный резонанс - его посмотрело более 1.8 млн. человек. В 2009 году на экраны Russia.ru вышел уникальный фильм, посвященный Калмыкии, фильм «Путешествие по Дону», ряд сюжетов из Нижнего Новгорода.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.russia.ru.old"
-       name="RUSSIA.RU.OLD"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://russia.ru/</summary>
-    <description>Смотрите видео с сайта http://russia.ru/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.rutube.ru"
-       name="RuTube"
-       version="1.0.4"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Лучшие онлайн видео ролики, приколы, аниме и клипы.</summary>
-    <description>На RuTube Вы всегда сможете найти интересные ролики, новые клипы, anime и другое интересное видео. Каждый день наши пользователи загружают на сайт более 3500 новых роликов, лучшие из которых редакция сайта отбирает на главную страницу.
-Особой популярностью пользуются авторские видеоприколы. Если Вы снимаете действительно смешное видео и не боитесь выставить себя или друзей в нелепом свете - то быстро станете звездой RuTube. При загрузке видео желательно указать категорию, к которой он относится (например, "Юмор, развлечения"), чтобы пользователи, интересующиеся этой темой, могли быстро найти ваш видеоролик.
-RuTube - отличная стартовая площадка для независимых студий, начинающих кинорежиссеров и музыкальных групп. Концертное видео всегда привлекает внимание меломанов, которые любят слушать музыку онлайн и смотреть на выступление своей любимой команды. Помимо видео с концертов на RuTube есть музыкальные клипы, а также видео блоги популярных исполнителей, которые всегда рады непосредственному общению со своими фанатами. Один из самых популярных разделов RuTube - раздел кинотрейлеров. Раздел обновляется каждую неделю, в нем вы всегда можете посмотреть свежие трейлеры самых актуальных фильмов. Не обделены вниманием и мультики. Есть все: anime, современные интернет мульты, а также классические советские мультфильмы
-Видео хостинг RuTube занимает лидирующие позиции среди российских видео сайтов и входит в десятку самых посещаемых сайтов рунета. Здесь можно посмотреть видео ролики на любой вкус: от интервью с деятелями культуры и серьезных политических передач до видео приколов, записей автокатастроф и аварий. Смотрите в онлайн аниме, передачу "Наша Раша" и самое смешное видео из репертуара Comedy Club.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ts-tv.ru"
-       name="TS-TV.RU"
-       version="1.0.6"
-       provider-name="seppius">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Телеканалы сайта http://ts-tv.ru/</summary>
-    <description>Первое Альтернативное Концептуальное Телевидение "ТВОЙ СТРОЙ ТВ", Многоканальное, Круглосуточное.</description>
+    <summary>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</summary>
+    <description>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -703,9 +371,9 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.tvigle.ru"
-       name="Tvigle"
-       version="1.0.5"
+<addon id="plugin.video.guzei.tv"
+       name="GUZEI.TV"
+       version="1.0.7"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -716,16 +384,14 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Клипы, музыка, комедии, фильмы, мультфильмы. Бесплатное развлекательное видео на tvigle.ru</summary>
-    <description>Tvigle.ru — это развлекательный портал с качественным видео. Социальная сеть Tvigle объединяет профессионалов и любителей короткометражного видео.
-На нашем сайте вы можете увидеть видео различных жанров: начиная от сериалов, серьезных форматов, заканчивая музыкальными клипами и арт-хаусом. Именно здесь всем творческим людям предоставляется возможность продемонстрировать свои таланты. Ведь неважно кто ты — важны твои идеи и работы.
-Сегодня Tvigle.ru — это десятки тысяч посетителей в день, сотни тысяч просмотров видео и множество талантливых авторских работ.</description>
+    <summary>Смотрите online-видео с сайта http://guzei.com/live/tv/</summary>
+    <description>Смотрите online-видео с сайта http://guzei.com/live/tv/</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.tvjam.ru"
-       name="TVJAM.RU"
+<addon id="plugin.video.cnews.tv"
+       name="CNEWS.TV"
        version="1.0.4"
        provider-name="seppius">
   <requires>
@@ -737,49 +403,16 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://tvjam.ru/</summary>
-    <description>Смотрите видео с сайта http://tvjam.ru/</description>
+    <summary>Смотрите видео с CNEWS.TV</summary>
+    <description>Смотрите свежее видео с сайта http://tv.cnews.ru</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.tvrain.ru" name="Телеканал ДОЖДЬ" version="1.0.1" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>ДОЖДЬ — настоящий живой телеканал</summary>
-    <description>Наш девиз «Дайте телевидению еще один шанс!».
-Мы — телеканал для неравнодушных людей с активной гражданской позицией и острым чувством сопричастности, не утративших вкус к жизни, успешных, добившихся многого и не очерствевших. Мы для профессионалов в разных областях.
-Вещание 24 часа в сутки, более 50% времени — прямой эфир.
-ДОЖДЬ это
-новости о том, что происходит на самом деле;
-аналитика живым человеческим языком;
-дискуссии и круглые столы с теми, кто нам интересен, о том, что нам важно;
-авторские программы, концерты, художественные чтения и эксперименты;
-документальные фильмы на остросоциальные темы;
-видео-арт;
-социальные проекты;
-истории о людях и событиях, изменивших мир и повлиявших на нас.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ulitka.tv" name="Ulitka.TV" version="1.0.3" provider-name="x86demon">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Мы наполнили сайт Ulitka.TV самыми популярными сериалами.</summary>
-    <description>Смотреть сериалы по телевизору неудобно, время показа не подстроить под каждого, а тут еще эта реклама каждые пять минут... Тогда многие стали скачивать сериалы. Это избавило от некоторых минусов, но принесло свои неудобства. А почему бы не объединить все плюсы этих способов, отбросив минусы?
-Представляем вам сайт Ulitka.TV! Здесь вы можете смотреть сериалы онлайн в любое для вас удобное время!
-Ни у всех и ни везде быстрый интернет, поэтому мы долго подбирали качество кодирования видео. И теперь вам не нужна очень большая скорость интернета для онлайн просмотра сериалов. Трафик расходуется очень рационально. При этом качество изображения и звука остается отличным!</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.vesti.ru"
-       name="VESTI.RU"
-       version="1.0.5"
-       provider-name="seppius">
+<addon id="plugin.video.fv.rus"
+       name="FreeVideo"
+       version="1.0.0"
+       provider-name="www">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -789,18 +422,8 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://www.vesti.ru</summary>
-    <description>Видеосюжеты с актуальными новостями из RSS-ленты http://www.vesti.ru/vesti.rss</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.1.3" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="audio, video" library="default.py"><provides>audio video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Национальный агрегатор онлайн-контента</summary>
-    <description>Здесь есть все, что может заинтересовать отечественного зрителя и даже более того :)</description>
+    <summary>Бесплатное видео онлайн</summary>
+    <description>Бесплатное видео онлайн</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -819,6 +442,71 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
+<addon id="plugin.video.muzunga.tv" name="Muzunga.TV" version="1.0.3" provider-name="Muzunga.TV">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Фильмы, сериалы и телевидение в HD качестве онлайн</summary>
+    <description>Ресурс Muzunga.TV является общедоступным для всех зарегистрированных пользователей и осуществляет свою деятельность с соблюдением действующего законодательства Украины и на основании договора и лицензии на право вещания ДП "УААСП" КТ-3554 от 01.02.2011, обеспечивающим выплаты вознаграждений по авторским и смежным правам.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.akado.online"
+       name="akado.online"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>http://tv.akado.ru/online/</summary>
+    <description>http://tv.akado.ru/online/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.mults.spb.ru"
+       name="Каталог мультфильмов"
+       version="1.0.0"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Лучшие мультфильмы из вашего детства</summary>
+    <description>На сайте http://mults.spb.ru/ вы можете бесплатно посмотреть мультфильмы онлайн, а также скачать мультики для просмотра на компьютере или телевизоре. На сайте собрана коллекция мультфильмов советских времен и не только. Самые лучшие мультики из вашего детства! Коллекция мультфильмов постоянно пополняется новыми и старыми мультиками.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.sradio.ru"
+       name="SRADIO.RU"
+       version="0.0.1"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>SRADIO.RU: слушайте FM и интернет радио со всего мира</summary>
+    <description>SRADIO.RU: слушайте FM и интернет радио со всего мира</description>
+  </extension>
+</addon>
+
 <addon id="repository.seppius" name="Seppius XBMC Add-ons" version="1.0.0" provider-name="seppius">
 	<extension point="xbmc.addon.repository" name="Seppius XBMC Add-ons">
 		<info compressed="false">http://seppius-xbmc-repo.googlecode.com/svn/trunk/addons/addons.xml</info>
@@ -831,6 +519,39 @@ RuTube - отличная стартовая площадка для незав�
 		<disclaimer>There are add-ons that allow viewing popular Russian resources in the program XBMC</disclaimer>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="plugin.video.russia.ru" name="RUSSIA.RU" version="1.0.7" provider-name="seppius">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта http://russia.ru/</summary>
+    <description>Russia.ru - первый российский телеканал, созданный для пользователей интернета. Открывшись в октябре 2007 года как арт-проект, он стал лидером российского интернет-телевидения и твердо занял первое место среди сетевых телепроектов. Ежемесячный охват аудитории Russia.ru - более 2 400 000 зрителей (исследования Gallup). Подавляющее их большинство – люди с быстрым подключением к сети и мощными компьютерами.
+Russia.ru делает передачи для самой разной аудитории, освещает темы, которые игнорирует традиционное телевидение. Нелинейный формат вещания позволяет зрителю самому выбирать интересные для себя сюжеты. Контент Russia.ru не устаревает и доступен в любое время в любом месте.
+Особое значение мы придаем сюжетам, посвященным жизни современной России. Во время войны в Южной Осетии телеканал каждый день размещал информацию о ходе военных действий, прогнозы специалистов и репортажи, которые делала съемочная группа в зоне конфликта. Фильм «Война 08.08.08» имел широкий общественный резонанс - его посмотрело более 1.8 млн. человек. В 2009 году на экраны Russia.ru вышел уникальный фильм, посвященный Калмыкии, фильм «Путешествие по Дону», ряд сюжетов из Нижнего Новгорода.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.rpod.ru"
+       name="Russian Podcasting"
+       version="1.0.7"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="audio, video"
+             library="default.py">
+    <provides>audio video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Russian Podcasting</summary>
+    <description>Russian Podcasting - первый и единственный свободный подкаст-терминал в Российском интернете. RPOD не делит подкасты на хорошие и плохие, не навязывает выбор странной группы лиц, не требует передавать исключительные права, а просто даёт возможность опубликовать свои подкасты любому, кто этого пожелает.</description>
+    <platform>all</platform>
+  </extension>
 </addon>
 
 <addon id="xbmc-vk.svoka.com" name="VK-xbmc" version="0.5.5" provider-name="shchvova">
@@ -858,5 +579,284 @@ Author - Vlad Svoka aka Shchvova</description>
 Автор - Влад Свока aka Shchvova</description>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="plugin.audio.radiostyle.ru"
+       name="RadioStyle"
+       version="1.0.5"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Интернет-радиостанция http://www.radiostyle.ru/</summary>
+    <description>RadioStyle.ru предлагает Вам услуги по созданию собственной Интернет-радиостанции, либо ретрансляции FM станции в сети Интернет. Для использования нашего сервиса Вам не потребуются особые знания, поскольку мы имеем удобную панель управления, подробные инструкции, и мы предоставляем поддержку всем нашим клиентам.
+Пользователям уже надоел обычный статический контент сайтов, посетителя больше не удивишь хорошим текстом и красивыми картинками. Медиа-контент сайта - аудио и видеоинформация, в особенности живое вещание - вот что привлекает посетителя. Аудио и видео трансляция в сети Интернет - это будущее, которое уже сейчас доступно всем желающим благодаря нашему сервису!
+Музыканты при помощи нашего сервиса могут вещать в Интернет своё творчество. Возможны живые концерты в прямом эфире! Фан-клубы музыкальных групп просто обязаны иметь собственную радиостанцию, в эфире которой будет звучать их любимая группа.
+Мы можем часами объяснять все преимущества нашего сервиса - проще один раз попробовать. После регистрации Вы можете в течении 24 часов абсолютно БЕСПЛАТНО пользоваться нашим сервисом!</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.tvigle.ru"
+       name="Tvigle"
+       version="1.0.5"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Клипы, музыка, комедии, фильмы, мультфильмы. Бесплатное развлекательное видео на tvigle.ru</summary>
+    <description>Tvigle.ru — это развлекательный портал с качественным видео. Социальная сеть Tvigle объединяет профессионалов и любителей короткометражного видео.
+На нашем сайте вы можете увидеть видео различных жанров: начиная от сериалов, серьезных форматов, заканчивая музыкальными клипами и арт-хаусом. Именно здесь всем творческим людям предоставляется возможность продемонстрировать свои таланты. Ведь неважно кто ты — важны твои идеи и работы.
+Сегодня Tvigle.ru — это десятки тысяч посетителей в день, сотни тысяч просмотров видео и множество талантливых авторских работ.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.ulitka.tv" name="Ulitka.TV" version="1.0.3" provider-name="x86demon">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Мы наполнили сайт Ulitka.TV самыми популярными сериалами.</summary>
+    <description>Смотреть сериалы по телевизору неудобно, время показа не подстроить под каждого, а тут еще эта реклама каждые пять минут... Тогда многие стали скачивать сериалы. Это избавило от некоторых минусов, но принесло свои неудобства. А почему бы не объединить все плюсы этих способов, отбросив минусы?
+Представляем вам сайт Ulitka.TV! Здесь вы можете смотреть сериалы онлайн в любое для вас удобное время!
+Ни у всех и ни везде быстрый интернет, поэтому мы долго подбирали качество кодирования видео. И теперь вам не нужна очень большая скорость интернета для онлайн просмотра сериалов. Трафик расходуется очень рационально. При этом качество изображения и звука остается отличным!</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.online.fm"
+       name="online.fm"
+       version="1.0.6"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>Слушай радио Online.FM: rock, jazz, house music, rnb, relax music, шансон, trance. FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио - online.fm</summary>
+    <description>Online.FM - слушай радио онлайн. Русский рок, Украинский поп и рок, Trance, Party, Disco, RnB, Latino, Classic rock, House, Relax, Jazz, Шансон, музыка фестиваля Sziget и еще 40 радио каналов. Слушай FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.tvjam.ru"
+       name="TVJAM.RU"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта http://tvjam.ru/</summary>
+    <description>Смотрите видео с сайта http://tvjam.ru/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.0" provider-name="Myvi">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Муви.ру - Только лучшие ролики сети!</summary>
+    <description>Это бесплатный сервис для размещения, хранения и просмотра видеофайлов.
+Активное пользовательское сообщество поддерживается социальной сетью сайта с такими функциями, как оценка видео других авторов, участие в обсуждениях, объединение в сообщества по интересам.
+Автоматическая система учета пользовательских интересов (мы называем ее ласково «Моя прелесть») учитывает интересы посетителей, позволяя таргетировать контент под каждого пользователя. Фильтрация контента «Муви» осуществляется самими пользователями, что позволяет в автоматическом режиме отображать на сайте только самые интересные для аудитории ролики.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.cccp.tv"
+       name="CCCP TV"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Советское ТВ</summary>
+    <description>Советское ТВ</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.moskva.fm"
+       name="MOSKVA.FM"
+       version="0.0.5"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>MOSKVA.FM - песни на радио Москвы</summary>
+    <description>Не просто слушать радио Москвы, а выбирать композиции в соответствии с вашим вкусом или настроением. На сегодня в активе проекта MOSKVA.FM 57 радиостанций Москвы!</description>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.101.ru"
+       name="101.RU"
+       version="1.0.8"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Internet radio station 101.RU</summary>
+    <summary lang="ru">Интернет-радиостанция 101.RU</summary>
+    <description lang="en">Listen to radio with only the best site http://www.101.ru</description>
+    <description lang="ru">Слушайте только лучшие радиоканалы с сайта http://www.101.ru</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.1.3" provider-name="HD-Lab Team">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="audio, video" library="default.py"><provides>audio video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Национальный агрегатор онлайн-контента</summary>
+    <description>Здесь есть все, что может заинтересовать отечественного зрителя и даже более того :)</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.rusd.tv"
+       name="RuSD.TV"
+       version="1.2.0"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Смотрите видео с сайта RuSD.TV</summary>
+    <description>Смотрите видео с сайта RuSD.TV</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.planeta-online.tv"
+       name="Planeta-online.tv"
+       version="1.0.6"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>http://www.planeta-online.tv/</summary>
+    <description>http://www.planeta-online.tv/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.kinogovno" name="KinoGovno" version="1.1.0" provider-name="x86demon">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+        <import addon="script.module.beautifulsoup" version="3.0.8"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Stream trailers from kinogovno.com</summary>
+        <description>Scrap trailers from http://kino-govno.com russian website</description>
+	<platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="plugin.video.ts-tv.ru"
+       name="TS-TV.RU"
+       version="1.0.6"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Телеканалы сайта http://ts-tv.ru/</summary>
+    <description>Первое Альтернативное Концептуальное Телевидение "ТВОЙ СТРОЙ ТВ", Многоканальное, Круглосуточное.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.guzei.radio"
+       name="GUZEI.RADIO"
+       version="1.0.5"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">Listen to the site http://guzei.com/online_radio/</summary>
+    <summary lang="ru">Прослушивание сайта http://guzei.com/online_radio/</summary>
+    <description lang="en">Listen to the site http://guzei.com/online_radio/</description>
+    <description lang="ru">Прослушивание сайта http://guzei.com/online_radio/</description>
+  </extension>
+</addon>
+
+<addon id="plugin.video.ruhd.ru"
+       name="RUHD.RU"
+       version="1.0.4"
+       provider-name="seppius">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>RUHD.ru - Видео Высокого качества №1 в России!</summary>
+    <description>Цель нашего сайта, создать сообщество, которое позволит людям загружать или посматривать видео высокого качества, например, fullHD, прямо с нашего сайта - онлайн</description>
+    <platform>all</platform>
+  </extension>
 </addon>
 </addons>
