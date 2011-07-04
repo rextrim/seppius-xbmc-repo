@@ -163,7 +163,8 @@ def getCategories(params):
 	if check_login():
 		li = xbmcgui.ListItem('Favorites')
 		uri = construct_request({
-			'mode': 'readfavorites'
+			'mode': 'readfavorites',
+			'page': 0
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
@@ -171,8 +172,13 @@ def getCategories(params):
 
 def readfavorites(params):
 	sortByString = getSortBy()
+	favoritesBaseUrl = httpSiteUrl + '/myfavourites.aspx' + sortByString
 
-	favoritesUrl = httpSiteUrl + '/myfavourites.aspx' + sortByString
+	try:
+		favoritesUrl = urllib.unquote_plus(params['href'])
+	except:
+		favoritesUrl = favoritesBaseUrl
+
 	http = GET(favoritesUrl, httpSiteUrl)
 	if http == None: return False
 
@@ -207,6 +213,20 @@ def readfavorites(params):
 			})
 
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	moreLinks = beautifulSoup.findAll('a', 'add')
+	for moreLink in moreLinks:
+		li = xbmcgui.ListItem("[More %s]" % moreLink['rel'])
+		li.setProperty('IsPlayable', 'false')
+
+		page = int(params['page']) + 1
+		uri = construct_request({
+			'href': favoritesBaseUrl + '&ajax=0&section=' + moreLink['rel'] + '&page=' + str(page),
+			'mode': 'readfavorites',
+			'page': 1
+		})
+
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
 
@@ -338,7 +358,7 @@ def readdir(params):
 					if params['isMusic'] == 'yes':
 						type = 'music'
 					li.setInfo(type = type, infoLabels={'title': title})
-					
+
 					if type == 'music' or __settings__.getSetting('Autoplay next') == 'true':
 						uri = construct_request({
 							'file': str(href.encode('utf-8')),
