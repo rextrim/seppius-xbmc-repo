@@ -18,9 +18,20 @@
 #   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #   http://www.gnu.org/licenses/gpl.html
 
-import urllib, urllib2, re, sys, os, httplib, Cookie
+import httplib
+import urllib
+import urllib2
+import re
+import sys
+import os
+import Cookie
 import simplejson as json
-import xbmcplugin, xbmcgui, xbmcaddon, xbmc
+
+import xbmcplugin
+import xbmcgui
+import xbmcaddon
+import xbmc
+
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import socket
 socket.setdefaulttimeout(50)
@@ -29,8 +40,12 @@ icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png')
 siteUrl = 'arrr.tv'
 httpSiteUrl = 'http://' + siteUrl
 __settings__ = xbmcaddon.Addon(id='plugin.video.arrr.tv')
+sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.arrr.tv.cookies.sid')
 
 h = int(sys.argv[1])
+
+def construct_request(params):
+	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 
 def htmlEntitiesDecode(string):
 	return BeautifulStoneSoup(string, convertEntities=BeautifulStoneSoup.HTML_ENTITIES).contents[0]
@@ -39,16 +54,14 @@ def showMessage(heading, message, times = 3000):
 	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
 headers  = {
-		'User-Agent' : 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00',
-		'Accept'     :' text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*',
-		'Accept-Language':'ru-RU,ru;q=0.9,en;q=0.8',
-		'Accept-Charset' :'utf-8, utf-16, *;q=0.1',
-		'Accept-Encoding':'identity, *;q=0'
-	}
+	'User-Agent' : 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00',
+	'Accept'     :' text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*',
+	'Accept-Language':'ru-RU,ru;q=0.9,en;q=0.8',
+	'Accept-Charset' :'utf-8, utf-16, *;q=0.1',
+	'Accept-Encoding':'identity, *;q=0'
+}
 
-sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin_video_arrr_tv.sid')
-
-def GET(target, referer, post_params = None):
+def GET(target, referer, post_params = None, accept_redirect = True):
 	try:
 		connection = httplib.HTTPConnection(siteUrl)
 
@@ -70,6 +83,10 @@ def GET(target, referer, post_params = None):
 		connection.request(method, target, post, headers = headers)
 		response = connection.getresponse()
 
+		if accept_redirect and response.status in (301, 302):
+			target = response.getheader('location', '')
+			return GET(httpSiteUrl + target, referer, post_params, False)
+
 		try:
 			sc = Cookie.SimpleCookie()
 			sc.load(response.msg.getheader('Set-Cookie'))
@@ -86,19 +103,61 @@ def GET(target, referer, post_params = None):
 		showMessage(target, e, 5000)
 		return None
 
+def check_login():
+	login = __settings__.getSetting("Login")
+	password = __settings__.getSetting("Password")
+
+	if len(login) > 0:
+		http = GET(httpSiteUrl, httpSiteUrl)
+		if http == None: return False
+
+		beautifulSoup = BeautifulSoup(http)
+		loginTitle = beautifulSoup.find('h2', 'login_options_title')
+
+		if loginTitle != None:
+			try:
+				os.remove(cookiepath)
+			except:
+				pass
+			
+			loginResponse = GET(httpSiteUrl + '/auth/login?next=%2F', httpSiteUrl, {
+				'email': login,
+				'password': password
+			})
+
+			loginSoup = BeautifulSoup(loginResponse)
+			loginTitle = loginSoup.find('h2', 'login_options_title')
+			if loginTitle != None:
+				showMessage('Login', 'Check login and password', 3000)
+			else:
+				showMessage('Login', 'Login successfull', 3000)
+				return True
+		else:
+			return True
+	return False
+
 def getCategories(params):
+	#check_login()
+	
 	li = xbmcgui.ListItem('Tv Shows')
-	uri = sys.argv[0] + '?mode=getshows'
+	uri = construct_request({
+		'mode': 'getshows',
+		'href': httpSiteUrl + '/shows/'
+	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	li = xbmcgui.ListItem('Movies')
-	uri = sys.argv[0] + '?mode=getmovies'
+	uri = construct_request({
+		'mode': 'getmovies',
+		'href': httpSiteUrl + '/movies/'
+	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
 
 def getmovies(params):
-	http = GET(httpSiteUrl + '/movies/', httpSiteUrl)
+	href = urllib.unquote_plus(params['href'])
+	http = GET(href, httpSiteUrl)
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
@@ -145,7 +204,12 @@ def playmovie(params):
 
 	movieId = re.sub('^/', '', movieURI)
 	movieId = re.sub('/$', '', movieId)
-	play({'episodeId': urllib.quote_plus(movieId), 'episodeData': urllib.quote_plus(movieDetailsJson), 'referer': params['referer']})
+	play({
+		'episodeId': urllib.quote_plus(movieId), 
+		'episodeData': urllib.quote_plus(movieDetailsJson), 
+		'referer': params['referer'],
+		'type': 'movies'
+	})
 	
 
 def getshows(params):
@@ -175,12 +239,16 @@ def getshows(params):
 					href = show.find('a')['href']
 					name = show.find('h3').string
 					cover = httpSiteUrl + show.find('img', 'fluffy_shadow')['src']
-					title = originalName
 					
+					title = originalName
 					if showTitleType == "0":
 						title = name
+					if showTitleType == "1":
+						title = originalName
 					if showTitleType == "2":
-						title += '/' + name
+						title = name + '/' + originalName
+					if showTitleType == "3":
+						title = originalName + '/' + name
 
 					li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
 					uri = sys.argv[0] + '?mode=getseries'
@@ -224,7 +292,7 @@ def getseries(params):
 	for episode in episodes:
 		episodeId = episode['name']
 		name = htmlEntitiesDecode(episode.find('h3', 'title').find('a').string)
-		poster = episode.find('img', 'poster')['src']
+		poster = httpSiteUrl + episode.find('img', 'poster')['src']
 		episodeDetails = episode.find('h4').find('a').string
 		
 		(seasonNum, episodeNum) = episodeRegexp.findall(episodeDetails)[0]
@@ -236,10 +304,15 @@ def getseries(params):
 		listName = "[s%de%02d] %s" % (seasonNum, episodeNum, name)
 		if showLanguages:
 			listName += " (" + ", ".join(languages) + ")"
-		uri = sys.argv[0] + '?mode=play'
-		uri += '&episodeId='+urllib.quote_plus(episodeId)
-		uri += '&referer='+params['href']
-		uri += '&episodeData=' + urllib.quote_plus( json.dumps(episodeDetailsInfo[episodeId]) )
+		
+		uri = construct_request({
+			'mode': 'play',
+			'episodeId': episodeId,
+			'referer': params['href'],
+			'episodeData': json.dumps(episodeDetailsInfo[episodeId]),
+			'type': 'tvshows'
+		})
+		
 		item = xbmcgui.ListItem(listName, iconImage=poster, thumbnailImage=poster)
 		item.setInfo(type='video', infoLabels={'title': name,'episode': episodeNum, 'season': seasonNum, 'tvshowtitle': tvshow})			
 		item.setProperty('IsPlayable', 'true')
@@ -302,7 +375,7 @@ def detectLanguages(episodeData):
 
 	return detectedLangs
 
-def detectUrl(episodeId, episodeData):
+def detectUrl(episodeId, episodeData):	
 	formats = ['mp4', 'ogv', 'webm']
 
 	qualities = ['p480', 'p720']
@@ -313,7 +386,12 @@ def detectUrl(episodeId, episodeData):
 	if __settings__.getSetting("Prefered language") == "1":
 		languages = ['en', 'ru']
 	
-	cdns = ['http://cdn2.arrr.tv/', 'http://video8.neetee.tv/atv/']
+	cdns = [
+		'http://cdn10.arrr.tv/%s/' % params['type'], 
+		'http://video10.neetee.tv/atv/%s/' % params['type'], 
+		'http://cdn2.arrr.tv/', 
+		'http://video8.neetee.tv/atv/'
+	]
 
 	for language in languages:
 		for quality in qualities:

@@ -3,4 +3,8 @@
     <setting id="Prefer 720p" type="bool" label="30003" default="false"/>
     <setting id="Prefered language" type="enum" label="30004" default="0" values="ru|en"/>
     <setting id="Show available languages" type="bool" label="30005" default="true"/>
+	<!--
+	<setting id="Login" type="text" label="30006"/>
+	<setting id="Password" type="text" label="30007" option="hidden"/>
+	-->
 </settings>
