@@ -345,7 +345,7 @@ def play(params):
 	episodeData = json.loads( urllib.unquote_plus(params['episodeData']) )
 	referer = urllib.unquote_plus(params['referer'])
 
-	movieFile = detectUrl(episodeId, episodeData)
+	movieFile = detectUrl(episodeId, episodeData, params['type'])
 	
 	headers['Referer'] = referer
 	i = xbmcgui.ListItem(path = movieFile)
@@ -375,7 +375,7 @@ def detectLanguages(episodeData):
 
 	return detectedLangs
 
-def detectUrl(episodeId, episodeData):	
+def detectUrl(episodeId, episodeData, type):	
 	formats = ['mp4', 'ogv', 'webm']
 
 	qualities = ['p480', 'p720']
@@ -387,8 +387,8 @@ def detectUrl(episodeId, episodeData):
 		languages = ['en', 'ru']
 	
 	cdns = [
-		'http://cdn10.arrr.tv/%s/' % params['type'], 
-		'http://video10.neetee.tv/atv/%s/' % params['type'], 
+		'http://cdn10.arrr.tv/%s/' % type, 
+		'http://video10.neetee.tv/atv/%s/' % type, 
 		'http://cdn2.arrr.tv/', 
 		'http://video8.neetee.tv/atv/'
 	]
