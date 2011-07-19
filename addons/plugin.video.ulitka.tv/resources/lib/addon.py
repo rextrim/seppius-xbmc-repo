@@ -106,7 +106,7 @@ def auth(params):
 						if inputs.getAttribute('type') == 'hidden':
 							post_data[inputs.getAttribute('name')] = inputs.getAttribute('value')
 			GET('http://www.ulitka.tv/index.php', urllib.urlencode(post_data))
-			showMessage('Логин и пароль отправлен', 'Нет гарантии что она произошла', 5000)
+			#showMessage('Логин и пароль отправлен', 'Нет гарантии что она произошла', 5000)
 	else:
 		__addon__.openSettings()
 
@@ -156,9 +156,8 @@ def showlatest(params):
 def showroot():
 	http = GET('http://www.ulitka.tv/')
 	if http != None:
-		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'auth'})), xbmcgui.ListItem('[ Авторизация ]'), False)
-		li = xbmcgui.ListItem('[ Последние ]')
-		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlatest'})), li, True)
+		#xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'auth'})), xbmcgui.ListItem('[ Авторизация ]'), False)
+		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlatest'})), xbmcgui.ListItem('[ Последние ]'), True)
 		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
 		for div0 in DT.getElementsByTagName('div'):
 			if div0.getAttribute('id') == 'menu':
@@ -269,7 +268,7 @@ def showepisodes(params):
 
 
 def watch(params):
-
+	auth(None)
 	import string
 	digits39 = string.digits + string.lowercase
 	digits62 = string.digits + string.lowercase + string.uppercase
