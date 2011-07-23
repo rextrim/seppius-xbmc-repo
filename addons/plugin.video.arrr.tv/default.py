@@ -318,11 +318,9 @@ def getseries(params):
 		item.setProperty('IsPlayable', 'true')
 		xbmcplugin.addDirectoryItem(h,uri,item)
 
-	f = open('/tmp/xbmc.log', 'w')
 	try:
 		seasons = beautifulSoup.find(id='seasons').findAll('input')
 		for season in seasons:
-			f.write(str(season) + "\n" + "\n")
 			try:
 				season['disabled']
 			except:
@@ -334,10 +332,8 @@ def getseries(params):
 				xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	except:
-		f.write('Err')
 		pass
 
-	f.close()
 	xbmcplugin.endOfDirectory(h)
 
 def play(params):

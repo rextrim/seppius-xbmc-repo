@@ -96,6 +96,8 @@ def check_login():
 		userPanel = beautifulSoup.find('div', 'b-user-panel')
 
 		if userPanel == None:
+			os.remove(cookiepath)
+			
 			loginResponse = GET(httpSiteUrl + '/login.aspx', httpSiteUrl, {
 				'login': login,
 				'passwd': password,
@@ -331,11 +333,22 @@ def readdir(params):
 		return False
 	else:
 		for item in items:
-			linkItem = item.find('a', 'link-material')
 			isFolder = item['class'] == 'folder'
-
+			linkItem = None
+			if isFolder:
+				linkItem = item.find('a')
+			else:
+				linkItem = item.find('a', 'link-material')
+			
 			if linkItem != None:
-				title = str(linkItem.find('span').string)
+				title = ""
+				if isFolder:
+					title = str(linkItem.string)
+					quality = item.find('span', 'material-quality')
+					if quality != None:
+						 title = title + " [" + str(quality.string) + "]"
+				else:
+					title = str(linkItem.find('span').string)
 				href = linkItem['href']
 
 				li = None
