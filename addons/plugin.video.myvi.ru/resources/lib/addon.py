@@ -71,7 +71,7 @@ def GET(href, post=None):
 		return http
 	except Exception, e:
 		print '[%s]: GET EXCEPT [%s]' % (addon_id, e)
-		showMessage('HTTP ERROR', href, 5000)
+		showMessage('HTTP ERROR', e, 5000)
 
 
 def advt_show(jsdata):
@@ -193,15 +193,19 @@ def getitems(params):
 
 
 def play(params):
+	UniversalUserID   = __addon__.getSetting('UniversalUserID')
+	CooData = urllib.urlencode({'UniversalUserID':UniversalUserID}).replace('&','; ')
 	http = GET(urllib.unquote_plus(params['href']))
 	if http == None: return False
 	jsdata = json.loads(http)
 	if len(jsdata) > 1:
 		play_path = 'stack://'
-		for pitem in jsdata: play_path += pitem.replace(',',',,') + ' , '
+		for pitem in jsdata:
+			cpitem = '%s|Cookie=%s' % (pitem, CooData)
+			play_path += cpitem.replace(',',',,') + ' , '
 		play_path = play_path[:-3]
 	elif len(jsdata) == 1:
-		play_path = jsdata[0]
+		play_path = '%s|Cookie=%s' % (jsdata[0], CooData)
 	i = xbmcgui.ListItem(path=play_path)
 	xbmcplugin.setResolvedUrl(h, True, i)
 
