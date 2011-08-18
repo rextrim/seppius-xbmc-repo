@@ -716,7 +716,7 @@ Russia.ru делает передачи для самой разной ауди�
   </extension>
 </addon>
 
-<addon id="plugin.video.ulitka.tv" name="Ulitka.TV" version="1.0.4" provider-name="x86demon">
+<addon id="plugin.video.ulitka.tv" name="Ulitka.TV" version="1.0.5" provider-name="x86demon">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">

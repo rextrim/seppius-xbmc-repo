@@ -139,8 +139,8 @@ def showlatest(params):
 				try:
 					iimg = item.getElementsByTagName('media:thumbnail')[0].getAttribute('url').encode('utf-8','replace')
 					imgSrc = iimg.split('/')
-					poster = 'http://www.ulitka.tv/images/posters/%s'   % imgSrc[-1]
-					fanart = 'http://www.ulitka.tv/images/S_posters/%s' % imgSrc[-1]
+					poster = 'http://static.ulitka.tv/images/posters/%s'   % imgSrc[-1]
+					fanart = 'http://static.ulitka.tv/images/S_posters/%s' % imgSrc[-1]
 				except:
 					poster = icon
 					fanart = icom
@@ -189,7 +189,7 @@ def showserials(params):
 					iHref = div2.getAttribute('href')
 				else:
 					for div3 in div2.getElementsByTagName('img'):
-						if div3.getAttribute('src'): fanart = 'http://www.ulitka.tv' + div3.getAttribute('src')
+						if div3.getAttribute('src'): fanart = div3.getAttribute('src') # 'http://www.ulitka.tv' +
 			if (iHref != None) and (iName != ''):
 				poster = fanart.replace('/S_posters/', '/posters/')
 				info = {'title':iName[3:], 'genre':params['genre']}
@@ -211,7 +211,7 @@ def showserial(params):
 				plot = ''
 				for div2 in div.getElementsByTagName('img'):
 					if div2.getAttribute('src'):
-						img = 'http://www.ulitka.tv' + div2.getAttribute('src')
+						img = div2.getAttribute('src') # 'http://www.ulitka.tv'
 				for div2 in div.getElementsByTagName('p'):
 					if div2.firstChild.nodeType == div2.firstChild.TEXT_NODE:
 						plot = div2.firstChild.data.encode('utf8')
