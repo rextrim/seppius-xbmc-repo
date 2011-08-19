@@ -2135,8 +2135,11 @@ def decode( txt, strict=False, encoding=None, **kw ):
     obj = j.decode( unitxt )
     return obj
 
-def loads(instr):
-    obj = decode(instr)
-    return obj
+def loads(*instr):
+    return decode(*instr)
+
+def dumps(*instr):
+    return encode(*instr)
+
 
 # end file
