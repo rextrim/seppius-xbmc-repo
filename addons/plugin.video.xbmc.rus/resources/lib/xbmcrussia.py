@@ -151,6 +151,11 @@ def advt_show(jsdata):
 
 
 def getitems(params):
+
+	if __addon__.getSetting('LicenseApproved') != 'true':
+		xbmc.log( '[%s]: License not approved!' % addon_id, 2 )
+		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], 'func=licenseshow'), xbmcgui.ListItem('Читать соглашение'), False)
+
 	try: href = params['href']
 	except: href = ''
 	try:
@@ -393,16 +398,10 @@ def addon_main():
 	except:
 		func = None
 		xbmc.log( '[%s]: Primary input' % addon_id, 1 )
-		if os.path.isfile(licf):
-			if __addon__.getSetting('LicenseApproved') == 'true':
-				getitems(params)
-			else:
-				xbmc.log( '[%s]: License not approved!' % addon_id, 2 )
-				xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], 'func=licenseshow'), xbmcgui.ListItem('Читать соглашение'), False)
-				xbmcplugin.endOfDirectory(h)
-		else:
+		if not os.path.isfile(licf):
 			xbmc.log( '[%s]: The license file [%s] is missing!' % (addon_id, licf), 3 )
 			xbmcgui.Dialog().ok(addon_name, 'Лицензионный файл отсутствует', 'Переустановите дополнение')
+		getitems(params)
 	if func != None:
 		try: pfunc = globals()[func]
 		except:
