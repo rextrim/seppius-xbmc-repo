@@ -263,7 +263,7 @@ Author - Vlad Svoka aka Shchvova</description>
 
 <addon id="plugin.video.rutube.ru"
        name="RuTube"
-       version="1.0.4"
+       version="1.0.5"
        provider-name="seppius">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
