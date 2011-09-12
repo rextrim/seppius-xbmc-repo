@@ -1,24 +1,24 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#/*
-# *      Copyright (C) 2010 Kostynoy S. aka Seppius
-# *
-# *
-# *  This Program is free software; you can redistribute it and/or modify
-# *  it under the terms of the GNU General Public License as published by
-# *  the Free Software Foundation; either version 2, or (at your option)
-# *  any later version.
-# *
-# *  This Program is distributed in the hope that it will be useful,
-# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *  GNU General Public License for more details.
-# *
-# *  You should have received a copy of the GNU General Public License
-# *  along with this program; see the file COPYING.  If not, write to
-# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *  http://www.gnu.org/copyleft/gpl.html
-# */
+#
+#   Copyright (c) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+#   Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
+#
+#   This Program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2, or (at your option)
+#   any later version.
+#
+#   This Program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; see the file COPYING.  If not, write to
+#   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+#   http://www.gnu.org/licenses/gpl.html
+
 import urllib2, re, xbmc, xbmcgui, xbmcplugin, os, urllib, urllib2, socket
 
 
@@ -216,14 +216,36 @@ def OPEN_MOVIES(target, CurPage):
 	xbmcplugin.endOfDirectory(h)
 
 
+
+
 def PLAY(wurl):
+	swf_player = 'http://rutube.ru/player.swf'
 	http = GET(wurl)
 	if http == None: return False
 	rows1 = re.compile('\!\[CDATA\[(.+?)\]\]').findall(http)
 	if len(rows1) == 0:
 		showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов CDATA')
 		return False
-	i = xbmcgui.ListItem(path = '%s swfurl=http://rutube.ru/player.swf swfVfy=True'%rows1[0])
+	rows1 = re.compile('\!\[CDATA\[(.+?)\]\]').findall(http)
+	if len(rows1) != 0:
+		rtmp = rows1[0]
+		artmp = rtmp.replace('://','/').split('/')
+		tcUrl = '%s://%s/%s/'%(artmp[0],artmp[1],artmp[2])
+		pageUrl = wurl #'http://rutube.ru/tracks?v=%s'
+		playPath = artmp[3]
+		try: playPath += '/%s'%artmp[4]
+		except: pass
+		try: playPath += '/%s'%artmp[5]
+		except: pass
+		try: playPath += '/%s'%artmp[6]
+		except: pass
+		try: playPath += '/%s'%artmp[7]
+		except: pass
+		try: playPath += '/%s'%artmp[8]
+		except: pass
+		try: playPath += '/%s'%artmp[9]
+		except: pass
+	i = xbmcgui.ListItem( path = '%s swfUrl=%s swfVfy=True tcUrl=%s pageUrl=%s playPath=%s' % (tcUrl, swf_player, tcUrl, pageUrl, playPath) )
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):
@@ -258,9 +280,3 @@ if mode == 'OPEN_MOVIES':
 if mode == 'PLAY':
 	PLAY(urllib.unquote_plus(params['url']))
 
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.output(' === unhandled exception in adIO === ')
-	pass
