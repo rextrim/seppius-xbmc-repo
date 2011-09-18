@@ -19,6 +19,20 @@
   </extension>
 </addon>
 
+<addon id="script.yandex.tvguide" name="Яндекс телепрограмма" version="0.0.2" provider-name="seppius [seppius@xbmc.ru]">
+	<requires>
+		<import addon="xbmc.python" version="1.0"/>
+		<!--<import addon="script.module.simplejson" version="2.0.10"/>
+		<import addon="script.module.elementtree" version="1.2.7"/>-->
+	</requires>
+	<extension point="xbmc.python.script" library="addon.py"/>
+	<extension point="xbmc.addon.metadata">
+		<summary>Программа передач</summary>
+		<description>Программа передач от Yandex</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+
 <addon id="plugin.video.tv-here.ru"
        name="TV-HERE.RU"
        version="1.0.4"
