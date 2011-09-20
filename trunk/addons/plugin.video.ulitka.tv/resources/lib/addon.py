@@ -1,31 +1,36 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#
-#   Copyright (c) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
-#   Writer (c) 20/05/2011, Kostynoy S.A., E-mail: seppius2@gmail.com
-#
-#   This Program is free software; you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation; either version 2, or (at your option)
-#   any later version.
-#
-#   This Program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program; see the file COPYING.  If not, write to
-#   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-#   http://www.gnu.org/licenses/gpl.html
+#/*
+# *   Copyright (с) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# *   Writer (C) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
+# *
+# *  This Program is free software; you can redistribute it and/or modify
+# *  it under the terms of the GNU General Public License as published by
+# *  the Free Software Foundation; either version 2, or (at your option)
+# *  any later version.
+# *
+# *  This Program is distributed in the hope that it will be useful,
+# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# *  GNU General Public License for more details.
+# *
+# *  You should have received a copy of the GNU General Public License
+# *  along with this program; see the file COPYING.  If not, write to
+# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+# *  http://www.gnu.org/licenses/gpl.html
+# */
 
-import sys, xbmc, xbmcgui, xbmcplugin, xbmcaddon, re
-import os, urllib, urllib2, cookielib
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+import urllib2, urllib, os, xml.dom.minidom, cookielib, base64
 
-import html5lib
-from html5lib import treebuilders
+import socket, sys
+socket.setdefaulttimeout(15)
 
 h = int(sys.argv[1])
+icon   = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+fanart = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'fanart.jpg'))
+xbmcplugin.setPluginFanart(h, fanart)
+
 
 __addon__ = xbmcaddon.Addon(id = 'plugin.video.ulitka.tv')
 
@@ -43,21 +48,23 @@ icon   = xbmc.translatePath(addon_icon)
 fanart = xbmc.translatePath(addon_fanart)
 profile = xbmc.translatePath(addon_profile)
 
-
 def showMessage(heading, message, times = 3000):
 	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
-
 def GET(tu, post=None):
-	#print '[%s]: TARGET TU=[%s]' % (addon_id, tu)
-	#print '[%s]: POST DATA=[%s]' % (addon_id, post)
 	try:
+		username = __addon__.getSetting('username')
+		password = __addon__.getSetting('password')
+		if (not len(username)) and (not len(password)):
+			__addon__.openSettings()
+			return None
 		CJ = cookielib.CookieJar()
 		urllib2.install_opener(urllib2.build_opener(urllib2.HTTPCookieProcessor(CJ)))
 		req = urllib2.Request(tu)
 		req.add_header('User-Agent', '%s/%s %s/%s/%s' % (addon_type, addon_id, addon_author, addon_version, urllib.quote_plus(addon_name)))
 
 		if post: req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+		req.add_header('Authorization', 'Basic %s' % base64.b64encode('%s:%s' % (username, password)))
 
 		cookie_path = os.path.join(profile, 'cookie')
 		if not os.path.exists(cookie_path):
@@ -75,6 +82,7 @@ def GET(tu, post=None):
 
 		cookie_string = urllib.urlencode(cookie_send).replace('&','; ')
 		req.add_header('Cookie', cookie_string)
+
 		f = urllib2.urlopen(req, post)
 
 		for Cook in CJ:
@@ -91,224 +99,104 @@ def GET(tu, post=None):
 		showMessage(tu, e, 5000)
 		return None
 
-def auth(params):
-	username = __addon__.getSetting('username')
-	password = __addon__.getSetting('password')
-
-	if len(username) and len(password):
-		http = GET('http://www.ulitka.tv/')
-		if http != None:
-			post_data = {'username':username, 'passwd':password}
-			DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
-			for div0 in DT.getElementsByTagName('span'):
-				if div0.getAttribute('class') == 'login':
-					for inputs in div0.getElementsByTagName('input'):
-						if inputs.getAttribute('type') == 'hidden':
-							post_data[inputs.getAttribute('name')] = inputs.getAttribute('value')
-			GET('http://www.ulitka.tv/index.php', urllib.urlencode(post_data))
-			#showMessage('Логин и пароль отправлен', 'Нет гарантии что она произошла', 5000)
-	else:
-		__addon__.openSettings()
 
 
-def showlatest(params):
-	import xml.dom.minidom, datetime
-	http = GET('http://www.ulitka.tv/rss.xml')
-	if http != None:
-		document = xml.dom.minidom.parseString(http)
-		items  = document.getElementsByTagName('item')
-		for item in items:
-			try: title = item.getElementsByTagName('title')[0].firstChild.data.encode('utf-8','replace')
-			except: title = None
-			if (title != None):
-				info = {'title':title}
-				try:
-					pda = item.getElementsByTagName('pubDate')[0].firstChild.data.encode('utf-8','replace')
-					pdb = datetime.datetime.strptime(pda[:25],'%a, %d %b %Y %H:%M:%S')
-					info['date'] = str(pdb.strftime('%d.%m.%Y'))
-					info['year'] = int(pdb.strftime('%Y'))
+def getitems(params):
+	http = GET(params['url'])
+	if http == None: return False
+	document = xml.dom.minidom.parseString(http)
+	for item in document.getElementsByTagName('item'):
+		info = {'title': None}
+		img  = None
+		try:
+			url = item.getElementsByTagName('url')[0].firstChild.data.encode('utf-8')
+		except: url = None
+		try: info['title'] = item.getElementsByTagName('title')[0].firstChild.data
+		except:
+			try: info['title'] = item.getElementsByTagName('label')[0].firstChild.data
+			except: pass
+		if info['title'] and url:
+			IsFolder = False
+			try: IsFolder = (int(item.getElementsByTagName(r'isFolder')[0].firstChild.data) == 1)
+			except: pass
+			try: img = item.getElementsByTagName('thumbnailImage')[0].firstChild.data
+			except:
+				try: img = item.getElementsByTagName('thumbnailImage')[0].firstChild.data
 				except: pass
-				try:
-					info['genre'] = item.getElementsByTagName('category')[0].firstChild.data
-					info['tagline'] = info['genre']
+			try:	info['plot'] = item.getElementsByTagName('plot')[0].firstChild.data
+			except: pass
+			try:	info['plotoutline'] = item.getElementsByTagName('plotoutline')[0].firstChild.data
+			except: pass
+			try:	info['duration'] = item.getElementsByTagName('duration')[0].firstChild.data
+			except: pass
+			try:	info['tagline'] = item.getElementsByTagName('tagline')[0].firstChild.data
+			except: pass
+			try:	info['genre'] = item.getElementsByTagName('genre')[0].firstChild.data
+			except: pass
+			try:	info['tvshowtitle'] = item.getElementsByTagName('tvshowtitle')[0].firstChild.data
+			except: pass
+			try:	info['season'] = int(item.getElementsByTagName('season')[0].firstChild.data)
+			except: pass
+			try:	info['episode'] = int(item.getElementsByTagName('episode')[0].firstChild.data)
+			except: pass
+			try: vtype = item.getElementsByTagName('type')[0].firstChild.data
+			except: vtype = 'video'
+			li = xbmcgui.ListItem(info['title'], iconImage = img, thumbnailImage = img)
+
+			if IsFolder:
+				uri = '%s?func=getitems&url=%s' % (sys.argv[0], urllib.quote_plus(url))
+			else:
+				uri = '%s?func=play&url=%s' % (sys.argv[0], urllib.quote_plus(url))
+				try: uri += '&sub=%s' % urllib.quote_plus(str(item.getElementsByTagName('sub')[0].firstChild.data.encode('utf-8')))
 				except: pass
-				try:
-					plot = item.getElementsByTagName('description')[0].firstChild.toxml().encode('utf-8','replace')
-					info['plot'] = re.compile('/>(.*?)]]>', re.IGNORECASE + re.DOTALL + re.MULTILINE).findall(plot)[0]
-				except: pass
-				try:
-					iimg = item.getElementsByTagName('media:thumbnail')[0].getAttribute('url').encode('utf-8','replace')
-					imgSrc = iimg.split('/')
-					poster = 'http://static.ulitka.tv/images/posters/%s'   % imgSrc[-1]
-					fanart = 'http://static.ulitka.tv/images/S_posters/%s' % imgSrc[-1]
-				except:
-					poster = icon
-					fanart = icom
-				link = item.getElementsByTagName('link')[0].firstChild.data.replace('http://www.ulitka.tv','')
-				li = xbmcgui.ListItem(info['title'], iconImage = poster, thumbnailImage = poster)
-				li.setInfo(type = 'video', infoLabels = info)
 				li.setProperty('IsPlayable', 'true')
-				li.setProperty('fanart_image', fanart)
-				xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'watch', 'href': link})), li, False)
-		xbmcplugin.endOfDirectory(h)
+			li.setInfo(type = vtype, infoLabels = info)
+			#li.setProperty('fanart_image', ifanart)
+			xbmcplugin.addDirectoryItem(h, uri, li, IsFolder)
 
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_UNSORTED)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DATE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_DURATION)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_GENRE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_TITLE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_RUNTIME)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+	xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_LABEL)
+	xbmcplugin.endOfDirectory(h)
 
-def showroot():
-	http = GET('http://www.ulitka.tv/')
-	if http != None:
-		#xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'auth'})), xbmcgui.ListItem('[ Авторизация ]'), False)
-		xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showlatest'})), xbmcgui.ListItem('[ Последние ]'), True)
-		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
-		for div0 in DT.getElementsByTagName('div'):
-			if div0.getAttribute('id') == 'menu':
-				for div1 in div0.getElementsByTagName('a'):
-					if div1.getAttribute('href'):
-						for div2 in div1.getElementsByTagName('span'):
-							if div2.getAttribute('class') == 'bg ':
-								href  = div1.getAttribute('href')
-								info = {'title':div2.firstChild.data.encode('utf8', 'ignore')}
-								info['genre'] = info['title']
-								li = xbmcgui.ListItem(info['title'], iconImage = icon, thumbnailImage = icon)
-								li.setInfo(type = 'video', infoLabels = info)
-								li.setProperty('fanart_image', icon)
-								xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showserials', 'href':div1.getAttribute('href'), 'genre':info['genre']})), li, True)
-		xbmcplugin.endOfDirectory(h)
-
-
-def showserials(params):
-	http = GET('http://www.ulitka.tv' + params['href'])
-	if http != None:
-		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
-		for div in DT.getElementsByTagName('td'):
-			iName = ''
-			iHref = None
-			img = icon
-			for div2 in div.getElementsByTagName('a'):
-				if div2.firstChild.nodeType == div2.firstChild.TEXT_NODE:
-					iName += ' / %s' % div2.firstChild.data.encode('utf8')
-					iHref = div2.getAttribute('href')
-				else:
-					for div3 in div2.getElementsByTagName('img'):
-						if div3.getAttribute('src'): fanart = div3.getAttribute('src') # 'http://www.ulitka.tv' +
-			if (iHref != None) and (iName != ''):
-				poster = fanart.replace('/S_posters/', '/posters/')
-				info = {'title':iName[3:], 'genre':params['genre']}
-				li = xbmcgui.ListItem(info['title'], iconImage = poster, thumbnailImage = poster)
-				li.setInfo(type = 'video', infoLabels = info)
-				li.setProperty('fanart_image', fanart)
-				xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showserial', 'href':iHref, 'genre':info['genre'], 'tvshowtitle':info['title']})), li, True)
-		xbmcplugin.endOfDirectory(h)
-
-
-def showserial(params):
-	http = GET('http://www.ulitka.tv' + params['href'])
-	if http != None:
-		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
-		for div in DT.getElementsByTagName('div'):
-			if div.getAttribute('class') == 'description':
-				iName = ''
-				img = icon
-				plot = ''
-				for div2 in div.getElementsByTagName('img'):
-					if div2.getAttribute('src'):
-						img = div2.getAttribute('src') # 'http://www.ulitka.tv'
-				for div2 in div.getElementsByTagName('p'):
-					if div2.firstChild.nodeType == div2.firstChild.TEXT_NODE:
-						plot = div2.firstChild.data.encode('utf8')
-				for div2 in div.getElementsByTagName('a'):
-					if div2.getAttribute('href'):
-						if div2.firstChild.nodeType == div2.firstChild.TEXT_NODE:
-							info = {'title':div2.firstChild.data.encode('utf8'), 'genre':params['genre'], 'plot':plot}
-							try:
-								season = int(info['title'].split(' ')[0])
-							except: season = 0
-							poster = img.replace('/S_posters/', '/posters/')
-							fanart = img.replace('/posters/', '/S_posters/')
-							li = xbmcgui.ListItem(info['title'], iconImage = poster, thumbnailImage = poster)
-							li.setInfo(type = 'video', infoLabels = info)
-							li.setProperty('fanart_image', fanart)
-							xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'showepisodes', 'href':div2.getAttribute('href'), 'genre':info['genre'], 'tvshowtitle':params['tvshowtitle'], 'icon':poster, 'season':season, 'plot': plot})), li, True)
-		xbmcplugin.endOfDirectory(h)
-
-
-def showepisodes(params):
-	http = GET('http://www.ulitka.tv' + params['href'])
-	if http != None:
-		DT = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder('dom')).parse(http)
-		for div in DT.getElementsByTagName('div'):
-			if div.getAttribute('class') == 'categorylist':
-				for div2 in div.getElementsByTagName('td'):
-					iName = ''
-					iHref = None
-					img = icon
-					for div3 in div2.getElementsByTagName('a'):
-						if div3.getAttribute('href'):
-							if div3.firstChild.nodeType == div3.firstChild.TEXT_NODE:
-								try:
-									ssst = div3.firstChild.data.encode('utf8').split(' ')
-									if ssst[0] == '0': ssst=ssst[1:]
-									if ssst[0] == '0': ssst=ssst[1:]
-									episode = int(ssst[0])
-								except:
-									episode = 0
-								title = div3.firstChild.data.encode('utf8')
-								try:
-									title = re.compile('\((.*?)\)').findall(title)[0]
-									if episode > 0: title = '%d. %s' % (episode, title)
-								except:
-									pass
-								info = {'title':title, 'genre':params['genre'], 'season':int(params['season']), 'episode':episode, 'tvshowtitle':params['tvshowtitle'], 'plot':params['plot']}
-								img = params['icon'].replace('/posters/', '/S_posters/')
-								li = xbmcgui.ListItem(info['title'], iconImage=img, thumbnailImage=img)
-								li.setInfo(type = 'video', infoLabels = info)
-								li.setProperty('IsPlayable', 'true')
-								li.setProperty('fanart_image', img)
-								xbmcplugin.addDirectoryItem(h, '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'watch', 'href':div3.getAttribute('href')})), li, False)
-		xbmcplugin.endOfDirectory(h)
-
-
-def watch(params):
-	auth(None)
-	import string
-	digits39 = string.digits + string.lowercase
-	digits62 = string.digits + string.lowercase + string.uppercase
-
-	def int2base(x, base):
-		digs = digits39
-		if base == 62:
-			digs = digits62
-		if x < 0: sign = -1
-		elif x==0: return '0'
-		else: sign = 1
-		x *= sign
-		digits = []
-		while x:
-			digits.append(digs[x % base])
-			x /= base
-		if sign < 0:
-			digits.append('-')
-		digits.reverse()
-		return ''.join(digits)
-
-	def unpack(p, a, c, k, e=None, d=None):
-		for i in xrange(c-1,-1,-1):
-			if k[i]: p = re.sub('\\b'+int2base(i,a)+'\\b', k[i], p)
-		return p
-
-	http = GET('http://www.ulitka.tv' + params['href'])
-	if http != None:
-		jsDataRegexp = re.compile("function\(p,a,c,k,e,d\)\{([^\n]+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
-		jsData = jsDataRegexp.findall(http)
-		s = jsData[0]
-		s = s[s.find('}(')+1:-1]
-		initJs = eval('unpack' + s)
-		fileRe = re.compile('so\.addVariable\("file",style\+"([^"]+)').findall(initJs)[0]
-		swfRe_swf, swfRe_id = re.compile('SWFObject\("(.+?)","(.+?)".*?\);').findall(initJs)[0]
-		url = 'http://ww.ulitka.tv:8080'+fileRe+'?start=0&id='+swfRe_id+'&client=FLASH%20LNX%2010,3,181,26&version=4.3.132&width=640'
-		i = xbmcgui.ListItem(path = url)
-		i.setProperty('mimetype', 'video/mp4')
-		xbmcplugin.setResolvedUrl(h, True, i)
-
+def play(params):
+	url = params['url']
+	i = xbmcgui.ListItem( path = url )
+	xbmcplugin.setResolvedUrl(h, True, i)
+	try:
+		sub_url = params['sub']
+		http = GET(sub_url)
+		if http:
+			suba = []
+			x = 1
+			document = xml.dom.minidom.parseString(http)
+			for item in document.getElementsByTagName('p'):
+				if item.getAttribute('begin') and item.getAttribute('end'):
+					sub_begin = item.getAttribute('begin').encode('utf-8')
+					sub_end   = item.getAttribute('end').encode('utf-8')
+					sub_data  = item.firstChild.data.encode('utf-8')
+					sub_data  = sub_data.replace('<br />', '\n')
+					suba.append(str(x))
+					suba.append('%s --> %s' % (sub_begin, sub_end))
+					suba.append(sub_data)
+					suba.append('\n')
+					x += 1
+			sub_fdata = '\n'.join(suba)
+			sub_url = sub_url.replace('.xml','').replace('.mp4','')
+			sf = xbmc.translatePath('special://temp/%s.srt' % sub_url.split('/')[-1])
+			subf = open(sf, 'w')
+			subf.write(sub_fdata)
+			subf.close()
+			xbmc.sleep(2000)
+			xbmc.Player().setSubtitles(sf)
+	except: pass
 
 def get_params(paramstring):
 	param=[]
@@ -329,15 +217,12 @@ def get_params(paramstring):
 			param[cur] = urllib.unquote_plus(param[cur])
 	return param
 
-
-
-
 def addon_main():
 	params = get_params(sys.argv[2])
 	try:
 		func = params['func']
 	except:
-		showroot()
+		getitems({'url':'http://www.ulitka.tv/xbmc/index.xml'})
 		func = None
 
 	if func != None:
@@ -347,4 +232,3 @@ def addon_main():
 			print '[%s]: Function "%s" not found' % (addon_id, func)
 			showMessage('Internal addon error', 'Function "%s" not found' % func, 2000)
 		if pfunc: pfunc(params)
-
