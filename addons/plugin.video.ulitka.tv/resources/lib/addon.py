@@ -168,6 +168,8 @@ def getitems(params):
 
 def play(params):
 	url = params['url']
+	if not '?' in url:
+		url += '?version=4.3.132&target=xbmc'
 	i = xbmcgui.ListItem( path = url )
 	xbmcplugin.setResolvedUrl(h, True, i)
 	try:
