@@ -39,6 +39,7 @@ def Get_Serial_Type():
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=SERIAL'
     u += '&name=%s'%urllib.quote_plus(name)
+    u += '&tag=%s'%urllib.quote_plus(' ')
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
     # add last viewed serial
@@ -46,25 +47,53 @@ def Get_Serial_Type():
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=SERIAL'
     u += '&name=%s'%urllib.quote_plus(name)
+    u += '&tag=%s'%urllib.quote_plus(' ')
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    # add serial genres
+    name = '[ЖАНРЫ]'
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=GENRE'
+    u += '&name=%s'%urllib.quote_plus(name)
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
     # load serials types
     tree = ElementTree()
     tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
 
-    for rec in tree.getroot().find('SERIALS'):
-            name = rec.text.encode('utf-8')
+    for rec in tree.getroot().find('TYPES'):
+            name = rec.find('name').text.encode('utf-8')
+            tag  = rec.tag.encode('utf-8')
             i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
             u = sys.argv[0] + '?mode=SERIAL'
             u += '&name=%s'%urllib.quote_plus(name)
+            u += '&tag=%s'%urllib.quote_plus(tag)
             xbmcplugin.addDirectoryItem(h, u, i, True)
-    xbmcplugin.endOfDirectory(h)
 
+    xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
+
+#---------- get serials genres -------------------------------------------------
+def Get_Serial_Genre():
+    # load serials types
+    tree = ElementTree()
+    tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
+
+    for rec in tree.getroot().find('GENRES'):
+            name = rec.find('name').text.encode('utf-8')
+            tag  = rec.tag.encode('utf-8')
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=SERIAL'
+            u += '&name=%s'%urllib.quote_plus('[ЖАНРЫ]')
+            u += '&tag=%s'%urllib.quote_plus(tag)
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    xbmcplugin.endOfDirectory(h)
 
 #---------- get serials for selected type --------------------------------------
 def Get_Serial_List(params):
     s_type = urllib.unquote_plus(params['name'])
+    s_tag  = urllib.unquote_plus(params['tag'])
     if s_type == None: return False
 
     # show search dialog
@@ -93,48 +122,7 @@ def Get_Serial_List(params):
     tree = ElementTree()
     tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
 
-    if s_type == '[ПОИСК]':
-        for type in tree.getroot().find('SERIALS'):
-            for rec in type:
-                try:
-                    #get serial details
-                    i_name = rec.find('name').text
-                    i_name = i_name.encode('utf-8')
-
-                    if unicode(rec.find('year').text).isnumeric():
-                        i_year      = int(rec.find('year').text)
-                    else:
-                        i_year      = 1900
-
-                    # checkout by category or name/year
-                    if s_name <> '':
-                        if s_name not in i_name:
-                            continue
-                    if s_year <> '':
-                        if int(s_year) <> i_year:
-                            continue
-
-                    i_image     = rec.find('img').text.encode('utf-8')
-                    i_url       = rec.find('url').text.encode('utf-8')
-                    i_director  = rec.find('director').text
-                    i_text      = rec.find('text').text
-                    i_genre     = rec.find('genre').text
-                    # set serial to XBMC
-                    i = xbmcgui.ListItem(i_name, iconImage=i_image, thumbnailImage=i_image)
-                    u = sys.argv[0] + '?mode=LIST'
-                    u += '&name=%s'%urllib.quote_plus(i_name)
-                    u += '&url=%s'%urllib.quote_plus(i_url)
-                    u += '&img=%s'%urllib.quote_plus(i_image)
-                    i.setInfo(type='video', infoLabels={ 'title':       i_name,
-                						'year':        i_year,
-                						'director':    i_director,
-                						'plot':        i_text,
-                						'genre':       i_genre})
-                    i.setProperty('fanart_image', i_image)
-                    xbmcplugin.addDirectoryItem(h, u, i, True)
-                except:
-                    xbmc.log('***   ERROR '+rec.text.encode('utf-8'))
-    elif s_type == '[ИСТОРИЯ]':
+    if s_type == '[ИСТОРИЯ]':
         (info_serial_url, info_part_url, info_image, info_name) = Get_Last_Serial_Info()
         if info_serial_url == '-': return False
 
@@ -179,11 +167,37 @@ def Get_Serial_List(params):
             else:
                 season = rec#.decode('utf-8')
     else:
-        for rec in tree.getroot().find('SERIALS').find('st_'+md5.md5(s_type).hexdigest()):
+        for rec in tree.getroot().find('SERIALS'):
             try:
                 #get serial details
                 i_name      = rec.text.encode('utf-8')
-                i_year      = int(rec.find('year').text)
+                try:
+                    i_year = int(rec.find('year').text)
+                except:
+                    try:
+                        i_year = int(rec.find('year').text.split('-')[0])
+                    except:
+                        i_year = 1900
+
+                if s_type == '[ЖАНРЫ]':
+                    if rec.find('genres').find(s_tag) is None:
+                        continue
+
+                elif s_type == '[ПОИСК]':
+                    # checkout by category or name/year
+                    if s_name.strip() <> '':
+                        s1 = s_name.lower().strip()
+                        s2 = rec.text.lower().strip().encode('utf-8')
+                        if s1 not in s2:
+                            continue
+                    if s_year <> '':
+                        if int(s_year) <> i_year:
+                            continue
+                else:
+                    if rec.find('categories').find(s_tag) is None:
+                        continue
+
+                #get serial details
                 i_image     = rec.find('img').text.encode('utf-8')
                 i_url       = rec.find('url').text.encode('utf-8')
                 i_director  = rec.find('director').text
@@ -236,6 +250,13 @@ def Get_Serial(params):
         if re.search('object', rec):
             v_url=re.compile('.txt&amp;pl=(.+?)&amp;link=', re.MULTILINE|re.DOTALL).findall(rec)
             v_list = Get_Serial_Video(v_url[0].replace('%26','&'))
+            # build a play list
+            str_pl = ''
+            for v in v_list:
+                str_pl = str_pl + v[1] + '#' + season + ' ' + v[0] + ';'
+            str_pl = str_pl.rstrip(';')
+            # build serial parts list
+            index = 0
             for v in v_list:
                 name = season+' '+v[0]#.decode('utf-8')
                 i = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
@@ -244,8 +265,11 @@ def Get_Serial(params):
                 u += '&url=%s'%urllib.quote_plus(v[1])
                 u += '&serial=%s'%urllib.quote_plus(url)
                 u += '&img=%s'%urllib.quote_plus(image)
-                i.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(h, u, i, False)
+                u += '&playlist=%s'%urllib.quote_plus(str_pl)
+                u += '&index=%s'%urllib.quote_plus(str(index))
+                index = index+1
+                #i.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(h, u, i, True)
         else:
             season = rec#.decode('utf-8')
     xbmcplugin.endOfDirectory(h)
@@ -258,8 +282,6 @@ def Get_Serial_Video(url):
     opener = urllib2.build_opener(h)
     urllib2.install_opener(opener)
     post = None
-
-    xbmc.output('URL: %s' % urllib.unquote(url))
 
     request = urllib2.Request(urllib.unquote(url), post)
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
@@ -278,18 +300,33 @@ def Get_Serial_Video(url):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
+    # -- parameters
+    url = urllib.unquote_plus(params['url'])
+    img     = urllib.unquote_plus(params['img'])
+    serial  = urllib.unquote_plus(params['serial'])
+    name    = urllib.unquote_plus(params['name'])
 
-	url = urllib.unquote_plus(params['url'])
-        xbmc.output(url)
-	i = xbmcgui.ListItem(path = urllib.unquote(url))
-	#xbmcplugin.setResolvedUrl(h, True, i)
+    # -- if requested continious play
+    if xbmcplugin.getSetting(int( sys.argv[ 1 ] ), 'continue_play') == 'true':
+        playlist  = urllib.unquote_plus(params['playlist']).split(';')
+        idx_start = int(urllib.unquote_plus(params['index']))
+
+        # create play list
+        pl=xbmc.PlayList(1)
+        pl.clear()
+        for idx in range(idx_start, len(playlist)):
+            pl_url  = playlist[idx].split('#')[0]
+            pl_name = playlist[idx].split('#')[1]
+            i = xbmcgui.ListItem(pl_name, path = urllib.unquote(pl_url), thumbnailImage=img)
+            pl.add(pl_url, i)
+        xbmc.Player().play(pl)
+    # -- play only selected item
+    else:
+        i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
         xbmc.Player().play(url, i)
 
-        img     = urllib.unquote_plus(params['img'])
-        serial  = urllib.unquote_plus(params['serial'])
-        name    = urllib.unquote_plus(params['name'])
-
-        Save_Last_Serial_Info(serial, url, img, name)
+    # -- save view history
+    Save_Last_Serial_Info(serial, url, img, name)
 
 #-------------------------------------------------------------------------------
 
@@ -365,6 +402,8 @@ except:
 
 if mode == 'SERIAL':
 	Get_Serial_List(params)
+elif mode == 'GENRE':
+    Get_Serial_Genre()
 elif mode == 'LIST':
 	Get_Serial(params)
 elif mode == 'PLAY':

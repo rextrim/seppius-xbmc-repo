@@ -6,12 +6,30 @@ from datetime import date
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
+import traceback
+def formatExceptionInfo(maxTBlevel=5):
+     cla, exc, trbk = sys.exc_info()
+     excName = cla.__name__
+     try:
+         excArgs = exc.__dict__["args"]
+     except KeyError:
+         excArgs = "<no args>"
+     excTb = traceback.format_tb(trbk, maxTBlevel)
+     return (excName, excArgs, excTb)
+
 # load XML library
 sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
 from ElementTree  import Element, SubElement, ElementTree
+from BeautifulSoup  import BeautifulSoup
 
 today = date.today()
 path = os.path.join(os.getcwd(), r'resources', r'data')
+
+xbmc.log('Path: '+path)
+
+cj      = cookielib.LWPCookieJar()
+opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+urllib2.install_opener(opener)
 
 #---------- get serials info and save to XML --------------------------------------------------
 def Update_Serial_XML(mode):
@@ -25,177 +43,249 @@ def Update_Serial_XML(mode):
             tree.parse(os.path.join(path, r'serials.xml'))
             xml1 = tree.getroot()
             xml1.find("LAST_UPDATE").text = today.isoformat()
-            xml  = xml1.find('SERIALS')
+            xml_serials  = xml1.find('SERIALS')
+            xm_types    = xml1.find('TYPES')
+            xml_genres   = xml1.find('GENRES')
             dp.create("Update SERIALU.NET Info")
         except:
             # create XML structure
             xml1 = Element("SERIALU_NET")
             SubElement(xml1, "LAST_UPDATE").text = today.isoformat()
-            xml = SubElement(xml1, "SERIALS")
+            xml_serials  = SubElement(xml1, "SERIALS")
+            xml_types    = SubElement(xml1, "TYPES")
+            xml_genres   = SubElement(xml1, "GENRES")
             dp.create("Reload SERIALU.NET Info")
     else:
         # create XML structure
         xml1 = Element("SERIALU_NET")
         SubElement(xml1, "LAST_UPDATE").text = today.isoformat()
-        xml = SubElement(xml1, "SERIALS")
+        xml_serials  = SubElement(xml1, "SERIALS")
+        xml_types    = SubElement(xml1, "TYPES")
+        xml_genres   = SubElement(xml1, "GENRES")
         dp.create("Reload SERIALU.NET Info")
 
     # grab serial's info from site
-    url='http://serialu.net'
-    count = 0
+    url='http://serialu.net/'
+    #start_time = datetime.now()
+    serial_found = 0
 
+    # get number of webpages to grab information
+    page_num = Get_Page_Number(url)
+
+    xbmc.log(' *** UPDATE is completed')
+
+    # get all serials
+    for count in range(1, page_num+1):
+            xbmc.log(' ***  page '+str(count))
+            serial_found = Get_Film_Info(url+'/page/'+str(count)+'/', xml_serials, xml_types, xml_genres, serial_found, dp)
+            percent = min(count*100/page_num, 100)
+            dp.update(percent, '', 'Loaded: '+ str(count)+' of '+str(page_num)+' pages','Кол-во сериалов: '+str(serial_found))
+
+    xbmc.log(' *** UPDATE is completed')
+
+    # order sort serials/categories/genres by names
+    xml_serials[:] = sorted(xml_serials, key=getkey)
+    xml_types[:]   = sorted(xml_types, key=getkey)
+    xml_genres[:]  = sorted(xml_genres, key=getkey)
+
+    dp.close()
+    ElementTree(xml1).write(os.path.join(path, r'serials.xml'), encoding='utf-8')
+
+
+#--- get number of pages for selected category ---------------------------------
+def Get_Page_Number(url):
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
     response = urllib2.urlopen(req)
     link=response.read()
     response.close()
 
-    match=re.compile('<div class=".s-name">(.+?)</div><div class="c-content">(.+?)</div>', re.MULTILINE|re.DOTALL).findall(link)
+    ret = 1
 
-    if len(match) == 0:
-		xbmc.log('ПОКАЗАТЬ НЕЧЕГО')
-		return False
+    match=re.compile('<div class="wp-pagenavi">(.+?)</div>', re.MULTILINE|re.DOTALL).findall(link)
 
-    for rec in match:
-        #xbmc.log(rec[1])
-        video=re.compile('<a href="(.+?)">(.+?)</a><br/>', re.MULTILINE).findall(rec[1])
-        if len(video) > 0:
-            # create serial type in XML
-            xml_serial_type_hash = 'st_'+md5.md5(rec[0]).hexdigest()
-            # check if type exists
-            xml_serial_type = xml.find(xml_serial_type_hash)
-            if xml_serial_type is None:
-                xml_serial_type = SubElement(xml, xml_serial_type_hash)
-                xml_serial_type.text = unescape(rec[0])
-            count = 0
-            # get info for each serial in type
-            for vr in video:
-                if (dp.iscanceled()): return
-                xml_serial_hash = 's_'+md5.md5(vr[1]).hexdigest()
-                #check if serial info exists
-                if xml.find(xml_serial_type_hash).find(xml_serial_hash) is not None:
-                    count = count + 1
-                    percent = min((count*100)/2000, 100)
-                    dp.update(0, rec[0], 'Loaded: '+str(count),vr[1])
-                    continue
-                #get serial detail info
-                (i_name, i_year, i_genre, i_director, i_text, i_image, i_season) = Get_Serial_Info(vr[0])
+    page=re.compile('<a href="(.+?)/page/(.+?)</a>', re.MULTILINE|re.DOTALL).findall(match[0])
+
+    for rec in page:
+        v = re.compile('(.+?)/" title="(.+?)"', re.MULTILINE|re.DOTALL).findall(rec[1])
+        if len(v) > 0:
+            if ret < int(v[0][0]):
+                ret = int(v[0][0])
+
+    return ret
+
+#--- get serial info for selected page in category ------------------------------
+def Get_Film_Info(url, xml_serials, xml_types, xml_genres, serial_found, dp):
+    post = None
+    request = urllib2.Request(urllib.unquote(url), post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'serialu.net')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://google.com')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+    html_container = re.compile('<div class="container">(.+?)<div class="navigation">', re.MULTILINE|re.DOTALL).findall(html)
+
+    # -- parsing web page ----------------------------------------------------------
+
+    soup = BeautifulSoup(''.join(html_container[0].replace('<p>', '  ').replace('</p>', '')))
+
+    serials = soup.findAll("div", { "class" : "entry" })
+    for ser in serials:
+        try:
+            # check if process was cancelled
+            if (dp.iscanceled()): return
+            # --
+            i_name  = unescape(ser.find("h2").find("a").text.strip())
+            i_url   = ser.find("h2").find("a")["href"]
+            xbmc.log(' ***    '+i_name.encode('utf-8'))
+            #-- detail info
+            info = ser.find("div", { "class" : "content" })
+            try:
+                i_image = info.find("img")["src"]
+            except:
+                ser_name = i_name.replace(u'”', u'"').replace(u'“',u'"').replace(u'«',u'"').replace(u'»',u'"')
+                search_mask = '<p><img class="m_pic" alt="'+ser_name+'" align="left" src="(.+?)" /></p>'
+                img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
+                try:
+                    i_image = img_alt[0]
+                except:
+                    i_image = '-'
+                    xbmc.log(i_name + u' - image not found')
+
+            o_name      = '-'
+            i_year      = '-'
+            i_country   = '-'
+            i_genre     = '-'
+            i_director  = '-'
+            i_actors    = '-'
+            i_text      = '-'
+
+            for inf in info.findAll("strong"):
+                if inf.text.encode('utf-8') == 'Оригинальное название:':
+                    o_name = unescape(str(inf.nextSibling).strip())
+                elif inf.text.encode('utf-8') == 'Год выхода на экран:':
+                    i_year = unescape(str(inf.nextSibling).strip())
+                elif inf.text.encode('utf-8') == 'Страна:':
+                    i_country = unescape(str(inf.nextSibling).strip())
+                elif inf.text.encode('utf-8') == 'Сериал относится к жанру:':
+                    i_genre = unescape(str(inf.nextSibling).strip())
+                elif inf.text.encode('utf-8') == 'Постановщик':
+                    i_director = unescape(str(inf.nextSibling).strip())
+                elif inf.text.encode('utf-8') == 'Актеры, принявшие участие в съемках:':
+                    i_actors = unescape(str(inf.nextSibling).strip())
+                elif inf.text.encode('utf-8') == 'Краткое описание:':
+                    i_text = unescape(str(inf.nextSibling))
+
+            full_text = i_text
+            if o_name != '':
+                full_text = full_text+(u'\nОригинальное название: ')+o_name
+            if i_actors != '':
+                full_text = full_text+(u'\nАктеры: ')+i_actors
+
+            # add info to XML
+            xml_serial_hash = 'ser_'+md5.md5((i_name + i_year).encode('utf-8')).hexdigest()
+            #check if serial info exists
+            xml_serial = xml_serials.find(xml_serial_hash)
+            if xml_serial is None:   #-- create new record
                 # create serial record in XML
-                xml_serial = SubElement(xml_serial_type, xml_serial_hash)
-                xml_serial.text = unescape(vr[1])
+                xml_serial = SubElement(xml_serials, xml_serial_hash)
+                xml_serial.text = i_name
                 SubElement(xml_serial, "name").text     = i_name
-                SubElement(xml_serial, "url").text      = vr[0]
+                SubElement(xml_serial, "url").text      = i_url
                 SubElement(xml_serial, "year").text     = i_year
                 SubElement(xml_serial, "genre").text    = i_genre
                 SubElement(xml_serial, "director").text = i_director
-                SubElement(xml_serial, "text").text     = i_text
+                SubElement(xml_serial, "text").text     = full_text
                 SubElement(xml_serial, "img").text      = i_image
-                # update progress bar
-                count = count + 1
-                #percent = min((count*100)/2000, 100)
-                dp.update(0, rec[0], 'Loaded: '+str(count),vr[1])
+                SubElement(xml_serial, "categories")
+                SubElement(xml_serial, "genres")
 
-                # if serial has additional pages
-                if len(i_season) > 0:
-                    for url1 in i_season:
-                        if (dp.iscanceled()): return
-                        if url1 != vr[0]:
-                            xml_serial_hash = 's_'+md5.md5(url1[1]).hexdigest()
-                            #check if serial info exists
-                            if xml.find(xml_serial_type_hash).find(xml_serial_hash) is not None:
-                                count = count + 1
-                                percent = min((count*100)/2000, 100)
-                                dp.update(0, rec[0], 'Loaded: '+str(count),vr[1])
-                                continue
-                            # get serial detail info
-                            (i_name, i_year, i_genre, i_director, i_text, i_image, i_season) = Get_Serial_Info(url1[0])
-                            # create serial record in XML
-                            xml_serial = SubElement(xml_serial_type, xml_serial_hash)
-                            xml_serial.text = unescape(url1[1])
-                            SubElement(xml_serial, "name").text     = i_name
-                            SubElement(xml_serial, "url").text      = url1[0]
-                            SubElement(xml_serial, "year").text     = i_year
-                            SubElement(xml_serial, "genre").text    = i_genre
-                            SubElement(xml_serial, "director").text = i_director
-                            SubElement(xml_serial, "text").text     = i_text
-                            SubElement(xml_serial, "img").text      = i_image
-                            # update progress bar
-                            count = count + 1
-                            percent = min((count*100)/2000, 100)
-                            dp.update(0, rec[0], 'Loaded: '+str(count),url1[1])
+            isCategory_found = 'n'
+            # add serial category info
+            categories = xml_serial.find("categories")
+            for cat in ser.find("div", { "class" : "cat" }).findAll("a"):
+                if cat.text.encode('utf-8') <> 'Сериалы':
+                    cur_type_hash = 'sc_'+md5.md5(cat.text.strip().lower().encode('utf-8')).hexdigest()
+                    # check if category exists
+                    if xml_types.find(cur_type_hash) is None:
+                        type = SubElement(xml_types, cur_type_hash)
+                        SubElement(type, "name").text = unescape(cat.text.strip()).capitalize()
+                    if categories.find(cur_type_hash) is None:
+                        SubElement(categories, cur_type_hash)
+                    isCategory_found = 'y'
 
-    dp.close()
-    ElementTree(xml1).write(os.path.join(path, r'\serials.xml'), encoding='utf-8')
+            isMultserial = 'n'
+            # add serial genre info
+            genres = xml_serial.find("genres")
+            for gen in i_genre.split(','):
+                cur_genre_hash = 'sg_'+md5.md5(gen.strip().lower().encode('utf-8')).hexdigest()
+                # check if category exists
+                if xml_genres.find(cur_genre_hash) is None:
+                    genre = SubElement(xml_genres, cur_genre_hash)
+                    SubElement(genre, "name").text = unescape(gen.strip()).capitalize()
+                if genres.find(cur_genre_hash) is None:
+                    SubElement(genres, cur_genre_hash)
+                # check if it's multserial
+                if gen.encode('utf-8') == 'Мультсериал' and isCategory_found == 'n':
+                    isMultserial = 'y'
 
-#---------- get serial info ----------------------------------------------------
-def Get_Serial_Info(url):
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
-    # get info section
-    i_body = re.compile('<div class="content">(.+?)Смотреть.+ онлайн', re.MULTILINE|re.DOTALL).findall(link)
-    i_body[0] = i_body[0]+'<'
-    # get searial info
-    name    =re.compile('<strong>Оригинальное название:</strong>(.+?)<br />', re.MULTILINE|re.DOTALL).findall(i_body[0])
-    year    =re.compile('<strong>Год выхода на экран:</strong>(.+?)<br />', re.MULTILINE|re.DOTALL).findall(i_body[0])
-    country =re.compile('<strong>Страна:</strong>(.+?)<br />', re.MULTILINE|re.DOTALL).findall(i_body[0])
-    genre   =re.compile('<strong>Сериал относится к жанру:</strong>(.+?)<br />', re.MULTILINE|re.DOTALL).findall(i_body[0])
-    director=re.compile('<strong>Постановщик</strong>(.+?)<br />', re.MULTILINE|re.DOTALL).findall(i_body[0])
-    text    =re.compile('<strong>Краткое описание:</strong>(.+?)<', re.MULTILINE|re.DOTALL).findall(i_body[0].replace('<p>', '').replace('</p>',''))
-    img     =re.compile('src="(.+?)"', re.MULTILINE|re.DOTALL).findall(i_body[0])
-    # check for extended links (additional seasons located on different pages)
-    season  =re.compile('сезон: <a href="(.+?)">(.+?)</a>', re.MULTILINE|re.DOTALL).findall(i_body[0])
+            # add multserial or foreighn serial types
+            if isCategory_found == 'n':
+                if isMultserial == 'y':
+                    # add serial category info
+                    categories = xml_serial.find("categories")
+                    cur_type_hash = 'sc_'+md5.md5((u'Мультсериалы').lower().encode('utf-8')).hexdigest()
+                    # check if category exists
+                    if xml_types.find(cur_type_hash) is None:
+                        type = SubElement(xml_types, cur_type_hash)
+                        SubElement(type, "name").text = u'Мультсериалы'
+                    if categories.find(cur_type_hash) is None:
+                        SubElement(categories, cur_type_hash)
+                else:
+                    # add serial category info
+                    categories = xml_serial.find("categories")
+                    cur_type_hash = 'sc_'+md5.md5((u'Зарубежные сериалы').lower().encode('utf-8')).hexdigest()
+                    # check if category exists
+                    if xml_types.find(cur_type_hash) is None:
+                        type = SubElement(xml_types, cur_type_hash)
+                        SubElement(type, "name").text = u'Зарубежные сериалы'
+                    if categories.find(cur_type_hash) is None:
+                        SubElement(categories, cur_type_hash)
 
-    # fill up data to info array
-    if len(name)>0:
-        i_name=unescape(name[0])
-    else:
-        i_name=('-').decode('utf-8')
-
-    if len(year)>0:
-        y = year[0].replace(' ', '')
-
-        if not unicode(y[0:4]).isnumeric():
-            y = country[0].replace(' ', '')
-
-        try:
-            i_year = (y[0:4]).decode('utf-8')
+            # update info in progress dialog
+            serial_found = serial_found + 1
         except:
-            i_year = ('-').decode('utf-8')
-    else:
-        i_year = ('-').decode('utf-8')
+            xbmc.log(formatExceptionInfo())
 
-    if not i_year.isnumeric():
-        i_year = ('-').decode('utf-8')
-
-    if len(genre)>0:
-        i_genre=(genre[0]).decode('utf-8')
-    else:
-        i_genre=('-').decode('utf-8')
-
-    if len(director)>0:
-        i_director=(director[0]).decode('utf-8')
-    else:
-        i_director=('-').decode('utf-8')
-
-    if len(text)>0:
-        i_text=unescape(text[0])
-    else:
-        i_text=('-').decode('utf-8')
-
-    if len(img)>0:
-        i_image=img[0]
-    else:
-        i_image='-'
-
-    return i_name, i_year, i_genre, i_director, i_text, i_image, season
+    return serial_found
 #-------------------------------------------------------------------------------
 
 def unescape(text):
-    text = hpar.unescape(text.decode('utf8'))
+    try:
+        text = hpar.unescape(text)
+    except:
+        text = hpar.unescape(text.decode('utf8'))
+
+    try:
+        text = unicode(text, 'utf-8')
+    except:
+        text = text
+
     return text
+
+def getkey(elem):
+    return elem.findtext("name")
 
 
 #-------------------------------------------------------------------------------
@@ -209,7 +299,7 @@ ret = 'NO'
 
 if mode != 'UPDATE' and mode != 'INFO':
     dialog = xbmcgui.Dialog()
-    if dialog.yesno('Внимание!', 'Пересоздание списка сериалов требует','значительного времени (0.5-2 часа).', 'Пересоздать список?'):
+    if dialog.yesno('Внимание!', 'Пересоздание списка сериалов требует','значительного времени (15-20 минут).', 'Пересоздать список?'):
         ret = 'YES'
     else:
         ret = 'NO'
@@ -221,5 +311,9 @@ else:
         dialog = xbmcgui.Dialog()
         tree = ElementTree()
         tree.parse(os.path.join(path, r'serials.xml'))
-        dialog.ok('Информация', sys.version, 'Список сериалов создан: ' + tree.getroot().find('LAST_UPDATE').text)
+
+        update_date = 'Список сериалов создан: ' + tree.getroot().find('LAST_UPDATE').text
+        serial_count= 'Количество сериалов   : ' + str(len(tree.getroot().find('SERIALS')))
+
+        dialog.ok('Информация', '', update_date, serial_count)
 
