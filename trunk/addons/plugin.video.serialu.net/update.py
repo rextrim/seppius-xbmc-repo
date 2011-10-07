@@ -36,6 +36,8 @@ def Update_Serial_XML(mode):
     #show Dialog
     dp = xbmcgui.DialogProgress()
 
+    isUpdate = 0
+
     if mode == 'UPDATE':
         #load current serial list
         try:
@@ -44,9 +46,10 @@ def Update_Serial_XML(mode):
             xml1 = tree.getroot()
             xml1.find("LAST_UPDATE").text = today.isoformat()
             xml_serials  = xml1.find('SERIALS')
-            xm_types    = xml1.find('TYPES')
+            xml_types    = xml1.find('TYPES')
             xml_genres   = xml1.find('GENRES')
             dp.create("Update SERIALU.NET Info")
+            isUpdate = 1
         except:
             # create XML structure
             xml1 = Element("SERIALU_NET")
@@ -72,7 +75,8 @@ def Update_Serial_XML(mode):
     # get number of webpages to grab information
     page_num = Get_Page_Number(url)
 
-    xbmc.log(' *** UPDATE is completed')
+    if isUpdate == 1:
+        page_num = min(page_num, 10)
 
     # get all serials
     for count in range(1, page_num+1):
@@ -80,8 +84,6 @@ def Update_Serial_XML(mode):
             serial_found = Get_Film_Info(url+'/page/'+str(count)+'/', xml_serials, xml_types, xml_genres, serial_found, dp)
             percent = min(count*100/page_num, 100)
             dp.update(percent, '', 'Loaded: '+ str(count)+' of '+str(page_num)+' pages','Кол-во сериалов: '+str(serial_found))
-
-    xbmc.log(' *** UPDATE is completed')
 
     # order sort serials/categories/genres by names
     xml_serials[:] = sorted(xml_serials, key=getkey)

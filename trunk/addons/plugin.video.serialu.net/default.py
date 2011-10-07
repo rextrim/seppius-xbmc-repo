@@ -19,12 +19,16 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, md5
+import re, os, urllib, urllib2, cookielib, md5, time
 import xbmc, xbmcgui, xbmcplugin
+from datetime import date
 
 # load XML library
 sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
 from ElementTree  import Element, SubElement, ElementTree
+
+import HTMLParser
+hpar = HTMLParser.HTMLParser()
 
 h = int(sys.argv[1])
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
@@ -123,49 +127,52 @@ def Get_Serial_List(params):
     tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
 
     if s_type == '[ИСТОРИЯ]':
-        (info_serial_url, info_part_url, info_image, info_name) = Get_Last_Serial_Info()
-        if info_serial_url == '-': return False
+        # try to open history
+        try:
+            htree = ElementTree()
+            htree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'))
+            xml_h = htree.getroot()
+        except:
+            xbmc.log("*** HISTORY NOT FOUND ")
+            return False
 
-        # --
-        url     = info_serial_url
-        image   = info_image
+        # build list of history
+        for rec_h in xml_h:
+            rec = tree.getroot().find('SERIALS').find(rec_h.tag.encode('utf-8'))
+            try:
+                #get serial details
+                i_name      = rec_h.find('Date').text+' '+rec.find('name').text.encode('utf-8')
+                try:
+                    i_year = int(rec.find('year').text)
+                except:
+                    try:
+                        i_year = int(rec.find('year').text.split('-')[0])
+                    except:
+                        i_year = 1900
 
-        req = urllib2.Request(url)
-        req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-        response = urllib2.urlopen(req)
-        link=response.read()
-        response.close()
-
-        match=re.compile('<p>Смотреть .+ онлайн<span id(.+?)<p><strong>Сериал посмотрели?', re.MULTILINE|re.DOTALL).findall(link)
-        if len(match) == 0:
-            match=re.compile('<p>Смотреть .+ онлайн<(.+?)<p><strong>Сериал посмотрели?', re.MULTILINE|re.DOTALL).findall(link)
-            if len(match) == 0:
-                showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
-                return False
-
-        list  =re.compile('<p>(.+?)</p>', re.MULTILINE|re.DOTALL).findall(match[0])
-
-        season = ''
-        for rec in list:
-            if re.search('object', rec):
-                v_url=re.compile('.txt&amp;pl=(.+?)&amp;link=', re.MULTILINE|re.DOTALL).findall(rec)
-                v_list = Get_Serial_Video(v_url[0].replace('%26','&'))
-                for v in v_list:
-                    name = season+' '+v[0]#.decode('utf-8')
-                    if v[1] == info_part_url:
-                        name = '* '+name
-                    else:
-                        name = '  '+name
-                    i = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
-                    u = sys.argv[0] + '?mode=PLAY'
-                    u += '&name=%s'%urllib.quote_plus(name)
-                    u += '&url=%s'%urllib.quote_plus(v[1])
-                    u += '&serial=%s'%urllib.quote_plus(info_serial_url)
-                    u += '&img=%s'%urllib.quote_plus(info_image)
-                    i.setProperty('IsPlayable', 'true')
-                    xbmcplugin.addDirectoryItem(h, u, i, False)
-            else:
-                season = rec#.decode('utf-8')
+                #get serial details
+                i_image     = rec.find('img').text.encode('utf-8')
+                i_url       = rec.find('url').text.encode('utf-8')
+                i_director  = rec.find('director').text
+                i_text      = rec.find('text').text
+                i_genre     = rec.find('genre').text
+                # set serial to XBMC
+                i = xbmcgui.ListItem(i_name, iconImage=i_image, thumbnailImage=i_image)
+                u = sys.argv[0] + '?mode=LIST'
+                u += '&name=%s'%urllib.quote_plus(i_name)
+                u += '&url=%s'%urllib.quote_plus(i_url)
+                u += '&img=%s'%urllib.quote_plus(i_image)
+                u += '&tag=%s'%urllib.quote_plus(rec.tag)
+                u += '&part=%s'%urllib.quote_plus(rec_h.find('Part').text.encode('utf-8'))
+                i.setInfo(type='video', infoLabels={ 'title':       i_name,
+            						'year':        i_year,
+            						'director':    i_director,
+            						'plot':        i_text,
+            						'genre':       i_genre})
+                i.setProperty('fanart_image', i_image)
+                xbmcplugin.addDirectoryItem(h, u, i, True)
+            except:
+                xbmc.log('***   ERROR '+rec.text.encode('utf-8'))
     else:
         for rec in tree.getroot().find('SERIALS'):
             try:
@@ -209,6 +216,8 @@ def Get_Serial_List(params):
                 u += '&name=%s'%urllib.quote_plus(i_name)
                 u += '&url=%s'%urllib.quote_plus(i_url)
                 u += '&img=%s'%urllib.quote_plus(i_image)
+                u += '&tag=%s'%urllib.quote_plus(rec.tag)
+                u += '&part=%s'%urllib.quote_plus('-')
                 i.setInfo(type='video', infoLabels={ 'title':       i_name,
             						'year':        i_year,
             						'director':    i_director,
@@ -228,7 +237,10 @@ def Get_Serial(params):
     if url == None:
         return False
 
-    image = urllib.unquote_plus(params['img'])
+    image  = urllib.unquote_plus(params['img'])
+    s_name = urllib.unquote_plus(params['name'])
+    h_part = urllib.unquote_plus(params['part'])
+    tag    = urllib.unquote_plus(params['tag'])
 
     req = urllib2.Request(url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
@@ -259,14 +271,25 @@ def Get_Serial(params):
             index = 0
             for v in v_list:
                 name = season+' '+v[0]#.decode('utf-8')
+
+                # mark part for history
+                if h_part <> '-':
+                    if name == h_part:
+                        name = '# '+name
+                    else:
+                        name = '  '+name
+
                 i = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
                 u = sys.argv[0] + '?mode=PLAY'
                 u += '&name=%s'%urllib.quote_plus(name)
                 u += '&url=%s'%urllib.quote_plus(v[1])
-                u += '&serial=%s'%urllib.quote_plus(url)
+                u += '&serial=%s'%urllib.quote_plus(s_name)
+                u += '&serial_tag=%s'%urllib.quote_plus(tag)
+                u += '&serial_url=%s'%urllib.quote_plus(url)
                 u += '&img=%s'%urllib.quote_plus(image)
                 u += '&playlist=%s'%urllib.quote_plus(str_pl)
                 u += '&index=%s'%urllib.quote_plus(str(index))
+
                 index = index+1
                 #i.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(h, u, i, True)
@@ -301,10 +324,12 @@ def Get_Serial_Video(url):
 
 def PLAY(params):
     # -- parameters
-    url = urllib.unquote_plus(params['url'])
-    img     = urllib.unquote_plus(params['img'])
-    serial  = urllib.unquote_plus(params['serial'])
-    name    = urllib.unquote_plus(params['name'])
+    url         = urllib.unquote_plus(params['url'])
+    img         = urllib.unquote_plus(params['img'])
+    serial      = urllib.unquote_plus(params['serial'])
+    tag         = urllib.unquote_plus(params['serial_tag'])
+    serial_url  = urllib.unquote_plus(params['serial_url'])
+    name        = urllib.unquote_plus(params['name'])
 
     # -- if requested continious play
     if xbmcplugin.getSetting(int( sys.argv[ 1 ] ), 'continue_play') == 'true':
@@ -326,53 +351,80 @@ def PLAY(params):
         xbmc.Player().play(url, i)
 
     # -- save view history
-    Save_Last_Serial_Info(serial, url, img, name)
+    Save_Last_Serial_Info(tag, serial, serial_url, img, name)
 
 #-------------------------------------------------------------------------------
 
-def Save_Last_Serial_Info(serial, part, img, name):
+def Save_Last_Serial_Info(tag, serial, serial_url, img, part):
+    # get max history lenght
     try:
-        tree = ElementTree()
-        tree.parse(os.path.join(path, r'history.xml'))
-        xml1 = tree.getroot()
-        xml1.find("Serial").text = serial
-        xml1.find("Part").text   = part
-        xml1.find("Image").text  = img
-        xml1.find("Name").text   = name
+        max_history = (1, 5, 10, 20, 30, 50)[int(xbmcplugin.getSetting(int( sys.argv[ 1 ] ), 'history_len'))]
+        #xbmc.log("*** HISTORY LEN: "+ str(max_history))
+        if max_history > 99:
+            max_history = 99
     except:
-        # create XML structure
-        xml1 = Element("SERIALU_NET_HISTORY")
-        SubElement(xml1, "Serial").text = serial
-        SubElement(xml1, "Part").text   = part
-        SubElement(xml1, "Image").text  = img
-        SubElement(xml1, "Name").text   = name
+        max_history = 10
 
-    ElementTree(xml1).write(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'), encoding='utf-8')
+    sdate = today = date.today().isoformat()
 
-def Get_Last_Serial_Info():
+    # load or create history file
     try:
         tree = ElementTree()
         tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'))
         xml1 = tree.getroot()
-        serial = xml1.find("Serial").text
-        part   = xml1.find("Part").text
-        img    = xml1.find("Image").text
-        name   = xml1.find("Name").text
     except:
         # create XML structure
         xml1 = Element("SERIALU_NET_HISTORY")
-        SubElement(xml1, "Serial").text = '-'
-        SubElement(xml1, "Part").text   = '-'
-        SubElement(xml1, "Image").text  = '-'
-        SubElement(xml1, "Name").text   = '-'
-        ElementTree(xml1).write(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'), encoding='utf-8')
-        #
-        serial = '-'
-        part   = '-'
-        img    = '-'
-        name   = '-'
 
-    return serial, part, img, name
+    # shrink history to limit
+    if len(xml1) > max_history:
+        idx = 1
+        for rec in xml1:
+            if idx >= max_history:
+                xml1.remove(rec)
+            idx = idx + 1
+
+    xml_hist = None
+    # update sequince number for history records
+    for rec in xml1:
+        if rec.tag == tag:
+            rec.find("ID").text = str(0).zfill(2)
+            xml_hist = rec
+        else:
+            rec.find("ID").text = str(int(rec.find("ID").text)+1).zfill(2)
+
+    if xml_hist == None:
+        xml_hist = SubElement(xml1, tag)
+        SubElement(xml_hist, "ID").text     = str(0).zfill(2)
+        SubElement(xml_hist, "Serial").text = unescape(serial)
+        SubElement(xml_hist, "URL").text    = serial_url
+        SubElement(xml_hist, "Date").text   = sdate
+        SubElement(xml_hist, "Part").text   = unescape(part)
+        SubElement(xml_hist, "Image").text  = img
+    else:
+        xml_hist.find("Part").text   = unescape(part)
+        xml_hist.find("Date").text   = sdate
+
+    # sort history by IDs
+    xml1[:] = sorted(xml1, key=getkey)
+
+    ElementTree(xml1).write(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'), encoding='utf-8')
+
+def getkey(elem):
+    return elem.findtext("ID")
+
+def unescape(text):
+    try:
+        text = hpar.unescape(text)
+    except:
+        text = hpar.unescape(text.decode('utf8'))
+
+    try:
+        text = unicode(text, 'utf-8')
+    except:
+        text = text
+
+    return text
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
