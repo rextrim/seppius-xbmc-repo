@@ -18,7 +18,7 @@
     <summary lang="pl">Scraper filmów KinoPoisk</summary>
     <summary lang="pt">Scraper de filmes KinoPoisk</summary>
     <summary lang="ru">Инфо-ресурс для фильмов с КиноПоиска</summary>
-    <description lang="en">Download Movie information from www.kinopoisk.ru[CR][CR][B]ATTENTION:[/B][CR]For porper working you must set value of[CR]System->Appearance->International->Character set[CR]to Cyrillic (Windows)</description>
+    <description lang="en">Download Movie information from www.kinopoisk.ru[CR][CR][B]ATTENTION:[/B][CR]For proper working you must set value of[CR]System->Appearance->International->Character set[CR]to Cyrillic (Windows)</description>
     <description lang="hu">Film információk letöltése a www.kinopoisk.ru webhelyről</description>
     <description lang="kr">www.kinopoisk.ru 에서 영화 정보 다운로드</description>
     <description lang="pl">Pobieraj informacje o filmach z www.kinopoisk.ru</description>
