@@ -130,7 +130,7 @@
 			<RegExp input="$$13" output="&lt;year&gt;\1&lt;/year&gt;" dest="5+">
 				<expression/>
 			</RegExp>
-			<!-- premier year -->
+			<!-- premier year -->IMDb: 7.30 (1 315)
 			<RegExp input="$$1" output="\1" dest="14">
 				<expression>href="/level/80/film/\d+/".+?([0-9]+)&lt;/a&gt;</expression>
 			</RegExp>
@@ -168,14 +168,20 @@
 			<RegExp conditional="kinopoisk_rating" input="none" output="" dest="2">
 				<expression />
 			</RegExp>
-			<RegExp conditional="kinopoisk_rating" input="$$1" output="\1:::\2 \3 \4" dest="2">
-				<expression noclean="2">itemprop="ratingValue"&gt;(.+?)&lt;/span&gt;&lt;span.*?&gt;&nbsp;(\d*)&nbsp;(\d*)&nbsp;(\d+)&lt;</expression>
+			<RegExp conditional="kinopoisk_rating" input="$$1" output="\1:::\2" dest="2">
+				<expression noclean="2">itemprop="ratingValue"&gt;(.+?)&lt;/span&gt;&lt;span.*?&gt;(((&amp;nbsp;:?)|[\d]+:?)*)&lt;</expression>
 			</RegExp>
 			<RegExp conditional="kinopoisk_rating" input="$$2" output="&lt;rating&gt;\1&lt;/rating&gt;" dest="5+">
 				<expression noclean="1">(.*?):::.*</expression>
 			</RegExp>
-			<RegExp conditional="kinopoisk_rating" input="$$2" output="&lt;votes&gt;\1&lt;/votes&gt;" dest="5+">
-				<expression noclean="1">.*?:::[ ]*([0-9 ]+)</expression>
+			<RegExp conditional="kinopoisk_rating" input="none" output="\1" dest="3">
+				<expression>.*?:::(.*)</expression>
+			</RegExp>
+			<RegExp conditional="kinopoisk_rating" input="$$2" output="\1 " dest="3">
+				<expression repeat="yes" noclean="1">&amp;nbsp;*([0-9 ]+)</expression>
+			</RegExp>
+			<RegExp conditional="kinopoisk_rating" input="$$3" output="&lt;votes&gt;\1&lt;/votes&gt;" dest="5+">
+				<expression noclean="1">(.*) </expression>
 			</RegExp>
 			<!--GENRE-->
 			<RegExp input="$$1" output="&lt;genre&gt;\1&lt;/genre&gt;" dest="5+">
