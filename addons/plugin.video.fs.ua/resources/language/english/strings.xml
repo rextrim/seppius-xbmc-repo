@@ -3,4 +3,5 @@
 	<string id="30002">Login</string>
 	<string id="30003">Password</string>
 	<string id="30004">Autoplay next</string>
+    <string id="30005">Use flv files for playback</string>
 </strings>
