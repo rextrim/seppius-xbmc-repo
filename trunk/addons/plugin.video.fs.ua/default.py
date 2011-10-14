@@ -335,10 +335,12 @@ def readdir(params):
 		for item in items:
 			isFolder = item['class'] == 'folder'
 			linkItem = None
+			playLink = None
 			if isFolder:
 				linkItem = item.find('a')
 			else:
 				linkItem = item.find('a', 'link-material')
+				playLink = item.find('a', 'b-player-link')
 			
 			if linkItem != None:
 				title = ""
@@ -349,7 +351,12 @@ def readdir(params):
 						 title = title + " [" + str(quality.string) + "]"
 				else:
 					title = str(linkItem.find('span').string)
-				href = linkItem['href']
+
+				useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
+				if useFlv and playLink != None:
+					href = httpSiteUrl + str(playLink['href'])
+				else:
+					href = linkItem['href']
 
 				li = None
 				uri = None
@@ -372,11 +379,17 @@ def readdir(params):
 						type = 'music'
 					li.setInfo(type = type, infoLabels={'title': title})
 
-					if type == 'music' or __settings__.getSetting('Autoplay next') == 'true':
+					if type == 'music' or (__settings__.getSetting('Autoplay next') == 'true' and not useFlv):
 						uri = construct_request({
 							'file': str(href.encode('utf-8')),
 							'referer': folderUrl,
 							'mode': 'play'
+						})
+					elif useFlv:
+						uri = construct_request({
+							'file': href,
+							'referer': folderUrl,
+							'mode': 'playflv'
 						})
 					else:
 						uri = href
@@ -449,13 +462,33 @@ def render_search_results(params):
 
 	xbmcplugin.endOfDirectory(h)
 
+def playflv(params):
+	referer = urllib.unquote_plus(params['referer'])
+	file = urllib.unquote_plus(params['file'])
+	http = GET(file, referer)
+	if http == None: return False
+
+	beautifulSoup = BeautifulSoup(http)
+	playerLink = beautifulSoup.findAll('a', attrs={'id': "player"})
+	if playerLink == None:
+		showMessage('Error', 'FLV file was not found')
+		return False
+
+	file = urllib.urlopen(str(playerLink[0]['href']))
+	fileUrl = file.geturl()
+
+	i = xbmcgui.ListItem(path = fileUrl)
+	xbmcplugin.setResolvedUrl(h, True, i)
+
 def play(params):
 	referer = urllib.unquote_plus(params['referer'])
 	file = urllib.unquote_plus(params['file'])
-
 	headers['Referer'] = referer
 
-	i = xbmcgui.ListItem(path = file)
+	file = urllib.urlopen(file)
+	fileUrl = file.geturl()
+
+	i = xbmcgui.ListItem(path = fileUrl)
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):

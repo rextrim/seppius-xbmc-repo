@@ -3,4 +3,5 @@
 	<setting id="Autoplay next" type="bool" label="30004" default="false"/>
 	<setting id="Login" type="text" label="30002"/>
 	<setting id="Password" type="text" label="30003" option="hidden"/>
+    <setting id="Use flv files for playback" type="bool" label="30005" default="true" />
 </settings>
