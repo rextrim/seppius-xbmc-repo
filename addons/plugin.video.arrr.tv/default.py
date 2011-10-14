@@ -286,16 +286,18 @@ def getseries(params):
 		pass
 
 	episodes = beautifulSoup.findAll('div', 'episode')
-	episodeRegexp = re.compile(u'Сезон (\d+), серия (\d+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
+	seasonRegexp = re.compile('season-(\d+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
+	episodeRegexp = re.compile('#(\d+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
 
 	showLanguages = __settings__.getSetting("Show available languages") == "true"
 	for episode in episodes:
 		episodeId = episode['name']
 		name = htmlEntitiesDecode(episode.find('h3', 'title').find('a').string)
 		poster = httpSiteUrl + episode.find('img', 'poster')['src']
-		episodeDetails = episode.find('h4').find('a').string
+		episodeDetails = episode.find('h4').find('a')
 		
-		(seasonNum, episodeNum) = episodeRegexp.findall(episodeDetails)[0]
+		seasonNum = seasonRegexp.findall(str(episodeDetails['href']))[0]
+		episodeNum = episodeRegexp.findall(str(episodeDetails['href']))[0]
 		episodeNum = int(episodeNum)
 		seasonNum = int(seasonNum)
 
