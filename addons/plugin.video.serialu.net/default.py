@@ -19,19 +19,28 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, md5, time
-import xbmc, xbmcgui, xbmcplugin
+import re, os, urllib, urllib2, cookielib, time
+
+try:
+    from hashlib import md5 as md5
+except:
+    import md5
+
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from datetime import date
 
+Addon = xbmcaddon.Addon(id='plugin.video.serialu.net')
+
 # load XML library
-sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+#sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
 from ElementTree  import Element, SubElement, ElementTree
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
 h = int(sys.argv[1])
-icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
@@ -63,7 +72,7 @@ def Get_Serial_Type():
 
     # load serials types
     tree = ElementTree()
-    tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
+    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'serials.xml'))
 
     for rec in tree.getroot().find('TYPES'):
             name = rec.find('name').text.encode('utf-8')
@@ -81,7 +90,7 @@ def Get_Serial_Type():
 def Get_Serial_Genre():
     # load serials types
     tree = ElementTree()
-    tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
+    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'serials.xml'))
 
     for rec in tree.getroot().find('GENRES'):
             name = rec.find('name').text.encode('utf-8')
@@ -124,13 +133,13 @@ def Get_Serial_List(params):
 
     # load serials types
     tree = ElementTree()
-    tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'serials.xml'))
+    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'serials.xml'))
 
     if s_type == '[ИСТОРИЯ]':
         # try to open history
         try:
             htree = ElementTree()
-            htree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'))
+            htree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'history.xml'))
             xml_h = htree.getroot()
         except:
             xbmc.log("*** HISTORY NOT FOUND ")
@@ -292,7 +301,7 @@ def Get_Serial(params):
 
                 index = index+1
                 #i.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(h, u, i, True)
+                xbmcplugin.addDirectoryItem(h, u, i, False)
         else:
             season = rec#.decode('utf-8')
     xbmcplugin.endOfDirectory(h)
@@ -370,7 +379,7 @@ def Save_Last_Serial_Info(tag, serial, serial_url, img, part):
     # load or create history file
     try:
         tree = ElementTree()
-        tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'))
+        tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'history.xml'))
         xml1 = tree.getroot()
     except:
         # create XML structure
@@ -408,7 +417,7 @@ def Save_Last_Serial_Info(tag, serial, serial_url, img, part):
     # sort history by IDs
     xml1[:] = sorted(xml1, key=getkey)
 
-    ElementTree(xml1).write(os.path.join(os.getcwd(), r'resources', r'data', r'history.xml'), encoding='utf-8')
+    ElementTree(xml1).write(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'history.xml'), encoding='utf-8')
 
 def getkey(elem):
     return elem.findtext("ID")
