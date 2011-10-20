@@ -18,6 +18,8 @@
 #   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #   http://www.gnu.org/licenses/gpl.html
 
+sys.path.append(os.path.join(os.getcwd().replace(';', ''), 'resources', 'lib'))
+
 import httplib
 import urllib
 import urllib2
