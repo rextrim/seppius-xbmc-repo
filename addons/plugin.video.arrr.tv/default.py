@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-#   Writer (c) 05/05/2011, Khrysev D.A., E-mail: x86demon@gmail.com
+#   Writer (c) 19/10/2011, Khrysev D.A., E-mail: x86demon@gmail.com
 #
 #   This Program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 import httplib
 import urllib
 import urllib2
-import re
 import sys
 import os
 import Cookie
@@ -32,13 +31,13 @@ import xbmcgui
 import xbmcaddon
 import xbmc
 
-from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import socket
 socket.setdefaulttimeout(50)
 
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
 siteUrl = 'arrr.tv'
-httpSiteUrl = 'http://' + siteUrl
+httpSiteUrl = 'http://%s' % siteUrl
+apiUrl = '%s/api' % httpSiteUrl
 __settings__ = xbmcaddon.Addon(id='plugin.video.arrr.tv')
 sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.arrr.tv.cookies.sid')
 
@@ -46,9 +45,6 @@ h = int(sys.argv[1])
 
 def construct_request(params):
 	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
-
-def htmlEntitiesDecode(string):
-	return BeautifulStoneSoup(string, convertEntities=BeautifulStoneSoup.HTML_ENTITIES).contents[0]
 
 def showMessage(heading, message, times = 3000):
 	xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
@@ -61,7 +57,7 @@ headers  = {
 	'Accept-Encoding':'identity, *;q=0'
 }
 
-def GET(target, referer, post_params = None, accept_redirect = True):
+def GET(target, referer, post_params = None, accept_redirect = True, get_redirect_url = False):
 	try:
 		connection = httplib.HTTPConnection(siteUrl)
 
@@ -83,9 +79,18 @@ def GET(target, referer, post_params = None, accept_redirect = True):
 		connection.request(method, target, post, headers = headers)
 		response = connection.getresponse()
 
+		if response.status == 403:
+			raise Exception("Forbidden, check credentials")
+		if response.status == 404:
+			raise Exception("File not found")
 		if accept_redirect and response.status in (301, 302):
 			target = response.getheader('location', '')
-			return GET(httpSiteUrl + target, referer, post_params, False)
+			if target.find("://") < 0:
+				target = httpSiteUrl + target
+			if get_redirect_url:
+				return target
+			else:
+				return GET(target, referer, post_params, False)
 
 		try:
 			sc = Cookie.SimpleCookie()
@@ -95,315 +100,240 @@ def GET(target, referer, post_params = None, accept_redirect = True):
 			fh.close()
 		except: pass
 
-		http = response.read()
-
-		return http
+		if get_redirect_url:
+			return False
+		else:
+			http = response.read()
+			return http
 
 	except Exception, e:
-		showMessage(target, e, 5000)
+		showMessage('Error', e, 5000)
 		return None
 
-def check_login():
-	login = __settings__.getSetting("Login")
-	password = __settings__.getSetting("Password")
+def apiCall(href):
+	http = GET(href, apiUrl)
+	if http == None: return False
 
-	if len(login) > 0:
-		http = GET(httpSiteUrl, httpSiteUrl)
-		if http == None: return False
+	response = {"status": "nok", "data": []}
+	try:
+		response = json.loads(http)
+	except:
+		showMessage('ОШИБКА', 'Неверный ответ сервера', 3000)
+		return
 
-		beautifulSoup = BeautifulSoup(http)
-		loginTitle = beautifulSoup.find('h2', 'login_options_title')
-
-		if loginTitle != None:
-			try:
-				os.remove(cookiepath)
-			except:
-				pass
-			
-			loginResponse = GET(httpSiteUrl + '/auth/login?next=%2F', httpSiteUrl, {
-				'email': login,
-				'password': password
-			})
-
-			loginSoup = BeautifulSoup(loginResponse)
-			loginTitle = loginSoup.find('h2', 'login_options_title')
-			if loginTitle != None:
-				showMessage('Login', 'Check login and password', 3000)
-			else:
-				showMessage('Login', 'Login successfull', 3000)
-				return True
-		else:
-			return True
-	return False
+	if response['status'] != 'ok' or len(response['data']) == 0:
+		showMessage('ОШИБКА', 'Данных не найдено', 3000)
+		return False
+	else:
+		return response
 
 def getCategories(params):
-	#check_login()
-	
 	li = xbmcgui.ListItem('Tv Shows')
 	uri = construct_request({
 		'mode': 'getshows',
-		'href': httpSiteUrl + '/shows/'
+		'href': apiUrl + '/shows/'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	li = xbmcgui.ListItem('Movies')
 	uri = construct_request({
 		'mode': 'getmovies',
-		'href': httpSiteUrl + '/movies/'
+		'href': apiUrl + '/movies/'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
 
-def getmovies(params):
-	href = urllib.unquote_plus(params['href'])
-	http = GET(href, httpSiteUrl)
-	if http == None: return False
+def getLang():
+	langs = {"0": "ru", "1": "en"}
+	return langs[__settings__.getSetting('Preferred language')]
 
-	beautifulSoup = BeautifulSoup(http)
-	movies = beautifulSoup.findAll('div', 'movie')
-
-	if len(movies) == 0:
-		showMessage('ОШИБКА', 'Неверная страница', 3000)
-		return False
-	else:
-		for movie in movies:
-			cover = movie.find('div', 'poster').find('img', 'fluffy_shadow')['src']
-			description = movie.find('div', 'description')
-			title = description.find('span', 'title').find('strong').string
-			href = description.find('a')['href']
-			plot = description.find('p').string
-
-			li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
-			li.setInfo(type='video', infoLabels={'title': title, 'plot':plot})
-			li.setProperty('IsPlayable', 'true')	
-			uri = sys.argv[0] + '?mode=playmovie'
-			uri += '&href='+urllib.quote_plus(href)
-			uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/movies/')
-			xbmcplugin.addDirectoryItem(h, uri, li)
-
-	xbmcplugin.endOfDirectory(h)
-
-def playmovie(params):
-	movieURI = urllib.unquote_plus(params['href'])
-	href = httpSiteUrl + movieURI
-
-	try:
-		http = GET(href, urllib.unquote_plus(params['referer']))
-		if http == None: return False
-	except: return False
-
-	headers['Referer'] = href
-
-	beautifulSoup = BeautifulSoup(http)
-
-	jsonRegexp = re.compile('var movie_data = {([^;]+)')
-	movieDataString = str(beautifulSoup.find(text = re.compile('var movie_data') ))
-	movieDetailsUnclean = '{' + jsonRegexp.findall(movieDataString)[0]
-	movieDetailsJson = cleanJson(movieDetailsUnclean)
-
-	movieId = re.sub('^/', '', movieURI)
-	movieId = re.sub('/$', '', movieId)
-	play({
-		'episodeId': urllib.quote_plus(movieId), 
-		'episodeData': urllib.quote_plus(movieDetailsJson), 
-		'referer': params['referer'],
-		'type': 'movies'
-	})
-	
-
-def getshows(params):
-	http = GET(httpSiteUrl + '/shows/', httpSiteUrl)
-	if http == None: return False
-
-	processedShows = [];
-
-	beautifulSoup = BeautifulSoup(http)
-	shows = beautifulSoup.findAll('div', 'cover')
-
-	if len(shows) == 0:
-		showMessage('ОШИБКА', 'Неверная страница', 3000)
-		return False
+def getTitle(ruTitle, enTitle, id):
+	if enTitle == None and ruTitle == None:
+		originalName = id.replace('-', ' ')
+		return originalName[0].upper() + originalName[1:]
+	elif enTitle == None and ruTitle != None:
+		return ruTitle
+	elif enTitle != None and ruTitle == None:
+		return enTitle
 	else:
 		showTitleType = __settings__.getSetting("Show title")
-		for show in shows:
+		title = enTitle
+		if showTitleType == "0":
+			title = ruTitle
+		if showTitleType == "1":
+			title = enTitle
+		if showTitleType == "2":
+			title = '%s/%s' % (ruTitle, enTitle)
+		if showTitleType == "3":
+			title = '%s/%s' % (enTitle, ruTitle)
+
+		return title
+
+def getAvailableLanguages(video):
+	result = []
+	for videoData in video:
+		try:
+			result.index(videoData[0])
+		except:
+			result.append(videoData[0])
+	return result
+
+def getmovies(params):
+	lang = getLang()
+	movies = apiCall(urllib.unquote_plus(params['href']))
+	showLanguages = __settings__.getSetting("Show available languages") == "true"
+	if movies != False:
+		for movie in movies['data']:
+			id = movie['id']
+			cover = movie['cover'][lang]
+			backdrop = movie['backdrop']
+			plot = movie['description'][lang]
+			title = getTitle(movie['title']["ru"], movie['title']["en"], id)
+			video = movie['video']
+			availableLanguages = getAvailableLanguages(video)
+
 			try:
-				showId = show['id']
-				try:
-					processedShows.index(showId)
-				except:
-					processedShows.append(showId)
-					originalName = showId.replace('id_', '').replace('-', ' ')
-					originalName = originalName[0].upper() + originalName[1:]
-
-					href = show.find('a')['href']
-					name = show.find('h3').string
-					cover = httpSiteUrl + show.find('img', 'fluffy_shadow')['src']
-					
-					title = originalName
-					if showTitleType == "0":
-						title = name
-					if showTitleType == "1":
-						title = originalName
-					if showTitleType == "2":
-						title = name + '/' + originalName
-					if showTitleType == "3":
-						title = originalName + '/' + name
-
-					li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
-					uri = sys.argv[0] + '?mode=getseries'
-					uri += '&href='+urllib.quote_plus(href)
-					uri += '&referer='+urllib.quote_plus(httpSiteUrl + '/shows/')
-					uri += '&tvshow='+urllib.quote_plus(originalName)
-					xbmcplugin.addDirectoryItem(h, uri, li, True)
+				if __settings__.getSetting('Show preferred language only') == "true":
+					availableLanguages.index(lang)
+				listName = title
+				if showLanguages:
+					listName += " (" + ", ".join(getAvailableLanguages(video)) + ")"
+				li = xbmcgui.ListItem(listName, iconImage = cover, thumbnailImage = cover)
+				if backdrop != None:
+					li.setProperty('fanart_image', backdrop)
+				li.setInfo(type='video', infoLabels={'title': title, 'plot': plot})
+				li.setProperty('IsPlayable', 'true')
+				uri = construct_request({
+					'mode': 'play',
+					'video': json.dumps(video),
+					'href': "%s/movies/%s/video/" % (apiUrl, id)
+				})
+				xbmcplugin.addDirectoryItem(h, uri, li)
 			except:
 				pass
 
-		xbmcplugin.endOfDirectory(h)
+	xbmcplugin.endOfDirectory(h)
 
+def getshows(params):
+	shows = apiCall(urllib.unquote_plus(params['href']))
+	if shows != False:
+		for show in shows['data']:
+			id = show['id']
+			cover = show['cover']
+			title = getTitle(show['title']["ru"], show['title']["en"], id)
 
-def getseries(params):
-	href = httpSiteUrl + urllib.unquote_plus(params['href'])
-	try:
-		http = GET(href, urllib.unquote_plus(params['referer']))
-		if http == None: return False
-	except: return False
-
-	tvshow = urllib.unquote_plus(params['tvshow'])
-
-	headers['Referer'] = href
-
-	beautifulSoup = BeautifulSoup(http)
-
-	jsonRegexp = re.compile('var episodes = {([^;]+)')
-	episodesDataString = str(beautifulSoup.find(text = re.compile('var episodes') ))
-	episodeDetailsUnclean = '{' + jsonRegexp.findall(episodesDataString)[0]
-	episodeDetailsJson = cleanJson(episodeDetailsUnclean)
-	
-	try:
-		episodeDetailsInfo = json.loads(episodeDetailsJson)
-	except:
-		pass
-
-	episodes = beautifulSoup.findAll('div', 'episode')
-	seasonRegexp = re.compile('season-(\d+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
-	episodeRegexp = re.compile('#(\d+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
-
-	showLanguages = __settings__.getSetting("Show available languages") == "true"
-	for episode in episodes:
-		episodeId = episode['name']
-		name = htmlEntitiesDecode(episode.find('h3', 'title').find('a').string)
-		poster = httpSiteUrl + episode.find('img', 'poster')['src']
-		episodeDetails = episode.find('h4').find('a')
-		
-		seasonNum = seasonRegexp.findall(str(episodeDetails['href']))[0]
-		episodeNum = episodeRegexp.findall(str(episodeDetails['href']))[0]
-		episodeNum = int(episodeNum)
-		seasonNum = int(seasonNum)
-
-		languages = detectLanguages(episodeDetailsInfo[episodeId])
-		
-		listName = "[s%de%02d] %s" % (seasonNum, episodeNum, name)
-		if showLanguages:
-			listName += " (" + ", ".join(languages) + ")"
-		
-		uri = construct_request({
-			'mode': 'play',
-			'episodeId': episodeId,
-			'referer': params['href'],
-			'episodeData': json.dumps(episodeDetailsInfo[episodeId]),
-			'type': 'tvshows'
-		})
-		
-		item = xbmcgui.ListItem(listName, iconImage=poster, thumbnailImage=poster)
-		item.setInfo(type='video', infoLabels={'title': name,'episode': episodeNum, 'season': seasonNum, 'tvshowtitle': tvshow})			
-		item.setProperty('IsPlayable', 'true')
-		xbmcplugin.addDirectoryItem(h,uri,item)
-
-	try:
-		seasons = beautifulSoup.find(id='seasons').findAll('input')
-		for season in seasons:
-			try:
-				season['disabled']
-			except:
-				li = xbmcgui.ListItem("[%s]" % season['id'].replace('_', ' '))
-				uri = sys.argv[0] + '?mode=getseries'
-				uri += '&href='+urllib.quote_plus(season['value'])
-				uri += '&referer='+urllib.quote_plus(href)
-				uri += '&tvshow='+urllib.quote_plus(tvshow)
-				xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-	except:
-		pass
+			li = xbmcgui.ListItem(title, iconImage = cover, thumbnailImage = cover)
+			li.setInfo(type='video', infoLabels={'title': title})
+			uri = construct_request({
+				'mode': 'getepisodes',
+				'href': "%s/shows/%s/" % (apiUrl, id),
+				'tvshow': show['title']["en"]
+			})
+			xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
 
+def getepisodes(params):
+	lang = getLang()
+	tvshow = urllib.unquote_plus(params['tvshow'])
+	episodes = apiCall(urllib.unquote_plus(params['href']))
+	showLanguages = __settings__.getSetting("Show available languages") == "true"
+	if episodes != False:
+		for episode in episodes['data']:
+			id = episode['id']
+			cover = episode['cover'][lang]
+			backdrop = episode['backdrop']
+			title = getTitle(episode['title']["ru"], episode['title']["en"], id)
+			seasonNum = int(episode['season'])
+			episodeNum = int(episode['episode'])
+			video = episode['video']
+			availableLanguages = getAvailableLanguages(video)
+
+			try:
+				if __settings__.getSetting('Show preferred language only') == "true":
+					availableLanguages.index(lang)
+				listName = "[s%de%02d] %s" % (seasonNum, episodeNum, title)
+				if showLanguages:
+					listName += " (" + ", ".join(availableLanguages) + ")"
+				li = xbmcgui.ListItem(listName, iconImage = cover, thumbnailImage = cover)
+				li.setProperty('fanart_image', backdrop)
+				li.setInfo(type='video', infoLabels={
+					'title': title,
+					'episode': episodeNum,
+					'season': seasonNum,
+					'tvshowtitle': tvshow
+				})
+				uri = construct_request({
+					'mode': 'play',
+					'video': json.dumps(video),
+					'href': "%s/shows/%s/video/" % (apiUrl, id)
+				})
+				li.setProperty('IsPlayable', 'true')
+				xbmcplugin.addDirectoryItem(h, uri, li)
+			except:
+				pass
+
+	xbmcplugin.endOfDirectory(h)
+
+def getFiles(files):
+	keys = files.keys()
+	keys.sort()
+	if __settings__.getSetting("Prefer HD") == "true":
+		keys.reverse()
+	return [files[key] for key in keys]
+
+def getFilesByLang(files):
+	if __settings__.getSetting('Show preferred language only') == "true":
+		try:
+			return [files[getLang()]]
+		except:
+			showMessage('Error', 'No files in selected language were found')
+			return []
+	else:
+		keys = files.keys()
+		keys.sort()
+		if __settings__.getSetting("Preferred language") != "1":
+			keys.reverse()
+
+		return [files[key] for key in keys]
+
 def play(params):
-	episodeId  = urllib.unquote_plus(params['episodeId'])
-	episodeData = json.loads( urllib.unquote_plus(params['episodeData']) )
-	referer = urllib.unquote_plus(params['referer'])
+	login = __settings__.getSetting("Login")
+	password = __settings__.getSetting("Password")
+	if len(login) == 0 or len(password) == 0:
+		showMessage('Error', 'Проверьте логин и пароль', 3000)
+		return False
 
-	movieFile = detectUrl(episodeId, episodeData, params['type'])
-	
-	headers['Referer'] = referer
-	i = xbmcgui.ListItem(path = movieFile)
-	i.setProperty('mimetype', 'video/x-msvideo')
-	xbmcplugin.setResolvedUrl(h, True, i)
+	href = urllib.unquote_plus(params['href'])
+	video = json.loads(urllib.unquote_plus(params['video']))
+	files = {}
+	for videoData in video:
+		try:
+			files[videoData[0]]
+		except:
+			files[videoData[0]] = {}
+		files[videoData[0]][videoData[1]] = "%s/%s.%s" % (videoData[0], videoData[1], videoData[2])
 
-def cleanJson(jsonStr):
-	jsonStrClean = re.sub('\'', '"', jsonStr)
-	jsonStrClean = re.sub('\s+', ' ', jsonStrClean)	
-	jsonStrClean = re.sub(',\s*]', ']', jsonStrClean)
-	jsonStrClean = re.sub(',\s*}', '}', jsonStrClean)
-	jsonStrClean = jsonStrClean.replace('mp4', '"mp4"')
-	jsonStrClean = jsonStrClean.replace('ogv', '"ogv"')
-	jsonStrClean = jsonStrClean.replace('webm', '"webm"')
-	jsonStrClean = jsonStrClean.replace(';','')
-	jsonStrClean = jsonStrClean.replace('\n','')
-	jsonStrClean = jsonStrClean.replace('\t','')
+	for filesData in getFilesByLang(files):
+		for file in getFiles(filesData):
+			target = href + file
+			fileUrl = GET(
+				target, apiUrl, {
+					"username": login,
+					"password": password
+				}, True, True)
+			if fileUrl and isRemoteFile(fileUrl):
+				i = xbmcgui.ListItem(path = fileUrl)
+				i.setProperty('mimetype', 'video/x-msvideo')
+				xbmcplugin.setResolvedUrl(h, True, i)
+				return True
 
-	return jsonStrClean
-
-def detectLanguages(episodeData):
-	detectedLangs = []
-	for format, languages in episodeData.iteritems():
-		for language, formats in languages.iteritems():
-			if len(formats) > 0 and language not in detectedLangs:
-				detectedLangs.append(language)
-
-	return detectedLangs
-
-def detectUrl(episodeId, episodeData, type):	
-	formats = ['mp4', 'ogv', 'webm']
-
-	qualities = ['p480', 'p720']
-	if __settings__.getSetting("Prefer 720p") == "1":
-		qualities = ['p720', 'p480']
-
-	languages = ['ru', 'en']
-	if __settings__.getSetting("Prefered language") == "1":
-		languages = ['en', 'ru']
-	
-	cdns = [
-		'http://cdn10.arrr.tv/%s/' % type, 
-		'http://video10.neetee.tv/atv/%s/' % type, 
-		'http://cdn2.arrr.tv/', 
-		'http://video8.neetee.tv/atv/'
-	]
-
-	for language in languages:
-		for quality in qualities:
-			for format in formats:
-				if format in episodeData and language in episodeData[format] and quality in episodeData[format][language]:
-					for server in cdns:
-						url = server + episodeId + ':' + quality + ':' + language + '.' + format
-						if isRemoteFile(url):
-							return url
 	return False
 
 def isRemoteFile(url):
 	try:
-		f = urllib2.urlopen(urllib2.Request(url))
+		urllib2.urlopen(urllib2.Request(url))
 		return True
 	except:
 		return False
