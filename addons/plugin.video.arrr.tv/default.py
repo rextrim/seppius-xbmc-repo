@@ -18,13 +18,14 @@
 #   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #   http://www.gnu.org/licenses/gpl.html
 
+import sys
+import os
+
 sys.path.append(os.path.join(os.getcwd().replace(';', ''), 'resources', 'lib'))
 
 import httplib
 import urllib
 import urllib2
-import sys
-import os
 import Cookie
 import simplejson as json
 
