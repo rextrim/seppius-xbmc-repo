@@ -135,11 +135,6 @@ def readCategory(params, postParams = None):
 	http = GET(categoryUrl, httpSiteUrl, postParams)
 	if http == None: return False
 
-	if postParams != None:
-		f = open('/tmp/index.html', 'w')
-		f.write(http)
-		f.close()
-
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('div', attrs={'id': 'dle-content'})
 	dataRows = content.findAll('div', 'tezt')
