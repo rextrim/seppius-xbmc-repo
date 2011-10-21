@@ -191,7 +191,10 @@ def getmovies(params):
 			id = movie['id']
 			cover = movie['cover'][lang]
 			backdrop = movie['backdrop']
-			plot = movie['description'][lang]
+			try:
+				plot = movie['description'][lang]
+			except:
+				plot = ""
 			title = getTitle(movie['title']["ru"], movie['title']["en"], id)
 			video = movie['video']
 			availableLanguages = getAvailableLanguages(video)
