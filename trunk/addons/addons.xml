@@ -591,6 +591,24 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
+<addon id="plugin.video.kino-live.org"
+       name="kino-live.org"
+       version="1.0.0"
+       provider-name="x86demon">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+        <import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Фильмы, сериалы с ресурса kino-live.org</summary>
+        <description>Фильмы, сериалы с ресурса kino-live.org</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.5" provider-name="seppius">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
