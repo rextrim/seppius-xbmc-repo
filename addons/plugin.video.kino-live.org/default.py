@@ -120,39 +120,43 @@ def mainScreen(params):
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-#	li = xbmcgui.ListItem('[Поиск]')
-#	uri = construct_request({
-#		'mode': 'runSearch'
-#	})
-#	xbmcplugin.addDirectoryItem(h, uri, li, True)
+	li = xbmcgui.ListItem('[Поиск]')
+	uri = construct_request({
+		'mode': 'runSearch'
+	})
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	readCategory({
 		'href': httpSiteUrl
 	});
 
-def readCategory(params):
+def readCategory(params, postParams = None):
 	categoryUrl = urllib.unquote_plus(params['href'])
-	http = GET(categoryUrl, httpSiteUrl)
+	http = GET(categoryUrl, httpSiteUrl, postParams)
 	if http == None: return False
+
+	if postParams != None:
+		f = open('/tmp/index.html', 'w')
+		f.write(http)
+		f.close()
 
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('div', attrs={'id': 'dle-content'})
-	titles = content.findAll('h1')
+	dataRows = content.findAll('div', 'tezt')
 
-	if len(titles) == 0:
+	if len(dataRows) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
 	else:
-		for title in titles:
-			titleLink = title.find('a')
-			titleText = titleLink.string
-			href = titleLink['href']
-
-			data = title.findNextSibling('div')
-			cover = data.find('img')['src']
-
+		for data in dataRows:
+			img = data.find('img')
+			cover = img['src']
 			if cover.find("://") < 0:
 				cover = httpSiteUrl + cover
+			titleText = img['alt'].encode('utf-8', 'cp1251')
+
+			link = data.findNextSibling('div', 'more').find('a')
+			href = link['href']
 
 			li = xbmcgui.ListItem(titleText, iconImage = cover, thumbnailImage = cover)
 			li.setProperty('IsPlayable', 'false')
@@ -165,17 +169,22 @@ def readCategory(params):
 			})
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-	pager = content.find('div', 'pages')
-	pages = pager.findAll('a')
-	nextPageLink = pages[len(pages) - 1]
-	if nextPageLink != None:
-		li = xbmcgui.ListItem('[NEXT PAGE >]')
-		li.setProperty('IsPlayable', 'false')
-		uri = construct_request({
-			'href': nextPageLink['href'],
-			'mode': 'readCategory'
-		})
-		xbmcplugin.addDirectoryItem(h, uri, li, True)
+	#TODO: Find a way to use pager in search results
+	if postParams == None:
+		try:
+			pager = content.find('div', 'pages')
+			pages = pager.findAll('a')
+			nextPageLink = pages[len(pages) - 1]
+			if nextPageLink != None:
+				li = xbmcgui.ListItem('[NEXT PAGE >]')
+				li.setProperty('IsPlayable', 'false')
+				uri = construct_request({
+					'href': nextPageLink['href'],
+					'mode': 'readCategory'
+				})
+				xbmcplugin.addDirectoryItem(h, uri, li, True)
+		except:
+			pass
 
 	xbmcplugin.endOfDirectory(h)
 
@@ -260,12 +269,15 @@ def runSearch(params):
 	skbd.doModal()
 	if skbd.isConfirmed():
 		SearchStr = skbd.getText()
-		searchUrl = '%s/%s/search/?search=%s' % (httpSiteUrl, params['section'], urllib.quote_plus(SearchStr))
 		params = {
-			'href': searchUrl,
-			'section': params['section']
+			'href': httpSiteUrl
 		}
-		return readCategory(params)
+		postParams = {
+			'do': 'search',
+			'subaction': 'search',
+			'story': SearchStr.decode('utf-8').encode('cp1251')
+		}
+		return readCategory(params, postParams)
 
 def play(params):
 	referer = urllib.unquote_plus(params['referer'])
