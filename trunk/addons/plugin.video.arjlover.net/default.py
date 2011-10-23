@@ -177,8 +177,9 @@ def play(params):
 
 #	file = urllib.urlopen(file)
 #	fileUrl = file.geturl()
+#	i = xbmcgui.ListItem(path = fileUrl)
 
-	i = xbmcgui.ListItem(path = fileUrl)
+	i = xbmcgui.ListItem(path = file)
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):
