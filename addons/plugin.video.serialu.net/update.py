@@ -26,9 +26,13 @@ def formatExceptionInfo(maxTBlevel=5):
      return excName+' '+excArgs+' '+excTb
 
 # load XML library
-#sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
-sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
-from ElementTree  import Element, SubElement, ElementTree
+try:
+    sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+    from ElementTree  import Element, SubElement, ElementTree
+except:
+    sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+    from ElementTree  import Element, SubElement, ElementTree
+
 from BeautifulSoup  import BeautifulSoup
 
 today = date.today()
