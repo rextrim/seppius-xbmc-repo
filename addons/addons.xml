@@ -198,7 +198,7 @@
 
 <addon id="plugin.video.5-tv.ru"
        name="Пятый канал"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

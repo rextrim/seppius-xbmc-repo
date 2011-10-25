@@ -25,20 +25,25 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from datetime import date
 
 Addon = xbmcaddon.Addon(id='plugin.video.5-tv.ru')
+icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
 # load XML library
 try:
     sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
     from BeautifulSoup  import BeautifulSoup
 except:
-    sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
-    from BeautifulSoup  import BeautifulSoup
+    try:
+        sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+    except:
+        sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
 h = int(sys.argv[1])
-icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
