@@ -76,7 +76,10 @@ def Get_Categories():
             name = unescape(nav.find("a").text).encode('utf-8')
             tag  = nav.find("a")["href"]
             i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-            u = sys.argv[0] + '?mode=SUBCATEGORIES'
+            if nav.find("a")["href"] == "http://www.5-tv.ru/video/doc/" or nav.find("a")["href"] == "http://5-tv.ru/video/doc/":
+                u = sys.argv[0] + '?mode=EPISODES'
+            else:
+                u = sys.argv[0] + '?mode=SUBCATEGORIES'
             u += '&name=%s'%urllib.quote_plus(name)
             u += '&url=%s'%urllib.quote_plus(tag)
             xbmcplugin.addDirectoryItem(h, u, i, True)
