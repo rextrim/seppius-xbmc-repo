@@ -117,7 +117,7 @@ def check_login():
 def getSortBy():
 	sortBy = __settings__.getSetting("Sort by")
 	sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
-	return '?sort=' + sortByMap[sortBy]
+	return '?view=list&sort=' + sortByMap[sortBy]
 
 def main(params):
 	li = xbmcgui.ListItem('Видео')
@@ -143,8 +143,15 @@ def main(params):
 	if check_login():
 		li = xbmcgui.ListItem('Избранное')
 		uri = construct_request({
-			'mode': 'readfavorites',
-			'page': 0
+			'mode': 'getFavoriteCategories',
+			'type': 'favorites'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+		li = xbmcgui.ListItem('Рекомендуемое')
+		uri = construct_request({
+			'mode': 'getFavoriteCategories',
+			'type': 'recommended'
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
@@ -164,7 +171,7 @@ def getCategories(params):
 	if topMenu == None:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
-	categorySubmenu = topMenu.find('li', 'm-%s' % section).find('ul')
+	categorySubmenu = topMenu.find('li', 'm-%s' % section)
 	if categorySubmenu == None:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
@@ -184,73 +191,78 @@ def getCategories(params):
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-
 	xbmcplugin.endOfDirectory(h)
 
-#TODO: fix me
-def readfavorites(params):
-	sortByString = getSortBy()
-	favoritesBaseUrl = httpSiteUrl + '/myfavourites.aspx' + sortByString
+def getFavoriteCategories(params):
+	http = GET(httpSiteUrl + '/myfavourites.aspx?page=' + params['type'], httpSiteUrl)
+	if http == None: return False
 
-	try:
-		favoritesUrl = urllib.unquote_plus(params['href'])
-	except:
-		favoritesUrl = favoritesBaseUrl
+	beautifulSoup = BeautifulSoup(http)
+	favSectionsContainer = beautifulSoup.find('ul', 'b-fav-sections-list')
+	if favSectionsContainer == None:
+		showMessage('ОШИБКА', 'В избранном пусто', 3000)
+		return False
+
+	favSections = favSectionsContainer.findAll('li')
+	if len(favSections) == 0:
+		showMessage('ОШИБКА', 'В избранном пусто', 3000)
+		return False
+	for favSection in favSections:
+		link = favSection.find('a')
+		title = str(link.string)
+		li = xbmcgui.ListItem(title)
+
+		uri = construct_request({
+			'mode': 'readfavorites',
+			'href': httpSiteUrl + link['href']
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+	xbmcplugin.endOfDirectory(h)
+
+def readfavorites(params):
+	favoritesUrl = urllib.unquote_plus(params['href'])
 
 	http = GET(favoritesUrl, httpSiteUrl)
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
-	items = beautifulSoup.findAll('div', 'b-poster')
+	itemsContainer = beautifulSoup.find('div', 'b-posters')
+	if itemsContainer == None:
+		showMessage('ОШИБКА', 'В избранном пусто', 3000)
+		return False
+	items = itemsContainer.findAll('a')
 	if len(items) == 0:
 		showMessage('ОШИБКА', 'В избранном пусто', 3000)
 		return False
 	else:
+		coverRegexp = re.compile('url\s*\(([^\)]+)')
 		for item in items:
-			coverRegexp = re.compile('url\s*\(([^\)]+)')
 			cover = coverRegexp.findall(str(item['style']))[0]
-			linkItem = item.find('a', 'details-link')
+			title = str(item.find('span').string)
+			href = httpSiteUrl + item['href']
 
-			href = httpSiteUrl + '/dl' + linkItem['href']
-			title = re.sub('\s+', ' ', str(linkItem.string))
-			title = re.sub('(^\s+|\s+$)', '', title)
+			isMusic = "no"
+			if re.search('audio', href):
+				isMusic = "yes"
 
 			li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 			li.setProperty('IsPlayable', 'false')
-
-			isMusic = "no"
-			if re.search('music', href):
-				isMusic = "yes"
-
 			uri = construct_request({
 				'href': href,
-				'referer': favoritesUrl,
+				'referer': href,
 				'mode': 'readdir',
 				'cover': cover,
+				'folder': 0,
 				'isMusic': isMusic
 			})
-
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-	moreLinks = beautifulSoup.findAll('a', 'add')
-	for moreLink in moreLinks:
-		li = xbmcgui.ListItem("[More %s]" % moreLink['rel'])
-		li.setProperty('IsPlayable', 'false')
-
-		page = int(params['page']) + 1
-		uri = construct_request({
-			'href': favoritesBaseUrl + '&ajax=0&section=' + moreLink['rel'] + '&page=' + str(page),
-			'mode': 'readfavorites',
-			'page': 1
-		})
-
-		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
 
 def readcategory(params):
+	sortByString = getSortBy()
 	categoryUrl = urllib.unquote_plus(params['href'])
-	http = GET(categoryUrl, httpSiteUrl)
+	http = GET(categoryUrl + sortByString, httpSiteUrl)
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
