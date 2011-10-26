@@ -187,6 +187,7 @@ def getCategories(params):
 
 	xbmcplugin.endOfDirectory(h)
 
+#TODO: fix me
 def readfavorites(params):
 	sortByString = getSortBy()
 	favoritesBaseUrl = httpSiteUrl + '/myfavourites.aspx' + sortByString
@@ -348,10 +349,14 @@ def readdir(params):
 			if linkItem != None:
 				title = ""
 				if isFolder:
-					title = str(linkItem.string)
-					quality = item.find('span', 'material-quality')
-					if quality != None:
-						 title = title + " [" + str(quality.string) + "]"
+					titleB = linkItem.find('b')
+					if titleB == None:
+						title = str(linkItem.string)
+					else:
+						title = str(titleB.string)
+					quality = item.findAll('span', 'material-size')
+					if len(quality) > 1:
+						 title = title + " [" + str(quality[0].string) + "]"
 				else:
 					title = str(linkItem.find('span').string)
 
