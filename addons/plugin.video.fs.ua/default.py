@@ -119,56 +119,71 @@ def getSortBy():
 	sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
 	return '?sort=' + sortByMap[sortBy]
 
-def getCategories(params):
-	sortByString = getSortBy()
-
-	li = xbmcgui.ListItem('Tv Shows')
+def main(params):
+	li = xbmcgui.ListItem('Видео')
 	uri = construct_request({
-		'href': httpSiteUrl + '/serials' + sortByString,
-		'mode': 'readcategory',
-		'section': 'serials',
+		'href': httpSiteUrl + '/video/',
+		'mode': 'getCategories',
+		'category': 'video',
 		'filter': '',
 		'firstPage': 'yes'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-	li = xbmcgui.ListItem('Movies')
+	li = xbmcgui.ListItem('Аудио')
 	uri = construct_request({
-		'href': httpSiteUrl + '/films' + sortByString,
-		'mode': 'readcategory',
-		'section': 'films',
-		'filter': '',
-		'firstPage': 'yes'
-	})
-	xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-	li = xbmcgui.ListItem('Clips')
-	uri = construct_request({
-		'href': httpSiteUrl + '/clips' + sortByString,
-		'mode': 'readcategory',
-		'section': 'clips',
-		'filter': '',
-		'firstPage': 'yes'
-	})
-	xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-	li = xbmcgui.ListItem('Music')
-	uri = construct_request({
-		'href': httpSiteUrl + '/music' + sortByString,
-		'mode': 'readcategory',
-		'section': 'music',
+		'href': httpSiteUrl + '/audio/',
+		'mode': 'getCategories',
+		'category': 'audio',
 		'filter': '',
 		'firstPage': 'yes'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	if check_login():
-		li = xbmcgui.ListItem('Favorites')
+		li = xbmcgui.ListItem('Избранное')
 		uri = construct_request({
 			'mode': 'readfavorites',
 			'page': 0
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	xbmcplugin.endOfDirectory(h)
+
+def getCategories(params):
+	sortByString = getSortBy()
+	section = params['category']
+	categoryUrl = urllib.unquote_plus(params['href'])
+
+	http = GET(categoryUrl, httpSiteUrl)
+	if http == None: return False
+
+	beautifulSoup = BeautifulSoup(http)
+	topMenu = beautifulSoup.find('ul', 'b-header-menu')
+
+	if topMenu == None:
+		showMessage('ОШИБКА', 'Неверная страница', 3000)
+		return False
+	categorySubmenu = topMenu.find('li', 'm-%s' % section).find('ul')
+	if categorySubmenu == None:
+		showMessage('ОШИБКА', 'Неверная страница', 3000)
+		return False
+
+	subcategories = categorySubmenu.findAll('a')
+	if len(subcategories) == 0:
+		showMessage('ОШИБКА', 'Неверная страница', 3000)
+		return False
+	for subcategory in subcategories:
+		li = xbmcgui.ListItem(subcategory.string)
+		uri = construct_request({
+			'href': httpSiteUrl + subcategory['href'] + sortByString,
+			'mode': 'readcategory',
+			'section': section,
+			'filter': '',
+			'firstPage': 'yes'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 
 	xbmcplugin.endOfDirectory(h)
 
@@ -233,18 +248,12 @@ def readfavorites(params):
 	xbmcplugin.endOfDirectory(h)
 
 def readcategory(params):
-	sortBy = __settings__.getSetting("Sort by")
-	newLook = params['firstPage'] == 'yes' and sortBy == "1"
-
 	categoryUrl = urllib.unquote_plus(params['href'])
 	http = GET(categoryUrl, httpSiteUrl)
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
-	if newLook:
-		items = beautifulSoup.findAll('div', 'b-poster')
-	else:
-		items = beautifulSoup.findAll('a', 'subject-link')
+	items = beautifulSoup.findAll('a', 'subject-link')
 
 	if len(items) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
@@ -265,27 +274,18 @@ def readcategory(params):
 			cover = None
 			href = None
 
-			if newLook:
-				coverRegexp = re.compile('url\s*\(([^\)]+)')
-				cover = coverRegexp.findall(str(item['style']))[0]
-
-				linkItem = item.find('a', 'details-link')
-				href = httpSiteUrl + '/dl' + linkItem['href']
-				title = re.sub('\s+', ' ', str(linkItem.string))
-				title = re.sub('(^\s+|\s+$)', '', title)
-			else:
-				img = item.find('img')
-				if img != None:
-					cover = img['src']
-					title = img['alt']
-					href = httpSiteUrl + '/dl' + item['href']
+			img = item.find('img')
+			if img != None:
+				cover = img['src']
+				title = img['alt']
+				href = httpSiteUrl + item['href']
 
 			if title != None:
 				li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 				li.setProperty('IsPlayable', 'false')
 
 				isMusic = 'no'
-				if params['section'] == 'music':
+				if params['section'] == 'audio':
 					isMusic = 'yes'
 
 				uri = construct_request({
@@ -293,6 +293,7 @@ def readcategory(params):
 					'referer': categoryUrl,
 					'mode': 'readdir',
 					'cover': cover,
+					'folder': 0,
 					'isMusic': isMusic
 				})
 
@@ -316,8 +317,9 @@ def readcategory(params):
 def readdir(params):
 	folderUrl = urllib.unquote_plus(params['href'])
 	cover = urllib.unquote_plus(params['cover'])
+	folder = params['folder']
 
-	http = GET(folderUrl, httpSiteUrl)
+	http = GET(folderUrl + '?ajax&folder=' + folder, httpSiteUrl)
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
@@ -328,6 +330,7 @@ def readdir(params):
 
 	items = mainItems.findAll('li')
 
+	folderRegexp = re.compile('\?folder=(\d+)#')
 	if len(items) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
@@ -337,7 +340,7 @@ def readdir(params):
 			linkItem = None
 			playLink = None
 			if isFolder:
-				linkItem = item.find('a')
+				linkItem = item.find('a', 'title')
 			else:
 				linkItem = item.find('a', 'link-material')
 				playLink = item.find('a', 'b-player-link')
@@ -357,6 +360,10 @@ def readdir(params):
 					href = httpSiteUrl + str(playLink['href'])
 				else:
 					href = linkItem['href']
+					try:
+						folder = folderRegexp.findall(href)[0]
+					except:
+						pass
 
 				li = None
 				uri = None
@@ -366,9 +373,10 @@ def readdir(params):
 
 					uri = construct_request({
 						'cover': cover,
-						'href': httpSiteUrl + str(href.encode('utf-8')),
+						'href': folderUrl,
 						'referer': folderUrl,
 						'mode': 'readdir',
+						'folder': folder,
 						'isMusic': params['isMusic']
 					})
 				else:
@@ -515,7 +523,7 @@ func   = None
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	getCategories(params)
+	main(params)
 
 if (mode != None):
 	try:
