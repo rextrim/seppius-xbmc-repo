@@ -169,7 +169,7 @@
 				<expression />
 			</RegExp>
 			<RegExp conditional="kinopoisk_rating" input="$$1" output="\1:::\2" dest="2">
-				<expression noclean="2">itemprop="ratingValue"&gt;(.+?)&lt;/span&gt;&lt;span.*?&gt;(((&amp;nbsp;:?)|[\d]+:?)*)&lt;</expression>
+				<expression noclean="2">itemprop="ratingValue".+?&lt;span&gt;(.+?)&lt;/span&gt;.+?itemprop="ratingCount"&gt;(.+?)&lt;</expression>
 			</RegExp>
 			<RegExp conditional="kinopoisk_rating" input="$$2" output="&lt;rating&gt;\1&lt;/rating&gt;" dest="5+">
 				<expression noclean="1">(.*?):::.*</expression>
