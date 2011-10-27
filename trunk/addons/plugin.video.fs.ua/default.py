@@ -38,6 +38,7 @@ icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png')
 siteUrl = 'fs.ua'
 httpSiteUrl = 'http://' + siteUrl
 __settings__ = xbmcaddon.Addon(id='plugin.video.fs.ua')
+__language__  = __settings__.getLocalizedString
 cookiepath = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.fs.ua.cookies.lwp')
 
 h = int(sys.argv[1])
@@ -155,6 +156,20 @@ def main(params):
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
+		li = xbmcgui.ListItem('К просмотру')
+		uri = construct_request({
+			'mode': 'getFavoriteCategories',
+			'type': 'playlist'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+		li = xbmcgui.ListItem('Просмотенное')
+		uri = construct_request({
+			'mode': 'getFavoriteCategories',
+			'type': 'viewed'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 	xbmcplugin.endOfDirectory(h)
 
 def getCategories(params):
@@ -247,6 +262,27 @@ def readfavorites(params):
 
 			li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 			li.setProperty('IsPlayable', 'false')
+
+			id = item['href'].split('/')[-1]
+			li.addContextMenuItems([
+				(
+					__language__( 50003 ), "XBMC.RunPlugin(%s)" % construct_request({
+						'mode': 'addto',
+						'section': 'favorites',
+						'id': id,
+						'title': title
+					})
+				),
+				(
+					__language__( 50004 ), "XBMC.RunPlugin(%s)" % construct_request({
+						'mode': 'addto',
+						'section': 'playlist',
+						'id': id,
+						'title': title
+					})
+				)
+			])
+
 			uri = construct_request({
 				'href': href,
 				'referer': href,
@@ -296,6 +332,24 @@ def readcategory(params):
 			if title != None:
 				li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 				li.setProperty('IsPlayable', 'false')
+
+				id = str(item['href'].split('/')[-1])
+				li.addContextMenuItems([
+					(
+						__language__( 50001 ), "XBMC.RunPlugin(%s)" % construct_request({
+							'mode': 'addto',
+							'section': 'favorites',
+							'id': id
+						})
+					),
+					(
+						__language__( 50002 ), "XBMC.RunPlugin(%s)" % construct_request({
+							'mode': 'addto',
+							'section': 'playlist',
+							'id': id
+						})
+					)
+				])
 
 				isMusic = 'no'
 				if params['section'] == 'audio':
@@ -403,6 +457,14 @@ def readdir(params):
 					if params['isMusic'] == 'yes':
 						type = 'music'
 					li.setInfo(type = type, infoLabels={'title': title})
+					li.addContextMenuItems([
+						(
+							__language__( 40001 ), "XBMC.RunPlugin(%s)" % construct_request({
+								'mode': 'download',
+								'file_url': href
+							})
+						)
+					])
 
 					if type == 'music' or (__settings__.getSetting('Autoplay next') == 'true' and not useFlv):
 						uri = construct_request({
@@ -487,6 +549,11 @@ def render_search_results(params):
 
 	xbmcplugin.endOfDirectory(h)
 
+def addto(params):
+	addToHref = httpSiteUrl + "/addto/" + params['section'] + '/' + params['id'] + "?json"
+	GET(addToHref, httpSiteUrl)
+	showMessage('Result', "Toggled state in " + params['section'], 5000)
+
 def playflv(params):
 	referer = urllib.unquote_plus(params['referer'])
 	file = urllib.unquote_plus(params['file'])
@@ -515,6 +582,41 @@ def play(params):
 
 	i = xbmcgui.ListItem(path = fileUrl)
 	xbmcplugin.setResolvedUrl(h, True, i)
+
+def download(params):
+	file_url = urllib.unquote_plus(params['file_url'])
+	file_name = ''.join(file_url.split('/')[-1:])
+
+	dialog = xbmcgui.Dialog()
+	file_path = dialog.browse(0, __language__( 40002 ), 'myprograms')
+
+	if file_path:
+		try:
+			filename_complete = file_path + file_name
+			filename_incomplete = file_path + file_name + '.part'
+
+			dp = xbmcgui.DialogProgress()
+			dp.create("FS.UA",__language__( 40003 ),file_name)
+			urllib.urlretrieve(file_url,filename_incomplete,lambda nb, bs, fs, url=file_url: _progress_bar_hook(nb,bs,fs,url,dp))
+
+			os.rename(filename_incomplete, filename_complete)
+
+			showMessage(__language__( 40004 ), filename_complete, )
+		except:
+				showMessage(__language__( 40005 ), file_name, 3000)
+				if os.path.isfile(filename_incomplete):
+					os.remove(filename_incomplete)
+
+def _progress_bar_hook(numblocks, blocksize, filesize, url=None, dp=None):
+	try:
+		percent = min((numblocks*blocksize*100)/filesize, 100)
+		total = '%s (%s %s)' %(__language__( 40003 ), str(filesize/1024/1024),  __language__( 40006 ))
+		dp.update(percent,total)
+	except:
+		percent = 100
+		dp.update(percent)
+	if dp.iscanceled():
+		dp.close()
 
 def get_params(paramstring):
 	param=[]
