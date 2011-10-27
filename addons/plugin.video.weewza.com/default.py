@@ -303,7 +303,7 @@ def get_Weewza_getPos(str):
 
     d = d1-d2
 
-    return d.days*86400+d.seconds+4*60*60
+    return d.days*86400+d.seconds-4*60*60
 
 def unescape(text):
     try:
