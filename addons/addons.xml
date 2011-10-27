@@ -660,7 +660,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.6.1"
+       version="1.6.2"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
