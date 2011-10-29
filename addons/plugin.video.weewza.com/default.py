@@ -24,9 +24,6 @@ import re, os, urllib, urllib2, cookielib, time, json
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from datetime import datetime, date, time
 
-from threading import Event, Thread
-
-
 Addon = xbmcaddon.Addon(id='plugin.video.weewza.com')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
@@ -51,27 +48,6 @@ h = int(sys.argv[1])
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
-# -- repeater ------------------------------------------------------------------
-class RepeatTimer(Thread):
-    def __init__(self, interval, function, iterations=0, args=[], kwargs={}):
-        Thread.__init__(self)
-        self.interval = interval
-        self.function = function
-        self.iterations = iterations
-        self.args = args
-        self.kwargs = kwargs
-        self.finished = Event()
-
-    def run(self):
-        count = 0
-        while not self.finished.is_set() and (self.iterations <= 0 or count < self.iterations):
-            self.finished.wait(self.interval)
-            if not self.finished.is_set():
-                self.function(*self.args, **self.kwargs)
-                count += 1
-
-    def cancel(self):
-        self.finished.set()
 
 # -- weewza video player -------------------------------------------------------
 class Weewza_Player( xbmc.Player ):
@@ -81,49 +57,33 @@ class Weewza_Player( xbmc.Player ):
 
         # -- initialize parameters
         self.ID         = None                                  # channel ID
-        self.Pos        = None                                  # current timedelta
-        self.PlayList   = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)    # internal playlist
+        self.start_Pos  = None                                  # start timedelta
+        self.end_Pos    = None                                  # end timedelta
         self.MinLen     = 3                                     # min number of unplayed items in play list
-        self.isSet      = False
+        self.PlayList   = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)    # internal playlist
 
-    def play(self, ID, Pos):
+    def play(self, ID, start_Pos, end_Pos):
         # -- initialize parameters
         self.ID         = ID                            # channel ID
-        self.Pos        = Pos                           # current timedelta
+        self.Pos        = start_Pos                     # start timedelta
+        self.end_Pos    = end_Pos                       # end timedelta
 
         self.PlayList.clear()
 
-        # -- fill up playlist
-        for i in range(1, self.MinLen+2):
-            self.Add_To_Playlist()
-
-        xbmc.log(str(self.PlayList.__len__()))
+        self.Add_To_Playlist()
 
         # -- start play
         xbmc.Player().play(self.PlayList)
-        self.isSet = True
 
-        # -- inialize update playlist by timer
-        self.timer  = RepeatTimer( 60, self.Add_To_Playlist )
-        self.timer.run()
+        # -- fill up playlist
+        while self.Pos < self.end_Pos:
+            self.Add_To_Playlist()
 
-    def onPlayBackPaused(self):
-        xbmc.log( '*** CALLBACK: PAUSE')
 
     def Add_To_Playlist(self):
-        xbmc.log('** call Add_To_Playlist '+str(self.Pos))
-        # -- check if playlist could be expanded
-        try:
-            pl_pos = self.PlayList.getposition()
-        except:
-            pl_pos = 0
-
-        if self.PlayList.__len__() - pl_pos > self.MinLen:
-            return
 
         # -- get weewvza video url
         url = 'http://weewza.com/json.php?action=getFile&channelId='+self.ID+'&getPos='+str(self.Pos)
-        xbmc.log(url)
         post = None
         request = urllib2.Request(url, post)
 
@@ -143,19 +103,15 @@ class Weewza_Player( xbmc.Player ):
 
         epg = json.load(f)
 
-        xbmc.log(str(epg))
-
         try:
             video = epg["fileUrl"]
         except:
+            self.Pos= self.end_Pos
             return
-
-        xbmc.log(video)
 
         # -- add new video link to playlist
         self.PlayList.add(video)    # add video link
         self.Pos= self.Pos + 5*60   # set pointer to next 5 min interval
-        xbmc.log(str(self.Pos))
 
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
@@ -276,17 +232,25 @@ def PLAY(params):
 
     epg = json.load(f)
 
+    # -- get start and end time
+    end = -1
     for js in epg["FullEPG"]:
+        if end == 0:
+            end = unescape(js["start"])
+
         if unescape(js["start"]) == start:
+            end = 0
             if unescape(js["type"]).encode('utf-8') == 'future':
                 xbmc.log(unescape(js["start"][0:16]+"   "+js["name"]).encode('utf-8'))
                 return False
 
     # -- calculate timedelta
-    getPos = get_Weewza_getPos(start)
+    start_Pos = get_Weewza_getPos(start)
+    end_Pos   = get_Weewza_getPos(end)
 
     # -- play video
-    Weewza.play(id, getPos)
+    Weewza = Weewza_Player()
+    Weewza.play(id, start_Pos, end_Pos) # initialize player
 
 #-------------------------------------------------------------------------------
 
@@ -340,7 +304,6 @@ def get_params(paramstring):
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
-Weewza = Weewza_Player() # initialize player
 
 mode = None
 
@@ -349,13 +312,10 @@ try:
 except:
 	Get_TV_Channels()
 
+
 if mode == 'EPG':
 	Get_EPG(params)
 elif mode == 'PLAY':
 	PLAY(params)
 
-try:
-    if Weewza.isSet:
-        Weewza.timer.cancel()
-except:
-    mode = None
+
