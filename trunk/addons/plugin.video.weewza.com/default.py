@@ -19,13 +19,27 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, time, json
+import re, os, urllib, urllib2, cookielib, time
+
+try:
+    import json
+except ImportError:
+    try:
+        import simplejson as json
+        #xbmc.log( '[%s]: Error import json. Uses module simplejson' % addon_id, 2 )
+    except ImportError:
+        try:
+            import demjson3 as json
+            #xbmc.log( '[%s]: Error import simplejson. Uses module demjson3' % addon_id, 3 )
+        except ImportError:
+            xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from datetime import datetime, date, time
 
 Addon = xbmcaddon.Addon(id='plugin.video.weewza.com')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+
 
 # load XML library
 try:
@@ -48,7 +62,6 @@ h = int(sys.argv[1])
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
-
 # -- weewza video player -------------------------------------------------------
 class Weewza_Player( xbmc.Player ):
 
@@ -61,26 +74,39 @@ class Weewza_Player( xbmc.Player ):
         self.end_Pos    = None                                  # end timedelta
         self.MinLen     = 3                                     # min number of unplayed items in play list
         self.PlayList   = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)    # internal playlist
+        self.mode= mode
 
-    def play(self, ID, start_Pos, end_Pos):
+    def play(self, ID, Pos):
         # -- initialize parameters
-        self.ID         = ID                            # channel ID
-        self.Pos        = start_Pos                     # start timedelta
-        self.end_Pos    = end_Pos                       # end timedelta
+        self.ID         = ID                      # channel ID
+        self.Pos        = Pos                     # start timedelta
 
         self.PlayList.clear()
 
+        # -- insert first link to playlist
         self.Add_To_Playlist()
 
         # -- start play
         xbmc.Player().play(self.PlayList)
 
-        # -- fill up playlist
-        while self.Pos < self.end_Pos:
-            self.Add_To_Playlist()
-
+        time_count = 0
+        while 1:
+            xbmc.sleep(500)
+            time_count = time_count +1
+            if time_count >= 2*60:     # -- check every minute if new link could be added into playlist
+                time_count = 0
+                self.Add_To_Playlist()
 
     def Add_To_Playlist(self):
+
+        # -- check if playlist could be expanded
+        try:
+            pl_pos = self.PlayList.getposition()
+        except:
+            pl_pos = 0
+
+        if self.PlayList.__len__() - pl_pos > self.MinLen:
+            return
 
         # -- get weewvza video url
         url = 'http://weewza.com/json.php?action=getFile&channelId='+self.ID+'&getPos='+str(self.Pos)
@@ -106,7 +132,6 @@ class Weewza_Player( xbmc.Player ):
         try:
             video = epg["fileUrl"]
         except:
-            self.Pos= self.end_Pos
             return
 
         # -- add new video link to playlist
@@ -144,6 +169,14 @@ def Get_TV_Channels():
         name = unescape(nav.find('img')["alt"]).encode('utf-8')
         id   = nav["href"][nav["href"].find('channelId=')+10:1000]
         img  = nav.find('img')["src"]
+
+        # -- channel name correction
+        if img == "http://weewza.com/skin/logos/dtv.png":
+            name = "ДТВ"
+
+        if img == "http://weewza.com/skin/logos/ren.png":
+            name = "Рен ТВ"
+
         i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=EPG'
         u += '&name=%s'%urllib.quote_plus(name)
@@ -151,7 +184,6 @@ def Get_TV_Channels():
         u += '&img=%s'%urllib.quote_plus(img)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    #xbmcplugin.addSortMethod(h, sortMethod=xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
 
@@ -232,25 +264,19 @@ def PLAY(params):
 
     epg = json.load(f)
 
-    # -- get start and end time
-    end = -1
+    # -- check if record is playable
     for js in epg["FullEPG"]:
-        if end == 0:
-            end = unescape(js["start"])
-
         if unescape(js["start"]) == start:
-            end = 0
             if unescape(js["type"]).encode('utf-8') == 'future':
                 xbmc.log(unescape(js["start"][0:16]+"   "+js["name"]).encode('utf-8'))
                 return False
 
     # -- calculate timedelta
-    start_Pos = get_Weewza_getPos(start)
-    end_Pos   = get_Weewza_getPos(end)
+    Pos = get_Weewza_getPos(start)
 
     # -- play video
     Weewza = Weewza_Player()
-    Weewza.play(id, start_Pos, end_Pos) # initialize player
+    Weewza.play(id, Pos) # initialize player
 
 #-------------------------------------------------------------------------------
 
