@@ -116,9 +116,6 @@
 			<RegExp input="$$4" output="false" dest="17">
 				<expression>^$</expression>
 			</RegExp>
-			<RegExp input="none" output="test$$17test" dest="5+">
-				<expression>none</expression>
-			</RegExp>
 			<!--COUNTRY-->
 			<RegExp input="$$1" output="&lt;country&gt;\1&lt;/country&gt;" dest="5+">
 				<expression repeat="yes">&lt;a href="/level/10/m_act%5Bcountry%5D/.+?/"&gt;&lt;img src="http://st.kinopoisk.ru/images/flags/flag.*?alt="(.*?)"</expression>
@@ -147,7 +144,7 @@
 			</RegExp>
 			<!--TOP250-->
 			<RegExp input="$$1" output="&lt;top250&gt;\1&lt;/top250&gt;" dest="5+">
-				<expression>&lt;a href="/level/56/film/\d+/" style="color:#555"&gt;([0-9]*).+?&lt;/a&gt;</expression>
+				<expression>Топ250: &lt;a href="/level/20/#([0-9]+)</expression>
 			</RegExp>
 			<!--Рейтинг MPAA-->
 			<RegExp input="$$1" output="&lt;mpaa&gt;\1&lt;/mpaa&gt;" dest="5+">
