@@ -268,15 +268,26 @@ def Get_Film_Info(url, xml_serials, xml_types, xml_genres, serial_found, dp):
                 if categories.find(cur_type_hash) is None:
                     SubElement(categories, cur_type_hash)
             else:
-                # add serial category info
-                categories = xml_serial.find("categories")
-                cur_type_hash = 'sc_'+f_md5((u'Зарубежные сериалы').lower().encode('utf-8')).hexdigest()
-                # check if category exists
-                if xml_types.find(cur_type_hash) is None:
-                    type = SubElement(xml_types, cur_type_hash)
-                    SubElement(type, "name").text = u'Зарубежные сериалы'
-                if categories.find(cur_type_hash) is None:
-                    SubElement(categories, cur_type_hash)
+                if i_country.encode('utf-8') == 'Россия':
+                    # add serial category info
+                    categories = xml_serial.find("categories")
+                    cur_type_hash = 'sc_'+f_md5((u'Русские сериалы').lower().encode('utf-8')).hexdigest()
+                    # check if category exists
+                    if xml_types.find(cur_type_hash) is None:
+                        type = SubElement(xml_types, cur_type_hash)
+                        SubElement(type, "name").text = u'Русские сериалы'
+                    if categories.find(cur_type_hash) is None:
+                        SubElement(categories, cur_type_hash)
+                else:
+                    # add serial category info
+                    categories = xml_serial.find("categories")
+                    cur_type_hash = 'sc_'+f_md5((u'Зарубежные сериалы').lower().encode('utf-8')).hexdigest()
+                    # check if category exists
+                    if xml_types.find(cur_type_hash) is None:
+                        type = SubElement(xml_types, cur_type_hash)
+                        SubElement(type, "name").text = u'Зарубежные сериалы'
+                    if categories.find(cur_type_hash) is None:
+                        SubElement(categories, cur_type_hash)
 
         # update info in progress dialog
         serial_found = serial_found + 1
