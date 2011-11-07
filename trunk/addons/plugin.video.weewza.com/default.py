@@ -74,7 +74,10 @@ class Weewza_Player( xbmc.Player ):
         self.end_Pos    = None                                  # end timedelta
         self.MinLen     = 3                                     # min number of unplayed items in play list
         self.PlayList   = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)    # internal playlist
-        self.mode= mode
+        self.isStop     = 'N'
+        self.isAdded    = 'N'
+
+        self.Player     = xbmc.Player()
 
     def play(self, ID, Pos):
         # -- initialize parameters
@@ -87,15 +90,26 @@ class Weewza_Player( xbmc.Player ):
         self.Add_To_Playlist()
 
         # -- start play
-        xbmc.Player().play(self.PlayList)
+        self.Player.play(self.PlayList)
 
-        time_count = 0
-        while 1:
+        while self.isStop == 'N':
             xbmc.sleep(500)
-            time_count = time_count +1
-            if time_count >= 2*60:     # -- check every minute if new link could be added into playlist
-                time_count = 0
-                self.Add_To_Playlist()
+            if self.Player.isPlayingVideo():
+                if self.Player.getTime() >= 295 and self.isAdded == 'N':
+                    self.Add_To_Playlist()
+                    self.isAdded = 'Y'
+
+    #def onPlayBackEnded(self):
+    #    xbmc.log('*** Weewza: onPlayBackEnded')
+
+    def onPlayBackStarted(self):
+        self.isAdded = 'N'
+        xbmc.log('*** Weewza: '+self.PlayList[self.PlayList.getposition()].getfilename()+' ('+str(self.PlayList.getposition()+1)+' : '+str(self.PlayList.__len__())+')')
+
+    def onPlayBackStopped(self):
+        xbmc.log('*** Weewza: onPlayBackStopped')
+        self.isStop = 'Y'
+
 
     def Add_To_Playlist(self):
 
@@ -105,9 +119,19 @@ class Weewza_Player( xbmc.Player ):
         except:
             pl_pos = 0
 
-        if self.PlayList.__len__() - pl_pos > self.MinLen:
-            return
+        #if self.PlayList.__len__() - pl_pos > self.MinLen:
+        #   return
 
+        # -- get weewvza video url
+        video = self.Get_Weewza_Video()
+        if video == '': return
+
+        # -- add new video link to playlist
+        self.PlayList.add(video)    # add video link
+        self.Pos= self.Pos + 5*60   # set pointer to next 5 min interval
+        xbmc.log('*** added to playlist: '+video)
+
+    def Get_Weewza_Video(self):
         # -- get weewvza video url
         url = 'http://weewza.com/json.php?action=getFile&channelId='+self.ID+'&getPos='+str(self.Pos)
         post = None
@@ -132,11 +156,10 @@ class Weewza_Player( xbmc.Player ):
         try:
             video = epg["fileUrl"]
         except:
-            return
+            video = ''
 
-        # -- add new video link to playlist
-        self.PlayList.add(video)    # add video link
-        self.Pos= self.Pos + 5*60   # set pointer to next 5 min interval
+        return video
+
 
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
