@@ -322,7 +322,7 @@
 
 <addon id="plugin.video.diafilms"
        name="Диафильмы"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

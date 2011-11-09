@@ -91,11 +91,12 @@ class Diafilm(xbmcgui.WindowXML):
 
 
         li = xbmcgui.ListItem(label=title,
-                              iconImage=url)
+                              iconImage=url,
+                              path = url)
         li.setProperty('show_info', 'true')
         li.setProperty('show_info', 'photo')
         li.setProperty('title', title)
-        li.setProperty('aspectratio', 'scale')
+        li.setProperty('aspectratio', 'keep')
         self.getControl(self.CONTROL_MAIN_IMAGE).addItem(li)
 
 
