@@ -217,7 +217,7 @@
 
 <addon id="plugin.video.IPTV"
        name="IPTV"
-       version="0.0.7"
+       version="0.0.8"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
