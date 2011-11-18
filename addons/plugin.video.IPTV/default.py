@@ -1,5 +1,6 @@
 #!/usr/bin/python
-#/*
+# -*- coding: utf-8 -*-
+
 # *      Copyright (C) 2011 TDW
 # *
 # *
@@ -18,6 +19,7 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
+
 import urllib2, re, string, xbmc, xbmcgui, xbmcplugin, os, urllib, cookielib
 def ru(x):return unicode(x,'utf8', 'ignore')
 def xt(x):return xbmc.translatePath(x)
@@ -25,6 +27,8 @@ def xt(x):return xbmc.translatePath(x)
 handle = int(sys.argv[1])
 
 PLUGIN_NAME   = 'IPTV'
+
+from canal_list import*
 
 thumb = os.path.join( os.getcwd(), "icon.png" )
 fanart = os.path.join( os.getcwd(), "fanart.jpg" )
@@ -83,16 +87,57 @@ def open_pl(pl_name):
 	fl.close()
 	return (Ltitle, Lurl)
 
+def formating(str):
+	str=str.strip()
+	str=str.replace('-',' ').replace('  ',' ')
+	str=str.replace(' +1','').replace(' +2','').replace(' +3','').replace(' +4','').replace(' +5','').replace(' +6','')
+	str=xt(str).lower()
+	str=str.replace('Й','й')
+	str=str.replace('Ц','ц')
+	str=str.replace('У','у')
+	str=str.replace('К','к')
+	str=str.replace('Е','е')
+	str=str.replace('Н','н')
+	str=str.replace('Г','г')
+	str=str.replace('Ш','ш')
+	str=str.replace('Щ','щ')
+	str=str.replace('З','з')
+	str=str.replace('Х','х')
+	str=str.replace('Ъ','ъ')
+	str=str.replace('Ф','ф')
+	str=str.replace('Ы','ы')
+	str=str.replace('В','в')
+	str=str.replace('А','а')
+	str=str.replace('П','п')
+	str=str.replace('Р','р')
+	str=str.replace('О','о')
+	str=str.replace('Л','л')
+	str=str.replace('Д','д')
+	str=str.replace('Ж','ж')
+	str=str.replace('Э','э')
+	str=str.replace('Я','я')
+	str=str.replace('Ч','ч')
+	str=str.replace('С','с')
+	str=str.replace('М','м')
+	str=str.replace('И','и')
+	str=str.replace('Т','т')
+	str=str.replace('Ь','ь')
+	str=str.replace('Б','б')
+	str=str.replace('Ю','ю')
+	return str
+
 def OpenCat(url, name):
 	Ltitle, Lurl=open_pl(name)
 	for i in range (len(Ltitle)):
-		Title = Ltitle[i]#xbmc.translatePath(
+		Title = formating(Ltitle[i])#.strip().replace('-',' ').replace('  ',' ').replace(' +1','').replace(' +2','').replace(' +3','').replace(' +4','').replace(' +5','').replace(' +6','').lower()
 		thumb2 = xbmc.translatePath(os.path.join(ImgPath, Title[:-2]+'.png'))
 		if os.path.isfile(thumb2)==0:
 			thumb2 = os.path.join(ImgPath, Title[:-1]+'.png')
 			if os.path.isfile(thumb2)==0:thumb2=thumb
 			thumb3 = ru(os.path.join(ImgPath, Title[:-1]+'.png'))
 			if os.path.isfile(thumb3)==1:thumb2=thumb3
+			thumb4 = os.path.join(ImgPath, dc.get(xt(Title), ' ')+u'.png')
+			if os.path.isfile(thumb4)==1:thumb2=thumb4
 		row_name = Ltitle[i]
 		row_url = Lurl[i]
 		Plot  = ' Plot: '
