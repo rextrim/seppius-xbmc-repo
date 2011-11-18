@@ -136,7 +136,7 @@ def OpenCat(url, name):
 			if os.path.isfile(thumb2)==0:thumb2=thumb
 			thumb3 = ru(os.path.join(ImgPath, Title[:-1]+'.png'))
 			if os.path.isfile(thumb3)==1:thumb2=thumb3
-			thumb4 = os.path.join(ImgPath, dc.get(xt(Title), ' ')+u'.png')
+			thumb4 = os.path.join(ImgPath, dc.get(xt(Title), ' ')+'.png')
 			if os.path.isfile(thumb4)==1:thumb2=thumb4
 		row_name = Ltitle[i]
 		row_url = Lurl[i]
