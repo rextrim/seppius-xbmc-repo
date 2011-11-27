@@ -563,6 +563,25 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.my-hit.ru"
+       name="Кино портал (my-hit.ru)"
+       version="1.0.0"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Фильмы онлайн, наш кино портал.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.1" provider-name="Myvi">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
