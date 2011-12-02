@@ -439,7 +439,7 @@
 
 <addon id="plugin.video.igru.net.ua"
        name="Фильмы (igru.net.ua)"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

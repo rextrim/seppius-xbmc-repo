@@ -20,14 +20,19 @@
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
 import re, os, urllib, urllib2, cookielib, md5
-import xbmc, xbmcgui, xbmcplugin
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 # load XML library
 sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
 from ElementTree  import Element, SubElement, ElementTree
 
 h = int(sys.argv[1])
-icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+Addon = xbmcaddon.Addon(id='plugin.video.igru.net.ua')
+icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
+
+import HTMLParser
+hpar = HTMLParser.HTMLParser()
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
@@ -145,13 +150,27 @@ def Get_Movie(params):
     image = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
 
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
+    # -- get iframe link to flash player
+    post = None
+    request = urllib2.Request(url, post)
 
-    match=re.compile('<object type="application/x-shockwave-flash"(.+?)</object>', re.MULTILINE|re.DOTALL).findall(link)
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://igru.net.ua')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    match=re.compile("<div align='center'><iframe src='(.+?)' frameborder=", re.MULTILINE|re.DOTALL).findall(html)
     if len(match) == 0:
         showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
         return False
@@ -159,7 +178,6 @@ def Get_Movie(params):
     part = 1
 
     for rec in match:
-        v_url=re.compile('.txt&amp;file=(.+?)&amp;link=', re.MULTILINE|re.DOTALL).findall(rec)
         i_name = name
         if len(match) > 1:
             i_name = i_name + ' (часть '+str(part)+')'
@@ -168,19 +186,72 @@ def Get_Movie(params):
         i = xbmcgui.ListItem(i_name, iconImage=image, thumbnailImage=image)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(i_name)
-        u += '&url=%s'%urllib.quote_plus(v_url[0])
-        i.setProperty('IsPlayable', 'true')
-        xbmcplugin.addDirectoryItem(h, u, i, False)
+        u += '&url=%s'%urllib.quote_plus(rec)
+        u += '&img=%s' %urllib.quote_plus(image)
+        #i.setProperty('IsPlayable', 'true')
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        xbmc.log(i_name+'   '+rec)
 
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-	url = urllib.unquote_plus(params['url'])
-        xbmc.output(url)
-	i = xbmcgui.ListItem(path = urllib.unquote(url))
-	#xbmcplugin.setResolvedUrl(h, True, i)
-        xbmc.Player().play(url, i)
+    url = urllib.unquote_plus(params['url'])
+    image = urllib.unquote_plus(params['img'])
+    name  = urllib.unquote_plus(params['name'])
+
+    xbmc.log('*******    '+url)
+
+    #-- get session ID (cookie)
+    post = None
+    request = urllib2.Request('http://igru.net.ua/', post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://igru.net.ua')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    # -- get movie link
+    post = None
+    request = urllib2.Request(url, post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://igru.net.ua')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    match=re.compile('.txt&amp;file=(.+?)&amp;link=', re.MULTILINE|re.DOTALL).findall(html)
+    if len(match) == 0:
+        showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
+        return False
+
+    url = match[0]
+
+    i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=image)
+    xbmc.Player().play(url, i)
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
@@ -202,6 +273,12 @@ def get_params(paramstring):
 
 params=get_params(sys.argv[2])
 
+# get cookies from last session
+cj = cookielib.FileCookieJar(fcookies)
+hr  = urllib2.HTTPCookieProcessor(cj)
+opener = urllib2.build_opener(hr)
+urllib2.install_opener(opener)
+
 mode = None
 
 try:
@@ -216,3 +293,9 @@ elif mode == 'LIST':
 elif mode == 'PLAY':
 	PLAY(params)
 
+try:
+	import adanalytics
+	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
+except:
+	xbmc.output(' === unhandled exception in adIO === ')
+	pass
