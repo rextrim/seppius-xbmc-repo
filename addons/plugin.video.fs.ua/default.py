@@ -200,6 +200,7 @@ def getCategories(params):
 		uri = construct_request({
 			'href': httpSiteUrl + subcategory['href'] + sortByString,
 			'mode': 'readcategory',
+			'cleanUrl': httpSiteUrl + subcategory['href'],
 			'section': section,
 			'filter': '',
 			'firstPage': 'yes'
@@ -314,7 +315,8 @@ def readcategory(params):
 			li.setProperty('IsPlayable', 'false')
 			uri = construct_request({
 				'mode': 'runsearch',
-				'section': params['section']
+				'section': params['section'],
+				'url': urllib.unquote_plus(params['cleanUrl'])
 			})
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
 
@@ -461,7 +463,7 @@ def readdir(params):
 						(
 							__language__( 40001 ), "XBMC.RunPlugin(%s)" % construct_request({
 								'mode': 'download',
-								'file_url': href
+								'file_url': str(href.encode('utf-8'))
 							})
 						)
 					])
@@ -491,7 +493,7 @@ def runsearch(params):
 	skbd.doModal()
 	if skbd.isConfirmed():
 		SearchStr = skbd.getText()
-		searchUrl = '%s/%s/search/?search=%s' % (httpSiteUrl, params['section'], urllib.quote_plus(SearchStr))
+		searchUrl = '%ssearch.aspx?search=%s' % (urllib.unquote_plus(params['url']), urllib.quote_plus(SearchStr))
 		params = {
 			'href': searchUrl,
 			'section': params['section']
@@ -501,47 +503,49 @@ def runsearch(params):
 
 def render_search_results(params):
 	searchUrl = urllib.unquote_plus(params['href'])
-	http = GET(searchUrl, httpSiteUrl + '/' + params['section'])
+	http = GET(searchUrl, httpSiteUrl)
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
-	items = beautifulSoup.find('div', 'main').findAll('tr')
+	items = beautifulSoup.find('div', 'l-content').find('table').findAll('tr')
 
 	if len(items) == 0:
 		showMessage('ОШИБКА', 'Ничего не найдено', 3000)
 		return False
 	else:
 		for item in items:
-			link = item.find('a', 'title')
+			link = item.find('a')
 
-			title = link.string
-			href = httpSiteUrl + '/dl' + link['href']
-			cover = item.find('img')['src']
+			if link != None:
+				title = str(link['title'].encode('utf-8'))
+				href = httpSiteUrl + link['href']
+				cover = item.find('img')['src']
 
-			if title != None:
-				li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
-				li.setProperty('IsPlayable', 'false')
+				if title != None:
+					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+					li.setProperty('IsPlayable', 'false')
 
-				isMusic = 'no'
-				if params['section'] == 'music':
-					isMusic = 'yes'
+					isMusic = 'no'
+					if params['section'] == 'audio':
+						isMusic = 'yes'
 
-				uri = construct_request({
-					'href': href,
-					'referer': params['href'],
-					'mode': 'readdir',
-					'cover': cover,
-					'isMusic': isMusic
-				})
+					uri = construct_request({
+						'href': href,
+						'referer': searchUrl,
+						'mode': 'readdir',
+						'cover': cover,
+						'folder': 0,
+						'isMusic': isMusic
+					})
 
-				xbmcplugin.addDirectoryItem(h, uri, li, True)
+					xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 		nextPageLink = beautifulSoup.find('a', 'next-link')
 		if nextPageLink != None:
 			li = xbmcgui.ListItem('[NEXT PAGE >]')
 			li.setProperty('IsPlayable', 'false')
 			uri = construct_request({
-				'href': httpSiteUrl + nextPageLink['href'],
+				'href': httpSiteUrl + str(nextPageLink['href'].encode('utf-8')),
 				'mode': 'render_search_results',
 				'section': params['section']
 			})
