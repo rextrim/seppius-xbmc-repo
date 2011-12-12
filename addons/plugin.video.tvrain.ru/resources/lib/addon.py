@@ -61,7 +61,8 @@ def GET(targeturl):
 
 def getitems(params):
 	try:
-		http = GET('http://tvrain.ru/player/iframe.php')
+		#http = GET('http://tvrain.ru/player/iframe.php')
+		http = GET('http://tvrain.slon.ru/player/iframe.php')
 		#print http
 		r1 = re.compile('bitrates: \[(.*?)\]' ,re.DOTALL).findall(http)
 		if len(r1) > 0:
