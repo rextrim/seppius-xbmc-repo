@@ -48,7 +48,7 @@ def showMessage(heading, message, times = 3000, pics = icon):
 
 
 def GET(href, post=None):
-	aUA = '%s/%s %s/%s/%s' % (addon_type, addon_id, addon_author, addon_version, urllib.quote_plus(addon_name))
+	aUA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 	headers = {'User-Agent':aUA}
 	try:
 		if href.startswith('http://') or href.startswith('https://'): target = href
