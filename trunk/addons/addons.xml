@@ -949,7 +949,7 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.zoomby.ru" name="ZOOMBY" version="2.0.1" provider-name="ОАО «ВебТВ»">
+<addon id="plugin.video.zoomby.ru" name="ZOOMBY" version="2.0.2" provider-name="ОАО «ВебТВ»">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
