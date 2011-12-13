@@ -949,16 +949,12 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.zoomby.ru" name="Zoomby" version="1.2.1" provider-name="x86demon">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-    <provides>video</provides>
-  </extension>
+<addon id="plugin.video.zoomby.ru" name="ZOOMBY" version="2.0.1" provider-name="ОАО «ВебТВ»">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Zoomby - пересмотри свой взгляд на телевидение</summary>
-    <description>Zoomby портал, который дает возможность пользователю бесплатно в режиме онлайн просматривать любимые фильмы, сериалы, шоу и другие телевизионные передачи.</description>
+    <description>Приветствуем вас на сайте Zoomby.ru - одном из крупнейших развлекательных порталов российского интернета. Здесь вы можете онлайн, легально и бесплатно смотреть любимые фильмы, сериалы, новости, музыкальные клипы, шоу и другие телевизионные передачи.</description>
     <platform>all</platform>
   </extension>
 </addon>
