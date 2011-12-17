@@ -17,7 +17,7 @@ addon_author  = __addon__.getAddonInfo( 'author' )
 
 icon = xbmc.translatePath( os.path.join( addon_path, 'icon.png' ) )
 
-xbmc.log('[%s] Starting version [%s] "%s"' % (addon_id, addon_version, addon_name), 1)
+xbmc.log('[%s] Starting version [%s]' % (addon_id, addon_version), 1)
 
 UA = 'Opera/9.80 (X11; Linux i686; U; ru) Presto/2.7.62 Version/11.00'
 
