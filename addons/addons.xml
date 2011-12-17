@@ -771,7 +771,7 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.sovok.tv" name="Совок ТВ" version="0.0.1" provider-name="HD-Lab Team">
+<addon id="plugin.video.sovok.tv" name="Совок ТВ" version="0.0.2" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
