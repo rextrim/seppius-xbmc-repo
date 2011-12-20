@@ -1,7 +1,0 @@
-<settings>
-	<setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
-	<setting id="Autoplay next" type="bool" label="30004" default="false"/>
-	<setting id="Login" type="text" label="30002"/>
-	<setting id="Password" type="text" label="30003" option="hidden"/>
-    <setting id="Use flv files for playback" type="bool" label="30005" default="true" />
-</settings>
