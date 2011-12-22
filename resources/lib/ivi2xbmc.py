@@ -438,90 +438,23 @@ def seasons(params):
 	xbmcplugin.endOfDirectory(h)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # =============================== Заствка плеера =============================== #
-
-class iviSplash(xbmcgui.Window):
-	def __init__(self):
-		self.setCoordinateResolution(1) # 0 for 1080
-		self.addControl(xbmcgui.ControlImage(0, 0, 1280, 720, os.path.join(os.getcwd().replace(';', ''), 'fanart.jpg')))
-		self.strCopyrightOverlay = xbmcgui.ControlLabel(25, 25, 1000, 50, '', 'font18', '0xFFFFFFFF')
-		self.addControl(self.strCopyrightOverlay)
-		self.strStatusInfo = xbmcgui.ControlLabel(25, 680, 1000, 50, '', 'font10', '0xFFFFFFFF')
-		self.addControl(self.strStatusInfo)
-	def setStatusInfo(self, Str):
-		self.strStatusInfo.setLabel(Str)
-	def setCopyrightOverlay(self, Str):
-		self.strCopyrightOverlay.setLabel(Str)
-
+#class iviSplash(xbmcgui.Window):
+#	def __init__(self):
+#		self.setCoordinateResolution(1) # 0 for 1080
+#		self.addControl(xbmcgui.ControlImage(0, 0, 1280, 720, os.path.join(os.getcwd().replace(';', ''), 'fanart.jpg')))
+#		self.strCopyrightOverlay = xbmcgui.ControlLabel(25, 25, 1000, 50, '', 'font18', '0xFFFFFFFF')
+#		self.addControl(self.strCopyrightOverlay)
+#		self.strStatusInfo = xbmcgui.ControlLabel(25, 680, 1000, 50, '', 'font10', '0xFFFFFFFF')
+#		self.addControl(self.strStatusInfo)
+#	def setStatusInfo(self, Str):
+#		self.strStatusInfo.setLabel(Str)
+#	def setCopyrightOverlay(self, Str):
+#		self.strCopyrightOverlay.setLabel(Str)
 
 
 # ================================= Курящий плеер ================================== #
 class WatchPlayer(xbmc.Player):
-
-	def __init__(self):
-		self.splash = iviSplash()
-		self.splash.show()
-		self.sID = 's15'
-		self.ad_bw = 2000
-		self.api_url = 'http://partner.digitalaccess.ru/api/json/'
-		xbmc.Player.__init__(self)
-
-
-	def OpenID(self, vID):
-		self.vID = str(vID)
-		self.preroll_list = []
-		self.preroll_params = []
-		self.postroll_list = []
-		self.postroll_params = []
-		self.midroll_list = []
-		self.midroll_params = []
-		self.player_current_file = None  # Куррент-файл плеера
-		self.player_total_time = None    # Время
-		self.player_current_time = None  # Текущее время
-		self.content_file = None
-		self.content_params = {}
-		self.copyright_overlay = None # Авторская плашка
-		self.PlayBackStarted = False
-		self.infoLabels = None
-		self.PosterImage = None
-
-		self.splash.setStatusInfo('Определение контента...')
-		self.getContent()
-		if self.content_file:
-			if self.copyright_overlay:
-				self.splash.setCopyrightOverlay(self.copyright_overlay)
-			self.splash.setStatusInfo('Определение рекламы...')
-			self.getAds()
-			self.splash.setStatusInfo('')
-
-			PlayList = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-			PlayList.clear()
-			i = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-			i.setInfo(type = 'video', infoLabels = self.infoLabels)
-			if len(self.preroll_list):
-				for pl in self.preroll_list:
-					PlayList.add(pl, i)
-			PlayList.add(self.content_file, i)
-			if len(self.postroll_list):
-				for pl in self.postroll_list:
-					PlayList.add(pl, i)
-			#xbmc.Player().play(PlayList)
-			self.play(PlayList)
-
 
 	def POSTAPI(self, post):
 		req = urllib2.Request(self.api_url)
@@ -553,16 +486,103 @@ class WatchPlayer(xbmc.Player):
 				if vcfl['content_format'] == 'FLV-lo': play_file = vcfl['url']
 		return play_file
 
+	def __init__(self):
+		self.pd = xbmcgui.DialogProgress()
+		self.pd.create('Digital Access', 'Выполняется инициализация плеера.', 'Это займет некоторое время.', 'Пожалуйста подождите...')
+		self.sID = '5' # 's15'
+		self.ad_bw = 2000
+		self.api_url = 'http://partner.digitalaccess.ru/api/json/'
+		self.PlayList = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+		self.PlayList.clear()
+		xbmc.Player.__init__(self)
 
+	#--------------------------------------------------------------------------------------------------------------------------------------#
+	def OpenID(self, vID):
+		self.vID = str(vID)
+		self.TotalTime = 0.0
+		self.Time = 0.0
+		self.percent = 0
+		self.preroll_params = []
+		self.postroll_params = []
+		self.midroll_params = []
+		self.player_current_file = None  # Куррент-файл плеера
+		self.player_total_time = None    # Время
+		self.player_current_time = None  # Текущее время
+		self.content_file = None
+		self.content_percent_to_mark = 0
+		self.content_title = None
+		self.content_id = None
+		self.content_midroll = None
+		self.main_item = None
+
+		self.midroll_return_time = None
+		#self.ad_level = None # 0 - postroll/midroll/postroll, 1 - midroll/postroll ... 2 - postroll
+
+		self.copyright_overlay = None # Авторская плашка
+		self.PlayBackStarted = False
+		self.infoLabels = None
+		self.PosterImage = None
+
+
+		##################
+
+		#self.ad_level = 0
+
+		self.preroll_params = [
+			{'url': 'http://188.127.230.154/adv/1.flv', 'id': '-1', 'title': 'reklama1', 'px_audit': 'http://188.127.230.154/1', 'duration': 6, 'percent_to_mark': 50, 'save_show': True},
+			{'url': 'http://188.127.230.154/adv/2.flv', 'id': '-2', 'title': 'reklama2', 'px_audit': 'http://188.127.230.154/2', 'duration': 14, 'percent_to_mark': 70, 'save_show': True}
+		]
+
+		self.postroll_params = [
+			{'url': 'http://188.127.230.154/adv/3.flv', 'id': '-3', 'title': 'reklama3', 'px_audit': 'http://188.127.230.154/3', 'duration': 14, 'percent_to_mark': 30, 'save_show': True},
+			{'url': 'http://188.127.230.154/adv/4.flv', 'id': '-4', 'title': 'reklama4', 'px_audit': 'http://188.127.230.154/4', 'duration': 15, 'percent_to_mark': 0, 'save_show': True}
+		]
+
+		self.midroll_params = [
+			{'url': 'http://188.127.230.154/adv/5.flv', 'id': '-5', 'title': 'reklama5', 'px_audit': 'http://188.127.230.154/5', 'duration': 15, 'percent_to_mark': 50, 'save_show': True},
+			{'url': 'http://188.127.230.154/adv/6.flv', 'id': '-6', 'title': 'reklama6', 'px_audit': 'http://188.127.230.154/6', 'duration': 8, 'percent_to_mark': 70, 'save_show': True}
+		]
+		self.copyright_overlay = 'Тестовове видео'
+
+		self.infoLabels = {'title': 'Интеллигенция и политика'}
+		self.PosterImage = 'http://img2.russia.ru/12816/big.jpg'
+
+		self.content_file = 'http://83.222.2.211/12816/sd.mp4'
+
+		self.content_percent_to_mark = 80
+		self.content_title = 'TEST'
+		self.content_id = 0
+		self.content_midroll = [5, 16]
+		##################
+
+
+		self.pd.update(5)
+
+		########self.getContent()
+
+		if self.content_file:
+			self.stop()
+			self.PlayList.clear()
+
+			self.pd.update(20)
+			########self.getAds()
+			if self.content_file:
+				self.pd.update(60)
+				self.main_item = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+				self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
+				if self.preroll_params:
+					if len(self.preroll_params):
+						self.player_current_file = self.preroll_params[0]['url']
+						self.play(self.player_current_file, self.main_item)
+					else: self.play(self.content_file, self.main_item)
+				else: self.play(self.content_file, self.main_item)
+				self.pd.update(100)
+
+	#--------------------------------------------------------------------------------------------------------------------------------------#
 	def getContent(self):
-
-
-	#except: target =
 
 		http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
 		if http:
-			#jsdata =
-			#print jsdata
 			data = get_metadata(json.loads(http))
 			if data:
 				self.infoLabels = data['infoLabels']
@@ -579,82 +599,227 @@ class WatchPlayer(xbmc.Player):
 									if len(vc['copyright_overlay']):
 										self.copyright_overlay = vc['copyright_overlay'].encode('utf-8')
 							except: self.copyright_overlay = None
-							try:    vc_midroll = vc['midroll']
-							except: vc_midroll = None
-							try:    vc_ptm = int(vc['percent_to_mark'])
-							except: vc_ptm = 0
-							self.content_params = {'type':'content', 'id': vc['id'],
-								'title': vc['title'].encode('utf-8'), 'percent_to_mark': vc_ptm, 'midroll': vc_midroll}
+
+							try:    self.content_percent_to_mark = int(vc['percent_to_mark'])-1
+							except: self.content_percent_to_mark = 0
+							try:
+								vc_midroll = vc['midroll']
+								if type(vc_midroll) == 'NoneType':
+									self.content_midroll = None
+								elif type(vc_midroll) == 'int':
+									self.content_midroll = [vc_midroll]
+								elif type(vc_midroll) == 'str':
+									self.content_midroll = [str(vc_midroll)]
+								elif type(vc_midroll) == 'list':
+									self.content_midroll = vc_midroll
+							except: self.content_midroll = None
+							self.content_id = vc['id']
+							self.content_title = vc['title'].encode('utf-8')
 					except: pass
 
+	#--------------------------------------------------------------------------------------------------------------------------------------#
 	def getAds(self):
 		json1 = self.POSTAPI({'method':'da.content.get_adv','params':[self.vID,{'site':self.sID,'bandwidth':self.ad_bw,'previous_videos':{'day':{},'week':{},'month':{},'hour':{}},'previous_orders':{'day':{},'week':{},'month':{},'hour':{}}}]})
 		if json1:
 			try:
 				for ad in json1['result']:
-					adrow = {'type': ad['type'].encode('utf-8'), 'id': ad['id'], 'title': ad['title'].encode('utf-8'),
-						'px_audit': ad['px_audit'], 'duration': ad['duration'],
-						'percent_to_mark': ad['percent_to_mark'], 'save_show': ad['save_show']}
 					ad_file = self.find_best(ad, True)
 					if ad_file:
-						if ad['type'] == 'preroll':
-							self.preroll_list.append(ad_file)
-							self.preroll_params.append(adrow)
-						elif ad['type'] == 'postroll':
-							self.postroll_list.append(ad_file)
-							self.postroll_params.append(adrow)
-						elif ad['type'] == 'midroll':
-							self.midroll_list.append(ad_file)
-							self.midroll_params.append(adrow)
+						adrow = {'url': ad_file, 'id': ad['id'], 'title': ad['title'].encode('utf-8'), 'px_audit': ad['px_audit'],
+						'duration': ad['duration'], 'percent_to_mark': int(ad['percent_to_mark'])-1, 'save_show': ad['save_show']}
+						if ad['type'] == 'preroll': self.preroll_params.append(adrow)
+						elif ad['type'] == 'postroll': self.postroll_params.append(adrow)
+						elif ad['type'] == 'midroll':self.midroll_params.append(adrow)
 			except:
-				print ' ********* НЕТ РЕКЛАМЫ ************ '
+				print ' EXCEPT ********* НЕТ РЕКЛАМЫ ************ '
+				showMessage('EXCEPT', 'НЕТ РЕКЛАМЫ', 3000)
+	#--------------------------------------------------------------------------------------------------------------------------------------#
+	def clean_ad_params(self, ad_params_list):
+		if ad_params_list:
+			if len(ad_params_list):
+					x = 0
+					for current_ad in ad_params_list:
+						if str(current_ad['url']) == str(self.player_current_file):
+							ad_params_list.pop(x)
+						x += 1
+			if len(ad_params_list) == 0: ad_params_list = None
 
-
+	#--------------------------------------------------------------------------------------------------------------------------------------#
 	def onPlayBackStarted(self): # Будет вызываться при XBMC начинает играть файл
+		self.pd.close()
 		print ' ****************************** onPlayBackStarted(self)'
-		self.PlayBackStarted = True
-		self.player_current_file = self.getPlayingFile(self)
-		print 'CURRENT PLAYER FILE = %s' % self.player_current_file
+		#self.PlayBackStarted = True
+		#self.player_current_file = self.getPlayingFile(self)
+		#print 'CURRENT PLAYER FILE = %s' % self.player_current_file
 
-		#if len(self.preroll_list)
+		if self.player_current_file == self.content_file:
+			if self.copyright_overlay:
+				showMessage('Авторская плашка', self.copyright_overlay, 5000)
+
+		if self.midroll_return_time:
+			#print
+			self.seekTime(self.midroll_return_time)
+			showMessage('Промотка на', str(self.midroll_return_time), 3000)
+			self.midroll_return_time = None
 
 
+		#self.PlayList.clear()
+	#--------------------------------------------------------------------------------------------------------------------------------------#
 	def onPlayBackEnded(self): # Будет вызываться при XBMC концов воспроизведении файла
+		showMessage('onPlayBackEnded', 'onPlayBackEnded', 1000)
+
+		self.stop()
+		self.PlayList.clear()
+		xbmc.sleep(300)
+
+
 		print ' ****************************** onPlayBackEnded(self)'
 		print 'CURRENT PLAYER FILE PLAY END= %s' % self.player_current_file
-		#self.PlayBackStarted = False
 		print 'Play NEXT FIle....'
 
-		if len(self.preroll_list):
-			if self.player_current_file in self.preroll_list:
-				print 'remove from PL = %s' % self.player_current_file
-				i = self.preroll_list.index(self.player_current_file)
-				self.preroll_list.pop(i)
-				self.preroll_params.pop(i)
+		self.clean_ad_params(self.preroll_params)
 
-		if len(self.postroll_list):
-			if self.player_current_file in self.postroll_list:
-				print 'remove from PL = %s' % self.player_current_file
-				i = self.postroll_list.index(self.player_current_file)
-				self.postroll_list.pop(i)
-				self.postroll_params.pop(i)
+		if self.preroll_params:
+			if len(self.preroll_params):
+				self.player_current_file = self.preroll_params[0]['url']
+				self.play(self.player_current_file, self.main_item)
 
-		if len(self.midroll_list):
-			if self.player_current_file in self.midroll_list:
-				print 'remove from PL = %s' % self.player_current_file
-				i = self.midroll_list.index(self.player_current_file)
-				self.midroll_list.pop(i)
-				self.midroll_params.pop(i)
+		else:
+			showMessage('Прероллов нет', 'Воспр. контент...', 1000)
+			self.player_current_file = self.content_file
+			self.play(self.player_current_file, self.main_item)
 
-		if len(self.preroll_list) == 0:
-			print 'len(self.preroll_list) == 0: --> self.splash.close()'
-			self.splash.close()
+		print '====================== 50 ======================'
 
+#		if len(self.midroll_params) > 0:
+#			if self.player_current_file == self.midroll_params[0]['url']:
+				#print 'START NEW PLAY.........'
+
+				#print 'PL LEN', self.PlayList.__len__()
+				#print 'PL POS', self.PlayList.getposition()
+				#self.PlayList.clear()
+				#xbmc.sleep(500)
+#				self.midroll_params.pop([0])
+				#self.content_file = self.midroll_params[0]['url']
+				#self.play(self.content_file, self.main_item)
+				#xbmc.sleep(500)
+#				print 'Continue play....'
+#				self.player_current_file = self.content_file
+#				self.play(self.player_current_file, self.main_item)
+
+
+#			else:
+#				print '1'
+#				if not self.preroll_params:
+#					print '2'
+#					if self.content_file:
+#						print '3'
+#						#self.PlayList.clear()
+						#xbmc.sleep(500)
+#						self.player_current_file = self.content_file
+#						self.play(self.content_file, self.main_item)
+
+#		else:
+#			print '4'
+#			if not self.preroll_params:
+#				print '5'
+#				if self.content_file:
+#					print '6'
+					#self.PlayList.clear()
+					#xbmc.sleep(500)
+#					self.player_current_file = self.content_file
+#					self.play(self.content_file, self.main_item)
+			#self.play(self.content_file)
+
+			#self.clead_ad_params(self.midroll_params)
+		#self.clead_ad_params(self.postroll_params)
+
+		#self.clead_ad_params(self.midroll_params)
+
+	#--------------------------------------------------------------------------------------------------------------------------------------#
 	# Если пользователь нажал X
 	def onPlayBackStopped(self): # Будет вызываться, когда пользователь прекращает XBMC воспроизведении файла
-		print ' ****************************** onPlayBackStopped(self), self.content_file = false'
-		self.content_file = False
-		self.PlayBackStarted = False
+		print ' ****************************** onPlayBackStopped(self)'
+		#self.content_file = False
+
+	#--------------------------------------------------------------------------------------------------------------------------------------#
+	def report_ad_params(self, ad_params_list, lock_percent):
+		if ad_params_list:
+			if len(ad_params_list):
+					x = 0
+					for current_ad in ad_params_list:
+						if str(current_ad['url']) == str(self.player_current_file):
+							if current_ad['percent_to_mark']:
+								if self.percent > current_ad['percent_to_mark']:
+									print '------- ОТПРАВКА ОТЧЕТА О ПРОСМОТРЕ РЕКЛАМЫ ------------'
+									print 'AD', current_ad
+									print 'CF', self.player_current_file
+									print 'PC', self.percent
+									#POSTAPI({'method':'da.content.adv_watched', 'params':[vID, adsID, {'site':sID}]})
+									#PxAudit in PxAudits: GET(PxAudit)
+									showMessage('REKLAMA', 'ОТПРАВКА ОТЧЕТА О ПРОСМОТРЕ РЕКЛАМЫ', 3000)
+									if lock_percent:
+										ad_params_list.pop(0)
+										ad_params_list[x]['percent_to_mark'] = None
+
+						x += 1
+
+
+
+	#--------------------------------------------------------------------------------------------------------------------------------------#
+	def start_loop(self):
+
+		while self.content_file:
+
+			#try: self.player_current_file = self.getPlayingFile()
+			#except: self.player_current_file = None
+
+			try:
+				self.TotalTime = self.getTotalTime()
+				self.Time = self.getTime()
+				self.percent = (100 * self.Time) / self.TotalTime
+				print 'PERCENT = [%s]' % self.percent
+			except: self.percent = 0
+
+			self.report_ad_params(self.preroll_params, True)
+			self.report_ad_params(self.midroll_params, False)
+			self.report_ad_params(self.postroll_params, True)
+
+			if self.content_file == self.player_current_file:
+				#print 'if self.content_file) == self.player_current_file:'
+				if self.content_percent_to_mark:
+					#print '... if self.content_percent_to_mark:'
+					if self.percent > self.content_percent_to_mark:
+						#print 'if self.percent > self.content_percent_to_mark:'
+						print '------- ОТПРАВКА ОТЧЕТА О ПРОСМОТРЕ КОНТЕНТА ------------'
+						print 'CF', self.player_current_file
+						print 'PC', self.percent
+						print 'ID', self.content_id
+						self.content_percent_to_mark = None
+						showMessage('Контент', 'отправлен отчет о просмотре')
+						#	POSTAPI({'method':'da.content.content_watched', 'params':[vc_id, {'site':sID}]})
+
+
+				# Нужны временные метки и наличие мидроллов
+				if self.midroll_params and self.content_midroll:
+					if len(self.midroll_params) and (len(self.content_midroll)):
+						# Если попал в список меток и играет файл контента
+						if (int(self.Time) in self.content_midroll) and (self.player_current_file == self.content_file):
+							self.midroll_return_time = int(self.Time)
+							self.player_current_file = self.midroll_params[0]['url']
+							self.stop()
+							self.PlayList.clear()
+							xbmc.sleep(300)
+							#xbmc.sleep(250)
+							self.content_midroll.pop(0)
+							self.play(self.player_current_file, self.main_item)
+
+
+
+			xbmc.sleep(100)
+		print 'loop END!'
+
+#---------------------------------------------------------------------------------------------------------------------------------#
 
 #	def pause(self):
 #	def play(self, item = None, listItem = None):
@@ -676,81 +841,6 @@ class WatchPlayer(xbmc.Player):
 #	def isPlayingVideo(self):
 #	def close(self):
 #		self.splash.close()
-	def start_loop(self):
-		if self.content_file:
-			#while not self.PlayBackStarted:
-			#	#if len(self.preroll_list) == 0:
-				#	self.splash.close()
-			#	xbmc.sleep(100)
-
-
-
-			#		self.player_current_file = None
-
-
-			while self.content_file:
-
-				try:
-					self.player_current_file = self.getPlayingFile()
-				except: self.player_current_file = None
-
-				percent = 0.0
-
-				try:
-					TotalTime = self.getTotalTime()
-					Time = self.getTime()
-					percent = 100*(Time/TotalTime)
-					print 'TT=%s/%s Percent=%s' % (TotalTime, Time, percent)
-
-					if len(self.preroll_list):
-						if self.player_current_file in self.preroll_list:
-							print 'Играет preroll = %s' % self.player_current_file
-
-					elif len(self.midroll_list):
-						if self.player_current_file in self.midroll_list:
-							print 'Играет midroll = %s' % self.player_current_file
-
-					elif len(self.postroll_list):
-						if self.player_current_file in self.postroll_list:
-							print 'Играет postroll = %s' % self.player_current_file
-					else:
-						if (self.player_current_file not in self.preroll_list) and \
-							(self.player_current_file not in self.midroll_list) and \
-							(self.player_current_file not in self.postroll_list):
-
-							self.content_file = None
-							self.splash.close()
-							self.stop()
-
-
-					#self.preroll_params = []
-					# = []
-					#self.postroll_params = []
-					#self.midroll_list = []
-					#self.midroll_params = []
-
-
-					#	#------------------------------- Отчеты о просмотре ---------------------------#
-					#	if AdsList:
-					#		if len(AdsList) > 0:
-					#			for adsID in AdsList:
-					#				POSTAPI({'method':'da.content.adv_watched', 'params':[vID, adsID, {'site':sID}]})
-					#	try:
-					#		if PxAudits:
-					#			if len(PxAudits) > 0:
-					#				for PxAudit in PxAudits: GET(PxAudit)
-					#	except: pass
-					#	POSTAPI({'method':'da.content.content_watched', 'params':[vc_id, {'site':sID}]})
-
-
-
-				except: pass
-
-				xbmc.sleep(100)
-			print 'loop END!'
-
-
-
 
 
 
@@ -758,64 +848,6 @@ def play(params):
 	xbmc_player = WatchPlayer()
 	xbmc_player.OpenID(params['id'])
 	xbmc_player.start_loop()
-
-
-#	pw = True
-#	pp = False
-
-#	while pw:
-#		print 'wait to play...'
-#		if xbmc_player.isPlaying():
-#			pp = True
-#			print 'play detect...'
-
-#		while pp:
-#			'player loop...'
-
-#			try:
-#				print 'getPlayingFile = %s' % xbmc_player.getPlayingFile()
-#			except: print 'getPlayingFile = except'
-
-#			try:
-#				print 'getTime = %s' % xbmc_player.getTime() # от общего
-#			except: print 'getTime = except'
-
-#			try:
-#				print 'getTotalTime = %s' % xbmc_player.getTotalTime() # не меняется
-#			except: print 'getTotalTime = except'
-
-
-#			if not xbmc_player.isPlaying():
-#				pw = False
-#				pp = False
-
-#			xbmc.sleep(100)
-
-
-#		xbmc.sleep(100)
-
-
-
-#	xbmc_player.close()
-#	del xbmc_player
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def get_params(paramstring):
