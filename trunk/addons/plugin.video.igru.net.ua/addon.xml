@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.igru.net.ua"
        name="Фильмы (igru.net.ua)"
-       version="1.0.3"
+       version="1.0.3a"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

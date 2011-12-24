@@ -19,15 +19,21 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, md5
-import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+import re, os, urllib, urllib2, cookielib
+try:
+    from hashlib import md5 as md5
+except:
+    import md5
 
-# load XML library
-sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
-from ElementTree  import Element, SubElement, ElementTree
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 h = int(sys.argv[1])
 Addon = xbmcaddon.Addon(id='plugin.video.igru.net.ua')
+
+# load XML library
+sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+from ElementTree  import Element, SubElement, ElementTree
+
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
@@ -41,7 +47,7 @@ def showMessage(heading, message, times = 3000):
 def Get_Movie_Type():
     # load movie types
     tree = ElementTree()
-    tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'movies.xml'))
+    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'movies.xml'))
 
     # add search to the list
     name = '[ПОИСК]'
@@ -93,7 +99,7 @@ def Get_Movie_List(params):
             return False
     # load movies
     tree = ElementTree()
-    tree.parse(os.path.join(os.getcwd(), r'resources', r'data', r'movies.xml'))
+    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'movies.xml'))
     for rec in tree.getroot().find('MOVIES'):
         try:
             i_name = rec.find('name').text
@@ -150,6 +156,8 @@ def Get_Movie(params):
     image = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
 
+    xbmc.log('*** '+url)
+
     # -- get iframe link to flash player
     post = None
     request = urllib2.Request(url, post)
@@ -170,7 +178,7 @@ def Get_Movie(params):
 
     html = f.read()
 
-    match=re.compile("<div align='center'><iframe src='(.+?)' frameborder=", re.MULTILINE|re.DOTALL).findall(html)
+    match=re.compile("<div align='center'>.+<iframe src='(.+?)' frameborder=", re.MULTILINE|re.DOTALL).findall(html)
     if len(match) == 0:
         showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
         return False
@@ -222,6 +230,9 @@ def PLAY(params):
             xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
     html = f.read()
+
+
+    xbmc.log(url)
 
     # -- get movie link
     post = None
@@ -297,5 +308,5 @@ try:
 	import adanalytics
 	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
 except:
-	xbmc.output(' === unhandled exception in adIO === ')
+	xbmc.log(' === unhandled exception in adIO === ')
 	pass
