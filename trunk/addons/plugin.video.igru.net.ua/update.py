@@ -1,276 +1,261 @@
-﻿
-import xbmc,xbmcgui
-import urllib2, urllib, re, cookielib, sys, time, md5, os
+﻿#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#/*
+# *      Copyright (C) 2011 Silen
+# *
+# *
+# *  This Program is free software; you can redistribute it and/or modify
+# *  it under the terms of the GNU General Public License as published by
+# *  the Free Software Foundation; either version 2, or (at your option)
+# *  any later version.
+# *
+# *  This Program is distributed in the hope that it will be useful,
+# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# *  GNU General Public License for more details.
+# *
+# *  You should have received a copy of the GNU General Public License
+# *  along with this program; see the file COPYING.  If not, write to
+# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+# *  http://www.gnu.org/copyleft/gpl.html
+# */
+import xbmc, xbmcgui, xbmcaddon
+import urllib2, urllib, re, cookielib, sys, time, os
 from datetime import date
+
+Addon = xbmcaddon.Addon(id='plugin.video.igru.net.ua')
+
+# load XML library
+try:
+    sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+    from BeautifulSoup  import BeautifulSoup
+    import moviedb
+except:
+    try:
+        sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        import moviedb
+    except:
+        sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        import moviedb
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
-import traceback
-def formatExceptionInfo(maxTBlevel=5):
-     cla, exc, trbk = sys.exc_info()
-     excName = cla.__name__
-     try:
-         excArgs = exc.__dict__["args"]
-     except KeyError:
-         excArgs = "<no args>"
-     excTb = traceback.format_tb(trbk, maxTBlevel)
-     return (excName, excArgs, excTb)
-
-# load XML library
-sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
-from ElementTree  import Element, SubElement, ElementTree
-
-today = date.today()
-path = os.path.join(os.getcwd(), r'resources', r'data')
-
 #---------- get movies info and save to XML --------------------------------------------------
 def Update_Movie_XML(mode):
-    #show Dialog
+    #-- create MovieDB interface
+    myDB = moviedb.MovieDB(mode)
+
+    #-- show Dialog
     dp = xbmcgui.DialogProgress()
+    dp.create(myDB.info)
 
-    if mode == 'UPDATE':
-        #load current serial list
-        try:
-            tree = ElementTree()
-            tree.parse(os.path.join(path, r'movies.xml'))
-            xml1 = tree.getroot()
-            xml1.find("LAST_UPDATE").text = today.isoformat()
-            movies  = xml1.find('MOVIES')
-            types   = xml1.find('TYPES')
-            dp.create("Update IGRU.NET.UA Info")
-        except:
-            # create XML structure
-            xml1 = Element("IGRU_NET_UA")
-            SubElement(xml1, "LAST_UPDATE").text = today.isoformat()
-            movies  = SubElement(xml1, "MOVIES")
-            types   = SubElement(xml1, "TYPES")
-            dp.create("Reload IGRU.NET.UA Info")
-    else:
-        # create XML structure
-        xml1 = Element("IGRU_NET_UA")
-        SubElement(xml1, "LAST_UPDATE").text = today.isoformat()
-        movies  = SubElement(xml1, "MOVIES")
-        types   = SubElement(xml1, "TYPES")
-        dp.create("Reload IGRU.NET.UA Info")
-
-    # grab serial's info from site
+    #-- grab serial's info from site
     url='http://igru.net.ua/'
-    count = 0
+    count  = 0
+    mcount = 0
 
-    # get all movie types
-    Get_Type(url, types)
+    #-- get number of pages
+    pages = get_Number_of_Pages()
 
-    # get all movies for each movie type
-    for rec in types:
+    if myDB.isUpdate == 1:
+        page_num = min(pages, max(10, pages - myDB.pages))
+    else:
+        page_num = pages
+
+    percent = min(count*100/page_num, 100)
+    dp.update(percent, '', 'Loaded: '+ str(count)+' of '+str(page_num)+' pages','Кол-во фильмов: '+str(mcount))
+
+    #-- process movie load
+    for count in range(1, page_num+1):
         if (dp.iscanceled()): return
-        movie_found = 0
-        page_num = Get_Type_Page_Number(rec.find('url').text)
-        for count in range(1, page_num+1):
-            movie_found = Get_Film_Info(rec.find('url').text+'/page/'+str(count)+'/', movies, rec, dp, movie_found)
+        mcount = get_Movie('http://igru.net.ua/page/'+str(count)+'/', myDB, mcount)
+        percent = min(count*100/page_num, 100)
+        dp.update(percent, '', 'Loaded: '+ str(count)+' of '+str(page_num)+' pages','Кол-во фильмов: '+str(mcount))
 
-    # order sort movies by names
-    movies[:] = sorted(movies, key=getkey)
+    #-- save loaded data
+    myDB.Save_to_XML(pages)
 
+    #-- close dialog
     dp.close()
-    ElementTree(xml1).write(os.path.join(path, r'\movies.xml'), encoding='utf-8')
 
-#--- get movies categories -----------------------------------------------------
-def Get_Type(url, types):
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
+#------ get number of pages ----------------------------------------------------
+def get_Number_of_Pages():
+    url = 'http://igru.net.ua'
 
-    ret = 1
+    post = None
+    request = urllib2.Request(url, post)
 
-    match=re.compile('<h2 class="widgettitle">Рубрики</h2>.+<div class="textwidget"><ul>(.+?)</div>', re.MULTILINE|re.DOTALL).findall(link)
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://igru.net.ua')
 
-    page=re.compile('<a href="(.+?)" title="(.+?)">(.+?)</a>', re.MULTILINE|re.DOTALL).findall(match[0])
-
-    for rec in page:
-        is_retro   = len(re.compile('/category/retro-onlajn/.+/', re.MULTILINE|re.DOTALL).findall(rec[0]))
-        is_film    = len(re.compile('/category/filmy-onlajn/.+/', re.MULTILINE|re.DOTALL).findall(rec[0]))
-        is_doc     = len(re.compile('/dokumentalnoe-kino/', re.MULTILINE|re.DOTALL).findall(rec[0]))
-
-        if is_retro > 0 or is_film > 0 or is_doc > 0:
-            if is_retro > 0:
-                name = ('Ретро: ')+ rec[2]
-            else:
-                name = rec[2]
-
-            #-- store movie's category in XML
-            xml_type_hash = 'st_'+md5.md5(name).hexdigest()
-            # check if type exists
-            if types.find(xml_type_hash) is None:
-                type = SubElement(types, xml_type_hash)
-                SubElement(type, "name").text = unescape(name)
-                SubElement(type, "url").text  = unescape(rec[0])
-
-#--- get number of pages for selected category ---------------------------------
-def Get_Type_Page_Number(url):
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
-
-    ret = 1
-
-    match=re.compile('<div class="wp-pagenavi">(.+?)</div>', re.MULTILINE|re.DOTALL).findall(link)
-
-    page=re.compile('<a href="(.+?)/page/(.+?)</a>', re.MULTILINE|re.DOTALL).findall(match[0])
-
-    for rec in page:
-        v = re.compile('(.+?)/" title="(.+?)"', re.MULTILINE|re.DOTALL).findall(rec[1])
-        if len(v) > 0:
-            if ret < int(v[0][0]):
-                ret = int(v[0][0])
-
-    return ret
-
-#--- get movie info for selected page in category ------------------------------
-def Get_Film_Info(url, movies, cur_type, dp, movie_found):
-    cur_type_hash = cur_type.tag
-    cur_type_name = cur_type.find('name').text
-
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
     try:
-        link=response.read()
-    except:
-        time.sleep(5)
-        link=response.read()
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
-    response.close()
+    html = f.read()
 
-    match=re.compile('<h2><a href="(.+?)" rel="bookmark"(.+?)<div class="tags">', re.MULTILINE|re.DOTALL).findall(link)
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for rec in match:
-        if (dp.iscanceled()): return
+    page = 1
+
+    for rec in soup.find('div', {'class':'navigation'}).findAll('a'):
         try:
-            i_url         = rec[0]
-            rec = rec[1]+'</end>'
-            #get genre
-            genre = ''
-            genre_body = re.compile('<div class="cat">Категория (.+?)</div>', re.MULTILINE|re.DOTALL).findall(rec)
-            genre_list = re.compile('<a href="(.+?)" title="(.+?)" rel="category tag">(.+?)</a>', re.MULTILINE|re.DOTALL).findall(genre_body[0])
-            for g in genre_list:
-                if len(re.compile('Фильмы онлайн').findall(g[2])) == 0 and len(re.compile('Ретро онлайн').findall(g[2])) == 0:
-                    if genre != '':
-                        genre = genre +', '
-                    genre = genre + g[2]
-            # get movie info
-            image_body  = re.compile('<img (.+?)/>', re.MULTILINE|re.DOTALL).findall(rec)
-            image_img   = re.compile('src="(.+?)"', re.MULTILINE|re.DOTALL).findall(image_body[0])
-            if len(image_img) == 0:
-                image_img   = re.compile('SRC="(.+?)"', re.MULTILINE|re.DOTALL).findall(image_body[0])
-            image_name  = re.compile('title="(.+?)".*</h2>', re.MULTILINE|re.DOTALL).findall(rec)
-            if len(image_name) == 0:
-                image_name  = re.compile('alt="(.+?)"', re.MULTILINE|re.DOTALL).findall(image_body[0])
-                if len(image_name) == 0:
-                    image_name  = re.compile('ALT="(.+?)"', re.MULTILINE|re.DOTALL).findall(image_body[0])
-            image_name1 = re.compile('Просмотр фильма (.+?) онлайн', re.MULTILINE|re.DOTALL).findall(image_name[0])
-            if len(image_name1)>0:
-                image_name = image_name1
-            image_name1 = re.compile('Просмотр мультфильма (.+?) онлайн', re.MULTILINE|re.DOTALL).findall(image_name[0])
-            if len(image_name1)>0:
-                image_name = image_name1
-            image_name1 = re.compile('ссылка на (.+?) онлайн', re.MULTILINE|re.DOTALL).findall(image_name[0])
-            if len(image_name1)>0:
-                image_name = image_name1
-
-
-            origin_name = re.compile('<strong>Оригинальное название:</strong> (.+?)<br />', re.MULTILINE|re.DOTALL).findall(rec)
-            year        = re.compile('<strong>Год выхода на экран:</strong> (.+?)<br />', re.MULTILINE|re.DOTALL).findall(rec)
-            director    = re.compile('<strong>Постановщик.*</strong> (.+?)<br />', re.MULTILINE|re.DOTALL).findall(rec)
-            actors      = re.compile('<strong>Актеры, принявшие участие в съемках:</strong> (.+?)</p>', re.MULTILINE|re.DOTALL).findall(rec)
-            text        = re.compile('<strong>Краткое описание:</strong> (.+?)Скачать фильм можно здесь', re.MULTILINE|re.DOTALL).findall(rec)
-            if len(text) == 0:
-                text        = re.compile('<strong>Краткое описание:</strong> (.+?)Смотреть .+ онлайн', re.MULTILINE|re.DOTALL).findall(rec)
-                if len(text) == 0:
-                    text = re.compile('<strong>Краткое описание:</strong> (.+?)</end>', re.MULTILINE|re.DOTALL).findall(rec)
-
-            # parse movie info
-            if len(image_name)>0:
-                i_name  = unescape(image_name[0])
-                i_image = image_img[0]
-            else:
-                i_name  = ('').decode('utf-8')
-                i_image = ('').decode('utf-8')
-
-            if len(origin_name)>0:
-                o_name=unescape(origin_name[0])
-            else:
-                o_name=('').decode('utf-8')
-
-            if len(year)>0:
-                i_year=unescape(year[0])
-            else:
-                i_year=('').decode('utf-8')
-
-            if len(director)>0:
-                i_director=unescape(director[0])
-            else:
-                i_director=('').decode('utf-8')
-
-            if len(actors)>0:
-                i_actors=unescape(actors[0])
-            else:
-                i_actors=('').decode('utf-8')
-
-            if len(text)>0:
-                i_text=unescape(text[0])
-            else:
-                i_text=('').decode('utf-8')
-
-            full_text = i_text.replace('<p>', '').replace('</p>', '')
-            if o_name != '':
-                full_text = full_text+('\nОригинальное название: ').decode('utf-8')+o_name
-            if i_actors != '':
-                full_text = full_text+('\nАктеры: ').decode('utf-8')+i_actors
-
-            # add info to XML
-            if len(image_name) > 0:
-                xml_movie_hash = 'mov_'+md5.md5(image_name[0] + i_year.encode('utf-8')).hexdigest()
-                #check if movie info exists
-                xml_movie = movies.find(xml_movie_hash)
-                if xml_movie is None:   #-- create new record
-                    # create serial record in XML
-                    xml_movie = SubElement(movies, xml_movie_hash)
-                    xml_movie.text = i_name
-                    SubElement(xml_movie, "name").text     = i_name
-                    SubElement(xml_movie, "url").text      = i_url
-                    SubElement(xml_movie, "year").text     = i_year
-                    SubElement(xml_movie, "genre").text    = unescape(genre)
-                    SubElement(xml_movie, "director").text = i_director
-                    SubElement(xml_movie, "text").text     = full_text
-                    SubElement(xml_movie, "img").text      = i_image
-                    SubElement(xml_movie, "categories")
-                    # update found movies counter
-                    movie_found = movie_found + 1
-                # add movie category info
-                cat = xml_movie.find("categories")
-                if cat.find(cur_type_hash) is None:
-                    SubElement(cat, cur_type_hash)
-                # update info in progress dialog
-                dp.update(0, cur_type_name, 'Loaded: '+str(movie_found), i_name)
+            if rec['title'] == u' &raquo;':
+                page = int((re.compile('\/page\/(.+?)\/', re.MULTILINE|re.DOTALL).findall(rec['href']))[0])
         except:
-            xbmc.log(formatExceptionInfo())
+            pass
 
-    return movie_found
+    return page
 
-#-------------------------------------------------------------------------------
+#------ process page -----------------------------------------------------------
+def get_Movie(url, myDB, count):
+    post = None
+    request = urllib2.Request(url, post)
 
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://igru.net.ua')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+    for rec in soup.findAll('div', {'class':'post'}):
+        movie = get_Movie_Info(rec)
+        if len(movie) > 0:
+            myDB.Add_Movie(movie)
+            count = count + 1
+
+    return count
+
+#------ get movie detail info --------------------------------------------------
+def get_Movie_Info(rec):
+
+    empty = []
+    empty = {}
+    try:
+        movie = []
+        movie = {}
+        #-- get and check categories
+        movie_cat = []
+        is_film = 0
+        for cat in rec.find('div', {'class' : 'cat'}).findAll('a'):
+            if  cat.text == u'Документальное кино':
+                is_film = 1
+                if movie_cat.count(u'Документальное кино') == 0:
+                    movie_cat.append(u'Документальное кино')
+            elif cat.text == u'Ретро онлайн':
+                is_film = 2
+            elif cat.text == u'Фильмы онлайн':
+                is_film = 3
+            else:
+                movie_cat.append( unescape(cat.text).capitalize())
+                if cat.text == u'Юмор':
+                    is_film = 4
+
+        if is_film == 0: return empty               #-- film not found
+
+        if is_film == 2:                            #-- add retro prefix for retro films
+            for idx in range(0, len(movie_cat)):
+                movie_cat[idx] = u'Ретро: ' + movie_cat[idx]
+
+        movie['category'] = movie_cat
+
+        #-- get image
+        try:
+            movie['image'] = rec.find('div', {'class' : 'content'}).find('img', {'class':'m_pic'})['src']
+        except:
+            try:
+                movie['image'] = re.compile('src="(.+?)"', re.MULTILINE|re.DOTALL).findall(str(rec.find('div', {'class' : 'content'}).find('img', {'class':'m_pic'})))
+            except:
+                return empty
+
+        #-- get name
+        movie['name'] = unescape(rec.find('h2').find('a').text.replace(u'Просмотр фильма ', '').replace(u'Просмотр мультфильма ', '').replace(u' онлайн', ''))
+        #-- get url
+        movie['url'] = rec.find('h2').find('a')['href']
+
+        #-- get movie info
+        info_list = []
+        info_list = {}
+        for info in rec.find('div', {'class' : 'content'}).findAll('p'):
+            try:
+                match=re.compile('<strong>(.+?)<\/strong>(.+?)<br \/>', re.MULTILINE|re.DOTALL).findall(str(info)+'<br />')
+
+                for i in match:
+                    info_list[i[0]] = i[1].replace('</p>', '')
+            except:
+                pass
+
+        #-- get genres
+        if is_film == 1:
+            movie['genre'] = u'Документальное кино'
+        elif is_film == 4:
+            movie['genre'] = u'Юмор'
+        else:
+            movie['genre'] = unescape(info_list['Фильм относится к жанру:']).replace('<br />', '')
+
+        movie['origin'] = unescape(info_list['Оригинальное название:'])
+        #-- year
+        movie['year'] = unescape(info_list['Год выхода на экран:'])
+
+        if unicode(movie['year']).isnumeric():
+            pass
+        else:
+            try:
+                 movie['year'] = re.compile('([0-9][0-9][0-9][0-9]?)', re.MULTILINE|re.DOTALL).findall( movie['year'])[0]
+            except:
+                 movie['year'] = '0000'
+
+        try:
+            movie['director'] = unescape(info_list['Постановщик:'])
+        except:
+            try:
+                movie['director'] = unescape(info_list['Постановщик'])
+            except:
+                movie['director'] = ''
+        movie['actor'] = unescape(info_list['Актеры, принявшие участие в съемках:'])
+        movie['descr'] = unescape(info_list['Краткое описание:'])
+
+        return movie
+    except:
+        return empty
+
+#-- system functions -----------------------------------------------------------
 def unescape(text):
-    text = hpar.unescape(text.decode('utf8'))
-    return text
+    try:
+        text = hpar.unescape(text)
+    except:
+        text = hpar.unescape(text.decode('utf8'))
 
-def getkey(elem):
-    return elem.findtext("name")
+    try:
+        text = unicode(text, 'utf-8')
+    except:
+        text = text
 
+    return text.strip()
 
 #-------------------------------------------------------------------------------
 
@@ -292,9 +277,10 @@ if mode == 'UPDATE' or ret == 'YES':
     Update_Movie_XML(mode)
 else:
     if mode == 'INFO':
+        #-- create MovieDB interface
+        myDB = moviedb.MovieDB('READ')
+        #-- open dialog
         dialog = xbmcgui.Dialog()
-        tree = ElementTree()
-        tree.parse(os.path.join(path, r'movies.xml'))
-        dialog.ok('Информация', ' ', 'Список фильмов создан: ' + tree.getroot().find('LAST_UPDATE').text)
+        dialog.ok('Информация', 'Список фильмов создан: ' + myDB.last_update, 'Кол-во фильмов: ' + str(len(myDB.movies)))
 
 
