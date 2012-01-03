@@ -31,11 +31,25 @@ h = int(sys.argv[1])
 Addon = xbmcaddon.Addon(id='plugin.video.igru.net.ua')
 
 # load XML library
-sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
-from ElementTree  import Element, SubElement, ElementTree
-
-icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
-fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
+try:
+    sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+    from BeautifulSoup  import BeautifulSoup
+    import moviedb
+    icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+    fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
+except:
+    try:
+        sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        import moviedb
+        icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+        fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
+    except:
+        sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        import moviedb
+        icon = xbmc.translatePath(os.path.join(os.getcwd(),'icon.png'))
+        fcookies = xbmc.translatePath(os.path.join(os.getcwd(), r'resources', r'data', r'cookies.txt'))
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
@@ -43,105 +57,246 @@ hpar = HTMLParser.HTMLParser()
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
+
+#---------- parameter/info structure -------------------------------------------
+class Param:
+    type        = ''
+    type_hash   = ''
+    year        = ''
+    tag         = ''
+    mode        = 'TYPES'
+
+class Info:
+    origin      = ''
+    img         = ''
+    url         = ''
+    name        = ''
+    year        = ''
+    genre       = ''
+    director    = ''
+    actors      = ''
+    text        = ''
+
+#---------- get parameters -----------------------------------------------------
+def Get_Parameters(params):
+    #-- mode
+    try:    p.mode = urllib.unquote_plus(params['mode'])
+    except: p.mode = 'TYPES'
+    #-- search tag
+    try:    p.tag  = urllib.unquote_plus(params['tag'])
+    except: p.tag  = ''
+    #-- type
+    try:    p.type = urllib.unquote_plus(params['type'])
+    except: p.type = ''
+    try:    p.type_hash = urllib.unquote_plus(params['type_hash'])
+    except: p.type_hash = ''
+    #-- year
+    try:    p.year = urllib.unquote_plus(params['year'])
+    except: p.year = ''
+    #-----
+    return p
+
+#---------- get movie info -----------------------------------------------------
+def Get_Movie_Info(rec):
+    #-- name
+    mi.name     = rec.text.encode('utf8')
+    #-- origin name
+    try:    mi.origin      = rec.find('origin').text.encode('utf8')
+    except: mi.origin      = ''
+    #-- image
+    try:    mi.img          = rec.find('img').text.encode('utf8')
+    except: mi.img          = ''
+    #-- url
+    try:    mi.url          = rec.find('url').text.encode('utf8')
+    except: mi.url          = ''
+    #-- year
+    try:    mi.year         = rec.find('year').text.encode('utf8')
+    except: mi.year         = ''
+    if unicode(mi.year.decode('utf8')).strip().isnumeric(): pass
+    else:
+        xbmc.log(mi.year)
+        try:
+            mi.year = re.compile('([0-9][0-9][0-9][0-9])', re.MULTILINE|re.DOTALL).findall(mi.year)[0]
+        except:
+            mi.year= '1900'
+    #-- genre
+    try:    mi.genre        = rec.find('genre').text.encode('utf8')
+    except: mi.genre        = ''
+    #-- director
+    try:    mi.director     = rec.find('director').text.encode('utf8')
+    except: mi.director     = ''
+    #-- actors
+    try:    mi.actors       = rec.find('actors').text.encode('utf8')
+    except: mi.actors       = ''
+    #-- description
+    try:    mi.text         = rec.find('text').text.encode('utf8')
+    except: mi.text         = ''
+    #-----
+    return mi
+
+#----------- get Header string ---------------------------------------------------
+def Get_Header(par, mcount):
+
+    info  = 'Фильмов: ' + '[COLOR FF00FF00]' + str(mcount) + '[/COLOR]'
+
+    if par.type <> '':
+        info += ' | Тип: ' + '[COLOR FF00FFF0]'+ par.type + '[/COLOR]'
+
+    if par.tag <> '':
+        info += ' | Поиск: ' + '[COLOR FF00FFF0]'+ par.tag + '[/COLOR]'
+
+    if par.year <> '':
+        info += ' | Год: ' + '[COLOR FFFFF000]'+ par.year + '[/COLOR]'
+
+    #-- info line
+    name    = info
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=EMPTY'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&type=%s'%urllib.quote_plus(par.type)
+    u += '&type_hash=%s'%urllib.quote_plus(par.type_hash)
+    u += '&tag=%s'%urllib.quote_plus(par.tag)
+    u += '&year=%s'%urllib.quote_plus(par.year)
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- year
+    if par.year == '' and par.mode == 'MOVIE':
+        name    = '[COLOR FFFFF000]'+ '[Год]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=YEAR'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&type=%s'%urllib.quote_plus(par.type)
+        u += '&type_hash=%s'%urllib.quote_plus(par.type_hash)
+        u += '&tag=%s'%urllib.quote_plus(par.tag)
+        u += '&year=%s'%urllib.quote_plus(par.year)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+def Empty():
+    return False
+
 #---------- get movie types --------------------------------------------------
-def Get_Movie_Type():
-    # load movie types
-    tree = ElementTree()
-    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'movies.xml'))
+def Get_Movie_Type(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    #-- create MovieDB interface
+    myDB = moviedb.MovieDB('READ')
 
     # add search to the list
-    name = '[ПОИСК]'
+    name = '[COLOR FF00FF00]' + '[ПОИСК]' + '[/COLOR]'
     tag = '*'
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-    u = sys.argv[0] + '?mode=TYPE'
+    u = sys.argv[0] + '?mode=MOVIE'
     u += '&name=%s'%urllib.quote_plus(name)
     u += '&tag=%s'%urllib.quote_plus(tag)
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
+    #-- year
+    if par.year == '':
+        name    = '[COLOR FFFFF000]'+ '[Год]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=YEAR'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&type=%s'%urllib.quote_plus(par.type)
+        u += '&type_hash=%s'%urllib.quote_plus(par.type_hash)
+        u += '&tag=%s'%urllib.quote_plus(par.tag)
+        u += '&year=%s'%urllib.quote_plus(par.year)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
     # add movie type to the list
-    for rec in tree.getroot().find('TYPES'):
+    for rec in myDB.Get_List_Type():
             name = rec.find('name').text.encode('utf-8')
             tag  = rec.tag.encode('utf-8')
             i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-            u = sys.argv[0] + '?mode=TYPE'
+            u = sys.argv[0] + '?mode=MOVIE'
             u += '&name=%s'%urllib.quote_plus(name)
-            u += '&tag=%s'%urllib.quote_plus(tag)
+            #-- filter parameters
+            u += '&type=%s'%urllib.quote_plus(name)
+            u += '&type_hash=%s'%urllib.quote_plus(tag)
+            u += '&tag=%s'%urllib.quote_plus(par.tag)
+            u += '&year=%s'%urllib.quote_plus(par.year)
             xbmcplugin.addDirectoryItem(h, u, i, True)
     xbmcplugin.endOfDirectory(h)
 
+#---------- get movie year -----------------------------------------------------
+def Get_Movie_Year(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    #-- create MovieDB interface
+    myDB = moviedb.MovieDB('READ')
+
+    # add movie type to the list
+    for rec in myDB.Get_List_Year():
+            name = rec.find('name').text.encode('utf-8')
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&type=%s'%urllib.quote_plus(par.type)
+            u += '&type_hash=%s'%urllib.quote_plus(par.type_hash)
+            u += '&tag=%s'%urllib.quote_plus(par.tag)
+            u += '&year=%s'%urllib.quote_plus(name)
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+    xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
 
 #---------- get movies for selected type --------------------------------------
 def Get_Movie_List(params):
-    s_type = urllib.unquote_plus(params['tag'])
-    if s_type == None: return False
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    if par.type == None: return False
 
     # show search dialog
-    if s_type == '*':
+    if par.tag == '*':
         skbd = xbmc.Keyboard()
         skbd.setHeading('Поиск фильмов. Формат: name[:yyyy]')
         skbd.doModal()
         if skbd.isConfirmed():
             SearchStr = skbd.getText().split(':')
-            s_name = SearchStr[0]
+            par.tag = SearchStr[0]
             if len(SearchStr) > 1:
-                s_year = SearchStr[1]
+                par.year = SearchStr[1]
             else:
-                s_year = ''
+                par.year = ''
         else:
             return False
         #--
-        if not unicode(s_year).isnumeric() and (s_name == '' or s_year <> ''):
+        if not unicode(par.year).isnumeric() and (par.tag == '' or par.year <> ''):
             xbmcgui.Dialog().ok('Ошибка поиска',
             'Неверно задан формат поиска фильма.',
             'Используйте формат: ',
             '    <поиск по имени>[:<поиск по году YYYY>]')
             return False
-    # load movies
-    tree = ElementTree()
-    tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'movies.xml'))
-    for rec in tree.getroot().find('MOVIES'):
+
+    #-- create MovieDB interface
+    myDB = moviedb.MovieDB('READ')
+    movie_list, mcount = myDB.Get_List_Movie(par.tag, par.year, par.type_hash)
+
+    #-- show header
+    Get_Header(par, mcount)
+
+    #-- load movies
+    for i in movie_list:
         try:
-            i_name = rec.find('name').text
-            i_name = i_name.encode('utf-8')
-
-            if unicode(rec.find('year').text).isnumeric():
-                i_year      = int(rec.find('year').text)
-            else:
-                i_year      = 1900
-            # checkout by category or name/year
-            if s_type == '*':
-                if s_name <> '':
-                    if s_name not in i_name:
-                        continue
-                if s_year <> '':
-                    if int(s_year) <> i_year:
-                        continue
-            else:
-                if rec.find('categories').find(s_type) is None:
-                    continue
-
-            #get serial details
-            i_image     = rec.find('img').text.encode('utf-8')
-            i_url       = rec.find('url').text.encode('utf-8')
-            i_director  = rec.find('director').text
-            i_text      = rec.find('text').text
-            i_genre     = rec.find('genre').text
             # set serial to XBMC
-            i = xbmcgui.ListItem(i_name, iconImage=i_image, thumbnailImage=i_image)
-            u = sys.argv[0] + '?mode=LIST'
-            u += '&name=%s'%urllib.quote_plus(i_name)
-            u += '&url=%s'%urllib.quote_plus(i_url)
-            u += '&img=%s'%urllib.quote_plus(i_image)
-            i.setInfo(type='video', infoLabels={ 'title':       i_name,
-        						'year':        i_year,
-        						'director':    i_director,
-        						'plot':        i_text,
-        						'genre':       i_genre})
-            i.setProperty('fanart_image', i_image)
-            xbmcplugin.addDirectoryItem(h, u, i, True)
+            item = xbmcgui.ListItem(i['name'], iconImage=i['img'], thumbnailImage=i['img'])
+            u = sys.argv[0] + '?mode=MOVIE_DETAIL'
+            u += '&name=%s'%urllib.quote_plus(i['name'])
+            u += '&url=%s'%urllib.quote_plus(i['url'])
+            u += '&img=%s'%urllib.quote_plus(i['img'])
+            item.setInfo(type='video', infoLabels={ 'title':       i['name'],
+                                                    'cast' :       i['actors'],
+                            						'year':        int(i['year']),
+                            						'director':    i['director'],
+                            						'plot':        i['text'],
+                            						'genre':       i['genre']})
+            item.setProperty('fanart_image', i['img'])
+            xbmcplugin.addDirectoryItem(h, u, item, True)
         except:
             xbmc.log('***   ERROR '+rec.text.encode('utf-8'))
+
 
     xbmcplugin.endOfDirectory(h)
 
@@ -155,8 +310,6 @@ def Get_Movie(params):
 
     image = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
-
-    xbmc.log('*** '+url)
 
     # -- get iframe link to flash player
     post = None
@@ -178,28 +331,28 @@ def Get_Movie(params):
 
     html = f.read()
 
-    match=re.compile("<div align='center'>.+<iframe src='(.+?)' frameborder=", re.MULTILINE|re.DOTALL).findall(html)
-    if len(match) == 0:
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+    all_video = soup.findAll('iframe')
+    part = 1
+
+    if len(all_video) == 0:
         showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
         return False
 
-    part = 1
-
-    for rec in match:
+    for rec in all_video:
         i_name = name
-        if len(match) > 1:
+        if len(all_video) > 1:
             i_name = i_name + ' (часть '+str(part)+')'
             part = part+1
         #---
         i = xbmcgui.ListItem(i_name, iconImage=image, thumbnailImage=image)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(i_name)
-        u += '&url=%s'%urllib.quote_plus(rec)
+        u += '&url=%s'%urllib.quote_plus(rec['src'])
         u += '&img=%s' %urllib.quote_plus(image)
         #i.setProperty('IsPlayable', 'true')
-        xbmcplugin.addDirectoryItem(h, u, i, True)
-
-        xbmc.log(i_name+'   '+rec)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
@@ -208,8 +361,6 @@ def PLAY(params):
     url = urllib.unquote_plus(params['url'])
     image = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
-
-    xbmc.log('*******    '+url)
 
     #-- get session ID (cookie)
     post = None
@@ -230,9 +381,6 @@ def PLAY(params):
             xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
     html = f.read()
-
-
-    xbmc.log(url)
 
     # -- get movie link
     post = None
@@ -290,23 +438,26 @@ hr  = urllib2.HTTPCookieProcessor(cj)
 opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
 
-mode = None
+mode    = None
+p       = Param()
+mi      = Info()
 
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	Get_Movie_Type()
+	Get_Movie_Type(params)
 
-if mode == 'TYPE':
+if mode == 'MOVIE':
 	Get_Movie_List(params)
-elif mode == 'LIST':
+elif mode == 'MOVIE_DETAIL':
 	Get_Movie(params)
+elif mode == 'TYPES':
+    Get_Movie_Type(params)
+elif mode == 'YEAR':
+    Get_Movie_Year(params)
+elif mode == 'EMPTY':
+    Empty()
 elif mode == 'PLAY':
 	PLAY(params)
 
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.log(' === unhandled exception in adIO === ')
-	pass
+
