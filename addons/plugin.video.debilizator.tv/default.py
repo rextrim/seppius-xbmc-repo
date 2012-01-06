@@ -19,7 +19,7 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/licenses/gpl.html
 # */
-import urllib,urllib2,re,sys,os
+import urllib,urllib2,re,sys,os,time
 import xbmcplugin,xbmcgui
 
 pluginhandle = int(sys.argv[1])
@@ -37,22 +37,39 @@ def getURL(url):
 	return link
 
 def root(url):
+	msktmht = getURL('http://direct-time.ru/index.php?id=20');
+	msktmls = re.compile('<td id="local_time">(.*?)</td>').findall(msktmht)
+	msktmst = time.strptime('1970-' + msktmls[0], "%Y-%H:%M:%S")
+
 	http = getURL(url)
-	r1 = re.compile('<div class="chlogo"><a href=(.*?)><img src="(.*?)" alt="(.*?)" title="(.*?)"></div>').findall(http)
-	for rURL, rTHUMB, rALT, rTITLE in r1:
-		title = rTITLE
-		description = rTITLE
-		thumbnail = rTHUMB.replace('./', url)
+	oneline = re.sub( '\n', ' ', http)
+	chndls = re.compile('<div class="chlogo">(.*?)</div> <!-- (left|right)(up|down)part -->').findall(oneline)
+	for chndel, rEL, rEU in chndls:
+		chells = re.compile('<a href=(.*?)><img src="(.*?)" alt="(.*?)" title="(.*?)"></div>').findall(chndel)
+		description = chells[0][3]
+		title = description
+		thumbnail = chells[0][1].replace('./', url)
 		uri = sys.argv[0] + '?mode=BIG'
-		uri += '&url='+urllib.quote_plus(url + rURL)
+		uri += '&url='+urllib.quote_plus(url + chells[0][0])
 		uri += '&name='+urllib.quote_plus(title)
 		uri += '&plot='+urllib.quote_plus(description)
 		uri += '&thumbnail='+urllib.quote_plus(thumbnail)
-		item=xbmcgui.ListItem(title, iconImage=thumbnail, thumbnailImage=thumbnail)
-		item.setInfo( type='video', infoLabels={'title': title, 'plot': description})
-		item.setProperty('IsPlayable', 'true')
-		item.setProperty('fanart_image',thumbnail)
-		xbmcplugin.addDirectoryItem(pluginhandle,uri,item)
+		ptls = re.compile('<div class="prtime">(.*?)</div><div class="prdesc">(.*?)</div>').findall(chndel)
+		ptlsln = len(ptls)
+		if ptlsln:
+			prtm = ptls[len(ptls) - 1][0]
+			prds = ptls[len(ptls) - 1][1]
+			prtmst = time.strptime('1970-' + prtm, "%Y-%H:%M")
+			tmdf = time.mktime(msktmst) - time.mktime(prtmst)
+			if (tmdf < 0) and (tmdf > -(12*60.0*60)) and (ptlsln > 1):
+				prtm = ptls[len(ptls) - 2][0] + '-' + prtm
+				prds = ptls[len(ptls) - 2][1]
+			title = prtm + " " + prds
+			item=xbmcgui.ListItem(title, iconImage=thumbnail, thumbnailImage=thumbnail)
+			item.setInfo( type='video', infoLabels={'title': title, 'plot': description})
+			item.setProperty('IsPlayable', 'true')
+			item.setProperty('fanart_image',thumbnail)
+			xbmcplugin.addDirectoryItem(pluginhandle,uri,item)
 	xbmcplugin.endOfDirectory(pluginhandle)
 
 def playVideo(url, name, thumbnail, plot):
@@ -118,9 +135,3 @@ except: pass
 if mode == 'BIG': playVideo(url, name, thumbnail, plot)
 else: root('http://debilizator.tv/')
 
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.output(' === unhandled exception in adIO === ')
-	pass
