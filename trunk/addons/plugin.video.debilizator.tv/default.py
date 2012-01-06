@@ -37,10 +37,12 @@ def getURL(url):
 	return link
 
 def root(url):
-	msktmht = getURL('http://direct-time.ru/index.php?id=20');
-	msktmls = re.compile('<td id="local_time">(.*?)</td>').findall(msktmht)
-	msktmst = time.strptime('1970-' + msktmls[0], "%Y-%H:%M:%S")
-
+	try:
+		msktmht = getURL('http://direct-time.ru/index.php?id=20');
+		msktmls = re.compile('<td id="local_time">(.*?)</td>').findall(msktmht)
+		msktmst = time.strptime('1970-' + msktmls[0], "%Y-%H:%M:%S")
+	except:
+		pass
 	http = getURL(url)
 	oneline = re.sub( '\n', ' ', http)
 	chndls = re.compile('<div class="chlogo">(.*?)</div> <!-- (left|right)(up|down)part -->').findall(oneline)
@@ -60,11 +62,14 @@ def root(url):
 			prtm = ptls[len(ptls) - 1][0]
 			prds = ptls[len(ptls) - 1][1]
 			prtmst = time.strptime('1970-' + prtm, "%Y-%H:%M")
-			tmdf = time.mktime(msktmst) - time.mktime(prtmst)
-			if (tmdf < 0) and (tmdf > -(12*60.0*60)) and (ptlsln > 1):
-				prtm = ptls[len(ptls) - 2][0] + '-' + prtm
-				prds = ptls[len(ptls) - 2][1]
-			title = prtm + " " + prds
+			try:
+				tmdf = time.mktime(msktmst) - time.mktime(prtmst)
+				if (tmdf < 0) and (tmdf > -(12*60.0*60)) and (ptlsln > 1):
+					prtm = ptls[len(ptls) - 2][0] + '-' + prtm
+					prds = ptls[len(ptls) - 2][1]
+				title = prtm + " " + prds
+			except:
+				pass
 			item=xbmcgui.ListItem(title, iconImage=thumbnail, thumbnailImage=thumbnail)
 			item.setInfo( type='video', infoLabels={'title': title, 'plot': description})
 			item.setProperty('IsPlayable', 'true')
