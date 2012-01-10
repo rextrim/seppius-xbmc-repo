@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
+<addon id="ca.tanas.ruremtv"
+       version="1.0.1"
+       name="Rurem.TV"
+       provider-name="Rurem.TV">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="brt.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Rurem.TV плагин для XBMC</summary>
+        <description>Более 100 каналов ТВ из России, Украины и стран СНГ. 2 недели архива всех каналов, огромная видеотека – 30,000+ фильмов и передач.</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="metadata.kinopoisk.ru"
        name="KinoPoisk"
        version="1.0.43">
