@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
-<addon id="ca.tanas.ruremtv"
-       version="1.0.1"
-       name="Rurem.TV"
-       provider-name="Rurem.TV">
-    <requires>
-        <import addon="xbmc.python" version="1.0"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" library="brt.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Rurem.TV плагин для XBMC</summary>
-        <description>Более 100 каналов ТВ из России, Украины и стран СНГ. 2 недели архива всех каналов, огромная видеотека – 30,000+ фильмов и передач.</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
 <addon id="metadata.kinopoisk.ru"
        name="KinoPoisk"
        version="1.0.43">
@@ -712,6 +695,26 @@
     <description>Смотрите видео с сайта RuHD.TV</description>
     <platform>all</platform>
   </extension>
+</addon>
+
+<addon id="plugin.video.rurem"
+       version="1.2.5"
+       name="RuremTV"
+       provider-name="Rurem.TV">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="brtv.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Rurem.TV plugin</summary>
+		<summary lang="ru">Rurem.TV плагин для XBMC</summary>
+        <description lang="en">Over 100 TV channels from Russia, Ukraine and other CIS countries, 40,000+ movies, huge selection of archived programs.</description>
+		<description lang="ru">Более 100 каналов ТВ из России, Украины и стран СНГ, архив, огромная видеотека.</description>
+        <platform>all</platform>
+    </extension>
 </addon>
 
 <addon id="plugin.video.rusd.tv"

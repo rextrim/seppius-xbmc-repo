@@ -1,6 +1,6 @@
 import httplib, urllib, urllib2, re
 import xml.parsers.expat
-import config
+import config1
 
 class Parser:
     streams = []
