@@ -36,13 +36,21 @@ def getURL(url):
 	response.close()
 	return link
 
+# begin Silhouette code (http://xbmc.ru/forum/showthread.php?p=19398#post19398)
+def toLcTm(tzd, tmst):
+		return time.strftime("%H:%M",time.localtime((time.mktime(tmst) - tzd*3600)))
+
 def root(url):
+
 	try:
-		msktmht = getURL('http://direct-time.ru/index.php?id=20');
-		msktmls = re.compile('<td id="local_time">(.*?)</td>').findall(msktmht)
-		msktmst = time.strptime('1970-' + msktmls[0], "%Y-%H:%M:%S")
+		msktmht = getURL('http://time.jp-net.ru/');
+		msktmls = re.compile('<h1 align=\'center\'>(.*?): (.*?)</h1>').findall(msktmht)
+		msktmst = time.strptime(msktmls[0][1] + ' ' + msktmls[1][1], "%Y-%d-%m %H:%M:%S")
+		#print (msktmls[0][1] + ' ' + msktmls[1][1])
+		tzdf = round( (time.mktime(msktmst) - time.mktime(time.localtime())) / (3600))
 	except:
 		pass
+
 	http = getURL(url)
 	oneline = re.sub( '\n', ' ', http)
 	chndls = re.compile('<div class="chlogo">(.*?)</div> <!-- (left|right)(up|down)part -->').findall(oneline)
@@ -58,24 +66,37 @@ def root(url):
 		uri += '&thumbnail='+urllib.quote_plus(thumbnail)
 		ptls = re.compile('<div class="prtime">(.*?)</div><div class="prdesc">(.*?)</div>').findall(chndel)
 		ptlsln = len(ptls)
-		if ptlsln:
-			prtm = ptls[len(ptls) - 1][0]
-			prds = ptls[len(ptls) - 1][1]
-			prtmst = time.strptime('1970-' + prtm, "%Y-%H:%M")
+		i = 1
+		while ptlsln - i + 1:
+			prtm = ptls[ptlsln - i][0]
+			prds = ptls[ptlsln - i][1]
+			prtmst = time.strptime(msktmls[0][1] + ' ' + prtm, "%Y-%d-%m %H:%M")
 			try:
 				tmdf = time.mktime(msktmst) - time.mktime(prtmst)
-				if (tmdf < 0) and (tmdf > -(12*60.0*60)) and (ptlsln > 1):
-					prtm = ptls[len(ptls) - 2][0] + '-' + prtm
-					prds = ptls[len(ptls) - 2][1]
-				title = prtm + " " + prds
+				if (((tmdf < 0) and (tmdf > -12*3600.0)) or (tmdf > 12*3600.0)) and (ptlsln > 1):
+					i += 1
+				else:
+#                    if i > 1:
+#                        prtm = prtm + '-' + ptls[ptlsln - i + 1][0]
+					if i > 1:
+						prtmst2 = time.strptime(msktmls[0][1] + ' ' + ptls[ptlsln - i + 1][0], "%Y-%d-%m %H:%M")
+						prtm = toLcTm(tzdf, prtmst) + '-' + toLcTm(tzdf, prtmst2)
+					else:
+						prtm = toLcTm(tzdf, prtmst)
+					title = prtm + " " + prds
+					break
 			except:
-				pass
+				break
+
+		if ptlsln:
+			#print title
 			item=xbmcgui.ListItem(title, iconImage=thumbnail, thumbnailImage=thumbnail)
 			item.setInfo( type='video', infoLabels={'title': title, 'plot': description})
 			item.setProperty('IsPlayable', 'true')
 			item.setProperty('fanart_image',thumbnail)
 			xbmcplugin.addDirectoryItem(pluginhandle,uri,item)
 	xbmcplugin.endOfDirectory(pluginhandle)
+# end Silhouette code
 
 def playVideo(url, name, thumbnail, plot):
 	response    = getURL(url)
