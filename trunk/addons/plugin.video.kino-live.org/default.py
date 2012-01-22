@@ -190,15 +190,16 @@ def getCategories(params):
 
 	beautifulSoup = BeautifulSoup(http)
 	categoryContainer = beautifulSoup.find('ul', 'cats')
-	categories = categoryContainer.findAll('li')
+	categories = categoryContainer.findAll('a')
 	if len(categories) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
 	else:
-		for category in categories:
-			link = category.find('a')
+		for link in categories:
 			if link != None:
 				title = link.string
+				if title == None:
+					title = link.find("h2").string
 				href = link['href']
 				if href.find("://") < 0:
 					href = httpSiteUrl + href
