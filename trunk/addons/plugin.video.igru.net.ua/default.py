@@ -303,6 +303,7 @@ def Get_Movie_List(params):
 
 #---------- get movie ---------------------------------------------------------
 def Get_Movie(params):
+
     url = urllib.unquote_plus(params['url'])
 
     if url == None:
@@ -333,8 +334,10 @@ def Get_Movie(params):
 
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    all_video = soup.findAll('iframe')
+    all_video = soup.findAll('object', {'type' : 'application/x-shockwave-flash'})
     part = 1
+
+    xbmc.log(url)
 
     if len(all_video) == 0:
         showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
@@ -345,69 +348,40 @@ def Get_Movie(params):
         if len(all_video) > 1:
             i_name = i_name + ' (часть '+str(part)+')'
             part = part+1
+        #--- get UPPOD flash parameters
+        flash_param = str(rec.find('param', {'name' : 'flashvars'})['value'])
+        video = re.compile('file=(.+?)&', re.MULTILINE|re.DOTALL).findall(flash_param)
         #---
         i = xbmcgui.ListItem(i_name, iconImage=image, thumbnailImage=image)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(i_name)
-        u += '&url=%s'%urllib.quote_plus(rec['src'])
+        u += '&fparam=%s'%urllib.quote_plus(video[0])
         u += '&img=%s' %urllib.quote_plus(image)
         #i.setProperty('IsPlayable', 'true')
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
+
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    url = urllib.unquote_plus(params['url'])
+    flash_param = urllib.unquote_plus(params['fparam'])
     image = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
 
-    #-- get session ID (cookie)
-    post = None
-    request = urllib2.Request('http://igru.net.ua/', post)
+    #--- create HTML page to play video
+    fin = open(os.path.join(os.getcwd(), r'resources', r'html', r'template.html'), 'r')
+    tmp = fin.read()
+    fin.close()
 
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'igru.net.ua')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://igru.net.ua')
+    tmp = tmp.replace('#FLASH_VAR#', flash_param)
 
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+    fout = open(os.path.join(os.getcwd(), r'resources', r'html', r'play.html'), 'w')
+    fout.write(tmp)
+    fout.close()
 
-    html = f.read()
-
-    # -- get movie link
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'igru.net.ua')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://igru.net.ua')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
-
-    match=re.compile('.txt&amp;file=(.+?)&amp;link=', re.MULTILINE|re.DOTALL).findall(html)
-    if len(match) == 0:
-        showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
-        return False
-
-    url = match[0]
+    #--- play video
+    url = os.path.join(os.getcwd(), r'resources', r'html', r'play.html')
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=image)
     xbmc.Player().play(url, i)
