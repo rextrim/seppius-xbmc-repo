@@ -438,8 +438,8 @@
 </addon>
 
 <addon id="plugin.video.igru.net.ua"
-       name="Фильмы (igru.net.ua)"
-       version="1.0.4"
+       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]igru.net.ua[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.1.0"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
