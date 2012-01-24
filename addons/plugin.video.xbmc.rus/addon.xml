@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.1.8" provider-name="HD-Lab Team">
+<addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.1.9" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="audio, video" library="default.py"><provides>audio video</provides></extension>
   <extension point="xbmc.addon.metadata">
