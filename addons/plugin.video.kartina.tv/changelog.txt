@@ -1,3 +1,6 @@
+[B]1.2.4[/B]
+Hot fix of start screen browsing error
+
 [B]1.2.3[/B]
 Temporary hardcoded hook to enable old way videolibrary for Eden users
 Depricated functions cleanup for more clear logging
