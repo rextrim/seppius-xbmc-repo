@@ -883,6 +883,8 @@ else:
 		if 'vod' in params:
 			frmt = '[VOD] %s/'
 		what = frmt % title
+	if what == None:
+		what = 'Root'
 	urlpath = what + sys.argv[2]
 	extras = {}
 	extras['screen'] = xbmc.getInfoLabel('System.ScreenMode')
