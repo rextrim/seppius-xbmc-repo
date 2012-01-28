@@ -12,7 +12,7 @@ import datetime
 import re, os, sys
 
 __author__ = 'Eugene Bond <eugene.bond@gmail.com>'
-__version__ = '2.9'
+__version__ = '2.10'
 
 IPTV_DOMAIN = 'iptv.kartina.tv'
 IPTV_API = 'http://%s/api/json/%%s' % IPTV_DOMAIN
@@ -25,15 +25,20 @@ except ImportError:
 		def __init__(self):
 			self.nonXBMC = True
 			self.LOGDEBUG = 1
+			self.LOGWARNING = 2
 		
-		def output(self, data, level=''):
+		def output(self, data, level = 0):
+			print "xbmc.output is depricated. use xbmc.log instead"
+			self.log(data, level)
+		
+		def log(self, data, level = 0):
 			print data
 		
 		def getInfoLabel(self, param):
 			return '%s unknown' % param
 		
 		def translatePath(self, param):
-			return param
+			return './'
 		
 	
 	class xbmcaddon_foo:
@@ -44,7 +49,7 @@ except ImportError:
 			if param == 'version':
 				return __version__
 			elif param == 'id':
-				return self.id + ' by %s' % __author__
+				return self.id + '/%s (by %s) ' % (__version__, __author__)
 			else:
 				return '%s unknown' % param
 	
@@ -73,7 +78,13 @@ class platform_boo:
 	def release(self):
 		plat = sys.platform
 		return plat
-			
+		
+	def processor(self):
+		return ""
+	
+	def machine(self):
+		return ""
+		
 	def python_version(self):
 		ver = sys.version_info
 		return '%s.%s.%s' % (ver[0], ver[1], ver[2])
@@ -85,18 +96,17 @@ COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt'
 LASTLISTFILE = os.path.join(xbmc.translatePath('special://temp/'), 'last.%s.json' % IPTV_DOMAIN)
 
 try:											# Let's see if cookielib is available
-	import cookielib            
+	import cookielib
 except ImportError:
-	xbmc.output('[KartinaTV] cookielib is not available..')
+	xbmc.log('[KartinaTV] cookielib is not available..')
 	pass
 else:
 	COOKIEJAR = cookielib.LWPCookieJar()		# This is a subclass of FileCookieJar that has useful load and save methods
 
-
 try:
 	import json
 except ImportError:
-	xbmc.output('[KartinaTV] module json is not available. using demjson')
+	xbmc.log('[KartinaTV] module json is not available. using demjson')
 	import demjson
 	JSONDECODE = demjson.decode
 	JSONENCODE = demjson.encode
@@ -130,6 +140,23 @@ class kartina:
 		
 		self.COLORSCHEMA = {'Silver': 'ddefefef'}
 	
+	def genUa(self):
+		osname = '%s %s; %s' % (platform.system(), platform.release(), platform.python_version())
+		pyver = platform.python_version()
+		
+		__settings__ = xbmcaddon.Addon(self.addonid)
+		
+		isXBMC = 'XBMC'
+		if getattr(xbmc, "nonXBMC", None) is not None:
+			isXBMC = 'nonXBMC'
+		
+		#ua = '%s v%s (%s %s [%s]; %s; python %s) as %s' % (__settings__.getAddonInfo('id'), __settings__.getAddonInfo('version'), isXBMC, xbmc.getInfoLabel('System.BuildVersion'), xbmc.getInfoLabel('System.ScreenMode'), osname, pyver, self.login)
+		
+		ua = '%s/%s (%s; %s) %s/%s iptv/%s user/%s' % (isXBMC, xbmc.getInfoLabel('System.BuildVersion').split(" ")[0], xbmc.getInfoLabel('System.BuildVersion'), osname, __settings__.getAddonInfo('id'), __settings__.getAddonInfo('version'), __version__, self.login)
+		
+		xbmc.log('[Kartina.TV] UA: %s' % ua)
+		return ua
+	
 	def _request(self, cmd, params, inauth = None):
 		
 		if self.AUTH_OK == False:
@@ -144,41 +171,38 @@ class kartina:
 			postparams = None
 		
 		#log.info('Requesting %s' % url)
-		xbmc.output('[Kartina.TV] REQUESTING: %s' % url)
+		xbmc.log('[Kartina.TV] REQUESTING: %s' % url)
 		
-		osname = '%s %s' % (platform.system(), platform.release())
-		pyver = platform.python_version()
-		
-		__settings__ = xbmcaddon.Addon(self.addonid)
-		
-		isXBMC = 'XBMC'
-		if getattr(xbmc, "nonXBMC", None) is not None:
-			isXBMC = 'nonXBMC'
-		
-		ua = '%s v%s (%s %s [%s]; %s; python %s) as %s' % (__settings__.getAddonInfo('id'), __settings__.getAddonInfo('version'), isXBMC, xbmc.getInfoLabel('System.BuildVersion'), xbmc.getInfoLabel('System.ScreenMode'), osname, pyver, self.login)
-		
-		xbmc.output('[Kartina.TV] UA: %s' % ua)
+		ua = self.genUa()
 		
 		req = urllib2.Request(url, postparams, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest'})
+		
+		if inauth == None and getattr(xbmc, "nonXBMC", None) is not None:
+			from ga import track_page_view
+			from ga import get_visitor_id
+			path = cmd+"?"+params
+			extra = {}
+			extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
+			track_page_view(get_visitor_id(self.login, None), path, ua, extra)
 		
 		if COOKIEJAR == None and (self.SID != None):
 			req.add_header("Cookie", self.SID_NAME + "=" + self.SID + ";")
 		
 		rez = urllib2.urlopen(req).read()
 		
-		xbmc.output('[Kartina.TV] Got %s' % rez, level=xbmc.LOGDEBUG)
+		xbmc.log('[Kartina.TV] Got %s' % rez, level=xbmc.LOGDEBUG)
 		
 		try:
 			res = JSONDECODE(rez)
 		except:
-			xbmc.output('[Kartina.TV] Error.. :(')
+			xbmc.log('[Kartina.TV] Error.. :(')
 		
-		#xbmc.output('[Kartina.TV] Got JSON: %s' % res)
+		#xbmc.log('[Kartina.TV] Got JSON: %s' % res)
 			
 		self._errors_check(res)
 		
 		if COOKIEJAR != None:
-			xbmc.output('[Kartina.TV] Saving cookies: %s' % COOKIEFILE)
+			xbmc.log('[Kartina.TV] Saving cookies: %s' % COOKIEFILE)
 			COOKIEJAR.save(COOKIEFILE)
 		
 		return res
@@ -192,25 +216,28 @@ class kartina:
 			self.SID_NAME = response['sid_name']
 			self.AUTH_OK = True
 			if COOKIEJAR != None:
-				cookie = cookielib.Cookie(0, self.SID_NAME, self.SID, '80', False, IPTV_DOMAIN, True, False, '/', True, False, time() + 600, False, None, None, {})
-				COOKIEJAR.set_cookie(cookie)
+				try:
+					cookie = cookielib.Cookie(0, self.SID_NAME, self.SID, '80', False, IPTV_DOMAIN, True, False, '/', True, False, time() + 600, False, None, None, {})
+					COOKIEJAR.set_cookie(cookie)
+				except:
+					xbmc.log('[Kartina.TV] pipec kakaja strannaja shnyaga slu4ilas, pacany!', xbmc.LOGWARNING)
 			value, options = self.getSettingCurrent('timeshift')
 			self.timeshift = int(value) * 3600
 		
 	def getLast(self):
 		if self.last_list and 'ttl' in self.last_list:
 			if int(self.last_list['ttl']) < time():
-				xbmc.output('[Kartina.TV] Last list expired')
+				xbmc.log('[Kartina.TV] Last list expired')
 				self.last_list = None
 		if not self.last_list:
 			f = open(LASTLISTFILE, 'rb')
 			try:
 				self.last_list = JSONDECODE(f.read())
 			except Exception, e:
-				xbmc.output('[Kartina.TV] Error loading last list %s' % e)
+				xbmc.log('[Kartina.TV] Error loading last list %s' % e)
 				res = self.getChannelsList()
 			else:
-				xbmc.output('[Kartina.TV] last list loaded')
+				xbmc.log('[Kartina.TV] last list loaded')
 			f.close()
 			
 		return self.last_list['channels']
@@ -219,10 +246,13 @@ class kartina:
 		if 'error' in json:
 			err = json['error']
 			if 'message' in err:
-				xbmc.output('[Kartina.TV] ERROR: %s' % err['message'])
+				xbmc.log('[Kartina.TV] ERROR: %s' % err['message'])
 			if COOKIEJAR != None:
-				cookie = cookielib.Cookie(0, self.SID_NAME, None, '80', False, IPTV_DOMAIN, True, False, '/', True, False, time() - 600, False, None, None, {})
-				COOKIEJAR.set_cookie(cookie)
+				try:
+					cookie = cookielib.Cookie(0, self.SID_NAME, None, '80', False, IPTV_DOMAIN, True, False, '/', True, False, time() - 600, False, None, None, {})
+					COOKIEJAR.set_cookie(cookie)
+				except:
+					xbmc.log('[Kartina.TV] blead, tut realno palevo nezdorovoe!', xbmc.LOGWARNING)
 			self.AUTH_OK = False
 	
 	
@@ -254,7 +284,7 @@ class kartina:
 					if 'epg_end' in channel:
 						epg_end = int(channel['epg_end'])
 
- 					
+					
 					duration = epg_end - epg_start
 					percent = 0
 					if duration > 0 :
@@ -296,9 +326,9 @@ class kartina:
 				jsave = JSONENCODE(self.last_list, encoding='utf8')
 				f.write(jsave)
 			except Exception, e:
-				xbmc.output('[Kartina.TV] Error saving last list %s' % e)
+				xbmc.log('[Kartina.TV] Error saving last list %s' % e)
 			else:
-				xbmc.output('[Kartina.TV] last list stored')
+				xbmc.log('[Kartina.TV] last list stored')
 			f.close()
 			
 		return self.channels
@@ -382,7 +412,7 @@ class kartina:
 			result = self._request('vod_list', params)
 			if 'total' in result:
 				pagesize = result['total'] 
-			xbmc.output('[Kartina.TV] pagesize set to %s to reflect "all" param' % pagesize)
+			xbmc.log('[Kartina.TV] pagesize set to %s to reflect "all" param' % pagesize)
 		
 		params = 'type=%s&nums=%s&page=%s' % (mode, pagesize, page)
 		result = self._request('vod_list', params)
@@ -394,7 +424,7 @@ class kartina:
 					icon = 'http://%s%s' % (IPTV_DOMAIN, icon)
 			else:
 				icon = ''
-			xbmc.output('[Kartina.TV] VOD item: %s' % vod, level=xbmc.LOGDEBUG)
+			xbmc.log('[Kartina.TV] VOD item: %s' % vod, level=xbmc.LOGDEBUG)
 			res.append({
 				'title':		vod['name'],
 				'info':			vod['description'],
@@ -455,12 +485,12 @@ class kartina:
 				'value':		value,
 				'options':		options
 			})
-		xbmc.output('[Kartina.TV] settings: %s' % res)
+		xbmc.log('[Kartina.TV] settings: %s' % res)
 		return res
 	
 	
 	def test(self):
-		print(self.getChannelsList())
+		#print(self.getChannelsList())
 		print(self.getCurrentInfo(7))
 	
 	
@@ -478,5 +508,5 @@ class kartina:
 		return self.AUTH_OK
 		
 if __name__ == '__main__':
-	foo = kartina('147', '741')
+	foo = kartina('148', '841')
 	foo.test()

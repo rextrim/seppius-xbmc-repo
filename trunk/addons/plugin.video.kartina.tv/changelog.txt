@@ -1,3 +1,8 @@
+[B]1.2.3[/B]
+Temporary hardcoded hook to enable old way videolibrary for Eden users
+Depricated functions cleanup for more clear logging
+Anonimous statistics loggin
+
 [B]1.2.2[/B]
 Current playing video info auto-disapearing
 Videolib importing improvements and fix for absolute poster urls
