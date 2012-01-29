@@ -24,7 +24,7 @@ COOKIE_NAME = "__utmmobile"
 COOKIE_PATH = "/"
 COOKIE_USER_PERSISTENCE = 63072000
 DOMAIN = "kartina.tv"
-UATRACK = "UA-28670505-1"
+UATRACK = "MO-28670505-1"
 
 def get_ip(remote_address):
 	# dbgMsg("remote_address: " + str(remote_address))

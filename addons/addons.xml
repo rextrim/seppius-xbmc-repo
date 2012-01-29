@@ -458,7 +458,7 @@
 
 <addon id="plugin.video.kartina.tv"
        name="Kartina.TV"
-       version="1.2.4"
+       version="1.2.5"
        provider-name="Eugene Bond">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
