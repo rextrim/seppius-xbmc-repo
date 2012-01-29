@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #/*
-# *      Copyright (C) 2010 Kostynoy S. aka Seppius
+# *  Copyright (c) 2011-2012 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# *  Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
 # *
 # *  This Program is free software; you can redistribute it and/or modify
 # *  it under the terms of the GNU General Public License as published by
@@ -80,10 +81,3 @@ try: secon  = urllib.unquote_plus(params["secon"])
 except: title = ''
 if mode == None: ShowRoot()
 elif mode == 'Play':  Play(title, first, secon)
-
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.output(' === unhandled exception in adIO === ')
-	pass

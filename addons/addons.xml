@@ -30,8 +30,8 @@
 
 <addon id="plugin.audio.101.ru"
        name="101.RU"
-       version="1.0.8"
-       provider-name="seppius">
+       version="1.0.9"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -50,8 +50,8 @@
 
 <addon id="plugin.audio.akado.radio"
        name="akado.radio"
-       version="1.0.4"
-       provider-name="seppius">
+       version="1.0.5"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -68,8 +68,8 @@
 
 <addon id="plugin.audio.guzei.radio"
        name="GUZEI.RADIO"
-       version="1.0.5"
-       provider-name="seppius">
+       version="1.0.6"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -88,8 +88,8 @@
 
 <addon id="plugin.audio.moskva.fm"
        name="MOSKVA.FM"
-       version="0.0.5"
-       provider-name="seppius">
+       version="0.0.7"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -104,7 +104,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.mp3tales.ru" name="Аудиосказки" version="1.0.0" provider-name="seppius">
+<addon id="plugin.audio.mp3tales.ru" name="Аудиосказки" version="1.0.1" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>audio</provides>
@@ -122,8 +122,8 @@
 
 <addon id="plugin.audio.online.fm"
        name="online.fm"
-       version="1.0.6"
-       provider-name="seppius">
+       version="1.0.8"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -140,8 +140,8 @@
 
 <addon id="plugin.audio.radiostyle.ru"
        name="RadioStyle"
-       version="1.0.5"
-       provider-name="seppius">
+       version="1.0.6"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -161,8 +161,8 @@
 
 <addon id="plugin.audio.sradio.ru"
        name="SRADIO.RU"
-       version="0.0.1"
-       provider-name="seppius">
+       version="0.0.2"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -179,8 +179,8 @@
 
 <addon id="plugin.audio.svobodanews.ru"
        name="Svobodanews"
-       version="1.0.6"
-       provider-name="seppius">
+       version="1.0.7"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -273,8 +273,8 @@
 
 <addon id="plugin.video.cccp.tv"
        name="CCCP TV"
-       version="1.0.4"
-       provider-name="seppius">
+       version="1.0.5"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -311,8 +311,8 @@
 
 <addon id="plugin.video.cnews.tv"
        name="CNEWS.TV"
-       version="1.0.4"
-       provider-name="seppius">
+       version="1.0.5"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -328,7 +328,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.debilizator.tv" name="Debilizator.TV" version="1.1.0" provider-name="seppius">
+<addon id="plugin.video.debilizator.tv" name="Debilizator.TV" version="1.1.1" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -374,7 +374,7 @@
 <addon id="plugin.video.filmy.net.ua"
        name="ua-ix"
        version="0.0.2"
-       provider-name="seppius">
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -420,8 +420,8 @@
 
 <addon id="plugin.video.guzei.tv"
        name="GUZEI.TV"
-       version="1.0.7"
-       provider-name="seppius">
+       version="1.0.8"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -493,7 +493,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.5" provider-name="seppius">
+<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.6" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
@@ -520,7 +520,7 @@
     </extension>
 </addon>
 
-<addon id="plugin.video.kiwi.kz" name="Kiwi.kz" version="1.0.0" provider-name="seppius">
+<addon id="plugin.video.kiwi.kz" name="Kiwi.kz" version="1.0.1" provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -536,8 +536,8 @@
 
 <addon id="plugin.video.mults.spb.ru"
        name="Каталог мультфильмов"
-       version="1.0.0"
-       provider-name="seppius">
+       version="1.0.2"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -612,7 +612,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.planeta-online.tv" name="Planeta-online.tv" version="1.0.7" provider-name="seppius">
+<addon id="plugin.video.planeta-online.tv" name="Planeta-online.tv" version="1.0.8" provider-name="HD-Lab Team">
 	<requires><import addon="xbmc.python" version="1.0"/></requires>
 	<extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
 	<extension point="xbmc.addon.metadata">
@@ -643,8 +643,8 @@
 
 <addon id="plugin.video.rpod.ru"
        name="Russian Podcasting"
-       version="1.0.7"
-       provider-name="seppius">
+       version="1.0.8"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -662,8 +662,8 @@
 
 <addon id="plugin.video.ruhd.ru"
        name="RUHD.RU"
-       version="1.0.4"
-       provider-name="seppius">
+       version="1.0.5"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -680,8 +680,8 @@
 
 <addon id="plugin.video.ruhd.tv"
        name="RuHD.TV"
-       version="1.2.1"
-       provider-name="seppius">
+       version="1.2.2"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -719,8 +719,8 @@
 
 <addon id="plugin.video.rusd.tv"
        name="RuSD.TV"
-       version="1.2.0"
-       provider-name="seppius">
+       version="1.2.1"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -736,7 +736,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.russia.ru" name="RUSSIA.RU" version="1.0.7" provider-name="seppius">
+<addon id="plugin.video.russia.ru" name="RUSSIA.RU" version="1.0.8" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
@@ -752,8 +752,8 @@ Russia.ru делает передачи для самой разной ауди�
 
 <addon id="plugin.video.rutube.ru"
        name="RuTube"
-       version="1.0.5"
-       provider-name="seppius">
+       version="1.0.6"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -803,8 +803,8 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.ts-tv.ru"
        name="TS-TV.RU"
-       version="1.0.6"
-       provider-name="seppius">
+       version="1.0.7"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -822,8 +822,8 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.tv-here.ru"
        name="TV-HERE.RU"
-       version="1.0.4"
-       provider-name="seppius">
+       version="1.0.5"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -841,8 +841,8 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.tvigle.ru"
        name="Tvigle"
-       version="1.0.5"
-       provider-name="seppius">
+       version="1.0.6"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -881,8 +881,8 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.tvjam.ru"
        name="TVJAM.RU"
-       version="1.0.4"
-       provider-name="seppius">
+       version="1.0.5"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -933,8 +933,8 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.vesti.ru"
        name="VESTI.RU"
-       version="1.0.5"
-       provider-name="seppius">
+       version="1.0.6"
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -1003,7 +1003,7 @@ RuTube - отличная стартовая площадка для незав�
 	</extension>
 </addon>
 
-<addon id="script.yandex.tvguide" name="Яндекс телепрограмма" version="0.0.2" provider-name="seppius [seppius@xbmc.ru]">
+<addon id="script.yandex.tvguide" name="Яндекс телепрограмма" version="0.0.3" provider-name="HD-Lab Team">
 	<requires>
 		<import addon="xbmc.python" version="1.0"/>
 		<!--<import addon="script.module.simplejson" version="2.0.10"/>

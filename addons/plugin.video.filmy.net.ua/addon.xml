@@ -2,7 +2,7 @@
 <addon id="plugin.video.filmy.net.ua"
        name="ua-ix"
        version="0.0.2"
-       provider-name="seppius">
+       provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>

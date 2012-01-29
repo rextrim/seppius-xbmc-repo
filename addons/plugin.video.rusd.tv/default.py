@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #/*
-# *      Copyright (C) 2010 Kostynoy S. aka Seppius
-# *
+# *  Copyright (c) 2011-2012 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# *  Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
 # *
 # *  This Program is free software; you can redistribute it and/or modify
 # *  it under the terms of the GNU General Public License as published by

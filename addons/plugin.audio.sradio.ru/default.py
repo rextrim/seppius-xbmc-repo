@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #/*
-# *   Copyright (с) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
-# *   Writer (C) 06/03/2011, Kostynoy S.A., E-mail: seppius2@gmail.com
+# *  Copyright (c) 2011-2012 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# *  Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
 # *
 # *  This Program is free software; you can redistribute it and/or modify
 # *  it under the terms of the GNU General Public License as published by
@@ -186,8 +186,3 @@ if (mode != None):
 		pass
 	if func: func(params)
 
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except Exception, e:
-	xbmc.output('Exception in adIO: %s' % e)

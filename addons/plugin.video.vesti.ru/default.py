@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #/*
-# *      Copyright (C) 2010 Kostynoy S. aka Seppius
-# *
+# *  Copyright (c) 2011-2012 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# *  Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
 # *
 # *  This Program is free software; you can redistribute it and/or modify
 # *  it under the terms of the GNU General Public License as published by
@@ -151,9 +151,3 @@ elif mode == 'live':
 	player = xbmc.Player(xbmc.PLAYER_CORE_AUTO)
 	player.play(playList)
 
-try:
-	import adanalytics
-	adanalytics.adIO(sys.argv[0], sys.argv[1], sys.argv[2])
-except:
-	xbmc.output(' === unhandled exception in adIO === ')
-	pass
