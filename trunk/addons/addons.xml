@@ -594,24 +594,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.parom.tv"
-       name="Parom.tv"
-       version="0.0.1"
-       provider-name="tolin">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-            library="default.py">
-        <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>http://www.parom.tv/</summary>
-    <description>http://www.parom.tv/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.planeta-online.tv" name="Planeta-online.tv" version="1.0.8" provider-name="HD-Lab Team">
 	<requires><import addon="xbmc.python" version="1.0"/></requires>
 	<extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
