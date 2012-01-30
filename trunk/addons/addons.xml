@@ -802,6 +802,20 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
+<addon id="plugin.video.turbofilm.tv" name="Turbofilm.TV" version="1.0.7" provider-name="HD-Lab Team">
+	<requires>
+		<import addon="xbmc.python" version="1.0"/>
+	</requires>
+	<extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Смотрите видео с сайта http://turbofilm.tv/</summary>
+		<description>Смотрите видео с сайта http://turbofilm.tv/</description>
+		<platform>all</platform>
+	</extension>
+</addon>
+
 <addon id="plugin.video.tv-here.ru"
        name="TV-HERE.RU"
        version="1.0.5"
