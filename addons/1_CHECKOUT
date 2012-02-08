@@ -1,3 +1,0 @@
-#!/bin/bash
-REPO="seppius-xbmc-repo"
-svn checkout https://seppius-xbmc-repo.googlecode.com/svn/ $REPO --username seppius2
