@@ -34,10 +34,20 @@ Addon = xbmcaddon.Addon(id='plugin.video.serialu.net')
 # load XML library
 try:
     sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+    from BeautifulSoup  import BeautifulSoup
     from ElementTree  import Element, SubElement, ElementTree
+    import xppod
 except:
-    sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
-    from ElementTree  import Element, SubElement, ElementTree
+    try:
+        sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        from ElementTree  import Element, SubElement, ElementTree
+        import xppod
+    except:
+        sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        from ElementTree  import Element, SubElement, ElementTree
+        import xppod
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
@@ -88,6 +98,25 @@ def Get_Serial_Type():
 
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
+
+#---------- check history ------------------------------------------------------
+def Check_History(tag):
+    # try to open history
+    try:
+        htree = ElementTree()
+        htree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'history.xml'))
+        xml_h = htree.getroot()
+    except:
+        xbmc.log("*** HISTORY NOT FOUND ")
+        return ''
+
+    # build list of history
+    try:
+        part = xml_h.find(tag).find('Part').text
+    except:
+        part = ''
+
+    return part.encode('utf-8')
 
 #---------- get serials genres -------------------------------------------------
 def Get_Serial_Genre():
@@ -184,7 +213,7 @@ def Get_Serial_List(params):
                 i.setProperty('fanart_image', i_image)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
-                xbmc.log('***   ERROR '+rec.text.encode('utf-8'))
+                pass
     else:
         for rec in tree.getroot().find('SERIALS'):
             try:
@@ -238,7 +267,7 @@ def Get_Serial_List(params):
                 i.setProperty('fanart_image', i_image)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
-                xbmc.log('***   ERROR '+rec.text.encode('utf-8'))
+                xbmc.log('***   ERROR ')
 
     xbmcplugin.endOfDirectory(h)
 
@@ -251,73 +280,11 @@ def Get_Serial(params):
 
     image  = urllib.unquote_plus(params['img'])
     s_name = urllib.unquote_plus(params['name'])
-    h_part = urllib.unquote_plus(params['part'])
     tag    = urllib.unquote_plus(params['tag'])
+    h_part = Check_History(tag)
 
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
-
-    match=re.compile('<p>Смотреть .+ онлайн<span id(.+?)<p><strong>Сериал посмотрели?', re.MULTILINE|re.DOTALL).findall(link)
-    if len(match) == 0:
-        match=re.compile('<p>Смотреть .+ онлайн<(.+?)<p><strong>Сериал посмотрели?', re.MULTILINE|re.DOTALL).findall(link)
-        if len(match) == 0:
-            showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
-            return False
-
-    list  =re.compile('<p>(.+?)</p>', re.MULTILINE|re.DOTALL).findall(match[0])
-
-    season = ''
-    for rec in list:
-        if re.search('object', rec):
-            v_url=re.compile('.txt&amp;pl=(.+?)&amp;link=', re.MULTILINE|re.DOTALL).findall(rec)
-            v_list = Get_Serial_Video(v_url[0].replace('%26','&'))
-            # build a play list
-            str_pl = ''
-            for v in v_list:
-                str_pl = str_pl + v[1] + '#' + season + ' ' + v[0] + ';'
-            str_pl = str_pl.rstrip(';')
-            # build serial parts list
-            index = 0
-            for v in v_list:
-                name = season+' '+v[0]#.decode('utf-8')
-
-                # mark part for history
-                if h_part <> '-':
-                    if name == h_part:
-                        name = '# '+name
-                    else:
-                        name = '  '+name
-
-                i = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
-                u = sys.argv[0] + '?mode=PLAY'
-                u += '&name=%s'%urllib.quote_plus(name)
-                u += '&url=%s'%urllib.quote_plus(v[1])
-                u += '&serial=%s'%urllib.quote_plus(s_name)
-                u += '&serial_tag=%s'%urllib.quote_plus(tag)
-                u += '&serial_url=%s'%urllib.quote_plus(url)
-                u += '&img=%s'%urllib.quote_plus(image)
-                u += '&playlist=%s'%urllib.quote_plus(str_pl)
-                u += '&index=%s'%urllib.quote_plus(str(index))
-
-                index = index+1
-                #i.setProperty('IsPlayable', 'true')
-                xbmcplugin.addDirectoryItem(h, u, i, False)
-        else:
-            season = rec#.decode('utf-8')
-    xbmcplugin.endOfDirectory(h)
-#-------------------------------------------------------------------------------
-
-#---------- get serial video links ---------------------------------------------
-def Get_Serial_Video(url):
-    cj = cookielib.CookieJar()
-    h  = urllib2.HTTPCookieProcessor(cj)
-    opener = urllib2.build_opener(h)
-    urllib2.install_opener(opener)
+    #-- get serial play list & parameters  -------------------------------------
     post = None
-
     request = urllib2.Request(urllib.unquote(url), post)
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host', 'serialu.net')
@@ -327,11 +294,111 @@ def Get_Serial_Video(url):
     request.add_header('Cookie', 'MG_6532=1')
 
     o = urllib2.urlopen(request)
-    http = o.read()
+    html = o.read()
     o.close()
-    video=re.compile('{"comment":"(.+?)","file":"(.+?)"}', re.MULTILINE|re.DOTALL).findall(http)
 
-    return video
+    # -- parsing web page
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+    pl_url = ''
+
+    is_multiseason = len(soup.findAll('object', {'type':'application/x-shockwave-flash'}))
+
+    for rec in soup.findAll('object', {'type':'application/x-shockwave-flash'}):
+        if is_multiseason > 1:
+            season = rec.parent.previousSibling.previousSibling.text+r' '
+        else:
+            season = r''
+
+        for par in rec.find('param', {'name':'flashvars'})['value'].split('&'):
+            if par.partition('=')[0] == 'pl':
+                pl_url = par.partition('=')[2].replace('%26', '&')
+
+        if pl_url.find('http:') == -1:
+            pl_url = xppod.Decode(pl_url)
+
+        #-- get playlist details ---------------------------------------------------
+        request = urllib2.Request(urllib.unquote(pl_url), post)
+        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+        request.add_header('Host', 'serialu.net')
+        request.add_header('Accept', '*/*')
+        request.add_header('Accept-Language', 'ru-RU')
+        request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
+        request.add_header('Cookie', 'MG_6532=1')
+
+        o = urllib2.urlopen(request)
+        html = o.read()
+        o.close()
+
+        # -- parsing web page
+        s_url = ''
+        s_num = 0
+        for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
+            for par in rec.replace('"','').split(','):
+                if par.split(':')[0]== 'comment':
+                    name = par.split(':')[1]
+                if par.split(':')[0]== 'file':
+                    s_url = par.split(':')[1]
+            s_num += 1
+
+            # mark part for history
+            name = season.encode('utf-8') + name
+            if h_part <> '-':
+                if name == h_part:
+                    name = '[COLOR FF00FF00]'+name+'[/COLOR]'
+
+            i = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
+            u = sys.argv[0] + '?mode=PLAY'
+            u += '&name=%s'%urllib.quote_plus(name)
+            u += '&url=%s'%urllib.quote_plus(s_url)
+            u += '&serial=%s'%urllib.quote_plus(s_name)
+            u += '&serial_tag=%s'%urllib.quote_plus(tag)
+            u += '&serial_url=%s'%urllib.quote_plus(url)
+            u += '&img=%s'%urllib.quote_plus(image)
+            u += '&pl_url=%s'%urllib.quote_plus(pl_url)
+            u += '&pl_pos=%s'%urllib.quote_plus(str(s_num))
+
+            xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    xbmcplugin.endOfDirectory(h)
+
+#-------------------------------------------------------------------------------
+
+def Get_Play_List(pl_url, pos, img):
+    # create play list
+    pl=xbmc.PlayList(1)
+    pl.clear()
+
+    #-- get playlist details ---------------------------------------------------
+    post = None
+    request = urllib2.Request(urllib.unquote(pl_url), post)
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host', 'serialu.net')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
+    request.add_header('Cookie', 'MG_6532=1')
+
+    o = urllib2.urlopen(request)
+    html = o.read()
+    o.close()
+
+    s_num = 0
+    # -- parsing web page
+    for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
+        for par in rec.replace('"','').split(','):
+            if par.split(':')[0]== 'comment':
+                name = par.split(':')[1]
+            if par.split(':')[0]== 'file':
+                s_url = par.split(':')[1]
+                if s_url.find('http:') == -1:
+                    s_url = xppod.Decode(s_url)
+        s_num += 1
+
+        if s_num >= pos :
+            i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=img)
+            pl.add(s_url, i)
+
+    return pl
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
@@ -342,35 +409,29 @@ def PLAY(params):
     tag         = urllib.unquote_plus(params['serial_tag'])
     serial_url  = urllib.unquote_plus(params['serial_url'])
     name        = urllib.unquote_plus(params['name'])
+    pl_url      = urllib.unquote_plus(params['pl_url'])
+    pl_pos      = int(urllib.unquote_plus(params['pl_pos']))
 
     # -- if requested continious play
-    if xbmcplugin.getSetting(int( sys.argv[ 1 ] ), 'continue_play') == 'true':
-        playlist  = urllib.unquote_plus(params['playlist']).split(';')
-        idx_start = int(urllib.unquote_plus(params['index']))
-
-        # create play list
-        pl=xbmc.PlayList(1)
-        pl.clear()
-        for idx in range(idx_start, len(playlist)):
-            pl_url  = playlist[idx].split('#')[0]
-            pl_name = playlist[idx].split('#')[1]
-            i = xbmcgui.ListItem(pl_name, path = urllib.unquote(pl_url), thumbnailImage=img)
-            pl.add(pl_url, i)
+    if Addon.getSetting('continue_play') == 'true':
+        pl=Get_Play_List(pl_url, pl_pos, img)
         xbmc.Player().play(pl)
     # -- play only selected item
     else:
+        if url.find('http:') == -1:
+                url = xppod.Decode(url)
+
         i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
         xbmc.Player().play(url, i)
 
-    # -- save view history
+    # -- save view history -----------------------------------------------------
     Save_Last_Serial_Info(tag, serial, serial_url, img, name)
-
 #-------------------------------------------------------------------------------
 
 def Save_Last_Serial_Info(tag, serial, serial_url, img, part):
     # get max history lenght
     try:
-        max_history = (1, 5, 10, 20, 30, 50)[int(xbmcplugin.getSetting(int( sys.argv[ 1 ] ), 'history_len'))]
+        max_history = (1, 5, 10, 20, 30, 50)[int(Addon.getSetting('history_len'))]
         #xbmc.log("*** HISTORY LEN: "+ str(max_history))
         if max_history > 99:
             max_history = 99
@@ -395,6 +456,10 @@ def Save_Last_Serial_Info(tag, serial, serial_url, img, part):
             if idx >= max_history:
                 xml1.remove(rec)
             idx = idx + 1
+
+    # format name
+    if part.find('[/COLOR]') > -1:
+        part = re.compile('[COLOR FF00FF00](.+?)[/COLOR]', re.MULTILINE|re.DOTALL).find(part)
 
     xml_hist = None
     # update sequince number for history records
