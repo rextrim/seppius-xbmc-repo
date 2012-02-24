@@ -35,6 +35,7 @@ try:
     sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
     from BeautifulSoup  import BeautifulSoup
     import moviedb
+    import xppod
     icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
     fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 except:
@@ -42,12 +43,14 @@ except:
         sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
         from BeautifulSoup  import BeautifulSoup
         import moviedb
+        import xppod
         icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
         fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
     except:
         sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
         from BeautifulSoup  import BeautifulSoup
         import moviedb
+        import xppod
         icon = xbmc.translatePath(os.path.join(os.getcwd(),'icon.png'))
         fcookies = xbmc.translatePath(os.path.join(os.getcwd(), r'resources', r'data', r'cookies.txt'))
 
@@ -114,7 +117,6 @@ def Get_Movie_Info(rec):
     except: mi.year         = ''
     if unicode(mi.year.decode('utf8')).strip().isnumeric(): pass
     else:
-        xbmc.log(mi.year)
         try:
             mi.year = re.compile('([0-9][0-9][0-9][0-9])', re.MULTILINE|re.DOTALL).findall(mi.year)[0]
         except:
@@ -295,7 +297,7 @@ def Get_Movie_List(params):
             item.setProperty('fanart_image', i['img'])
             xbmcplugin.addDirectoryItem(h, u, item, True)
         except:
-            xbmc.log('***   ERROR '+rec.text.encode('utf-8'))
+            xbmc.log('***   ERROR ')
 
 
     xbmcplugin.endOfDirectory(h)
@@ -337,8 +339,6 @@ def Get_Movie(params):
     all_video = soup.findAll('object', {'type' : 'application/x-shockwave-flash'})
     part = 1
 
-    xbmc.log(url)
-
     if len(all_video) == 0:
         showMessage('ПОКАЗАТЬ НЕЧЕГО', 'Нет элементов id,name,link,numberOfMovies')
         return False
@@ -351,11 +351,16 @@ def Get_Movie(params):
         #--- get UPPOD flash parameters
         flash_param = str(rec.find('param', {'name' : 'flashvars'})['value'])
         video = re.compile('file=(.+?)&', re.MULTILINE|re.DOTALL).findall(flash_param)
+
+        video_url = video[0]
+
+        if video_url.find('http:') == -1:
+            video_url = xppod.Decode(video_url)
         #---
         i = xbmcgui.ListItem(i_name, iconImage=image, thumbnailImage=image)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(i_name)
-        u += '&fparam=%s'%urllib.quote_plus(video[0])
+        u += '&url=%s'%urllib.quote_plus(video_url)
         u += '&img=%s' %urllib.quote_plus(image)
         #i.setProperty('IsPlayable', 'true')
         xbmcplugin.addDirectoryItem(h, u, i, False)
@@ -365,24 +370,11 @@ def Get_Movie(params):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    flash_param = urllib.unquote_plus(params['fparam'])
-    image = urllib.unquote_plus(params['img'])
-    name  = urllib.unquote_plus(params['name'])
+    url     = urllib.unquote_plus(params['url'])
+    image   = urllib.unquote_plus(params['img'])
+    name    = urllib.unquote_plus(params['name'])
 
     #--- create HTML page to play video
-    fin = open(os.path.join(os.getcwd(), r'resources', r'html', r'template.html'), 'r')
-    tmp = fin.read()
-    fin.close()
-
-    tmp = tmp.replace('#FLASH_VAR#', flash_param)
-
-    fout = open(os.path.join(os.getcwd(), r'resources', r'html', r'play.html'), 'w')
-    fout.write(tmp)
-    fout.close()
-
-    #--- play video
-    url = os.path.join(os.getcwd(), r'resources', r'html', r'play.html')
-
     i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=image)
     xbmc.Player().play(url, i)
 
