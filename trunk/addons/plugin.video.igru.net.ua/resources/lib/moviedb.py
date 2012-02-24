@@ -45,7 +45,7 @@ class MovieDB:
         #--
         Addon = xbmcaddon.Addon(id='plugin.video.igru.net.ua')
         self.path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'data')
-        xbmc.log(self.path)
+
         today = date.today()
         #--
         if mode == 'UPDATE':
@@ -60,7 +60,7 @@ class MovieDB:
                 self.years   = self.xml.find('YEARS')
                 self.info = "Update IGRU.NET.UA Info"
                 self.isUpdate= 1
-                self.pages = int(self.xml.find("LOADED_PAGES").text)
+                self.pinfo   = SubElement(self.xml, "LOADED_PAGES")
             except:
                 # create XML structure
                 self.xml = Element("IGRU1_NET_UA")
@@ -70,8 +70,7 @@ class MovieDB:
                 self.years   = SubElement(self.xml, "YEARS")
                 self.info = "Reload IGRU.NET.UA Info"
                 self.isUpdate= 0
-                SubElement(self.xml, "LOADED_PAGES").text
-                self.pages = 0
+                self.pinfo   = SubElement(self.xml, "LOADED_PAGES")
         elif mode == 'READ':
              self.tree = ElementTree()
              self.tree.parse(os.path.join(self.path, 'movies.xml'))
@@ -82,7 +81,8 @@ class MovieDB:
              self.years   = self.xml.find('YEARS')
              self.info = "Update IGRU.NET.UA Info"
              self.isUpdate= -1
-             self.pages = 0
+             self.pinfo   = self.xml.find("LOADED_PAGES")
+             self.pinfo.text = ''
         else:
             # create XML structure
             self.xml = Element("IGRU_NET_UA")
@@ -92,8 +92,8 @@ class MovieDB:
             self.years   = SubElement(self.xml, "YEARS")
             self.info = "Reload IGRU.NET.UA Info"
             self.isUpdate= 0
-            SubElement(self.xml, "LOADED_PAGES").text
-            self.pages = 0
+            self.pinfo   = SubElement(self.xml, "LOADED_PAGES")
+
 
     #-- system functions -------------------------------------------------------
     def getkey(self, elem):
@@ -109,10 +109,35 @@ class MovieDB:
     def movie_sort_compare(self, a, b):
         return cmp(a['name'], b['name'])
 
+    #-- check if movie exists --------------------------------------------------
+    def Is_Movie_Exists(self, url):
+        is_found = 0
+
+        for rec in self.movies:
+            if rec.find('url').text == url:
+                is_found = 1
+                break
+
+        return is_found
+
+    #-- get number of loaded pages ---------------------------------------------
+    def Get_Loaded_Pages(self, id):
+        try:
+            pages = self.pinfo.find('r'+str(id))
+        except:
+            pages = 0
+
+        return pages
+
+    #-- set number of loaded pages ---------------------------------------------
+    def Set_Loaded_Pages(self, id, pages):
+        try:
+            self.pinfo.find('r'+str(id)).text = str(pages)
+        except:
+            SubElement(self.pinfo, 'r'+str(id)).text = str(pages)
+
     #-- save to file -----------------------------------------------------------
-    def Save_to_XML(self, pages):
-        #-- save loaded pages
-        self.xml.find("LOADED_PAGES").text = str(pages)
+    def Save_to_XML(self):
         #-- sort serials/categories/years
         self.movies[:]  = sorted(self.movies, key=self.getkey)
         self.types[:]   = sorted(self.types,  key=self.getkey_name)
@@ -229,7 +254,6 @@ class MovieDB:
         except: mi['year']         = ''
         if unicode(mi['year'].decode('utf8')).strip().isnumeric(): pass
         else:
-            #xbmc.log(self.mi.year)
             try:
                 mi['year'] = re.compile('([0-9][0-9][0-9][0-9])', re.MULTILINE|re.DOTALL).findall(mi['year'])[0]
             except:

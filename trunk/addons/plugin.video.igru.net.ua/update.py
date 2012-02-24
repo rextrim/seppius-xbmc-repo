@@ -44,47 +44,43 @@ import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
 #---------- get movies info and save to XML --------------------------------------------------
-def Update_Movie_XML(mode):
-    #-- create MovieDB interface
-    myDB = moviedb.MovieDB(mode)
-
-    #-- show Dialog
-    dp = xbmcgui.DialogProgress()
-    dp.create(myDB.info)
-
+def Update_Movie_XML(myDB, mode, url, header, dp, id):
     #-- grab serial's info from site
-    url='http://igru.net.ua/'
     count  = 0
     mcount = 0
 
     #-- get number of pages
-    pages = get_Number_of_Pages()
+    pages = get_Number_of_Pages(url)
 
     if myDB.isUpdate == 1:
-        page_num = min(pages, max(10, pages - myDB.pages))
+        page_num = min(pages, max(10, pages - myDB.Get_Loaded_Pages(id)))
     else:
         page_num = pages
 
+    xbmc.log('*** START UPLOAD IGRU.NET.UA ('+ header +') Pages: '+str(page_num))
+    header = '[COLOR FF00FF00]' + header + '[/COLOR]'
+
     percent = min(count*100/page_num, 100)
-    dp.update(percent, '', 'Loaded: '+ str(count)+' of '+str(page_num)+' pages','Кол-во фильмов: '+str(mcount))
+    dp.update(percent, header, 'Загружено: '+ str(count)+' из '+str(page_num)+' страниц','Кол-во фильмов: '+str(mcount))
 
     #-- process movie load
     for count in range(1, page_num+1):
         if (dp.iscanceled()): return
-        mcount = get_Movie('http://igru.net.ua/page/'+str(count)+'/', myDB, mcount)
         percent = min(count*100/page_num, 100)
-        dp.update(percent, '', 'Loaded: '+ str(count)+' of '+str(page_num)+' pages','Кол-во фильмов: '+str(mcount))
 
-    #-- save loaded data
-    myDB.Save_to_XML(pages)
+        xbmc.log('*** Page: '+str(count))
 
-    #-- close dialog
-    dp.close()
+        try:
+            mcount = get_Movie(url+'page/'+str(count)+'/', myDB, mcount, dp, percent, count, page_num, header)
+        except:
+            xbmc.log('*** failed page '+str(count))
+
+        dp.update(percent, header, 'Загружено: '+ str(count)+' из '+str(page_num)+' страниц','Кол-во фильмов: '+str(mcount))
+    #-- save number of loaded pages
+    myDB.Set_Loaded_Pages(id, pages)
 
 #------ get number of pages ----------------------------------------------------
-def get_Number_of_Pages():
-    url = 'http://igru.net.ua'
-
+def get_Number_of_Pages(url):
     post = None
     request = urllib2.Request(url, post)
 
@@ -111,15 +107,15 @@ def get_Number_of_Pages():
 
     for rec in soup.find('div', {'class':'navigation'}).findAll('a'):
         try:
-            if rec['title'] == u' &raquo;':
-                page = int((re.compile('\/page\/(.+?)\/', re.MULTILINE|re.DOTALL).findall(rec['href']))[0])
+            if int(rec.text) > page:
+                page = int(rec.text)
         except:
             pass
 
     return page
 
 #------ process page -----------------------------------------------------------
-def get_Movie(url, myDB, count):
+def get_Movie(url, myDB, mcount, dp, percent, count, page_num, header):
     post = None
     request = urllib2.Request(url, post)
 
@@ -137,31 +133,90 @@ def get_Movie(url, myDB, count):
         elif hasattr(e, 'code'):
             xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
-    html = f.read()
+    try:
+        html = f.read()
+    except:
+        try:
+            html = f.read()
+        except:
+            xbmc.log('*** Can not open: '+url)
+            return mcount
+
 
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for rec in soup.findAll('div', {'class':'post'}):
-        movie = get_Movie_Info(rec)
-        if len(movie) > 0:
-            myDB.Add_Movie(movie)
-            count = count + 1
+    for rec in soup.findAll('div', {'class':'short_post_link'}):
+        if (dp.iscanceled()): return
+        try:
+            movie = get_Movie_Info(myDB, rec.find('a')['href'])
+            if len(movie) > 0:
+                myDB.Add_Movie(movie)
+                mcount = mcount + 1
+                dp.update(percent, header, 'Загружено: '+ str(count)+' из '+str(page_num)+' страниц','Кол-во фильмов: '+str(mcount))
+        except:
+            pass
 
-    return count
+    return mcount
 
 #------ get movie detail info --------------------------------------------------
-def get_Movie_Info(rec):
-
+def get_Movie_Info(myDB, url):
     empty = []
     empty = {}
+
+    #-- check if movie already in MovieDB
+    if myDB.isUpdate == 1:
+        if myDB.Is_Movie_Exists(url) == 1:
+            return empty
+
+    #-- get movie
     try:
+    #-- get movie info
+        post = None
+        request = urllib2.Request(url, post)
+
+        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+        request.add_header('Host',	'igru.net.ua')
+        request.add_header('Accept', '*/*')
+        request.add_header('Accept-Language', 'ru-RU')
+        request.add_header('Referer',	'http://igru.net.ua')
+
+        try:
+            f = urllib2.urlopen(request)
+        except IOError, e:
+            if hasattr(e, 'reason'):
+                xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+            elif hasattr(e, 'code'):
+                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+        try:
+            html = f.read()
+        except:
+            try:
+                html = f.read()
+            except:
+                xbmc.log('*** Failed to open: '+url)
+                return empty
+
+        #-- parsing web page
+        soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+        #-- check if page have video
+        try:
+            if len(soup.findAll('object', {'type':'application/x-shockwave-flash'})) < 1:
+                return empty
+        except:
+            return empty
+
+        #-- get movie info
+        rec = soup.find('div', {'class' : 'post'})
+        #-- retrieve movie info from page
         movie = []
         movie = {}
         #-- get and check categories
         movie_cat = []
         is_film = 0
-        for cat in rec.find('div', {'class' : 'cat'}).findAll('a'):
+        for cat in rec.find('div', {'class' : 'category'}).findAll('a'):
             if  cat.text == u'Документальное кино':
                 is_film = 1
                 if movie_cat.count(u'Документальное кино') == 0:
@@ -182,32 +237,32 @@ def get_Movie_Info(rec):
                 movie_cat[idx] = u'Ретро: ' + movie_cat[idx]
 
         movie['category'] = movie_cat
-
         #-- get image
         try:
-            movie['image'] = rec.find('div', {'class' : 'content'}).find('img', {'class':'m_pic'})['src']
+            movie['image'] = rec.find('div', {'class' : 'post_content'}).find('img', {'class':'m_pic'})['src']
         except:
             try:
-                movie['image'] = re.compile('src="(.+?)"', re.MULTILINE|re.DOTALL).findall(str(rec.find('div', {'class' : 'content'}).find('img', {'class':'m_pic'})))
+                movie['image'] = re.compile('src="(.+?)"', re.MULTILINE|re.DOTALL).findall(str(rec.find('div', {'class' : 'post_content'}).find('img', {'class':'m_pic'})))
             except:
+                xbmc.log('**** IMG!!')
                 return empty
 
         #-- get name
-        movie['name'] = unescape(rec.find('h2').find('a').text.replace(u'Просмотр фильма ', '').replace(u'Просмотр мультфильма ', '').replace(u' онлайн', ''))
+        movie['name'] = unescape(rec.find('h1').text)
         #-- get url
-        movie['url'] = rec.find('h2').find('a')['href']
+        movie['url'] = url
 
         #-- get movie info
         info_list = []
         info_list = {}
-        for info in rec.find('div', {'class' : 'content'}).findAll('p'):
-            try:
-                match=re.compile('<strong>(.+?)<\/strong>(.+?)<br \/>', re.MULTILINE|re.DOTALL).findall(str(info)+'<br />')
+        info = rec.find('div', {'class' : 'post_content'})
+        try:
+            match=re.compile('<strong>(.+?)<\/strong>(.+?)<br \/>', re.MULTILINE|re.DOTALL).findall(str(info)+'<br />')
 
-                for i in match:
-                    info_list[i[0]] = i[1].replace('</p>', '')
-            except:
-                pass
+            for i in match:
+                info_list[i[0].strip()] = i[1].strip()
+        except:
+            pass
 
         #-- get genres
         if is_film == 1:
@@ -215,11 +270,20 @@ def get_Movie_Info(rec):
         elif is_film == 4:
             movie['genre'] = u'Юмор'
         else:
-            movie['genre'] = unescape(info_list['Фильм относится к жанру:']).replace('<br />', '')
+            try:
+                movie['genre'] = unescape(info_list['Фильм относится к жанру:'])
+            except:
+                movie['genre'] = u''
 
-        movie['origin'] = unescape(info_list['Оригинальное название:'])
+        try:
+            movie['origin'] = unescape(info_list['Оригинальное название:'])
+        except:
+            movie['origin'] = u''
         #-- year
-        movie['year'] = unescape(info_list['Год выхода на экран:'])
+        try:
+            movie['year'] = unescape(info_list['Год выхода на экран:'])
+        except:
+            movie['year'] = u'0000'
 
         if unicode(movie['year']).isnumeric():
             pass
@@ -236,8 +300,16 @@ def get_Movie_Info(rec):
                 movie['director'] = unescape(info_list['Постановщик'])
             except:
                 movie['director'] = ''
-        movie['actor'] = unescape(info_list['Актеры, принявшие участие в съемках:'])
-        movie['descr'] = unescape(info_list['Краткое описание:'])
+
+        try:
+            movie['actor'] = unescape(info_list['Актеры, принявшие участие в съемках:'])
+        except:
+            movie['actor'] = u''
+
+        try:
+            movie['descr'] = unescape(info_list['Краткое описание:'])
+        except:
+            movie['descr'] = u''
 
         return movie
     except:
@@ -274,7 +346,30 @@ if mode != 'UPDATE' and mode != 'INFO':
         ret = 'NO'
 
 if mode == 'UPDATE' or ret == 'YES':
-    Update_Movie_XML(mode)
+    #-- create MovieDB interface
+    myDB = moviedb.MovieDB(mode)
+
+    #-- show Dialog
+    dp = xbmcgui.DialogProgress()
+    dp.create(myDB.info)
+
+    #-- films online
+    Update_Movie_XML(myDB, mode, 'http://igru.net.ua/filmy-onlajn/', '1. Фильмы онлайн', dp, 1)
+    #-- documentary
+    if dp.iscanceled() == False:
+        Update_Movie_XML(myDB, mode, 'http://igru.net.ua/dokumentalnoe-kino/', '2. Документальное кино', dp, 2)
+    #-- retro films
+    if dp.iscanceled() == False:
+        Update_Movie_XML(myDB, mode, 'http://igru.net.ua/retro-onlajn/', '3. Ретро онлайн',dp, 3)
+    #-- humor
+    if dp.iscanceled() == False:
+        Update_Movie_XML(myDB, mode, 'http://igru.net.ua/yumor/', '4. Юмор', dp, 4)
+    #-- save loaded data
+    if dp.iscanceled() == False:
+        myDB.Save_to_XML()
+
+    #-- close dialog
+    dp.close()
 else:
     if mode == 'INFO':
         #-- create MovieDB interface
