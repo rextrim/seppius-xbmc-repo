@@ -6,7 +6,7 @@ def Decode(param):
     #-- define variables
     loc_3 = [0,0,0,0]
     loc_4 = [0,0,0]
-    loc_2 = bytearray()
+    loc_2 = ''
     #-- define hash parameters for decoding
     dec = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
     hash1 = ["L", "y", "c", "X", "2", "M", "a", "l", "p", "5", "Q", "e", "R", "t", "Z", "Y", "9", "m", "d", "0", "s", "V", "b", "3", "7", "="]
@@ -37,9 +37,9 @@ def Decode(param):
             if loc_3[j + 1] == 64:
                 break
 
-            loc_2.append(loc_4[j])
+            loc_2 += unichr(loc_4[j])
             j = j + 1
 
         i = i + 4;
 
-    return loc_2.decode("utf-8")
+    return loc_2
