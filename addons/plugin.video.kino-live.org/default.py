@@ -152,10 +152,17 @@ def readCategory(params, postParams = None):
 
 			link = data.findNextSibling('div', 'more').find('a')
 			href = link['href']
-
+			plotEl = data.find('div', id=re.compile('news-id-\d+'))
+			itemInfo = []
+			for plotItemRow in plotEl.contents:
+			    try:
+				itemInfo.append(plotItemRow.encode('utf-8', 'cp1251'))
+			    except:
+				pass
+			plot = "\n".join(itemInfo[2:])
 			li = xbmcgui.ListItem(titleText, iconImage = cover, thumbnailImage = cover)
 			li.setProperty('IsPlayable', 'false')
-			li.setInfo(type='video', infoLabels={'title': titleText})
+			li.setInfo(type='video', infoLabels={'title': titleText, 'plot': plot})
 			uri = construct_request({
 				'mode': 'getFiles',
 				'cover': cover,
@@ -242,22 +249,15 @@ def getFiles(params):
 			})
 			xbmcplugin.addDirectoryItem(h, uri, li)
 			i = i + 1
-
+			xbmcplugin.endOfDirectory(h)
 	else:
 		fileRegexp = re.compile('file=([^"]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
 		files = fileRegexp.findall(http)
 
-		li = xbmcgui.ListItem('Смотреть ' + itemName, iconImage = cover, thumbnailImage = cover)
+		li = xbmcgui.ListItem(itemName, iconImage = cover, thumbnailImage = cover)
 		li.setProperty('IsPlayable', 'true')
 		li.setInfo(type='video', infoLabels={'title': itemName})
-		uri = construct_request({
-			'mode': 'play',
-			'file': files[0],
-			'referer': folderUrl
-		})
-		xbmcplugin.addDirectoryItem(h, uri, li)
-
-	xbmcplugin.endOfDirectory(h)
+		xbmc.Player().play(files[0], li)
 
 def runSearch(params):
 	skbd = xbmc.Keyboard()
