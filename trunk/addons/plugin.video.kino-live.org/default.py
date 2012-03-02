@@ -249,7 +249,7 @@ def getFiles(params):
 			})
 			xbmcplugin.addDirectoryItem(h, uri, li)
 			i = i + 1
-			xbmcplugin.endOfDirectory(h)
+		xbmcplugin.endOfDirectory(h)
 	else:
 		fileRegexp = re.compile('file=([^"]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
 		files = fileRegexp.findall(http)
