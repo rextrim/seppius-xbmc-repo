@@ -329,6 +329,11 @@ def Get_Serial(params):
         html = o.read()
         o.close()
 
+        # -- check if playlist is encoded
+        if html.find('{"playlist":[') == -1:
+            xbmc.log('Play list encoded.')
+            html = xppod.Decode(html).encode('utf-8')
+
         # -- parsing web page
         s_url = ''
         s_num = 0
