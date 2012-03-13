@@ -7,5 +7,4 @@
 	<setting id="Info" label="Информация по списку сериалов" type="action" action="RunScript($CWD\update.py, INFO)"/>      
 	<setting label="30651" type="lsep"/>  
 	<setting id="Update" label="Обновить список сериалов" type="action" action="RunScript($CWD\update.py, UPDATE)"/>   
-	<setting id="Load" label="Пересоздать список сериалов" type="action" action="RunScript($CWD\update.py, LOAD)"/>   
 </settings> 
