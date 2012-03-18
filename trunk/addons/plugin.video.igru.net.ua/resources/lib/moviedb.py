@@ -58,17 +58,17 @@ class MovieDB:
                 self.movies  = self.xml.find('MOVIES')
                 self.types   = self.xml.find('TYPES')
                 self.years   = self.xml.find('YEARS')
-                self.info = "Update IGRU.NET.UA Info"
+                self.info = "Update FEPCOM.NET Info"
                 self.isUpdate= 1
-                self.pinfo   = SubElement(self.xml, "LOADED_PAGES")
+                self.pinfo   = self.xml.find("LOADED_PAGES")
             except:
                 # create XML structure
-                self.xml = Element("IGRU1_NET_UA")
+                self.xml = Element("IGRU_NET_UA")
                 SubElement(self.xml, "LAST_UPDATE").text = today.isoformat()
                 self.movies  = SubElement(self.xml, "MOVIES")
                 self.types   = SubElement(self.xml, "TYPES")
                 self.years   = SubElement(self.xml, "YEARS")
-                self.info = "Reload IGRU.NET.UA Info"
+                self.info = "Reload FEPCOM.NET Info"
                 self.isUpdate= 0
                 self.pinfo   = SubElement(self.xml, "LOADED_PAGES")
         elif mode == 'READ':
@@ -79,7 +79,7 @@ class MovieDB:
              self.movies  = self.xml.find('MOVIES')
              self.types   = self.xml.find('TYPES')
              self.years   = self.xml.find('YEARS')
-             self.info = "Update IGRU.NET.UA Info"
+             self.info = "Update FEPCOM.NET Info"
              self.isUpdate= -1
              self.pinfo   = self.xml.find("LOADED_PAGES")
              self.pinfo.text = ''
@@ -90,7 +90,7 @@ class MovieDB:
             self.movies  = SubElement(self.xml, "MOVIES")
             self.types   = SubElement(self.xml, "TYPES")
             self.years   = SubElement(self.xml, "YEARS")
-            self.info = "Reload IGRU.NET.UA Info"
+            self.info = "Reload FEPCOM.NET Info"
             self.isUpdate= 0
             self.pinfo   = SubElement(self.xml, "LOADED_PAGES")
 
@@ -123,7 +123,7 @@ class MovieDB:
     #-- get number of loaded pages ---------------------------------------------
     def Get_Loaded_Pages(self, id):
         try:
-            pages = self.pinfo.find('r'+str(id))
+            pages = int(self.pinfo.find('r'+str(id)).text)
         except:
             pages = 0
 

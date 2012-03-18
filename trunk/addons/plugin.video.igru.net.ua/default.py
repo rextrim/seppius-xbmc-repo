@@ -308,6 +308,10 @@ def Get_Movie(params):
 
     url = urllib.unquote_plus(params['url'])
 
+    #-- replace from old domain to new one
+    url = url.replace('igru.net.ua', 'fepcom.net')
+    xbmc.log(url)
+
     if url == None:
         return False
 
@@ -319,10 +323,10 @@ def Get_Movie(params):
     request = urllib2.Request(url, post)
 
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Host',	'fepcom.net')
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://igru.net.ua')
+    request.add_header('Referer',	'http://fepcom.net')
 
     try:
         f = urllib2.urlopen(request)
