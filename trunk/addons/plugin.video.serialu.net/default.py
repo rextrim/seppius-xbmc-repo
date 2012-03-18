@@ -61,7 +61,7 @@ def showMessage(heading, message, times = 3000):
 #---------- get serials types --------------------------------------------------
 def Get_Serial_Type():
     # add search to the list
-    name = '[ПОИСК]'
+    name = '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]'
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=SERIAL'
     u += '&name=%s'%urllib.quote_plus(name)
@@ -69,7 +69,7 @@ def Get_Serial_Type():
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
     # add last viewed serial
-    name = '[ИСТОРИЯ]'
+    name = '[COLOR FF00FF00]'+ '[ИСТОРИЯ]' + '[/COLOR]'
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=SERIAL'
     u += '&name=%s'%urllib.quote_plus(name)
@@ -77,7 +77,7 @@ def Get_Serial_Type():
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
     # add serial genres
-    name = '[ЖАНРЫ]'
+    name = '[COLOR FFFFF000]'+ '[ЖАНРЫ]' + '[/COLOR]'
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=GENRE'
     u += '&name=%s'%urllib.quote_plus(name)
@@ -142,7 +142,7 @@ def Get_Serial_List(params):
     if s_type == None: return False
 
     # show search dialog
-    if s_type == '[ПОИСК]':
+    if s_type == '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]':
         skbd = xbmc.Keyboard()
         skbd.setHeading('Поиск сериалов. Формат: name[:yyyy]')
         skbd.doModal()
@@ -167,7 +167,7 @@ def Get_Serial_List(params):
     tree = ElementTree()
     tree.parse(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'serials.xml'))
 
-    if s_type == '[ИСТОРИЯ]':
+    if s_type == '[COLOR FF00FF00]'+ '[ИСТОРИЯ]' + '[/COLOR]':
         # try to open history
         try:
             htree = ElementTree()
@@ -231,7 +231,7 @@ def Get_Serial_List(params):
                     if rec.find('genres').find(s_tag) is None:
                         continue
 
-                elif s_type == '[ПОИСК]':
+                elif s_type == '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]':
                     # checkout by category or name/year
                     if s_name.strip() <> '':
                         s1 = s_name.lower().strip()
@@ -331,7 +331,6 @@ def Get_Serial(params):
 
         # -- check if playlist is encoded
         if html.find('{"playlist":[') == -1:
-            xbmc.log('Play list encoded.')
             html = xppod.Decode(html).encode('utf-8')
 
         # -- parsing web page
@@ -340,9 +339,9 @@ def Get_Serial(params):
         for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
             for par in rec.replace('"','').split(','):
                 if par.split(':')[0]== 'comment':
-                    name = par.split(':')[1]
+                    name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
                 if par.split(':')[0]== 'file':
-                    s_url = par.split(':')[1]
+                    s_url = par.split(':')[1]+':'+par.split(':')[2]
             s_num += 1
 
             # mark part for history
@@ -369,6 +368,7 @@ def Get_Serial(params):
 #-------------------------------------------------------------------------------
 
 def Get_Play_List(pl_url, pos, img):
+
     # create play list
     pl=xbmc.PlayList(1)
     pl.clear()
@@ -387,16 +387,21 @@ def Get_Play_List(pl_url, pos, img):
     html = o.read()
     o.close()
 
+    # -- check if playlist is encoded
+    if html.find('{"playlist":[') == -1:
+        html = xppod.Decode(html).encode('utf-8')
+
     s_num = 0
     # -- parsing web page
     for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
         for par in rec.replace('"','').split(','):
             if par.split(':')[0]== 'comment':
-                name = par.split(':')[1]
+                name = str(s_num+1) + ' серия' #par.split(':')[1]
             if par.split(':')[0]== 'file':
-                s_url = par.split(':')[1]
+                s_url = par.split(':')[1]+':'+par.split(':')[2]
                 if s_url.find('http:') == -1:
                     s_url = xppod.Decode(s_url)
+
         s_num += 1
 
         if s_num >= pos :
