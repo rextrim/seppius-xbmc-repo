@@ -57,7 +57,7 @@ def Update_Movie_XML(myDB, mode, url, header, dp, id):
     else:
         page_num = pages
 
-    xbmc.log('*** START UPLOAD IGRU.NET.UA ('+ header +') Pages: '+str(page_num))
+    xbmc.log('*** START UPLOAD FEPCOM.NET ('+ header +') Pages: '+str(page_num))
     header = '[COLOR FF00FF00]' + header + '[/COLOR]'
 
     percent = min(count*100/page_num, 100)
@@ -85,10 +85,10 @@ def get_Number_of_Pages(url):
     request = urllib2.Request(url, post)
 
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Host',	'fepcom.net')
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://igru.net.ua')
+    request.add_header('Referer',	'http://fepcom.net')
 
     try:
         f = urllib2.urlopen(request)
@@ -120,10 +120,10 @@ def get_Movie(url, myDB, mcount, dp, percent, count, page_num, header):
     request = urllib2.Request(url, post)
 
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'igru.net.ua')
+    request.add_header('Host',	'fepcom.net')
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://igru.net.ua')
+    request.add_header('Referer',	'http://fepcom.net')
 
     try:
         f = urllib2.urlopen(request)
@@ -176,10 +176,10 @@ def get_Movie_Info(myDB, url):
         request = urllib2.Request(url, post)
 
         request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        request.add_header('Host',	'igru.net.ua')
+        request.add_header('Host',	'fepcom.net')
         request.add_header('Accept', '*/*')
         request.add_header('Accept-Language', 'ru-RU')
-        request.add_header('Referer',	'http://igru.net.ua')
+        request.add_header('Referer',	'http://fepcom.net')
 
         try:
             f = urllib2.urlopen(request)
@@ -354,16 +354,16 @@ if mode == 'UPDATE' or ret == 'YES':
     dp.create(myDB.info)
 
     #-- films online
-    Update_Movie_XML(myDB, mode, 'http://igru.net.ua/filmy-onlajn/', '1. Фильмы онлайн', dp, 1)
+    Update_Movie_XML(myDB, mode, 'http://fepcom.net/filmy-onlajn/', '1. Фильмы онлайн', dp, 1)
     #-- documentary
     if dp.iscanceled() == False:
-        Update_Movie_XML(myDB, mode, 'http://igru.net.ua/dokumentalnoe-kino/', '2. Документальное кино', dp, 2)
+        Update_Movie_XML(myDB, mode, 'http://fepcom.net/dokumentalnoe-kino/', '2. Документальное кино', dp, 2)
     #-- retro films
     if dp.iscanceled() == False:
-        Update_Movie_XML(myDB, mode, 'http://igru.net.ua/retro-onlajn/', '3. Ретро онлайн',dp, 3)
+        Update_Movie_XML(myDB, mode, 'http://fepcom.net/retro-onlajn/', '3. Ретро онлайн',dp, 3)
     #-- humor
     if dp.iscanceled() == False:
-        Update_Movie_XML(myDB, mode, 'http://igru.net.ua/yumor/', '4. Юмор', dp, 4)
+        Update_Movie_XML(myDB, mode, 'http://fepcom.net/yumor/', '4. Юмор', dp, 4)
     #-- save loaded data
     if dp.iscanceled() == False:
         myDB.Save_to_XML()
