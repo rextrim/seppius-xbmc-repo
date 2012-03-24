@@ -1,0 +1,5 @@
+<settings>
+    <setting id="Title Mode" type="enum" label="30001" default="1" values="Ru/En|Ru"/>
+    <setting id="Hide Scr" type="bool" label="30003" default="false"/>
+    <setting id="Hide TSound" type="bool" label="30004" default="false"/>
+</settings>
