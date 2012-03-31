@@ -78,7 +78,7 @@ def Get_Categories():
 
     df_nav = soup.findAll("li", { "class" : "sublnk" })
     for df in df_nav:
-        if df.find("a")["href"] == '/diafilmy':
+        if '/diafilmy' in df.find("a")["href"]:
             for dfr in df.findAll('li'):
                 name = unescape(dfr.find('b').text).encode('utf-8')
                 url  = 'http://www.diafilmy.su' + dfr.find('a')['href']
@@ -170,7 +170,7 @@ def Get_List_by_Page(url2):
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    df_nav = soup.findAll("div", { "class" : "base shortstory" })
+    df_nav = soup.findAll('div', {'class':'news'})
     for df in df_nav:
         name = unescape(df.find('h3').find('a').text).encode('utf-8')
         url  = df.find('h3').find('a')['href']
