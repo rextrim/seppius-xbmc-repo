@@ -79,15 +79,15 @@ def Get_Parameters(params):
     #-- url
     try:    p.url = urllib.unquote_plus(params['url'])
     except: p.url = ''
+    #-- img
+    try:    p.img = urllib.unquote_plus(params['img'])
+    except: p.img = ''
     #-- is season flag
     try:    p.is_season = urllib.unquote_plus(params['is_season'])
     except: p.is_season = ''
     #-- name
     try:    p.name = urllib.unquote_plus(params['name'])
     except: p.name = ''
-    #-- image
-    try:    p.img = urllib.unquote_plus(params['img'])
-    except: p.img = ''
     #-- genre
     try:    p.genre = urllib.unquote_plus(params['genre'])
     except: p.genre = 'all'
@@ -212,7 +212,6 @@ def Movie_List(params):
 def Serial_Info(params):
     #-- get filter parameters
     par = Get_Parameters(params)
-
     #== get serial details =================================================
     url = par.url
     post = None
@@ -257,7 +256,7 @@ def Serial_Info(params):
             u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
             u += '&country=%s'%urllib.quote_plus(par.country)
             u += '&country_name=%s'%urllib.quote_plus(par.country_name)
-            u += '&is_season=%s'%urllib.quote_plus('*')
+            u += '&is_serial=%s'%urllib.quote_plus('*')
             xbmcplugin.addDirectoryItem(h, u, i, True)
     else:
         #-- generate list of movie parts
@@ -274,24 +273,31 @@ def Serial_Info(params):
                         if s[0] == 'Роли:':     mi.actors       = s[1].replace('</p>', '')
             else:
                 mi.text = rec.text.encode('utf-8')
-        mi.img = ''
+
+
         mi.img = soup.find('td', {'class':'td-for-content'}).find('img')['src']
+
+        # -- get serial parts info
+        # -- mane of season
+        i = xbmcgui.ListItem(par.name, iconImage=mi.img, thumbnailImage=mi.img)
+        u = sys.argv[0] + '?mode=EMPTY'
+        xbmcplugin.addDirectoryItem(h, u, i, True)
 
         # -- get list of season parts
         s_url = ''
         s_num = 0
         for rec in Get_PlayList(soup, url):
-            for item in rec.replace('"','').split(','):
-                if item.split(':')[0]== 'comment':
+            for par in rec.replace('"','').split(','):
+                if par.split(':')[0]== 'comment':
                     name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
-                if item.split(':')[0]== 'file':
-                    s_url = item.split(':')[1]+':'+item.split(':')[2]
+                if par.split(':')[0]== 'file':
+                    s_url = par.split(':')[1]+':'+par.split(':')[2]
             s_num += 1
 
             i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=mi.img) # iconImage=mi.img
             u = sys.argv[0] + '?mode=PLAY'
             u += '&url=%s'%urllib.quote_plus(s_url)
-            u += '&name=%s'%urllib.quote_plus(par.name +' ('+name+')')
+            u += '&name=%s'%urllib.quote_plus(name)
             u += '&img=%s'%urllib.quote_plus(mi.img)
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
                                                     'cast' :       mi.actors,
@@ -300,32 +306,37 @@ def Serial_Info(params):
                             						'plot':        mi.text,
                             						'genre':       mi.genre})
             i.setProperty('fanart_image', mi.img)
+            #i.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
 
 #---------- get play list ------------------------------------------------------
-def Get_PlayList(soup, ref):
+def Get_PlayList(soup, parent_url):
     #-- get play list url
     for rec in soup.findAll('script', {'type':'text/javascript'}):
         if rec.text.find('$.post("encode.php') > -1:
+            # $.post("encode.php?ko=587ce161a992d24084d628b0c001f951", {"getCodeMark":"955"}
             z = rec.text.replace('$.post("','[').replace('", {',']')
-            urlx = re.compile('\[(.+?)\]"getCodeMark":"(.+?)"', re.MULTILINE|re.DOTALL).findall(z)
+            urlx = re.compile('\$\.post\("(.+?)", \{"(.+?)":"(.+?)"\}', re.MULTILINE|re.DOTALL).findall(rec.text)
             url = 'http://seasonvar.ru/'+urlx[0][0]
-            CodeMark = urlx[0][1]
+            code1 = urlx[0][1]
+            code2 = urlx[0][2]
             break
 
-    values = {'getCodeMark' : CodeMark}
+    values = {code1 : code2}
     post = urllib.urlencode(values)
+
     request = urllib2.Request(url, post)
 
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host',	'seasonvar.ru')
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	ref)
-    request.add_header('x-requested-with', 'XMLHttpRequest')
-    request.add_header('Content-Type', 'application/x-www-form-urlencoded')
+    request.add_header('Referer',	parent_url)
+    request.add_header('Content-Type',	'application/x-www-form-urlencoded')
+    request.add_header('Cookie',	'sva=lVe324Pqsl24') # TejndE37EDj8790=MTMzMzk3Njg1ODIxNTg3OTA3NDM=; p_r8790=; d_s8790=2; MG_8790=2; TejndE37EDj3064=MTMzMzk3Njg1OTc3OTMwNjQ5NDU=; p_r3064=; d_s3064=2; MG_3064=2')
+    request.add_header('X-Requested-With',	'XMLHttpRequest')
 
     try:
         f = urllib2.urlopen(request)
@@ -454,12 +465,14 @@ def Country_List(params):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    #-- get filter parameters
-    par = Get_Parameters(params)
+    # -- parameters
+    url  = urllib.unquote_plus(params['url'])
+    name = urllib.unquote_plus(params['name'])
+    img = urllib.unquote_plus(params['img'])
 
-    i = xbmcgui.ListItem(par.name, path = urllib.unquote(par.url), thumbnailImage=par.img)
+    i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
     i.setProperty('IsPlayable', 'true')
-    xbmc.Player().play(par.url, i)
+    xbmc.Player().play(url, i)
 
 #-------------------------------------------------------------------------------
 
