@@ -389,7 +389,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.fcsd.tv"
+<addon id="plugin.video.fcsd.tv"
        name="fcsd.tv"
        version="0.0.2"
        provider-name="nuismons">
