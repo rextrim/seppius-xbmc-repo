@@ -311,6 +311,41 @@ def Serial_Info(params):
 
     xbmcplugin.endOfDirectory(h)
 
+#---------- set cookies --------------------------------------------------------
+def Get_Cookies(soup):
+    for r in soup.findAll('script', {'type':'text/javascript'}):
+        if 'jqcookie' in str(r):
+            l = re.compile('<script type="text\/javascript" src="(.+?)"><\/script>', re.MULTILINE|re.DOTALL).findall(str(r))
+
+    url = 'http://seasonvar.ru'+l[0]
+
+    post = None
+    request = urllib2.Request(url, post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'seasonvar.ru')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://seasonvar.ru')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    r = re.compile('\$\.cookie\(\'(.+?)\', \'(.+?)\'\);', re.MULTILINE|re.DOTALL).findall(html)
+
+    cookie = ''
+    for rec in r:
+        cookie += rec[0]+'='+rec[1]+';'
+
+    return cookie
+
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(soup, parent_url):
     #-- get play list url
@@ -335,7 +370,7 @@ def Get_PlayList(soup, parent_url):
     request.add_header('Accept-Language', 'ru-RU')
     request.add_header('Referer',	parent_url)
     request.add_header('Content-Type',	'application/x-www-form-urlencoded')
-    request.add_header('Cookie',	'sva=lVe324Pqsl24') # TejndE37EDj8790=MTMzMzk3Njg1ODIxNTg3OTA3NDM=; p_r8790=; d_s8790=2; MG_8790=2; TejndE37EDj3064=MTMzMzk3Njg1OTc3OTMwNjQ5NDU=; p_r3064=; d_s3064=2; MG_3064=2')
+    request.add_header('Cookie',	Get_Cookies(soup)) # TejndE37EDj8790=MTMzMzk3Njg1ODIxNTg3OTA3NDM=; p_r8790=; d_s8790=2; MG_8790=2; TejndE37EDj3064=MTMzMzk3Njg1OTc3OTMwNjQ5NDU=; p_r3064=; d_s3064=2; MG_3064=2')
     request.add_header('X-Requested-With',	'XMLHttpRequest')
 
     try:
