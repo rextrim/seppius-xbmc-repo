@@ -30,6 +30,7 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from datetime import date
 
 Addon = xbmcaddon.Addon(id='plugin.video.serialu.net')
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 # load XML library
 try:
@@ -341,7 +342,10 @@ def Get_Serial(params):
                 if par.split(':')[0]== 'comment':
                     name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
                 if par.split(':')[0]== 'file':
-                    s_url = par.split(':')[1]+':'+par.split(':')[2]
+                    if 'http://' in par.split(':')[1]:
+                        s_url = par.split(':')[1]+':'+par.split(':')[2]
+                    else:
+                        s_url = xppod.Decode(par.split(':')[1])
             s_num += 1
 
             # mark part for history
@@ -398,9 +402,10 @@ def Get_Play_List(pl_url, pos, img):
             if par.split(':')[0]== 'comment':
                 name = str(s_num+1) + ' серия' #par.split(':')[1]
             if par.split(':')[0]== 'file':
-                s_url = par.split(':')[1]+':'+par.split(':')[2]
-                if s_url.find('http:') == -1:
-                    s_url = xppod.Decode(s_url)
+                if 'http://' in par.split(':')[1]:
+                    s_url = par.split(':')[1]+':'+par.split(':')[2]
+                else:
+                    s_url = xppod.Decode(par.split(':')[1])
 
         s_num += 1
 
@@ -432,7 +437,8 @@ def PLAY(params):
                 url = xppod.Decode(url)
 
         i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
-        xbmc.Player().play(url, i)
+        #xbmc.Player().play(url, i)
+        xbmcplugin.setResolvedUrl(h, True, i)
 
     # -- save view history -----------------------------------------------------
     Save_Last_Serial_Info(tag, serial, serial_url, img, name)
