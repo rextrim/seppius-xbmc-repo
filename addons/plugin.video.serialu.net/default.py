@@ -311,8 +311,8 @@ def Get_Serial(params):
             season = r''
 
         for par in rec.find('param', {'name':'flashvars'})['value'].split('&'):
-            if par.partition('=')[0] == 'pl':
-                pl_url = par.partition('=')[2].replace('%26', '&')
+            if par.split('=')[0] == 'pl':
+                pl_url = par.split('=')[1].replace('%26', '&')
 
         if pl_url.find('http:') == -1:
             pl_url = xppod.Decode(pl_url)
