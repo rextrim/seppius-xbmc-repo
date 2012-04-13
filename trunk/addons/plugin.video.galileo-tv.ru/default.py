@@ -155,12 +155,51 @@ def Movie_List(params):
             pcount = int(soup.find('li', {'class':"pager-last last"}).find('a')['href'].split('%2C')[2])
         except:
             try:
-                pcount = int(soup.find('li', {'class':"pager-current last"}).find('a')['href'].split('%2C')[2])
+                pcount = int(soup.find('li', {'class':"pager-current last"}).text)-1
             except:
                 pcount = 1
 
         #-- add header info
         Get_Header(par, pcount)
+
+        #-- first page link
+        if int(par.page) > 1:
+            name    = '[FIRST PAGE]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(1))
+            u += '&letter=%s'%urllib.quote_plus(par.letter)
+            u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
+            u += '&url=%s'%urllib.quote_plus('http://galileo-tv.ru/glossary?page=0%2C0%2C'+str(1))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        #-- next page+10 link
+        if int(par.page)-10 > 1 :
+            name    = '[PREVIOUS PAGE -10]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)-10))
+            u += '&letter=%s'%urllib.quote_plus(par.letter)
+            u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
+            u += '&url=%s'%urllib.quote_plus('http://galileo-tv.ru/glossary?page=0%2C0%2C'+str(int(par.page)-10))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        #-- previus page link
+        if int(par.page) > 1 :
+            name    = '[PREVIOUS PAGE]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
+            u += '&letter=%s'%urllib.quote_plus(par.letter)
+            u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
+            u += '&url=%s'%urllib.quote_plus('http://galileo-tv.ru/glossary?page=0%2C0%2C'+str(int(par.page)-1))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
 
         #-- get movie info
         #try:
@@ -195,6 +234,32 @@ def Movie_List(params):
             u += '&letter=%s'%urllib.quote_plus(par.letter)
             u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
             u += '&url=%s'%urllib.quote_plus('http://galileo-tv.ru/glossary?page=0%2C0%2C'+str(int(par.page)+1))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        #-- next page+10 link
+        if int(par.page)+10 < pcount :
+            name    = '[NEXT PAGE +10]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)+10))
+            u += '&letter=%s'%urllib.quote_plus(par.letter)
+            u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
+            u += '&url=%s'%urllib.quote_plus('http://galileo-tv.ru/glossary?page=0%2C0%2C'+str(int(par.page)+10))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        #-- last page link
+        if int(par.page) < pcount :
+            name    = '[LAST PAGE]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(pcount))
+            u += '&letter=%s'%urllib.quote_plus(par.letter)
+            u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
+            u += '&url=%s'%urllib.quote_plus('http://galileo-tv.ru/glossary?page=0%2C0%2C'+str(pcount))
             xbmcplugin.addDirectoryItem(h, u, i, True)
 
         #xbmc.log("** "+str(pcount)+"  :  "+str(mcount))
