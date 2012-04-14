@@ -24,6 +24,7 @@ import re
 import sys
 import os
 import cookielib
+import simplejson as json
 
 import xbmcplugin
 import xbmcgui
@@ -121,7 +122,7 @@ def getSortBy():
 	return '?view=list&sort=' + sortByMap[sortBy]
 
 def main(params):
-	li = xbmcgui.ListItem('Видео')
+	li = xbmcgui.ListItem('[Видео]')
 	uri = construct_request({
 		'href': httpSiteUrl + '/video/',
 		'mode': 'getCategories',
@@ -131,7 +132,7 @@ def main(params):
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-	li = xbmcgui.ListItem('Аудио')
+	li = xbmcgui.ListItem('[Аудио]')
 	uri = construct_request({
 		'href': httpSiteUrl + '/audio/',
 		'mode': 'getCategories',
@@ -142,6 +143,13 @@ def main(params):
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	if check_login():
+		li = xbmcgui.ListItem('В процессе')
+		uri = construct_request({
+			'mode': 'getFavoriteCategories',
+			'type': 'inprocess'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 		li = xbmcgui.ListItem('Избранное')
 		uri = construct_request({
 			'mode': 'getFavoriteCategories',
@@ -156,17 +164,24 @@ def main(params):
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-		li = xbmcgui.ListItem('К просмотру')
+		li = xbmcgui.ListItem('На будущее')
 		uri = construct_request({
 			'mode': 'getFavoriteCategories',
-			'type': 'playlist'
+			'type': 'forlater'
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-		li = xbmcgui.ListItem('Просмотенное')
+		li = xbmcgui.ListItem('Я рекомендую')
 		uri = construct_request({
 			'mode': 'getFavoriteCategories',
-			'type': 'viewed'
+			'type': 'irecommended'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+		li = xbmcgui.ListItem('Завершенное')
+		uri = construct_request({
+			'mode': 'getFavoriteCategories',
+			'type': 'finished'
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
@@ -214,32 +229,43 @@ def getFavoriteCategories(params):
 	if http == None: return False
 
 	beautifulSoup = BeautifulSoup(http)
-	favSectionsContainer = beautifulSoup.find('ul', 'b-fav-sections-list')
+	favSectionsContainer = beautifulSoup.find('div', 'b-tabpanels')
 	if favSectionsContainer == None:
 		showMessage('ОШИБКА', 'В избранном пусто', 3000)
 		return False
 
-	favSections = favSectionsContainer.findAll('li')
+	favSections = favSectionsContainer.findAll('div', 'b-category')
 	if len(favSections) == 0:
 		showMessage('ОШИБКА', 'В избранном пусто', 3000)
 		return False
+	sectionRegexp = re.compile("\s*{\s*section:\s*'([^']+)")
+	subsectionRegexp = re.compile("subsection:\s*'([^']+)")
 	for favSection in favSections:
-		link = favSection.find('a')
-		title = str(link.string)
+		rel = favSection.find('a', 'b-add')['rel'].encode('utf-8')
+		section = sectionRegexp.findall(rel)[0]
+		subsection = subsectionRegexp.findall(rel)[0]
+		title = str(favSection.find('a', 'item').find('b').string)
 		li = xbmcgui.ListItem(title)
 
 		uri = construct_request({
 			'mode': 'readfavorites',
-			'href': httpSiteUrl + link['href']
+			'section': section,
+			'subsection': subsection,
+			'type': params['type'],
+			'page': 0
 		})
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 	xbmcplugin.endOfDirectory(h)
 
 def readfavorites(params):
-	favoritesUrl = urllib.unquote_plus(params['href'])
+	href = httpSiteUrl + "/myfavourites.aspx?ajax&section=" + params['section'] + "&subsection=" + params['subsection'] + "&rows=1&curpage=" + params['page'] + "&action=get_list&setrows=3&page=" + params['type']
+	favoritesUrl = urllib.unquote_plus(href)
 
 	http = GET(favoritesUrl, httpSiteUrl)
 	if http == None: return False
+	
+	data = json.loads(str(http))
+	http = data['content'].encode('utf-8')
 
 	beautifulSoup = BeautifulSoup(http)
 	itemsContainer = beautifulSoup.find('div', 'b-posters')
@@ -251,7 +277,7 @@ def readfavorites(params):
 		showMessage('ОШИБКА', 'В избранном пусто', 3000)
 		return False
 	else:
-		coverRegexp = re.compile('url\s*\(([^\)]+)')
+		coverRegexp = re.compile("url\s*\('([^']+)")
 		for item in items:
 			cover = coverRegexp.findall(str(item['style']))[0]
 			title = str(item.find('span').string)
@@ -294,6 +320,12 @@ def readfavorites(params):
 			})
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
 
+	if data['islast'] == False:
+		li = xbmcgui.ListItem('[NEXT PAGE >]')
+		li.setProperty('IsPlayable', 'false')
+		params['page'] = int(params['page']) + 1
+		uri = construct_request(params)
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
 	xbmcplugin.endOfDirectory(h)
 
 def readcategory(params):
@@ -560,29 +592,29 @@ def addto(params):
 
 def playflv(params):
 	referer = urllib.unquote_plus(params['referer'])
-	file = urllib.unquote_plus(params['file'])
-	http = GET(file, referer)
+	plfile = urllib.unquote_plus(params['file'])
+	http = GET(plfile, referer)
 	if http == None: return False
 
-	beautifulSoup = BeautifulSoup(http)
-	playerLink = beautifulSoup.findAll('a', attrs={'id': "player"})
-	if playerLink == None:
+	fileRegexp = re.compile("playlist:\s*\[\s*\{\s*url:\s*'([^']+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
+	playerLink = fileRegexp.findall(http)
+	if playerLink == None or len(playerLink) == 0:
 		showMessage('Error', 'FLV file was not found')
 		return False
 
-	file = urllib.urlopen(str(playerLink[0]['href']))
-	fileUrl = file.geturl()
+	plfile = urllib.urlopen(str(playerLink[0]))
+	fileUrl = plfile.geturl()
 
 	i = xbmcgui.ListItem(path = fileUrl)
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 def play(params):
 	referer = urllib.unquote_plus(params['referer'])
-	file = urllib.unquote_plus(params['file'])
+	plfile = urllib.unquote_plus(params['file'])
 	headers['Referer'] = referer
 
-	file = urllib.urlopen(file)
-	fileUrl = file.geturl()
+	plfile = urllib.urlopen(plfile)
+	fileUrl = plfile.geturl()
 
 	i = xbmcgui.ListItem(path = fileUrl)
 	xbmcplugin.setResolvedUrl(h, True, i)
