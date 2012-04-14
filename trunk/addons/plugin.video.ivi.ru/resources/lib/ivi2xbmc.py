@@ -249,11 +249,12 @@ class IVIPlayer(xbmc.Player):
 			#print self.postroll_params[0]['url']
 		except: pass
 		#print 'ads'
-		print self.preroll_params
+		#print self.preroll_params
 		
-		print self.midroll_params
-		print self.postroll_params
-		print self.ads
+		#print self.midroll_params
+		#print self.postroll_params
+		#print self.ads
+		self.playl.add(self.content_file,listitem=i)
 		#print 'Конец плейлиста'
 		#for m in self.ads:
 		#	print m['time']
