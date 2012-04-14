@@ -304,10 +304,10 @@ class IVIPlayer(xbmc.Player):
 	def onPlayBackEnded( self ):
 
 		if self.state=='play':
-			xbmc.sleep(3000)
+			#xbmc.sleep(3000)
 			showMessage('IVI Player', 'Конец фильма' , 2000)
 			
-			self.stop
+			self.stop()
 			self.playl.clear()
 			self.active = False
 			
