@@ -243,6 +243,7 @@ class IVIPlayer(xbmc.Player):
 				'time':self.credits_begin_time
 			})
 			self.playl.add(self.postroll_params[0]['url'])
+			self.post_r=ind
 			#print self.postroll_params[0]['url']
 		except: pass
 		#print 'ads'
@@ -305,6 +306,8 @@ class IVIPlayer(xbmc.Player):
 
 		if self.state=='play':
 			#xbmc.sleep(3000)
+			if credits_begin_time == -1:
+				self.playselected(self.post_r)
 			showMessage('IVI Player', 'Конец фильма' , 2000)
 			
 			self.stop()
@@ -317,12 +320,17 @@ class IVIPlayer(xbmc.Player):
 			#showMessage('IVI Player', 'Конец preroll' , 2000)
 			self.state='play'
 			
-		if self.state=='post_roll':
-			self.playselected(0)
-			self.send_ads=self.preroll_params
+		if self.state=='postroll':
+			if credits_begin_time == -1:
+				self.stop()
+				self.playl.clear()
+				self.active = False
+			else:
+				self.playselected(0)
+				self.send_ads=self.postroll_params
 			#showMessage('IVI Player', 'Конец preroll' , 2000)
-			self.state='play'
-			self.seekTime(self.resume_timer)
+				self.state='play'
+				self.seekTime(self.resume_timer)
 			
 		if self.state=='play_mid':
 			self.playselected(0)
