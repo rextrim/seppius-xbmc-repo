@@ -1,7 +1,19 @@
 <settings>
+    <category label="General">
 	<setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
 	<setting id="Autoplay next" type="bool" label="30004" default="false"/>
 	<setting id="Login" type="text" label="30002"/>
 	<setting id="Password" type="text" label="30003" option="hidden"/>
-    <setting id="Use flv files for playback" type="bool" label="30005" default="true" />
+	<setting id="Use flv files for playback" type="bool" label="30005" default="true" />
+    </category>
+    <category label="Video filters">
+	<setting id="mood" type="labelenum" label="Mood" default="0" values="Any|comedy|horror|action|soul"/>
+	<setting id="vproduction" type="labelenum" label="Production" default="0" values="Any|our|foreign"/>
+	<setting id="quality" type="labelenum" label="Quality" default="0" values="Any|hight|good|middle"/>
+	<setting id="translation" type="labelenum" label="Translation" default="0" values="Any|proffesional|amateur|double"/>
+    </category>
+    <category label="Audio filters">
+	<setting id="genre" type="labelenum" label="Genre" default="0" values="Any|pop|hard|dance|soul"/>
+	<setting id="aproduction" type="labelenum" label="Production" default="0" values="Any|our|foreign"/>
+    </category>
 </settings>
