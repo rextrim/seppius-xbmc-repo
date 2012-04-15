@@ -128,7 +128,8 @@ class IVIPlayer(xbmc.Player):
 	
 	def getAds(self):
 		json1 = self.POSTAPI({'method':'da.content.get_adv', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
-		#print json1
+		print 'RekLAMA'
+		print json1
 		if json1:
 			try:
 				for ad in json1['result']:
@@ -145,12 +146,15 @@ class IVIPlayer(xbmc.Player):
 				showMessage('EXCEPT', 'НЕТ РЕКЛАМЫ', 3000)
 	
 	def report_ads(self, curr_ads):
-		json1 = self.POSTAPI({'method':'da.content.adv_watched', 'params':[self.vID, {'site':self.sID} ]})
+		json1 = self.POSTAPI({'method':'da.content.adv_watched', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
 		#print curr_ads
 		#print curr_ads[0]['px_audit']
-		for n in curr_ads[0]['px_audit']:
-			print n
-			GET(n)
+		links= curr_ads[0]['px_audit']
+		if len(links)<8:
+			for n in links:
+				#print n
+				GET(n)
+		else: GET(links)
 		#print json1
 	
 	def getparam(self, vID):
@@ -168,7 +172,8 @@ class IVIPlayer(xbmc.Player):
 				self.PosterImage = data['image']
 				self.main_item = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 				self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
-				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'site':self.sID} ]})
+				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
+				print 'Conetent:'
 				print json0
 				vc = json0['result']
 				self.content_file = self.find_best(vc)
@@ -260,7 +265,7 @@ class IVIPlayer(xbmc.Player):
 			#print 'post'
 			#print self.postroll_params[0]['url']
 		except: pass
-		#print 'ads'
+		print self.ads
 		print self.preroll_params
 		print self.midroll_params
 		print self.postroll_params
@@ -287,10 +292,10 @@ class IVIPlayer(xbmc.Player):
 				self.content_percent_to_mark=-1
 				json1 = self.POSTAPI({'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ],'method':'da.content.content_watched' })
 				#json1 = self.POSTAPI({'method':'da.content.content_watched', 'params':[self.vID,  {'site':self.sID} ]})
-				print json1
-				print uniq_id
+				#print json1
+				#print uniq_id
 				showMessage('IVI Player', 'Послан отчет о просмотре' , 3000)
-				print json1
+				#print json1
 				pass
 			for m in self.ads:
 				if self.send_ads:
@@ -323,6 +328,7 @@ class IVIPlayer(xbmc.Player):
 	def onPlayBackStarted( self ):
 		#showMessage('IVI Player', 'Поехали' , 2000)
 		if self.state=='play':
+			#showMessage('IVI Player', 'Возврат', 2000)
 			self.seekTime(self.resume_timer)
 		#try:
 		#	if self.state=='play': 
@@ -335,7 +341,8 @@ class IVIPlayer(xbmc.Player):
 
 		if self.state=='play':
 			#xbmc.sleep(3000)
-			if self.credits_begin_time == -1 and len(self.postroll_params)>0:
+			if self.credits_begin_time <= 0 and len(self.postroll_params)>0:
+				self.state='postroll'
 				self.playselected(self.post_r)
 			showMessage('IVI Player', 'Конец фильма' , 2000)
 			
@@ -350,14 +357,14 @@ class IVIPlayer(xbmc.Player):
 			self.state='play'
 			
 		if self.state=='postroll':
-			if credits_begin_time == -1:
+			if self.credits_begin_time <= 0:
 				self.stop()
 				self.playl.clear()
 				self.active = False
 			else:
 				self.playselected(self.cont_ind)
 				self.send_ads=self.postroll_params
-			#showMessage('IVI Player', 'Конец preroll' , 2000)
+				self.showed_ad=True
 				self.state='play'
 				#self.seekTime(self.resume_timer)
 			
