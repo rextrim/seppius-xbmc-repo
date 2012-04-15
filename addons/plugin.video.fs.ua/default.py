@@ -116,10 +116,27 @@ def check_login():
 			return True
 	return False
 
-def getSortBy():
+def getSortBy(section):
 	sortBy = __settings__.getSetting("Sort by")
 	sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
-	return '?view=list&sort=' + sortByMap[sortBy]
+	return '?view=list&sort=' + sortByMap[sortBy] + getFilters(section)
+	
+def getFilters(section):
+	params = [];
+	ret = ''
+	sectionSettings = {
+		'video': ['mood', 'vproduction', 'quality', 'translation'],
+		'audio': ['genre', 'aproduction']
+	}
+	for settingId in sectionSettings[section]:
+		setting = __settings__.getSetting(settingId)
+		if setting != 'Any':
+			params.append(setting)
+			#moodMap = {'1': 'comedy', '2': 'horror', '3': |action|soul
+	if len(params) > 0:
+		ret = '&fl=' + ','.join(params)
+	return ret
+    
 
 def main(params):
 	li = xbmcgui.ListItem('[Видео]')
@@ -188,7 +205,6 @@ def main(params):
 	xbmcplugin.endOfDirectory(h)
 
 def getCategories(params):
-	sortByString = getSortBy()
 	section = params['category']
 	categoryUrl = urllib.unquote_plus(params['href'])
 
@@ -213,7 +229,7 @@ def getCategories(params):
 	for subcategory in subcategories:
 		li = xbmcgui.ListItem(subcategory.string)
 		uri = construct_request({
-			'href': httpSiteUrl + subcategory['href'] + sortByString,
+			'href': httpSiteUrl + subcategory['href'] + getSortBy(section),
 			'mode': 'readcategory',
 			'cleanUrl': httpSiteUrl + subcategory['href'],
 			'section': section,
@@ -329,7 +345,7 @@ def readfavorites(params):
 	xbmcplugin.endOfDirectory(h)
 
 def readcategory(params):
-	sortByString = getSortBy()
+	sortByString = getSortBy(params['section'])
 	categoryUrl = urllib.unquote_plus(params['href'])
 	http = GET(categoryUrl + sortByString, httpSiteUrl)
 	if http == None: return False
