@@ -31,7 +31,7 @@ import xbmcgui
 import xbmcaddon
 import xbmc
 import xbmcaddon
-
+import random, time
 
 
 
@@ -49,7 +49,7 @@ addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
 
-
+uniq_id=random.random()*time.time()
 hos = int(sys.argv[1])
 show_len=50
 
@@ -109,6 +109,8 @@ class IVIPlayer(xbmc.Player):
 		self.pos=[]
 		self.ads=[]
 		self.title=''
+		self.tns_id=None
+		self.GA_id=None
 		
 	def POSTAPI(self, post):
 		req = urllib2.Request(self.api_url)
@@ -125,13 +127,13 @@ class IVIPlayer(xbmc.Player):
 			return js
 	
 	def getAds(self):
-		json1 = self.POSTAPI({'method':'da.content.get_adv', 'params':[self.vID, {'site':self.sID} ]})
+		json1 = self.POSTAPI({'method':'da.content.get_adv', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
 		#print json1
 		if json1:
 			try:
 				for ad in json1['result']:
 					ad_file = self.find_best(ad)
-					#print ad_file
+					#print ad
 					if ad_file:
 						adrow = {'url': ad_file, 'id': ad['id'], 'title': ad['title'].encode('utf-8'), 'px_audit': ad['px_audit'],
 						'duration': ad['duration'], 'percent_to_mark': int(ad['percent_to_mark'])-1, 'save_show': ad['save_show']}
@@ -146,7 +148,9 @@ class IVIPlayer(xbmc.Player):
 		json1 = self.POSTAPI({'method':'da.content.adv_watched', 'params':[self.vID, {'site':self.sID} ]})
 		#print curr_ads
 		#print curr_ads[0]['px_audit']
-		GET(curr_ads[0]['px_audit'])
+		for n in curr_ads[0]['px_audit']:
+			print n
+			GET(n)
 		#print json1
 	
 	def getparam(self, vID):
@@ -165,11 +169,15 @@ class IVIPlayer(xbmc.Player):
 				self.main_item = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 				self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
 				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'site':self.sID} ]})
-				#print json0
+				print json0
 				vc = json0['result']
 				self.content_file = self.find_best(vc)
 				try:    self.content_percent_to_mark = int(vc['percent_to_mark'])
 				except: self.content_percent_to_mark = 0
+				try:    self.GA_id = int(vc['google_analytics_id'])
+				except: self.GA_id = None
+				try:    self.tns_id = int(vc['tns_id'])
+				except: self.tns_id = None
 				self.title=vc['title']
 				try:    self.credits_begin_time = int(vc['credits_begin_time'])
 				except: self.credits_begin_time = -1
@@ -213,15 +221,19 @@ class IVIPlayer(xbmc.Player):
 		assert not self.isPlaying(), 'Player is already playing a video'
 		self.getparam(vID)
 		i = xbmcgui.ListItem(self.title, iconImage = addon_icon, thumbnailImage = addon_icon)
-		self.playl.add(self.content_file,listitem=i)
+		
 		#print 'Готовлю плейлист'
 		if self.state=='pre_roll':
 			self.playl.add(self.ads_file)
 			self.ads.append({
 				'type':'preroll',
-				'ind':ind
+				'ind':ind,
+				'time':-1
 			})
 			ind=ind+1
+			self.cont_ind=1
+		else: self.cont_ind=0
+		self.playl.add(self.content_file,listitem=i)
 		
 		for na in self.midroll:
 			try:
@@ -249,16 +261,16 @@ class IVIPlayer(xbmc.Player):
 			#print self.postroll_params[0]['url']
 		except: pass
 		#print 'ads'
-		#print self.preroll_params
-		
-		#print self.midroll_params
-		#print self.postroll_params
+		print self.preroll_params
+		print self.midroll_params
+		print self.postroll_params
 		#print self.ads
 		self.playl.add(self.content_file,listitem=i)
 		#print 'Конец плейлиста'
 		#for m in self.ads:
-		#	print m['time']
+		#	print m['time']                      
 		self.play(self.playl)
+		#self.play(self.playl)
 	
 	def myloop(self):
 		self.last_ads_time=0
@@ -271,11 +283,21 @@ class IVIPlayer(xbmc.Player):
 				self.percent = (100 * self.Time) / self.TotalTime
 			except: 
 				pass
+			if self.percent==self.content_percent_to_mark and self.state=='play':
+				self.content_percent_to_mark=-1
+				json1 = self.POSTAPI({'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ],'method':'da.content.content_watched' })
+				#json1 = self.POSTAPI({'method':'da.content.content_watched', 'params':[self.vID,  {'site':self.sID} ]})
+				print json1
+				print uniq_id
+				showMessage('IVI Player', 'Послан отчет о просмотре' , 3000)
+				print json1
+				pass
 			for m in self.ads:
 				if self.send_ads:
 					self.report_ads(self.send_ads)
 					self.send_ads=None
-				if int(self.Time)==m['time'] and int(self.Time)!=self.last_ads_time:
+				#print m
+				if int(self.Time)==m['time'] and int(self.Time)!=self.last_ads_time and self.state=='play':
 
 					if self.state=='play':
 						if len(self.midroll_params)>0:
@@ -302,12 +324,12 @@ class IVIPlayer(xbmc.Player):
 		#showMessage('IVI Player', 'Поехали' , 2000)
 		if self.state=='play':
 			self.seekTime(self.resume_timer)
-		try:
-			if self.state=='play': 
-				pass
-				#showMessage('IVI Player', 'Воспроизведение' , 2000)
-		except:
-			showMessage('IVI Player', 'Ничего не работает' , 2000)
+		#try:
+		#	if self.state=='play': 
+		#		pass
+		#		#showMessage('IVI Player', 'Воспроизведение' , 2000)
+		#except:
+		#	showMessage('IVI Player', 'Ничего не работает' , 2000)
 
 	def onPlayBackEnded( self ):
 
@@ -322,7 +344,7 @@ class IVIPlayer(xbmc.Player):
 			self.active = False
 			
 		if self.state=='pre_roll':
-			self.playselected(0)
+			self.playselected(self.cont_ind)
 			self.send_ads=self.preroll_params
 			#showMessage('IVI Player', 'Конец preroll' , 2000)
 			self.state='play'
@@ -333,19 +355,19 @@ class IVIPlayer(xbmc.Player):
 				self.playl.clear()
 				self.active = False
 			else:
-				self.playselected(0)
+				self.playselected(self.cont_ind)
 				self.send_ads=self.postroll_params
 			#showMessage('IVI Player', 'Конец preroll' , 2000)
 				self.state='play'
-				self.seekTime(self.resume_timer)
+				#self.seekTime(self.resume_timer)
 			
 		if self.state=='play_mid':
-			self.playselected(0)
+			self.playselected(self.cont_ind)
 			self.showed_ad=True
 			self.send_ads=self.midroll_params
 			#showMessage('IVI Player', 'Конец midroll' , 2000)
 			self.state='play'
-			self.seekTime(self.resume_timer)
+			#self.seekTime(self.resume_timer)
 		
 
 	def onPlayBackStopped( self ):

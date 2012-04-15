@@ -518,7 +518,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.ivi.ru" name="IVI" version="2.0.11" provider-name="HD-Lab Team">
+<addon id="plugin.video.ivi.ru" name="IVI" version="2.0.12" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
