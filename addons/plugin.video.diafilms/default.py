@@ -45,6 +45,7 @@ hpar = HTMLParser.HTMLParser()
 
 h = int(sys.argv[1])
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
@@ -136,7 +137,6 @@ def Get_List(params):
 
     # get number of webpages to grab information
     page_num = Get_Page_Number(url)
-    xbmc.log('*** Pages: '+str(page_num))
 
     # get all serials
     for count in range(1, page_num+1):
@@ -235,6 +235,12 @@ def get_params(paramstring):
 	return param
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
+
+# get cookies from last session
+cj = cookielib.FileCookieJar(fcookies)
+hr  = urllib2.HTTPCookieProcessor(cj)
+opener = urllib2.build_opener(hr)
+urllib2.install_opener(opener)
 
 mode = None
 
