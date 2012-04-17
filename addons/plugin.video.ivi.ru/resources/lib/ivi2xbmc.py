@@ -20,7 +20,13 @@
 import httplib
 import urllib
 import urllib2
+
 import re
+try:
+	from hashlib import md5
+except:
+	from md5 import md5
+
 import sys
 import os
 import Cookie
@@ -28,13 +34,14 @@ import subprocess
 
 import xbmcplugin
 import xbmcgui
-import xbmcaddon
 import xbmc
 import xbmcaddon
-import random, time
+import time
+import random
+from urllib import unquote, quote
 
 
-
+conf_file = os.path.join(xbmc.translatePath('special://temp/'), 'settings.ivi.txt')
 
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.ivi.ru' )
 __language__ = __addon__.getLocalizedString
@@ -49,11 +56,72 @@ addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
 
-uniq_id=random.random()*time.time()
+
 hos = int(sys.argv[1])
 show_len=50
 
 UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+
+VERSION = '4.3as'
+DOMAIN = '131896016'
+UATRACK = 'UA-11561457-31'
+
+if os.path.isfile(conf_file):
+	f = open(conf_file, 'r')
+	GAcookie=f.readline()
+	uniq_id=f.readline()
+else: 
+	f = open(conf_file, 'w')
+	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+	uniq_id=random.random()*time.time()
+	f.write(GAcookie)
+	f.write('\n')
+	f.write(str(uniq_id))
+print GAcookie
+print uniq_id
+
+def get_random_number():
+	return str(random.randint(0, 0x7fffffff))
+
+#COOKIEJAR = None
+#COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % DOMAIN)
+
+
+def send_request_to_google_analytics(utm_url, ua):
+
+	try:
+		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
+		response = urllib2.urlopen(req).read()
+		
+	except:
+		#print ("GA fail: %s" % utm_url)     
+		showMessage('IVI Player', "GA fail: %s" % utm_url, 2000)
+	#print str(response)
+	return response
+           
+def track_page_view(path,nevent='', tevent=''):
+	domain = DOMAIN
+	document_path = unquote(path)
+	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
+	extra = {}
+	extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
+
+        # // Construct the gif hit url.
+	utm_url = utm_gif_location + "?" + \
+		"utmwv=" + VERSION + \
+		"&utmn=" + get_random_number() + \
+		"&utmsr=" + quote(extra.get("screen", "")) + \
+		"&utmt=" + nevent + \
+		"&utme=" + tevent +\
+		"&utmhn=localhost" + \
+		"&utmr=" + quote('-') + \
+		"&utmp=" + quote(document_path) + \
+		"&utmac=" + UATRACK + \
+		"&utmcc="+ GAcookie
+        # dbgMsg("utm_url: " + utm_url) 
+	print "Analitycs: %s" % utm_url
+	return send_request_to_google_analytics(utm_url, UA)
+
 
 def showMessage(heading, message, times = 3000, pics = addon_icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
@@ -63,18 +131,12 @@ def showMessage(heading, message, times = 3000, pics = addon_icon):
 		except Exception, e:
 			xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
 
-headers  = {
-	'User-Agent' : 'XBMC',
-	'Accept'     :' text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*',
-	'Accept-Language':'ru-RU,ru;q=0.9,en;q=0.8',
-	'Accept-Charset' :'utf-8, utf-16, *;q=0.1',
-	'Accept-Encoding':'identity, *;q=0'
-}
+
 
 def GET(target, post=None):
 	#print target
 	try:
-		req = urllib2.Request(url = target, data = post, headers = headers)
+		req = urllib2.Request(url = target, data = post, headers = {'User-Agent':UA})
 		resp = urllib2.urlopen(req)
 		CE = resp.headers.get('content-encoding')
 		http = resp.read()
@@ -88,11 +150,11 @@ class IVIPlayer(xbmc.Player):
 
 	def myway(self):
 		print 'ok'
-		
+
 	def __init__( self, *args, **kwargs ):
 		self.active = True
 		self.api_url = 'http://api.digitalaccess.ru/api/json/'
-		self.sID='1'
+		self.sID='s15'
 		self.vID=None
 		showMessage('IVI Player', 'Инициализация', 2000)
 		self.content_file=None
@@ -111,7 +173,7 @@ class IVIPlayer(xbmc.Player):
 		self.title=''
 		self.tns_id=None
 		self.GA_id=None
-		
+
 	def POSTAPI(self, post):
 		req = urllib2.Request(self.api_url)
 		req.add_header('User-Agent', UA)
@@ -125,7 +187,7 @@ class IVIPlayer(xbmc.Player):
 			return None
 		except:
 			return js
-	
+
 	def getAds(self):
 		json1 = self.POSTAPI({'method':'da.content.get_adv', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
 		print 'RekLAMA'
@@ -143,8 +205,9 @@ class IVIPlayer(xbmc.Player):
 						elif ad['type'] == 'midroll':self.midroll_params.append(adrow)
 			except:
 				#print ' EXCEPT ********* НЕТ РЕКЛАМЫ ************ '
-				showMessage('EXCEPT', 'НЕТ РЕКЛАМЫ', 3000)
-	
+				#showMessage('EXCEPT', 'НЕТ РЕКЛАМЫ', 3000)
+				pass
+
 	def report_ads(self, curr_ads):
 		json1 = self.POSTAPI({'method':'da.content.adv_watched', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
 		#print curr_ads
@@ -156,7 +219,7 @@ class IVIPlayer(xbmc.Player):
 				GET(n)
 		else: GET(links)
 		#print json1
-	
+
 	def getparam(self, vID):
 		self.playl.clear()
 		self.preroll_params = []
@@ -173,8 +236,8 @@ class IVIPlayer(xbmc.Player):
 				self.main_item = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 				self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
 				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
-				print 'Conetent:'
-				print json0
+				#print 'Conetent:'
+				#print json0
 				vc = json0['result']
 				self.content_file = self.find_best(vc)
 				try:    self.content_percent_to_mark = int(vc['percent_to_mark'])
@@ -218,7 +281,7 @@ class IVIPlayer(xbmc.Player):
 	#		for vcfl in data['files']:
 	#			if vcfl['content_format'] == 'SWF': play_file = vcfl['url']
 		return play_file
-		
+
 
 	def ivi_play(self, vID):
 		self.vID=vID
@@ -226,7 +289,7 @@ class IVIPlayer(xbmc.Player):
 		assert not self.isPlaying(), 'Player is already playing a video'
 		self.getparam(vID)
 		i = xbmcgui.ListItem(self.title, iconImage = addon_icon, thumbnailImage = addon_icon)
-		
+
 		#print 'Готовлю плейлист'
 		if self.state=='pre_roll':
 			self.playl.add(self.ads_file)
@@ -239,12 +302,12 @@ class IVIPlayer(xbmc.Player):
 			self.cont_ind=1
 		else: self.cont_ind=0
 		self.playl.add(self.content_file,listitem=i)
-		
+
 		for na in self.midroll:
 			try:
 				self.ads.append({
-					'type':'play_mid', 
-					'ind':ind, 
+					'type':'play_mid',
+					'ind':ind,
 					'time':na})
 				ind=ind+1
 				self.playl.add(self.midroll_params[0]['url'])
@@ -252,7 +315,7 @@ class IVIPlayer(xbmc.Player):
 				#self.playl.add(self.content_file)
 				#print self.content_file
 			except: pass
-		
+
 		try:
 			if len(self.postroll_params)>0:
 				self.ads.append({
@@ -265,28 +328,28 @@ class IVIPlayer(xbmc.Player):
 			#print 'post'
 			#print self.postroll_params[0]['url']
 		except: pass
-		print self.ads
-		print self.preroll_params
-		print self.midroll_params
-		print self.postroll_params
+		#print self.ads
+		#print self.preroll_params
+		#print self.midroll_params
+		#print self.postroll_params
 		#print self.ads
 		self.playl.add(self.content_file,listitem=i)
 		#print 'Конец плейлиста'
 		#for m in self.ads:
-		#	print m['time']                      
+		#	print m['time']
 		self.play(self.playl)
 		#self.play(self.playl)
-	
+
 	def myloop(self):
 		self.last_ads_time=0
 		self.send_ads=None
-		while self.active:	
+		while self.active:
 			#showMessage('IVI Player', 'index:' + str(self.playl.getposition()) , 100)
-			try: 
+			try:
 				self.Time = int(self.getTime())
 				self.TotalTime = self.getTotalTime()
 				self.percent = (100 * self.Time) / self.TotalTime
-			except: 
+			except:
 				pass
 			if self.percent==self.content_percent_to_mark and self.state=='play':
 				self.content_percent_to_mark=-1
@@ -312,13 +375,13 @@ class IVIPlayer(xbmc.Player):
 							self.playselected(m['ind'])
 							self.showed_ad=False
 							self.resume_timer=self.Time
-					else: 
+					else:
 						pass
 						#showMessage('IVI Player', 'Нет видео MIDROLL' , 20000)
 			#showMessage('IVI Player', 'index:' + str(self.playl.getposition()) , 2000)
 			self.sleep(300)
-			
-	
+
+
 	def onPlayBackPaused( self ):
 		showMessage('IVI Player', 'Пауза', 2000)
 
@@ -331,7 +394,7 @@ class IVIPlayer(xbmc.Player):
 			#showMessage('IVI Player', 'Возврат', 2000)
 			self.seekTime(self.resume_timer)
 		#try:
-		#	if self.state=='play': 
+		#	if self.state=='play':
 		#		pass
 		#		#showMessage('IVI Player', 'Воспроизведение' , 2000)
 		#except:
@@ -345,17 +408,17 @@ class IVIPlayer(xbmc.Player):
 				self.state='postroll'
 				self.playselected(self.post_r)
 			showMessage('IVI Player', 'Конец фильма' , 2000)
-			
+
 			self.stop()
 			self.playl.clear()
 			self.active = False
-			
+
 		if self.state=='pre_roll':
 			self.playselected(self.cont_ind)
 			self.send_ads=self.preroll_params
 			#showMessage('IVI Player', 'Конец preroll' , 2000)
 			self.state='play'
-			
+
 		if self.state=='postroll':
 			if self.credits_begin_time <= 0:
 				self.stop()
@@ -367,7 +430,7 @@ class IVIPlayer(xbmc.Player):
 				self.showed_ad=True
 				self.state='play'
 				#self.seekTime(self.resume_timer)
-			
+
 		if self.state=='play_mid':
 			self.playselected(self.cont_ind)
 			self.showed_ad=True
@@ -375,7 +438,7 @@ class IVIPlayer(xbmc.Player):
 			#showMessage('IVI Player', 'Конец midroll' , 2000)
 			self.state='play'
 			#self.seekTime(self.resume_timer)
-		
+
 
 	def onPlayBackStopped( self ):
 		#print 'stopped'
@@ -385,7 +448,7 @@ class IVIPlayer(xbmc.Player):
 		xbmc.sleep(s)
 
 
-		
+
 try:
 	import json
 except ImportError:
@@ -415,6 +478,25 @@ def countrie2name(cid):
 	except: return None
 
 def mainScreen(params):
+	if os.path.isfile(conf_file):
+		f = open(conf_file, 'r')
+		GAcookie=f.readline()
+		uniq_id=f.readline()
+	else: 
+		f = open(conf_file, 'w')
+		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+		uniq_id=random.random()*time.time()
+		f.write(GAcookie)
+		f.write('\n')
+		f.write(str(uniq_id))
+	print GAcookie
+	print uniq_id
+	
+	li = xbmcgui.ListItem('Поиск')
+	uri = construct_request({
+		'func': 'runearch'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	#li = xbmcgui.ListItem('id 7029')
 	#uri = construct_request({
 	#	'id': '7029',
@@ -434,7 +516,7 @@ def mainScreen(params):
 #	})
 #	xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	readCat('gg')
-	xbmcplugin.endOfDirectory(hos)
+	#xbmcplugin.endOfDirectory(hos)
 
 def runearch(params):
 	kbd = xbmc.Keyboard()
@@ -444,7 +526,7 @@ def runearch(params):
 	if kbd.isConfirmed():
 		params['query'] = kbd.getText()
 		params['url'] = 'http://www.ivi.ru/mobileapi/search/?%s'
-		browse(params)
+		getlistcat(params)
 
 def get_sort():
 
@@ -461,6 +543,10 @@ def readCat(params):
 	http = GET('http://www.ivi.ru/mobileapi/categories/')
 	jsdata = json.loads(http)
 	if categ:
+		if categ=='14': track_page_view('\movies')
+		if categ=='15': track_page_view('\series')
+		if categ=='16': track_page_view('\shows')
+		if categ=='17': track_page_view('\animation')
 		if jsdata:
 			for categoryes in jsdata:
 				if categoryes['id'] == int(categ):
@@ -593,11 +679,12 @@ def get_video_url(vid):
 
 def play(params):
 	#print sys.argv[2]
+	track_page_view('','event','videostart')
 	ivi_player = IVIPlayer()
 	ivi_player.ivi_play(params['id'])
 	ivi_player.myloop()
 	ivi_player.stop
-	print 'END PLAY'
+	#print 'END PLAY'
 
 
 def get_metadata(video):
@@ -735,7 +822,7 @@ def get_metadata(video):
 			info['episode'] = 0
 
 		info['title'] = v_title
-		reti = {'infoLabels': info, 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count}
+		reti = {'infoLabels': info, 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count, 'desc':v_descr}
 		return reti
 
 	else:
@@ -763,7 +850,7 @@ def get_params(paramstring):
 
 def addon_main():
 	xbmc.log( '<<<Start IVI PLayer>>>')
-	#ivi_player = IVIPlayer()
+	
 	params = get_params(sys.argv[2])
 	try:
 		func = params['func']
