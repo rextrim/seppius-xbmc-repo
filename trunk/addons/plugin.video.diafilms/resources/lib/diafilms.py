@@ -70,7 +70,7 @@ class Diafilm(xbmcgui.WindowXML):
 
         df_nav = soup.find("div", { "class" : "maincont" })
         for df in df_nav.findAll('img'):
-            self.Add_to_List(df['src'], df['title'])
+            self.Add_to_List('http://www.diafilmy.su'+df['src'], df['title'])
 
         self.setFocus(self.getControl(self.CONTROL_MAIN_IMAGE))
 
