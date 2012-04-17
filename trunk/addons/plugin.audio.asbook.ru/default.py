@@ -47,8 +47,6 @@ except:
         icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
         lib_path = os.path.join(os.getcwd(), r'resources', r'lib')
 
-import xppod
-
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
