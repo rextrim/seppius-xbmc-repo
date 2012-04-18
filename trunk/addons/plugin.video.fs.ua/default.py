@@ -86,6 +86,11 @@ def GET(url, referer, post_params = None):
 
 	return the_page
 
+def logout(params):
+	GET(httpSiteUrl + '/logout.aspx', httpSiteUrl)
+	__settings__.setSetting("Login", "");
+	__settings__.setSetting("Password", "");
+
 def check_login():
 	login = __settings__.getSetting("Login")
 	password = __settings__.getSetting("Password")
@@ -132,7 +137,6 @@ def getFilters(section):
 		setting = __settings__.getSetting(settingId)
 		if setting != 'Any':
 			params.append(setting)
-			#moodMap = {'1': 'comedy', '2': 'horror', '3': |action|soul
 	if len(params) > 0:
 		ret = '&fl=' + ','.join(params)
 	return ret
@@ -477,10 +481,11 @@ def readdir(params):
 					title = str(linkItem.find('span').string)
 
 				useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
+				fallbackHref = linkItem['href']
 				if useFlv and playLink != None:
 					href = httpSiteUrl + str(playLink['href'])
 				else:
-					href = linkItem['href']
+					href = fallbackHref
 					try:
 						folder = folderRegexp.findall(href)[0]
 					except:
@@ -488,6 +493,7 @@ def readdir(params):
 
 				li = None
 				uri = None
+				
 				if isFolder:
 					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 					li.setProperty('IsPlayable', 'false')
@@ -526,7 +532,8 @@ def readdir(params):
 						uri = construct_request({
 							'file': href,
 							'referer': folderUrl,
-							'mode': 'playflv'
+							'mode': 'playflv',
+							'fallbackHref': fallbackHref
 						})
 					else:
 						uri = href
@@ -609,17 +616,20 @@ def addto(params):
 def playflv(params):
 	referer = urllib.unquote_plus(params['referer'])
 	plfile = urllib.unquote_plus(params['file'])
-	http = GET(plfile, referer)
-	if http == None: return False
+	try:
+		http = GET(plfile, referer)
+		if http == None:
+			raise Exception('HTTP Error', 'page loading error')
 
-	fileRegexp = re.compile("playlist:\s*\[\s*\{\s*url:\s*'([^']+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
-	playerLink = fileRegexp.findall(http)
-	if playerLink == None or len(playerLink) == 0:
-		showMessage('Error', 'FLV file was not found')
-		return False
+		fileRegexp = re.compile("playlist:\s*\[\s*\{\s*url:\s*'([^']+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
+		playerLink = fileRegexp.findall(http)
+		if playerLink == None or len(playerLink) == 0:
+			raise Exception('Flv search', 'link not found')
 
-	plfile = urllib.urlopen(str(playerLink[0]))
-	fileUrl = plfile.geturl()
+		plfile = urllib.urlopen(str(playerLink[0]))
+		fileUrl = plfile.geturl()
+	except:
+		fileUrl = urllib.unquote_plus(params['fallbackHref'])
 
 	i = xbmcgui.ListItem(path = fileUrl)
 	xbmcplugin.setResolvedUrl(h, True, i)
