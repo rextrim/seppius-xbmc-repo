@@ -65,11 +65,21 @@ UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), 
 VERSION = '4.3as'
 DOMAIN = '131896016'
 UATRACK = 'UA-11561457-31'
+UATRACK2 = 'UA-30985824-1'
 
 if os.path.isfile(conf_file):
-	f = open(conf_file, 'r')
-	GAcookie=f.readline()
-	uniq_id=f.readline()
+	try:
+		f = open(conf_file, 'r')
+		GAcookie=f.readline()
+		uniq_id=f.readline()
+	except:
+		f = open(conf_file, 'w')
+		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+		uniq_id=random.random()*time.time()
+		f.write(GAcookie)
+		f.write('\n')
+		f.write(str(uniq_id))
+		f.close()
 else: 
 	f = open(conf_file, 'w')
 	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
@@ -77,8 +87,9 @@ else:
 	f.write(GAcookie)
 	f.write('\n')
 	f.write(str(uniq_id))
-print GAcookie
-print uniq_id
+	f.close()
+#print GAcookie
+#print uniq_id
 
 def get_random_number():
 	return str(random.randint(0, 0x7fffffff))
@@ -119,7 +130,21 @@ def track_page_view(path,nevent='', tevent=''):
 		"&utmac=" + UATRACK + \
 		"&utmcc="+ GAcookie
         # dbgMsg("utm_url: " + utm_url) 
-	print "Analitycs: %s" % utm_url
+	#print "Analitycs: %s" % utm_url
+	return send_request_to_google_analytics(utm_url, UA)
+	utm_url = utm_gif_location + "?" + \
+		"utmwv=" + VERSION + \
+		"&utmn=" + get_random_number() + \
+		"&utmsr=" + quote(extra.get("screen", "")) + \
+		"&utmt=" + nevent + \
+		"&utme=" + tevent +\
+		"&utmhn=localhost" + \
+		"&utmr=" + quote('-') + \
+		"&utmp=" + quote(document_path) + \
+		"&utmac=" + UATRACK2 + \
+		"&utmcc="+ GAcookie
+        # dbgMsg("utm_url: " + utm_url) 
+	#print "Analitycs: %s" % utm_url
 	return send_request_to_google_analytics(utm_url, UA)
 
 
@@ -190,8 +215,8 @@ class IVIPlayer(xbmc.Player):
 
 	def getAds(self):
 		json1 = self.POSTAPI({'method':'da.content.get_adv', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
-		print 'RekLAMA'
-		print json1
+		#print 'RekLAMA'
+		#print json1
 		if json1:
 			try:
 				for ad in json1['result']:
@@ -357,7 +382,7 @@ class IVIPlayer(xbmc.Player):
 				#json1 = self.POSTAPI({'method':'da.content.content_watched', 'params':[self.vID,  {'site':self.sID} ]})
 				#print json1
 				#print uniq_id
-				showMessage('IVI Player', 'Послан отчет о просмотре' , 3000)
+				#showMessage('IVI Player', 'Послан отчет о просмотре' , 3000)
 				#print json1
 				pass
 			for m in self.ads:
@@ -489,8 +514,8 @@ def mainScreen(params):
 		f.write(GAcookie)
 		f.write('\n')
 		f.write(str(uniq_id))
-	print GAcookie
-	print uniq_id
+	#print GAcookie
+	#print uniq_id
 	
 	li = xbmcgui.ListItem('Поиск')
 	uri = construct_request({
@@ -519,6 +544,7 @@ def mainScreen(params):
 	#xbmcplugin.endOfDirectory(hos)
 
 def runearch(params):
+	track_page_view('\search')
 	kbd = xbmc.Keyboard()
 	kbd.setDefault('')
 	kbd.setHeading('Поиск по IVI')
@@ -595,6 +621,8 @@ def getlistcat(params):
 	except: target = 'http://www.ivi.ru/mobileapi/catalogue/?%s'
 	params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
+	print target % urllib.urlencode(params)
+	print http
 	if http == None: return False
 	jsdata = json.loads(http)
 	if jsdata:
