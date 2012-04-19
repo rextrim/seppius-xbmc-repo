@@ -319,6 +319,8 @@ class IVIPlayer(xbmc.Player):
 
 
 	def ivi_play(self, vID):
+		track_page_view('','event','5(Video*Videostart)')
+		track_page_view2('','event','5(Video*Videostart)')
 		self.vID=vID
 		ind=1
 		assert not self.isPlaying(), 'Player is already playing a video'
@@ -554,8 +556,8 @@ def mainScreen(params):
 	#xbmcplugin.endOfDirectory(hos)
 
 def runearch(params):
-	track_page_view('\search')
-	track_page_view2('\search')
+	track_page_view('search')
+	track_page_view2('search')
 	kbd = xbmc.Keyboard()
 	kbd.setDefault('')
 	kbd.setHeading('Поиск по IVI')
@@ -581,17 +583,17 @@ def readCat(params):
 	jsdata = json.loads(http)
 	if categ:
 		if categ=='14': 
-			track_page_view('\movies')
-			track_page_view2('\movies')
+			track_page_view('movies')
+			track_page_view2('movies')
 		if categ=='15': 
-			track_page_view('\series')
-			track_page_view2('\series')
+			track_page_view('series')
+			track_page_view2('series')
 		if categ=='16': 
-			track_page_view('\shows')
-			track_page_view2('\shows')
+			track_page_view('shows')
+			track_page_view2('shows')
 		if categ=='17': 
-			track_page_view('\animation')
-			track_page_view2('\animation')
+			track_page_view('animation')
+			track_page_view2('animation')
 		if jsdata:
 			for categoryes in jsdata:
 				if categoryes['id'] == int(categ):
@@ -726,8 +728,8 @@ def get_video_url(vid):
 
 def play(params):
 	#print sys.argv[2]
-	track_page_view('','event','videostart')
-	track_page_view2('','event','videostart')
+	#track_page_view('','event','5(Video*Videostart)')
+	#track_page_view2('','event','5(Video*Videostart)')
 	ivi_player = IVIPlayer()
 	ivi_player.ivi_play(params['id'])
 	ivi_player.myloop()
