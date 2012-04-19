@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-#
+# 	Copyright (c) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
+# 	Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
+# 	Writer (c) 2012, Nevenkin A.V., E-mail: nuimons@gmail.com
 #   This Program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation; either version 2, or (at your option)
@@ -103,6 +105,7 @@ def send_request_to_google_analytics(utm_url, ua):
 	try:
 		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
 		response = urllib2.urlopen(req).read()
+		#print utm_url
 		
 	except:
 		#print ("GA fail: %s" % utm_url)     
@@ -132,6 +135,13 @@ def track_page_view(path,nevent='', tevent=''):
         # dbgMsg("utm_url: " + utm_url) 
 	#print "Analitycs: %s" % utm_url
 	return send_request_to_google_analytics(utm_url, UA)
+	
+def track_page_view2(path,nevent='', tevent=''):
+	domain = DOMAIN
+	document_path = unquote(path)
+	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
+	extra = {}
+	extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')	
 	utm_url = utm_gif_location + "?" + \
 		"utmwv=" + VERSION + \
 		"&utmn=" + get_random_number() + \
@@ -545,6 +555,7 @@ def mainScreen(params):
 
 def runearch(params):
 	track_page_view('\search')
+	track_page_view2('\search')
 	kbd = xbmc.Keyboard()
 	kbd.setDefault('')
 	kbd.setHeading('Поиск по IVI')
@@ -569,10 +580,18 @@ def readCat(params):
 	http = GET('http://www.ivi.ru/mobileapi/categories/')
 	jsdata = json.loads(http)
 	if categ:
-		if categ=='14': track_page_view('\movies')
-		if categ=='15': track_page_view('\series')
-		if categ=='16': track_page_view('\shows')
-		if categ=='17': track_page_view('\animation')
+		if categ=='14': 
+			track_page_view('\movies')
+			track_page_view2('\movies')
+		if categ=='15': 
+			track_page_view('\series')
+			track_page_view2('\series')
+		if categ=='16': 
+			track_page_view('\shows')
+			track_page_view2('\shows')
+		if categ=='17': 
+			track_page_view('\animation')
+			track_page_view2('\animation')
 		if jsdata:
 			for categoryes in jsdata:
 				if categoryes['id'] == int(categ):
@@ -621,8 +640,8 @@ def getlistcat(params):
 	except: target = 'http://www.ivi.ru/mobileapi/catalogue/?%s'
 	params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
-	print target % urllib.urlencode(params)
-	print http
+	#print target % urllib.urlencode(params)
+	#print http
 	if http == None: return False
 	jsdata = json.loads(http)
 	if jsdata:
@@ -708,6 +727,7 @@ def get_video_url(vid):
 def play(params):
 	#print sys.argv[2]
 	track_page_view('','event','videostart')
+	track_page_view2('','event','videostart')
 	ivi_player = IVIPlayer()
 	ivi_player.ivi_play(params['id'])
 	ivi_player.myloop()
