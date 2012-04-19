@@ -27,4 +27,3 @@ http://online.stepashka.com/detektiv/,Детектив,x
 http://online.stepashka.com/otechestvennye/,Отечественные,x
 http://online.stepashka.com/voenniy/,Военный,x
 http://online.stepashka.com/tv/,Передачи с ТВ,x
-http://online.stepashka.com/erotica/,Эротика,x
