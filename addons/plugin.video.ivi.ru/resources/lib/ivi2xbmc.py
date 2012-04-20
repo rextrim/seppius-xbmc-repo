@@ -573,7 +573,7 @@ def get_sort():
 	else: return 'new'
 
 def readCat(params):
-	print params
+	#print params
 	try:
 		categ = params['category']
 		del params['category']
@@ -638,14 +638,14 @@ def runSearch(params):
 		browse(params)
 
 def getlistcat(params):
-	print params
+	#print params
 	try:
 		target = params['url']
 		del params['url']
 	except: target = 'http://www.ivi.ru/mobileapi/catalogue/?%s'
 	params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
-	print target % urllib.urlencode(params)
+	#print target % urllib.urlencode(params)
 	#print http
 	if http == None: return False
 	jsdata = json.loads(http)
