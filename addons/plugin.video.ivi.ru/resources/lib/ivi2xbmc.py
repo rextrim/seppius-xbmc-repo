@@ -60,7 +60,7 @@ addon_version = __addon__.getAddonInfo('version')
 
 
 hos = int(sys.argv[1])
-show_len=50
+show_len=100
 
 UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
@@ -573,11 +573,12 @@ def get_sort():
 	else: return 'new'
 
 def readCat(params):
+	print params
 	try:
 		categ = params['category']
 		del params['category']
 	except:	categ = None
-	basep = {'from':0, 'to':50, 'sort':get_sort(), 'func':'readCat'}
+	basep = {'from':0, 'to':show_len-1, 'sort':get_sort(), 'func':'readCat'}
 	#showMessage('Internal debug', 'Function "%s"' % get_sort(), 2000)
 	http = GET('http://www.ivi.ru/mobileapi/categories/')
 	jsdata = json.loads(http)
@@ -585,6 +586,7 @@ def readCat(params):
 		if categ=='14': 
 			track_page_view('movies')
 			track_page_view2('movies')
+			basep['url'] = 'http://www.ivi.ru/mobileapi/videos/?%s'
 		if categ=='15': 
 			track_page_view('series')
 			track_page_view2('series')
@@ -636,13 +638,14 @@ def runSearch(params):
 		browse(params)
 
 def getlistcat(params):
+	print params
 	try:
 		target = params['url']
 		del params['url']
 	except: target = 'http://www.ivi.ru/mobileapi/catalogue/?%s'
 	params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
-	#print target % urllib.urlencode(params)
+	print target % urllib.urlencode(params)
 	#print http
 	if http == None: return False
 	jsdata = json.loads(http)
@@ -655,10 +658,10 @@ def getlistcat(params):
 				if data['tc'] or data['sc']:
 					isFolder = True
 					if data['sc'] > 1:
-						osp = {'func':'seasons', 'id': data['id'], 'seasons_count': data['sc']}
+						osp = {'from':0, 'to':show_len-1,'func':'seasons', 'id': data['id'], 'seasons_count': data['sc']}
 						uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
 					elif data['sc'] <= 1:
-						osp = {'func':'getlistcat', 'id': data['id'], 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s'}
+						osp = {'from':0, 'to':500, 'func':'getlistcat', 'id': data['id'], 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s'}
 						uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
 					else: xbmc.log( '[%s]: unexpected value v_seasons_count=%s' % (addon_id, data['sc']), 2 )
 				else:
