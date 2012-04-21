@@ -586,7 +586,7 @@ def readCat(params):
 		if categ=='14': 
 			track_page_view('movies')
 			track_page_view2('movies')
-			basep['url'] = 'http://www.ivi.ru/mobileapi/videos/?%s'
+			#basep['url'] = 'http://www.ivi.ru/mobileapi/videos/?%s'
 		if categ=='15': 
 			track_page_view('series')
 			track_page_view2('series')
@@ -642,10 +642,10 @@ def getlistcat(params):
 	try:
 		target = params['url']
 		del params['url']
-	except: target = 'http://www.ivi.ru/mobileapi/catalogue/?%s'
+	except: target = 'http://www.ivi.ru/mobileapi/catalogue/v2/?%s'
 	params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
-	#print target % urllib.urlencode(params)
+	print target % urllib.urlencode(params)
 	#print http
 	if http == None: return False
 	jsdata = json.loads(http)
@@ -780,15 +780,16 @@ def get_metadata(video):
 		lth = 0
 		ltw = 0
 		ltu = addon_icon
-		for thumbnail in v_thumbnails:
-			try:
+		
+		try:
+			for thumbnail in v_thumbnails:
 				if int(thumbnail['height']) > lth:
 					ltu = thumbnail['path']
 					lth = int(thumbnail['height'])
 					ltw = int(thumbnail['width'])
-			except:
-				try: ltu = thumbnail['path']
-				except: pass
+		except:
+			try: ltu = thumbnail['path']
+			except: pass
 
 
 
