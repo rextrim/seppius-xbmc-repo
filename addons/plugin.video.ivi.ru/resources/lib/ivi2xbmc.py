@@ -58,9 +58,10 @@ addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
 
-
+genres_data = []
 hos = int(sys.argv[1])
 show_len=100
+xbmcplugin.setContent(hos, 'movies')
 
 UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
@@ -180,6 +181,8 @@ def GET(target, post=None):
 	except Exception, e:
 		xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
 		showMessage('HTTP ERROR', e, 5000)
+		
+
 
 class IVIPlayer(xbmc.Player):
 
@@ -261,6 +264,7 @@ class IVIPlayer(xbmc.Player):
 		self.postroll_params = []
 		self.midroll_params = []
 		self.midroll = []
+		#print vID
 		#print 'GET JSON'
 		http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
 		if http:
@@ -503,8 +507,11 @@ def construct_request(params):
 	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 
 def genre2name(gid):
+	#print genres_data
 	try:
-		reti = genres_data[str(gid)].encode('utf-8')
+		for n in genres_data:
+		#print n
+			if n.split(';')[0] in str(gid): reti=n.split(';')[1]
 		return reti
 	except: return None
 
@@ -534,26 +541,9 @@ def mainScreen(params):
 		'func': 'runearch'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	#li = xbmcgui.ListItem('id 7029')
-	#uri = construct_request({
-	#	'id': '7029',
-#		'func': 'play'
-#	})
-#	xbmcplugin.addDirectoryItem(hos, uri, li, False)
-#	li = xbmcgui.ListItem('id 52820')
-#	uri = construct_request({
-#		'id': '52820',
-#		'func': 'play'
-#	})
-#	xbmcplugin.addDirectoryItem(hos, uri, li, False)
-#	li = xbmcgui.ListItem('id 52821')
-#	uri = construct_request({
-#		'id': '52821',
-#		'func': 'play'
-#	})
-#	xbmcplugin.addDirectoryItem(hos, uri, li, False)
+
 	readCat('gg')
-	#xbmcplugin.endOfDirectory(hos)
+
 
 def runearch(params):
 	track_page_view('search')
@@ -573,7 +563,7 @@ def get_sort():
 	else: return 'new'
 
 def readCat(params):
-	#print params
+
 	try:
 		categ = params['category']
 		del params['category']
@@ -581,6 +571,10 @@ def readCat(params):
 	basep = {'from':0, 'to':show_len-1, 'sort':get_sort(), 'func':'readCat'}
 	#showMessage('Internal debug', 'Function "%s"' % get_sort(), 2000)
 	http = GET('http://www.ivi.ru/mobileapi/categories/')
+	for categoryes in json.loads(http):
+		for genre in categoryes['genres']: genres_data.append(str(genre['id'])+';'+categoryes['title'])
+	#print genres_data
+	#print genres_data
 	jsdata = json.loads(http)
 	if categ:
 		if categ=='14': 
@@ -602,6 +596,7 @@ def readCat(params):
 					flist=categ
 					#print flist
 					for genre in categoryes['genres']:
+						
 						i = xbmcgui.ListItem(genre['title'], iconImage = addon_icon, thumbnailImage = addon_icon)
 						basep['func'] = 'getlistcat'
 						basep['genre'] = genre['id']
@@ -612,6 +607,8 @@ def readCat(params):
 					basep['func'] = 'getlistcat'
 					basep['category'] = categ
 					getlistcat(basep)
+					
+
 	else:
 		if http:
 			for categoryes in json.loads(http):
@@ -621,6 +618,8 @@ def readCat(params):
 				categ = categoryes['id']
 				uri = '%s?%s' % (sys.argv[0], urllib.urlencode(basep))
 				xbmcplugin.addDirectoryItem(hos, uri, i, True)
+				
+				
 	xbmcplugin.endOfDirectory(hos)
 
 
@@ -645,7 +644,7 @@ def getlistcat(params):
 	except: target = 'http://www.ivi.ru/mobileapi/catalogue/v2/?%s'
 	params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
-	print target % urllib.urlencode(params)
+	#print target % urllib.urlencode(params)
 	#print http
 	if http == None: return False
 	jsdata = json.loads(http)
@@ -653,8 +652,10 @@ def getlistcat(params):
 
 		for video in jsdata:
 			data = get_metadata(video)
+			
 			if data:
 				i = xbmcgui.ListItem(data['infoLabels']['title'], iconImage = data['image'], thumbnailImage = data['image'])
+				#i.setInfo(type='video', infoLabels = data['info'])
 				if data['tc'] or data['sc']:
 					isFolder = True
 					if data['sc'] > 1:
@@ -668,8 +669,10 @@ def getlistcat(params):
 					isFolder = False
 					i.setProperty('IsPlayable', 'false')
 					uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'id': data['id']}))
-				i.setInfo(type = 'video', infoLabels = data['infoLabels'])
-				i.setProperty('fanart_image', addon_fanart)
+				#i.setInfo(type = 'video', infoLabels = data['infoLabels'])
+				#print data['info']
+				i.setInfo(type='video', infoLabels = data['info'])
+				i.setProperty('fanart_image', data['image'])
 				xbmcplugin.addDirectoryItem(hos, uri, i, isFolder)
 		if len(jsdata) == show_len:
 			i = xbmcgui.ListItem('Еще [>>]', iconImage = addon_icon, thumbnailImage = addon_icon)
@@ -679,6 +682,9 @@ def getlistcat(params):
 			params['to'] = params['from'] + show_len
 			uri = '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 			xbmcplugin.addDirectoryItem(hos, uri, i, True)
+		#xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_UNSORTED)
+		#xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_TITLE)
+		#xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_VIDEO_RATING)
 		xbmcplugin.endOfDirectory(hos)
 
 
@@ -741,23 +747,45 @@ def play(params):
 
 
 def get_metadata(video):
+	mysetInfo = {}
+	#print video
 	try:    v_id = video['id'] # идентификатор контента
 	except: v_id = None
-	try:    v_title = video['title'].encode('utf-8') # название контента
+	try:    
+		v_title = video['title'].encode('utf-8') # название контента
+		mysetInfo['title'] = video['title']
 	except: v_title = None
 	try:    v_cats = video['categories'] # список идентификаторов категории []
 	except: v_cats = None
-	try:    v_genres = video['genres'] # список идентификаторов жанров []
+	try:    
+		v_genres = video['genres'] # список идентификаторов жанров []
+		#print v_genres
 	except: v_genres = None
 	try:    v_thumbnails = video['thumbnails'] # список изображений контента []
 	except: v_thumbnails = None
 	try:    v_country = video['country'] # Идентификатор страны
 	except: v_country = None
-	try:    v_descr = video['descrtiption'].encode('utf-8') # описание контента
+	try:    
+		v_descr = video['descrtiption'].encode('utf-8') # описание контента
+		mysetInfo['plot'] = video['descrtiption']
+		mysetInfo['plotoutline'] = video['descrtiption']
 	except: v_descr = None
-	try:    v_years = video['year'] # год выхода контента []
+	try:    
+		v_years = video['years'] # год выхода контента []
+		mysetInfo['year'] = int(video['years'][0])
 	except: v_years = None
-	try:    v_ivi_rating = video['ivi_rating'] # рейтинг рассчитанный на основании голосов пользователей ivi
+	try:    
+		v_ivi_rating = video['ivi_rating'] # рейтинг рассчитанный на основании голосов пользователей ivi
+		mysetInfo['rating'] = float(v_ivi_rating*2)
+	except: v_ivi_rating = None
+	if not v_ivi_rating:
+		try:    
+			v_ivi_rating = video['ivi_rating_10'] # рейтинг рассчитанный на основании голосов пользователей ivi
+			mysetInfo['rating'] = float(v_ivi_rating)
+		except: v_ivi_rating = None
+	try:    
+		v_duration = video['duration'] # рейтинг рассчитанный на основании голосов пользователей ivi
+		mysetInfo['duration'] = v_duration
 	except: v_ivi_rating = None
 	try:    v_kp_rating = video['kp_rating'] # рейтинг ресурса КиноПоиск
 	except: v_kp_rating = None
@@ -790,8 +818,7 @@ def get_metadata(video):
 		except:
 			try: ltu = thumbnail['path']
 			except: pass
-
-
+			
 
 		plotoutline_arr = []
 
@@ -832,6 +859,7 @@ def get_metadata(video):
 
 		# ------------ формовка жанров ------------ #
 		glist = []
+		#print v_genres
 		if v_genres:
 			for gid in v_genres:
 				g_name = genre2name(gid)
@@ -839,7 +867,7 @@ def get_metadata(video):
 					try: glist.index(g_name)
 					except: glist.append(g_name)
 		if len(glist):
-			info['genre'] = ', '.join(glist)
+			mysetInfo['genre'] = ', '.join(glist)
 		# ----------------------------------------- #
 		clist = []
 		if v_country:
@@ -876,7 +904,14 @@ def get_metadata(video):
 			info['episode'] = 0
 
 		info['title'] = v_title
-		reti = {'infoLabels': info, 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count, 'desc':v_descr}
+		#print v_id
+		#print mysetInfo
+		#mysetInfo['rating']=4.4
+		#mysetInfo['year']=2000
+		#mysetInfo['genre']='Video'
+		#mysetInfo['tagline']='Cool movie'
+		
+		reti = {'infoLabels': info, 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count, 'desc':v_descr, 'info':mysetInfo}
 		return reti
 
 	else:
