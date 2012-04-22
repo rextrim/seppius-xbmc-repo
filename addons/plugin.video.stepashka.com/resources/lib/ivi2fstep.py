@@ -144,7 +144,7 @@ import socket
 socket.setdefaulttimeout(50)
 
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
-siteUrl = 'stepashka.com'
+siteUrl = 'online.stepashka.com'
 httpSiteUrl = 'http://' + siteUrl
 sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.stepashka.com.cookies.sid')
 
@@ -185,18 +185,25 @@ def GET(target, post=None):
 def mainScreen(params):
 	http = GET(httpSiteUrl)
 	if http == None: return False
-	dat_file = os.path.join(addon_path, 'categories.txt')
-	f = open(dat_file, 'r')
-	for line in f:
-		title = line.split(',')[1]
-		href = line.split(',')[0]
-		li = xbmcgui.ListItem('[%s]' % title, addon_fanart, addon_icon)
-		li.setProperty('IsPlayable', 'false')
-		uri = construct_request({
-			'href': href,
-			'func': 'readCategory'
-		})
-		xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	beautifulSoup = BeautifulSoup(http)
+	content = beautifulSoup.find('ul', attrs={'class': 'lmenu reset'})
+	cats=content.findAll('a')
+	#print content
+	#dat_file = os.path.join(addon_path, 'categories.txt')
+	#f = open(dat_file, 'r')
+	for line in cats:
+		title=None
+		if line.string:	title = str(line.string)
+		else: title = str(line.find('b').string)
+		if title!='None':
+			li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
+			li.setProperty('IsPlayable', 'false')
+			href = line['href']
+			uri = construct_request({
+				'href': href,
+				'func': 'readCategory'
+			})
+			xbmcplugin.addDirectoryItem(hos, uri, li, True)
 
 	xbmcplugin.endOfDirectory(hos)
 
