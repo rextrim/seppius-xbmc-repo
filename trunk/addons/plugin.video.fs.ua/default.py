@@ -35,12 +35,20 @@ from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import socket
 socket.setdefaulttimeout(50)
 
+__author__ = "Dmitry Khrysev"
+__license__ = "GPL"
+__maintainer__ = "Dmitry Khrysev"
+__email__ = "x86demon@gmail.com"
+__status__ = "Production"
+
+__settings__ = xbmcaddon.Addon(id='plugin.video.fs.ua')
+__language__ = __settings__.getLocalizedString
+__addondir__ =xbmc.translatePath(__settings__.getAddonInfo('profile'))
+
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
 siteUrl = 'fs.ua'
 httpSiteUrl = 'http://' + siteUrl
-__settings__ = xbmcaddon.Addon(id='plugin.video.fs.ua')
-__language__  = __settings__.getLocalizedString
-cookiepath = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.fs.ua.cookies.lwp')
+cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 
 h = int(sys.argv[1])
 
@@ -354,6 +362,7 @@ def readcategory(params):
 	http = GET(categoryUrl + sortByString, httpSiteUrl)
 	if http == None: return False
 
+	showUpdateInfo = __settings__.getSetting("Show update info") == "true"
 	beautifulSoup = BeautifulSoup(http)
 	items = beautifulSoup.findAll('a', 'subject-link')
 
@@ -384,6 +393,15 @@ def readcategory(params):
 				href = httpSiteUrl + item['href']
 
 			if title != None:
+				if showUpdateInfo:
+					additionalInfo = ''
+					numItem = item.find('b', 'num')
+					if numItem != None:
+						additionalInfo = " / " + numItem.string.strip() + " "
+					dateInfo = item.find('b', 'date')
+					if dateInfo != None:
+						additionalInfo += dateInfo.string.strip()
+					title += additionalInfo
 				li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 				li.setProperty('IsPlayable', 'false')
 
