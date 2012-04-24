@@ -129,10 +129,13 @@ def check_login():
 			return True
 	return False
 
-def getSortBy(section):
+def getUrlWithSortBy(url, section):
 	sortBy = __settings__.getSetting("Sort by")
 	sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
-	return '?view=list&sort=' + sortByMap[sortBy] + getFilters(section)
+	if '?' in url:
+		return url
+	else:
+		return url + '?view=list&sort=' + sortByMap[sortBy] + getFilters(section)
 	
 def getFilters(section):
 	params = [];
@@ -148,7 +151,6 @@ def getFilters(section):
 	if len(params) > 0:
 		ret = '&fl=' + ','.join(params)
 	return ret
-    
 
 def main(params):
 	li = xbmcgui.ListItem('[Видео]')
@@ -241,7 +243,7 @@ def getCategories(params):
 	for subcategory in subcategories:
 		li = xbmcgui.ListItem(subcategory.string)
 		uri = construct_request({
-			'href': httpSiteUrl + subcategory['href'] + getSortBy(section),
+			'href': getUrlWithSortBy(httpSiteUrl + subcategory['href'], section),
 			'mode': 'readcategory',
 			'cleanUrl': httpSiteUrl + subcategory['href'],
 			'section': section,
@@ -357,9 +359,8 @@ def readfavorites(params):
 	xbmcplugin.endOfDirectory(h)
 
 def readcategory(params):
-	sortByString = getSortBy(params['section'])
-	categoryUrl = urllib.unquote_plus(params['href'])
-	http = GET(categoryUrl + sortByString, httpSiteUrl)
+	categoryUrl = getUrlWithSortBy(urllib.unquote_plus(params['href']), params['section'])
+	http = GET(categoryUrl, httpSiteUrl)
 	if http == None: return False
 
 	showUpdateInfo = __settings__.getSetting("Show update info") == "true"
@@ -380,6 +381,36 @@ def readcategory(params):
 				'url': urllib.unquote_plus(params['cleanUrl'])
 			})
 			xbmcplugin.addDirectoryItem(h, uri, li, True)
+			
+			#Genre
+			groups = beautifulSoup.find('ul', 'm-group')
+			if groups != None:
+				yearLink = groups.find('a', href=re.compile(r'year'))
+				if yearLink != None:
+					li = xbmcgui.ListItem("[По годам]")
+					li.setProperty('IsPlayable', 'false')
+					uri = construct_request({
+						'mode': 'getGenreList',
+						'section': params['section'],
+						'filter': params['filter'],
+						'href': httpSiteUrl + yearLink['href'],
+						'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
+						'css': 'main'
+					})
+					xbmcplugin.addDirectoryItem(h, uri, li, True)
+				genreLink = groups.find('a', href=re.compile(r'genre'))
+				if genreLink != None:
+					li = xbmcgui.ListItem("[Жанры]")
+					li.setProperty('IsPlayable', 'false')
+					uri = construct_request({
+						'mode': 'getGenreList',
+						'section': params['section'],
+						'filter': params['filter'],
+						'href': httpSiteUrl + genreLink['href'],
+						'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
+						'css': 'b-list-subcategories'
+					})
+					xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 		for item in items:
 			title = None
@@ -443,7 +474,7 @@ def readcategory(params):
 		li = xbmcgui.ListItem('[NEXT PAGE >]')
 		li.setProperty('IsPlayable', 'false')
 		uri = construct_request({
-			'href': httpSiteUrl + nextPageLink['href'],
+			'href': httpSiteUrl + nextPageLink['href'].encode('utf-8'),
 			'mode': 'readcategory',
 			'section': params['section'],
 			'filter': params['filter'],
@@ -452,6 +483,32 @@ def readcategory(params):
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 	xbmcplugin.endOfDirectory(h)
+
+def getGenreList(params):
+	http = GET(urllib.unquote_plus(params['href']), httpSiteUrl)
+	if http == None: return False
+	
+	beautifulSoup = BeautifulSoup(http)
+	items = beautifulSoup.find('div', params['css']).findAll('a')
+
+	if len(items) == 0:
+		showMessage('ОШИБКА', 'Неверная страница', 3000)
+		return False
+	else:
+		for item in items:
+			li = xbmcgui.ListItem(item.string)
+			li.setProperty('IsPlayable', 'false')
+			uri = construct_request({
+				'href': httpSiteUrl + item['href'].encode('utf-8'),
+				'mode': 'readcategory',
+				'section': params['section'],
+				'filter': '',
+				'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
+				'firstPage': 'yes'
+			})
+			xbmcplugin.addDirectoryItem(h, uri, li, True)
+		xbmcplugin.endOfDirectory(h)
+		
 
 def readdir(params):
 	folderUrl = urllib.unquote_plus(params['href'])
