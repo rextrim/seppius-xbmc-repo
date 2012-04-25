@@ -28,6 +28,7 @@ except:
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 from datetime import date
+from urlparse import urlparse
 
 Addon = xbmcaddon.Addon(id='plugin.video.serialu.net')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -285,10 +286,11 @@ def Get_Serial(params):
     h_part = Check_History(tag)
 
     #-- get serial play list & parameters  -------------------------------------
+    xbmc.log("URL: "+url)
     post = None
     request = urllib2.Request(urllib.unquote(url), post)
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host', 'serialu.net')
+    request.add_header('Host', urlparse(url).hostname)
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
     request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
@@ -312,15 +314,16 @@ def Get_Serial(params):
 
         for par in rec.find('param', {'name':'flashvars'})['value'].split('&'):
             if par.split('=')[0] == 'pl':
-                pl_url = par.split('=')[1].replace('%26', '&')
+                pl_url = par[3:]
 
         if pl_url.find('http:') == -1:
             pl_url = xppod.Decode(pl_url)
 
         #-- get playlist details ---------------------------------------------------
+        xbmc.log("Playlist: "+pl_url)
         request = urllib2.Request(urllib.unquote(pl_url), post)
         request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        request.add_header('Host', 'serialu.net')
+        request.add_header('Host', urlparse(pl_url).hostname)
         request.add_header('Accept', '*/*')
         request.add_header('Accept-Language', 'ru-RU')
         request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
@@ -342,7 +345,7 @@ def Get_Serial(params):
                 if par.split(':')[0]== 'comment':
                     name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
                 if par.split(':')[0]== 'file':
-                    if 'http://' in par.split(':')[1]:
+                    if 'http' in par.split(':')[1]:
                         s_url = par.split(':')[1]+':'+par.split(':')[2]
                     else:
                         s_url = xppod.Decode(par.split(':')[1])
