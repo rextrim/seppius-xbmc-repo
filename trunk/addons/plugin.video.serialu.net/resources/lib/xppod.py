@@ -36,8 +36,10 @@ def Decode(param):
         while j < 3:
             if loc_3[j + 1] == 64:
                 break
-
-            loc_2 += unichr(loc_4[j])
+            try:
+                loc_2 += unichr(loc_4[j])
+            except:
+                pass
             j = j + 1
 
         i = i + 4;
