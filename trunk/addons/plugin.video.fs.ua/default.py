@@ -558,7 +558,10 @@ def readdir(params):
 				useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
 				fallbackHref = linkItem['href']
 				if useFlv and playLink != None:
-					href = httpSiteUrl + str(playLink['href'])
+					try:
+						href = httpSiteUrl + str(playLink['href'])
+					except:
+						href = fallbackHref
 				else:
 					href = fallbackHref
 					try:
