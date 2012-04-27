@@ -398,18 +398,18 @@ def Get_Play_List(pl_url, pos, img):
     if html.find('{"playlist":[') == -1:
         html = xppod.Decode(html).encode('utf-8')
 
-    s_num = 0
     # -- parsing web page
+    s_url = ''
+    s_num = 0
     for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
         for par in rec.replace('"','').split(','):
             if par.split(':')[0]== 'comment':
-                name = str(s_num+1) + ' серия' #par.split(':')[1]
+                name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
             if par.split(':')[0]== 'file':
-                if 'http://' in par.split(':')[1]:
+                if 'http' in par.split(':')[1]:
                     s_url = par.split(':')[1]+':'+par.split(':')[2]
                 else:
                     s_url = xppod.Decode(par.split(':')[1])
-
         s_num += 1
 
         if s_num >= pos :
