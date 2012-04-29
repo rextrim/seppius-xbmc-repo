@@ -1,0 +1,7 @@
+<settings>
+    <setting id="Title Mode" type="enum" label="30001" default="1" values="Ru/En|Ru"/>
+    <setting id="Hide Scr" type="bool" label="30003" default="false"/>
+    <setting id="Hide TSound" type="bool" label="30004" default="false"/>
+    <setting id="Engine" type="enum" label="30005" default="1" values="TSengine API|XBMC-TS(path)|Libtorrents"/>
+    <setting id="SortName" type="enum" label="30006" default="1" values="Original|Russian"/>
+</settings>
