@@ -107,7 +107,7 @@ def get_stream_list(params):
 		try:
 			print entries['title']
 			if entries['meta_game']==params['game']:
-				li = xbmcgui.ListItem((entries['title']), addon_fanart, addon_icon)
+				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart, addon_icon)
 				li.setProperty('IsPlayable', 'true')
 				uri = construct_request({
 					'name': entries['name'],
@@ -116,6 +116,7 @@ def get_stream_list(params):
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
 			
 		except: pass
+	xbmcplugin.addSortMethod(hos,xbmcplugin.SORT_METHOD_LABEL)
 	xbmcplugin.endOfDirectory(hos)
 	
 def get_stream(params):	
