@@ -149,7 +149,7 @@ def GET(target, post=None):
 
 
 def main_menu(params):
-	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=ru,en')
+	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=ru')
 	json1=json.loads(http)
 	games=[]
 	for entries in json1:
@@ -172,7 +172,7 @@ def main_menu(params):
 	
 def get_stream_list(params):
 	track_page_view(params['game'])
-	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=ru,en')
+	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=ru')
 	json1=json.loads(http)
 	for entries in json1:
 		try:
