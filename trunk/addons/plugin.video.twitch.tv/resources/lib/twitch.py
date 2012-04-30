@@ -51,7 +51,77 @@ hos = int(sys.argv[1])
 
 UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
+VERSION = '4.3as'
+DOMAIN = '131896016'
+UATRACK = 'UA-31027962-3'
+conf_file = os.path.join(xbmc.translatePath('special://temp/'), 'settings.twitchtv.dat')
 
+if os.path.isfile(conf_file):
+	try:
+		f = open(conf_file, 'r')
+		GAcookie=f.readline()
+		uniq_id=f.readline()
+	except:
+		f = open(conf_file, 'w')
+		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+		uniq_id=random.random()*time.time()
+		f.write(GAcookie)
+		f.write('\n')
+		f.write(str(uniq_id))
+		f.close()
+else: 
+	f = open(conf_file, 'w')
+	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+	uniq_id=random.random()*time.time()
+	f.write(GAcookie)
+	f.write('\n')
+	f.write(str(uniq_id))
+	f.close()
+#print GAcookie
+#print uniq_id
+
+def get_random_number():
+	return str(random.randint(0, 0x7fffffff))
+
+#COOKIEJAR = None
+#COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % DOMAIN)
+
+
+def send_request_to_google_analytics(utm_url, ua):
+
+	try:
+		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
+		response = urllib2.urlopen(req).read()
+		#print utm_url
+		
+	except:
+		#print ("GA fail: %s" % utm_url)     
+		showMessage('Player', "GA fail: %s" % utm_url, 2000)
+	#print str(response)
+	return response
+           
+def track_page_view(path,nevent='', tevent=''):
+	domain = DOMAIN
+	document_path = (path)
+	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
+	extra = {}
+	extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
+
+        # // Construct the gif hit url.
+	utm_url = utm_gif_location + "?" + \
+		"utmwv=" + VERSION + \
+		"&utmn=" + get_random_number() + \
+		"&utmsr=" + quote(extra.get("screen", "")) + \
+		"&utmt=" + nevent + \
+		"&utme=" + tevent +\
+		"&utmhn=localhost" + \
+		"&utmr=" + quote('-') + \
+		"&utmp=" + quote(document_path) + \
+		"&utmac=" + UATRACK + \
+		"&utmcc="+ GAcookie
+        # dbgMsg("utm_url: " + utm_url) 
+	#print "Analitycs: %s" % utm_url
+	return send_request_to_google_analytics(utm_url, UA)
 
 def showMessage(heading, message, times = 3000, pics = addon_icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
@@ -96,16 +166,17 @@ def main_menu(params):
 		except: pass
 	xbmcplugin.addSortMethod(hos,xbmcplugin.SORT_METHOD_LABEL)
 	xbmcplugin.endOfDirectory(hos)
-	print games
+	#print games
 	
 	
 	
 def get_stream_list(params):
+	track_page_view(params['game'])
 	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=ru,en')
 	json1=json.loads(http)
 	for entries in json1:
 		try:
-			print entries['title']
+			#print entries['title']
 			if entries['meta_game']==params['game']:
 				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart, addon_icon)
 				li.setProperty('IsPlayable', 'true')
@@ -120,6 +191,7 @@ def get_stream_list(params):
 	xbmcplugin.endOfDirectory(hos)
 	
 def get_stream(params):	
+	track_page_view('','event','5(Video*Videostart)')
 	playLive(params['name'],True)
 	
 	
@@ -143,8 +215,8 @@ def playLive(name, play=False):
 			'Referer' : 'http://www.justin.tv/'+name}
 		url1 = 'http://usher.justin.tv/find/'+name+'.json?type=live'
 		data = json.loads(GET(url1))
-		print url1
-		print data
+		#print url1
+		#print data
 		if data == []:
 			showMessage('Twitch.TV','Стрим не найден')
 			return
@@ -158,7 +230,7 @@ def playLive(name, play=False):
 			swf = ' swfUrl=%s swfVfy=1' % getSwfUrl(name)
 			Pageurl = ' Pageurl=http://www.justin.tv/'+name
 			url1 = rtmp+token+swf+Pageurl
-			print url1
+			#print url1
 			if play == True:
 				info = xbmcgui.ListItem(name)
 				playlist = xbmc.PlayList(1)
