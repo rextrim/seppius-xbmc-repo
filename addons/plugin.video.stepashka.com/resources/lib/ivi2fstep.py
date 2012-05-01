@@ -189,6 +189,13 @@ def mainScreen(params):
 		'func': 'doSearch'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[Последние добавления]', addon_fanart, addon_icon)
+	li.setProperty('IsPlayable', 'false')
+	uri = construct_request({
+		'href': 'http://online.stepashka.com/index.php',
+		'func': 'readCategory'
+		})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	http = GET(httpSiteUrl)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
