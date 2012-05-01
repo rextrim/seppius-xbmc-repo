@@ -300,20 +300,14 @@ def readFile(params):
 	else: 
 		print 'playlist in ' + lurl.split('=')[1]
 		http = GET(lurl.split('=')[1])
-		jsdata = json.loads(http)
+		jsdata=None
+		try: jsdata = json.loads(http)
+		except: pass
+		if not jsdata: exit
 		has_sesons=False
 		playlist = jsdata['playlist']
 		for file in playlist:
-			for t in file['playlist']:
-				li = xbmcgui.ListItem(t['comment'], addon_icon, params['src'])
-				li.setProperty('IsPlayable', 'true')
-				uri = construct_request({
-					'func': 'play',
-					'file': t['file']
-					})
-				has_sesons=True
-				xbmcplugin.addDirectoryItem(hos, uri, li, False)
-			if has_sesons==False:
+			try:
 				li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
 				li.setProperty('IsPlayable', 'true')
 				uri = construct_request({
@@ -321,6 +315,27 @@ def readFile(params):
 					'file': file['file']
 					})
 				xbmcplugin.addDirectoryItem(hos, uri, li, False)
+			except: pass
+			try:
+				for t in file['playlist']:
+				#print t
+					li = xbmcgui.ListItem(t['comment'], addon_icon, params['src'])
+					li.setProperty('IsPlayable', 'true')
+					uri = construct_request({
+						'func': 'play',
+						'file': t['file']
+						})
+					has_sesons=True
+					xbmcplugin.addDirectoryItem(hos, uri, li, False)
+				if has_sesons==False:
+					li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
+					li.setProperty('IsPlayable', 'true')
+					uri = construct_request({
+						'func': 'play',
+						'file': file['file']
+						})
+					xbmcplugin.addDirectoryItem(hos, uri, li, False)
+			except: pass
 	xbmcplugin.endOfDirectory(hos)
 
 	
