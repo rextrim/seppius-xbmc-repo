@@ -232,7 +232,7 @@ def readCategory(params, postParams = None):
 	beautifulSoup = BeautifulSoup(http)
  	content = beautifulSoup.find('div', attrs={'id': 'dle-content'})
 	dataRows = beautifulSoup.findAll('div', attrs={'class': 'base shortstory'})
-	print dataRows
+	#print dataRows
 	if len(dataRows) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
@@ -300,13 +300,20 @@ def readFile(params):
 	else: 
 		print 'playlist in ' + lurl.split('=')[1]
 		http = GET(lurl.split('=')[1])
-		jsdata=None
-		try: jsdata = json.loads(http)
-		except: pass
-		if not jsdata: exit
+		f=http.find('{')
+		http=http[f:len(http)]
+		try:
+			jsdata=json.loads(http)
+		except:
+			f1=http.rfind(']}')
+			http=http[0:f1-1]
+			jsdata=json.loads(http)
+		#print jsdata
 		has_sesons=False
 		playlist = jsdata['playlist']
+		#print playlist
 		for file in playlist:
+			#print file
 			try:
 				li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
 				li.setProperty('IsPlayable', 'true')
