@@ -183,6 +183,12 @@ def GET(target, post=None):
 		showMessage('HTTP ERROR', e, 5000)
 
 def mainScreen(params):
+	li = xbmcgui.ListItem('[Поиск]', addon_fanart, addon_icon)
+	li.setProperty('IsPlayable', 'false')
+	uri = construct_request({
+		'func': 'doSearch'
+		})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	http = GET(httpSiteUrl)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
@@ -207,7 +213,16 @@ def mainScreen(params):
 
 	xbmcplugin.endOfDirectory(hos)
 
-	
+def doSearch(params):
+	track_page_view('search')
+	kbd = xbmc.Keyboard()
+	kbd.setDefault('')
+	kbd.setHeading('Поиск')
+	kbd.doModal()
+	if kbd.isConfirmed():
+		sts=kbd.getText();
+		params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=' + sts
+		readCategory(params)	
 
 def readCategory(params, postParams = None):
 	track_page_view(params['href'])
@@ -217,6 +232,7 @@ def readCategory(params, postParams = None):
 	beautifulSoup = BeautifulSoup(http)
  	content = beautifulSoup.find('div', attrs={'id': 'dle-content'})
 	dataRows = beautifulSoup.findAll('div', attrs={'class': 'base shortstory'})
+	print dataRows
 	if len(dataRows) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
@@ -240,24 +256,26 @@ def readCategory(params, postParams = None):
 						'src': fimg['src']
 						})
 					xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
-	dataRows = dataRows1.findAll('a')
+	try:
+		dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
+		dataRows = dataRows1.findAll('a')
 	#print dataRows
-	if len(dataRows) == 0:
-		showMessage('ОШИБКА', 'Неверная страница', 3000)
-		return False
-	else:
-		for link in dataRows:
-			href = link['href']
-			title = link.string
-			li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)
-			li.setProperty('IsPlayable', 'false')
-			uri = construct_request({
-				'title': title,
-				'href': href,
-				'func': 'readCategory',
-				})
-			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+		if len(dataRows) == 0:
+			showMessage('ОШИБКА', 'Неверная страница', 3000)
+			return False
+		else:
+			for link in dataRows:
+				href = link['href']
+				title = link.string
+				li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)
+				li.setProperty('IsPlayable', 'false')
+				uri = construct_request({
+					'title': title,
+					'href': href,
+					'func': 'readCategory',
+					})
+				xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	except: pass
 	xbmcplugin.endOfDirectory(hos)
 
 def readFile(params):
