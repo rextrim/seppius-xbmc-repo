@@ -916,7 +916,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.stepashka.com"
        name="stepashka.com"
-       version="0.0.5"
+       version="0.0.6"
        provider-name="nuismons">
     <requires>
         <import addon="xbmc.python" version="1.0"/>
