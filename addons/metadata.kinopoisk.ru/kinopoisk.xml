@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="WINDOWS-1251"?>
 <scraper date="2010-02-23" framework="1.1">
 	<NfoUrl dest="3">
-		<RegExp input="$$1" output="&lt;url&gt;\1|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29|Accept-Language=ru-RU&lt;/url&gt;" dest="3">
+		<RegExp input="$$1" output="&lt;url&gt;\1|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;" dest="3">
 			<expression noclean="1">(http://www\.kinopoisk\.ru/level/1/film/[0-9]*/)</expression>
 		</RegExp>
 	</NfoUrl>
 	<!-- Формируем поисковый URl -->
 	<CreateSearchUrl SearchStringEncoding="CP1251" dest="3">
-		<RegExp input="$$1" output="&lt;url&gt;http://s.kinopoisk.ru/index.php?level=7&amp;from=forma&amp;result=adv&amp;m_act%5Bfrom%5D=forma&amp;m_act%5Bwhat%5D=content&amp;m_act%5Bfind%5D=\1&amp;m_act%5Byear%5D=$$2|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29|Accept-Language=ru-RU&lt;/url&gt;" dest="3">
+		<RegExp input="$$1" output="&lt;url&gt;http://s.kinopoisk.ru/index.php?level=7&amp;from=forma&amp;result=adv&amp;m_act%5Bfrom%5D=forma&amp;m_act%5Bwhat%5D=content&amp;m_act%5Bfind%5D=\1&amp;m_act%5Byear%5D=$$2|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;" dest="3">
 			<expression noclean="1"/>
 		</RegExp>
 	</CreateSearchUrl>
@@ -34,16 +34,16 @@
 				<RegExp input="$$1" output="&lt;year&gt;\1&lt;/year&gt;" dest="7+">
 					<expression>&lt;a href="/level/10/m_act%5Byear%5D/(\d+)/"</expression>
 				</RegExp>
-				<RegExp input="$$1" output="&lt;url&gt;http://www.kinopoisk.ru/level/1/film/\1/sr/1/|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29|Accept-Language=ru-RU&lt;/url&gt;" dest="7+">
+				<RegExp input="$$1" output="&lt;url&gt;http://www.kinopoisk.ru/level/1/film/\1/sr/1/|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;" dest="7+">
 					<expression>&lt;a href="/level/19/film/(\d+)/"&gt;</expression>
 				</RegExp>
 				<expression noclean="1" />
 			</RegExp>
 			<!--Код если найдено несколько вариантов-->
-			<RegExp conditional="!search_originaltitle" input="$$1" output="&lt;entity&gt;&lt;title&gt;\2&lt;/title&gt;&lt;year&gt;\3&lt;/year&gt;&lt;url&gt;http://www.kinopoisk.ru/level/1/film/\1/sr/1/|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29|Accept-Language=ru-RU&lt;/url&gt;&lt;/entity&gt;" dest="5+">
+			<RegExp conditional="!search_originaltitle" input="$$1" output="&lt;entity&gt;&lt;title&gt;\2&lt;/title&gt;&lt;year&gt;\3&lt;/year&gt;&lt;url&gt;http://www.kinopoisk.ru/level/1/film/\1/sr/1/|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;&lt;/entity&gt;" dest="5+">
 				<expression repeat="yes">&lt;p class="name"&gt;&lt;a href="/level/1/film/(\d+)/sr/1/"&gt;(.+?)&lt;/a&gt;[^&gt;]*?class="year"&gt;(\d+)&lt;</expression>
 			</RegExp>
-			<RegExp conditional="search_originaltitle" input="$$1" output="&lt;entity&gt;&lt;title&gt;\2 [\4]&lt;/title&gt;&lt;year&gt;\3&lt;/year&gt;&lt;url&gt;http://www.kinopoisk.ru/level/1/film/\1/sr/1/|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29|Accept-Language=ru-RU&lt;/url&gt;&lt;/entity&gt;" dest="5+">
+			<RegExp conditional="search_originaltitle" input="$$1" output="&lt;entity&gt;&lt;title&gt;\2 [\4]&lt;/title&gt;&lt;year&gt;\3&lt;/year&gt;&lt;url&gt;http://www.kinopoisk.ru/level/1/film/\1/sr/1/|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;&lt;/entity&gt;" dest="5+">
 				<expression repeat="yes">&lt;p class="name"&gt;&lt;a href="/level/1/film/(\d+)/sr/1/"&gt;(.+?)&lt;/a&gt;[^&gt;]*?class="year"&gt;(\d+)&lt;.*?class="gray"&gt;(?:(?:\d+ мин)|)(.*?)(?:(?:, \d+ мин)|)&lt;</expression>
 			</RegExp>
 			<!-- fix html entities from titles-->
