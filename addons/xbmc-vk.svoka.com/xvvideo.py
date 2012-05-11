@@ -19,6 +19,8 @@ __author__ = 'Volodymyr Shcherban'
 
 
 import xbmcgui, xbmc, xbmcplugin, xbmcaddon, datetime, os, urllib, re, sys
+import base64
+
 
 from xml.dom import minidom
 
@@ -32,6 +34,8 @@ __language__ = __settings__.getLocalizedString
 
 SEARCH_RESULT, TOP_DOWNLOADS, SERIES, MY_VIDEOS, SEASONS, SEASON_SERIES = "SEARCH_RESULT,TOP_DOWNLOADS,SERIES,MY_VIDEOS,SEASONS,SEASON_SERIES".split(',')
 MY_SHOWS_LIST = "MY_SHOWS_LIST"
+SEARCH_RESULT_DOWNLOAD = "SEARCH_RESULT_DOWNLOAD"
+VIDEO_DOWNLOAD = "VIDEO_DOWNLOAD"
 
 class XVKVideo(XBMCVkUI_VKSearch_Base):
     def __init__(self, *params):
@@ -67,8 +71,64 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
         vf = GetVideoFiles("http://vkontakte.ru/video"  + self.params["v"])
         if vf:
             for a in vf:
-                listitem = xbmcgui.ListItem(a[a.rfind("/")+1:], "", self.params.get("thumb"), self.params.get("thumb"))
+                n = a[a.rfind("/")+1:]
+                if a.startswith("http"):
+                    n = __language__(30039) + " " + n
+                listitem = xbmcgui.ListItem(n, "", self.params.get("thumb"), self.params.get("thumb"))
                 xbmcplugin.addDirectoryItem(self.handle, a, listitem)
+        if vf and __settings__.getSetting("ShowDownload"):        
+            for a in vf:
+                if a.startswith("http"):
+                    listitem = xbmcgui.ListItem(__language__(30035) + " " + a[a.rfind("/")+1:], "", self.params.get("thumb"), self.params.get("thumb"))
+                    xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=VIDEO_DOWNLOAD, thumb=self.params.get("thumb"), v=base64.encodestring(a).strip()), listitem, False)
+
+
+
+    def Do_SEARCH_RESULT_DOWNLOAD(self):
+        vf = GetVideoFiles("http://vkontakte.ru/video"  + self.params["v"])
+        if vf:
+            for a in vf:
+                listitem = xbmcgui.ListItem(__language__(30035) + " " + a[a.rfind("/")+1:], "", self.params.get("thumb"), self.params.get("thumb"))
+                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=VIDEO_DOWNLOAD, thumb=self.params.get("thumb"), v=base64.encodestring(a).strip()), listitem, True)
+
+
+    def Do_VIDEO_DOWNLOAD(self):
+        downloadCmd = __settings__.getSetting("downloadCmd")
+        if not downloadCmd:
+            if xbmc.getCondVisibility("system.platform.windows"):
+                downloadCmd = "start"
+            else:
+                downloadCmd = "open"
+            __settings__.setSetting("downloadCmd", downloadCmd)
+
+        url = base64.decodestring(self.params["v"])
+        os.system(downloadCmd + " " + url)
+        
+        # dest = __settings__.getSetting('downloads')
+        # n = 0
+        # while not len(dest):
+        #     xbmc.executebuiltin('XBMC.Notification("%s", "%s", 7)' % (__language__(30037),__language__(30038)))
+        #     __settings__.openSettings()
+        #     dest = __settings__.getSetting('downloads')
+        #     n+=1
+        #     if n>3 and not len(dest):
+        #         return
+        # import SimpleDownloader as downloader
+        # downloader = downloader.SimpleDownloader()
+        # url = base64.decodestring(self.params["v"])
+        # user_keyboard = xbmc.Keyboard()
+        # user_keyboard.setHeading(__language__(30036))
+        # user_keyboard.setHiddenInput(False)
+        # user_keyboard.setDefault(url[url.rfind('/')+1:])
+        # user_keyboard.doModal()
+        # if (user_keyboard.isConfirmed()):
+        #     fn = user_keyboard.getText();
+        #     ext = url[url.rfind('.'):]
+        #     if fn[-len(ext):] != ext:
+        #         fn += ext
+        #     params = { "url": url, "download_path": dest }
+        #     downloader.download(fn, params)
+
 
 
     def Do_HOME(self):
