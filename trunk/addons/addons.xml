@@ -1172,7 +1172,7 @@ RuTube - отличная стартовая площадка для незав�
 	</extension>
 </addon>
 
-<addon id="xbmc-vk.svoka.com" name="VK-xbmc" version="0.6.2" provider-name="shchvova">
+<addon id="xbmc-vk.svoka.com" name="VK-xbmc" version="0.7.0" provider-name="shchvova">
 	<requires>
 		<import addon="xbmc.python" version="2.0"/>
 <!-- 		<import addon="script.module.simple.downloader.beta" version="0.9.1"/>
