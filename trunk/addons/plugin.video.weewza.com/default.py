@@ -163,6 +163,38 @@ class Weewza_Player( xbmc.Player ):
 
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
+    #-- get actual channels id's
+    url = 'http://weewza.com'
+    post = None
+    request = urllib2.Request(url, post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'weewza.com')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://weewza.com')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    # -- parsing web page ------------------------------------------------------
+    channel_list = {}
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+    weewza_nav = soup.find("div", {"id":"fullbox-content"}).findAll("a")
+    for nav in weewza_nav:
+        id   = nav["href"][nav["href"].find('channelId=')+10:1000]
+        img  = nav.find('img')["src"]
+        channel_list[img]=id
+
+    #-- get channel list
     url = 'http://weewza.com/view.php?channelId=96'
     post = None
     request = urllib2.Request(url, post)
@@ -199,6 +231,13 @@ def Get_TV_Channels():
 
         if img == "http://weewza.com/skin/logos/ren.png":
             name = "Рен ТВ"
+
+        #-- check actual channel ID
+        try:
+            if id != channel_list[img]:
+                id = channel_list[img]
+        except:
+            pass
 
         i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=EPG'
