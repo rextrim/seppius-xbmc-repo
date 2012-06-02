@@ -19,9 +19,11 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, time, random
+import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
 from urlparse import urlparse
+
+import subprocess, ConfigParser
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
@@ -30,20 +32,10 @@ icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
 # load XML library
-try:
-    sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
-    from BeautifulSoup  import BeautifulSoup
-    lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
-except:
-    try:
-        sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
-        from BeautifulSoup  import BeautifulSoup
-        lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
-    except:
-        sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
-        from BeautifulSoup  import BeautifulSoup
-        icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
-        lib_path = os.path.join(os.getcwd(), r'resources', r'lib')
+
+sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+from BeautifulSoup  import BeautifulSoup
+lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
 
 import xppod
 
@@ -278,19 +270,26 @@ def Serial_Info(params):
             else:
                 mi.text = rec.text.encode('utf-8')
 
-
         mi.img = soup.find('td', {'class':'td-for-content'}).find('img')['src']
 
         # -- get serial parts info
         # -- mane of season
-        i = xbmcgui.ListItem(par.name, iconImage=mi.img, thumbnailImage=mi.img)
+        i = xbmcgui.ListItem('[COLOR FFFFF000]'+par.name + '[/COLOR]', path='', thumbnailImage=icon)
         u = sys.argv[0] + '?mode=EMPTY'
-        xbmcplugin.addDirectoryItem(h, u, i, True)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
 
         # -- get list of season parts
         s_url = ''
         s_num = 0
-        for rec in Get_PlayList(soup, url):
+
+        #---------------------------
+        try:
+            playlist = Get_PlayList(soup, url)
+        except:
+            Initialize()
+            playlist = Get_PlayList(soup, url)
+
+        for rec in playlist:
             for par in rec.replace('"','').split(','):
                 if par.split(':')[0]== 'comment':
                     name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
@@ -435,6 +434,109 @@ def unescape(text):
 def get_url(url):
     return "http:"+urllib.quote(url.replace('http:', ''))
 
+#-------------------------------------------------------------------------------  !!!
+#---------- cleanup javac code -------------------------------------------------
+def Java_CleanUP(html):
+    html = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,html)
+    txt = ''
+    for rec in html.split('\n'):
+        s = rec.split('//')[0]
+        txt += s+'\n'
+
+    return txt
+
+#---------- set cookies --------------------------------------------------------
+def Get_Cookies(url): #soup):
+
+    config = ConfigParser.ConfigParser()
+    config.read(os.path.join(Addon.getAddonInfo('path'),'cookie.txt'))
+
+    sec = 'www.seasonvar.ru'
+    cookie = ''
+    for op in config.options(sec):
+        if config.get(sec, op) != 'null':
+            cookie += op+'=';
+            cookie += config.get(sec, op)+';'
+
+    return cookie
+
+#---------- get play list ------------------------------------------------------
+def Get_PlayList(soup, parent_url):
+    #-- get play list url
+    for rec in soup.findAll('script', {'type':'text/javascript'}):
+        if rec.text.find('swfobject.embedSWF') > -1:
+            z = rec.text.replace('$.post("','[').replace('", {',']')
+            urlx = re.compile('\$\.post\("(.+?)", \{"(.+?)":"(.+?)"\}', re.MULTILINE|re.DOTALL).findall(rec.text)
+            url = 'http://seasonvar.ru/'+urlx[0][0]
+            code1 = urlx[0][1]
+            code2 = urlx[0][2]
+            break
+
+    values = {code1 : code2}
+    post = urllib.urlencode(values)
+
+    request = urllib2.Request(url, post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'seasonvar.ru')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	parent_url)
+    request.add_header('Content-Type',	'application/x-www-form-urlencoded')
+    request.add_header('Cookie',	Get_Cookies(parent_url))
+    request.add_header('X-Requested-With',	'XMLHttpRequest')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+
+    url = 'http://seasonvar.ru/' + xppod.Decode(html)
+
+    # -- get play list
+    post = None
+    request = urllib2.Request(url, post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',	'seasonvar.ru')
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',	'http://seasonvar.ru')
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+        elif hasattr(e, 'code'):
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+    html = f.read()
+    html = xppod.Decode(html)
+
+    return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', ''))
+
+#-------------------------------------------------------------------------------
+def Initialize():
+    startupinfo = None
+    if os.name == 'nt':
+        prog = os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe --cookies-file=')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+' '+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= 1
+    else:
+        prog = os.path.join(Addon.selfAddon.getSetting('PhantomJS_Path'),'phantomjs --cookies-file=')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+' '+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')
+
+    try:
+        process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
+        process.wait()
+    except:
+        xbmc.log('*** PhantomJS is not found or failed.')
+
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
 	param=[]
@@ -451,6 +553,16 @@ def get_params(paramstring):
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
+
+
+def Test(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    #-- add header info
+    Get_Header(par, 1)
+
+    xbmcplugin.endOfDirectory(h)
+
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
@@ -462,15 +574,22 @@ urllib2.install_opener(opener)
 
 p  = Param()
 mi = Info()
-a,b,c = xppod.Correction(lib_path)
-eval(compile(a,b,c))
+#a,b,c = xppod.Correction(lib_path)
+#eval(compile(a,b,c))
 
 mode = None
+
+#---------------------------------
+#Test(params)
 
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	Movie_List(params)
+	mode = '$'
+
+if mode == '$':
+    Initialize()
+    mode = 'MOVIE'
 
 if mode == 'MOVIE':
 	Movie_List(params)
@@ -484,5 +603,6 @@ elif mode == 'EMPTY':
     Empty()
 elif mode == 'PLAY':
 	PLAY(params)
+
 
 
