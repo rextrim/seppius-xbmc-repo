@@ -23,7 +23,7 @@ import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
 from urlparse import urlparse
 
-import subprocess, ConfigParser
+import subprocess, ConfigParser, json
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
@@ -57,6 +57,8 @@ class Param:
     is_season       = ''
     name            = ''
     img             = ''
+    search          = ''
+    playlist        = ''
 
 class Info:
     img         = ''
@@ -93,15 +95,24 @@ def Get_Parameters(params):
     except: p.country = 'all'
     try:    p.country_name = urllib.unquote_plus(params['country_name'])
     except: p.country_name = 'Все'
+    #-- search
+    try:    p.search = urllib.unquote_plus(params['search'])
+    except: p.search = ''
+    #-- playlist url
+    try:    p.playlist = urllib.unquote_plus(params['playlist'])
+    except: p.playlist = ''
     #-----
     return p
 
 #----------- get Header string ---------------------------------------------------
 def Get_Header(par, count):
 
-    info  = 'Сериалов: ' + '[COLOR FF00FF00]'+ str(count) +'[/COLOR] | '
-    info += 'Жанр: ' + '[COLOR FFFF00FF]'+ par.genre_name + '[/COLOR] | '
-    info += 'Страна: ' + '[COLOR FFFFF000]'+ par.country_name + '[/COLOR]'
+    if par.search == '':
+        info  = 'Сериалов: ' + '[COLOR FF00FF00]'+ str(count) +'[/COLOR] | '
+        info += 'Жанр: ' + '[COLOR FFFF00FF]'+ par.genre_name + '[/COLOR] | '
+        info += 'Страна: ' + '[COLOR FFFFF000]'+ par.country_name + '[/COLOR]'
+    else:
+        info  = 'Поиск: ' + '[COLOR FF00FFF0]'+ par.search +'[/COLOR]'
 
     if info <> '':
         #-- info line
@@ -116,8 +127,8 @@ def Get_Header(par, count):
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- genre
-    if par.genre == 'all':
-        name    = '[COLOR FFFF00FF]'+ '[Жанр]' + '[/COLOR]'
+    if par.genre == 'all' and par.search == '':
+        name    = '[COLOR FFFF00FF]'+ '[ЖАНР]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=GENRE'
         #-- filter parameters
@@ -128,8 +139,8 @@ def Get_Header(par, count):
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- genre
-    if par.country == 'all':
-        name    = '[COLOR FFFFF000]'+ '[Страна]' + '[/COLOR]'
+    if par.country == 'all' and par.search == '':
+        name    = '[COLOR FFFFF000]'+ '[СТРАНА]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=COUNTRY'
         #-- filter parameters
@@ -137,6 +148,15 @@ def Get_Header(par, count):
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&country=%s'%urllib.quote_plus(par.country)
         u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- search
+    if par.country == 'all' and par.genre == 'all' and par.search == '':
+        name    = '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        #-- filter parameters
+        u += '&search=%s'%urllib.quote_plus('Y')
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
 def Empty():
@@ -147,8 +167,21 @@ def Movie_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
+    # show search dialog
+    if par.search == 'Y':
+        skbd = xbmc.Keyboard()
+        skbd.setHeading('Поиск сериалов.')
+        skbd.doModal()
+        if skbd.isConfirmed():
+            SearchStr = skbd.getText().split(':')
+            url = 'http://seasonvar.ru/autocomplete.php?query='+urllib.quote(SearchStr[0])
+            par.search = SearchStr[0]
+        else:
+            return False
+    else:
+        url = 'http://seasonvar.ru/index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
     #== get movie list =====================================================
-    url = 'http://seasonvar.ru/index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
+
 
     post = None
     request = urllib2.Request(url, post)
@@ -170,29 +203,40 @@ def Movie_List(params):
     html = f.read()
 
     # -- parsing web page --------------------------------------------------
-    soup = BeautifulSoup(html, fromEncoding="windows-1251")
-
     count = 1
-    # -- get number of serials
-    try:
-        count = len(soup.findAll('div', {'class':'betterTip'}))
-    except:
-        return False
+    list  = []
+
+    if par.search != '':                                #-- parsing search page
+        s = json.loads(html)
+        count = len(s['suggestions'])
+        if count < 1: return False
+
+        for i in range(0, count):
+            name = s['suggestions'][i].encode('utf-8')
+            list.append({'title':name, 'url':'http://seasonvar.ru/'+s['data'][i], 'img': icon})
+    else:                                               #-- parsing serial list
+        soup = BeautifulSoup(html, fromEncoding="windows-1251")
+        # -- get number of serials
+        try:
+            count = len(soup.findAll('div', {'class':'betterTip'}))
+        except:
+            return False
+
+        for rec in soup.findAll('div', {'class':'betterTip'}):
+            list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'],
+                         'title' : rec.find('span')['title'].encode('utf-8'),
+                         'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
 
     #-- add header info
     Get_Header(par, count)
 
     #-- get movie info
     #try:
-    for rec in soup.findAll('div', {'class':'betterTip'}):
-        mi.url          = 'http://seasonvar.ru'+rec.find('a')['href']
-        mi.title        = rec.find('span')['title'].encode('utf-8')
-        mi.img          = 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'
-
-        i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
+    for rec in list:
+        i = xbmcgui.ListItem(rec['title'], iconImage=rec['img'], thumbnailImage=rec['img'])
         u = sys.argv[0] + '?mode=SERIAL'
-        u += '&name=%s'%urllib.quote_plus(mi.title)
-        u += '&url=%s'%urllib.quote_plus(mi.url)
+        u += '&name=%s'%urllib.quote_plus(rec['title'])
+        u += '&url=%s'%urllib.quote_plus(rec['url'])
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&country=%s'%urllib.quote_plus(par.country)
@@ -284,10 +328,10 @@ def Serial_Info(params):
 
         #---------------------------
         try:
-            playlist = Get_PlayList(soup, url)
+            playlist, playlist_url = Get_PlayList(soup, url)
         except:
             Initialize()
-            playlist = Get_PlayList(soup, url)
+            playlist, playlist_url = Get_PlayList(soup, url)
 
         for rec in playlist:
             for par in rec.replace('"','').split(','):
@@ -302,6 +346,7 @@ def Serial_Info(params):
             u += '&url=%s'%urllib.quote_plus(s_url)
             u += '&name=%s'%urllib.quote_plus(name)
             u += '&img=%s'%urllib.quote_plus(mi.img)
+            u += '&playlist=%s'%urllib.quote_plus(playlist_url)
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
                                                     'cast' :       mi.actors,
                             						'year':        int(mi.year),
@@ -407,14 +452,62 @@ def Country_List(params):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    # -- parameters
-    url  = urllib.unquote_plus(params['url'])
-    name = urllib.unquote_plus(params['name'])
-    img = urllib.unquote_plus(params['img'])
+    #-- get filter parameters
+    par = Get_Parameters(params)
 
-    i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
-    i.setProperty('IsPlayable', 'true')
-    xbmc.Player().play(url, i)
+    # -- if requested continious play
+    if Addon.getSetting('continue_play') == 'true':
+        # create play list
+        pl=xbmc.PlayList(1)
+        pl.clear()
+        # -- get play list
+        post = None
+        request = urllib2.Request(par.playlist, post)
+
+        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+        request.add_header('Host',	'seasonvar.ru')
+        request.add_header('Accept', '*/*')
+        request.add_header('Accept-Language', 'ru-RU')
+        request.add_header('Referer',	'http://seasonvar.ru')
+
+        try:
+            f = urllib2.urlopen(request)
+        except IOError, e:
+            if hasattr(e, 'reason'):
+                xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+            elif hasattr(e, 'code'):
+                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+
+        html = f.read()
+        html = xppod.Decode(html)
+
+        s_num = 0
+        s_url = ''
+        is_found = False
+
+        for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
+            for item in rec.replace('"','').split(','):
+                if item.split(':')[0]== 'comment':
+                    name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
+                if item.split(':')[0]== 'file':
+                    s_url = item.split(':')[1]+':'+item.split(':')[2]
+
+                #-- add item to play list
+                if s_url == par.url:
+                    is_found = True
+
+                if is_found:
+                    i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
+                    i.setProperty('IsPlayable', 'true')
+                    pl.add(s_url, i)
+            s_num += 1
+
+        xbmc.Player().play(pl)
+    # -- play only selected item
+    else:
+        i = xbmcgui.ListItem(par.name, path = urllib.unquote(par.url), thumbnailImage=par.img)
+        i.setProperty('IsPlayable', 'true')
+        xbmcplugin.setResolvedUrl(h, True, i)
 
 #-------------------------------------------------------------------------------
 
@@ -519,13 +612,14 @@ def Get_PlayList(soup, parent_url):
     html = f.read()
     html = xppod.Decode(html)
 
-    return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', ''))
+    return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url
 
 #-------------------------------------------------------------------------------
 def Initialize():
     startupinfo = None
     if os.name == 'nt':
-        prog = os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe --cookies-file=')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+' '+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')
+        prog = '"'+os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe" --cookies-file="')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+'" "'+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js"')
+        print prog
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= 1
     else:
