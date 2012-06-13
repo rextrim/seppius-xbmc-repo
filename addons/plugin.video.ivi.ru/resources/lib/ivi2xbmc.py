@@ -541,10 +541,30 @@ def mainScreen(params):
 		'func': 'runearch'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-
+	li = xbmcgui.ListItem('В центре внимания')
+	
+	
+	uri = construct_request({
+		'func': 'promo',
+		'url': 'http://www.ivi.ru/mobileapi/promo/v2/?%s'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	readCat('gg')
 
-
+def promo(params):
+	http = GET('http://www.ivi.ru/mobileapi/promo/')
+	if http == None: return False
+	jsdata = json.loads(http)
+	if jsdata:
+		for video in jsdata:
+			li = xbmcgui.ListItem(video['title'], thumbnailImage=video['img_wp7']['path'])
+			uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'id': video['content_id']}))
+			li.setProperty('fanart_image', video['img_ipad']['path'])
+			li.setInfo('video',{'plot': video['text']})
+			xbmcplugin.addDirectoryItem(hos, uri, li, False)
+		xbmcplugin.endOfDirectory(hos)
+		
+		
 def runearch(params):
 	track_page_view('search')
 	track_page_view2('search')
