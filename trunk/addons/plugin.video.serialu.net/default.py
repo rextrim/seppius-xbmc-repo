@@ -335,7 +335,7 @@ def Get_Serial(params):
 
         # -- check if playlist is encoded
         if html.find('{"playlist":[') == -1:
-            html = xppod.Decode(html).encode('utf-8')
+            html = xppod.Decode(html).encode('utf-8').split(' or ')[0]
 
         # -- parsing web page
         s_url = ''
@@ -348,7 +348,7 @@ def Get_Serial(params):
                     if 'http' in par.split(':')[1]:
                         s_url = par.split(':')[1]+':'+par.split(':')[2]
                     else:
-                        s_url = xppod.Decode(par.split(':')[1])
+                        s_url = xppod.Decode(par.split(':')[1]).split(' or ')[0]
             s_num += 1
 
             # mark part for history
@@ -409,7 +409,7 @@ def Get_Play_List(pl_url, pos, img):
                 if 'http' in par.split(':')[1]:
                     s_url = par.split(':')[1]+':'+par.split(':')[2]
                 else:
-                    s_url = xppod.Decode(par.split(':')[1])
+                    s_url = xppod.Decode(par.split(':')[1]).split(' or ')[0]
         s_num += 1
 
         if s_num >= pos :
