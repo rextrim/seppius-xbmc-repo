@@ -123,7 +123,7 @@ def get_URL(url):
 #----------- get Header string ---------------------------------------------------
 def Get_Header(par):
 
-    info  = 'Книг: ' + '[COLOR FF00FF00]' + par.bcount + '[/COLOR]'
+    info  = '' #'Книг: ' + '[COLOR FF00FF00]' + par.bcount + '[/COLOR]'
 
     if int(par.pcount) > 1:
         info += ' | Pages: ' + '[COLOR FF00FF00]'+ par.page + '/' + par.pcount +'[/COLOR]'
@@ -150,7 +150,7 @@ def Get_Header(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus('1')
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
-        u += '&bcount=%s'%urllib.quote_plus(par.bcount)
+        #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- previous page link
     if int(par.page) > 1 :
@@ -162,7 +162,7 @@ def Get_Header(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
-        u += '&bcount=%s'%urllib.quote_plus(par.bcount)
+        #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
 #----------- get Footer string ---------------------------------------------------
@@ -178,7 +178,7 @@ def Get_Footer(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(str(int(par.page)+1))
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
-        u += '&bcount=%s'%urllib.quote_plus(par.bcount)
+        #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- last page link
     if int(par.page) < int(par.pcount) :
@@ -190,7 +190,7 @@ def Get_Footer(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(par.pcount)
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
-        u += '&bcount=%s'%urllib.quote_plus(par.bcount)
+        #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
 def Empty():
@@ -227,8 +227,8 @@ def Book_List(params):
 
     #-- get book info
     #try:
-    for rec in soup.findAll('div', {'class':'post'}):
-        b_name  = unescape(rec.find('h2').find('a').text).encode('utf-8')
+    for rec in soup.findAll('div', {'class':'short'}):
+        b_name  = unescape(rec.find('div', {'class':'title'}).find('a').text).encode('utf-8')
 
         b_name_s = b_name.split('"')
         try:
@@ -246,9 +246,9 @@ def Book_List(params):
             except:
                 b_name_f = '[COLOR FF00FFF0]"'+b_name+'"[/COLOR]'
         #---
-        b_url   = rec.find('h2').find('a')['href']
-        b_img   = rec.find('img', {'class':'cover'})['src']
-        b_descr = unescape(rec.find('div', {'class':'post_text clearfix'}).text).encode('utf-8')
+        b_url   = rec.find('div', {'class':'title'}).find('a')['href']
+        b_img   = rec.find('img')['src']
+        b_descr = '' #unescape(rec.find('div', {'class':'post_text clearfix'}).text).encode('utf-8')
 
         i = xbmcgui.ListItem(b_name_f, iconImage=b_img, thumbnailImage=b_img)
         u = sys.argv[0] + '?mode=BOOK'
@@ -257,7 +257,7 @@ def Book_List(params):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(par.page)
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
-        u += '&bcount=%s'%urllib.quote_plus(par.bcount)
+        #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         i.setInfo(type='music', infoLabels={    'title':       b_name,
                         						'plot':        b_descr,
                         						'genre':       par.genre})
@@ -295,28 +295,22 @@ def Book_Info(params):
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    b_name      = urllib.unquote(soup.find('div', {'class':'post_bl'}).find('h1').text)
-    b_score     = str(int(6*int(soup.find('li' ,{'class':'current-rating'}).text)/100.00))
-    b_img       = soup.find('div', {'class':'as_descr as_block'}).find('img')['src']
-    b_descr     = urllib.unquote(soup.find('div', {'class':'as_descr as_block'}).text)
+    b_name      = urllib.unquote(soup.find('h1', {'class':'fulltitle'}).text)
+    b_score     = str(int(int(soup.find('li' ,{'class':'current-rating'}).text)/160.00))
+    b_img       = soup.find('div', {'class':'fullstory'}).find('img')['src']
+    b_descr     = urllib.unquote(soup.find('div', {'class':'tab_content tab_descr'}).find('div', {'class':'text'}).text)
 
-    for rec in soup.find('div', {'class':'as_info as_block'}).find('div', {'class':'in'}).findAll('p'):
-        for rx in str(rec).split('<br />'):
-            r = re.sub(re.compile("<.*?>",re.DOTALL ),"" , rx).split(': ')
-            if r[0] == 'Год выпуска':
-                b_year = int(r[1].strip().split(' ')[0])
-            if r[0] == 'Автор':
-                b_autor = r[1].strip()
-            if r[0] == 'Жанр':
-                b_genre = r[1].strip()
-            if r[0] == 'Исполнитель':
-                b_actor = r[1].strip()
-            if r[0] == 'Издательство':
-                b_publisher = r[1].strip()
-            if r[0] == 'Битрейт аудио':
-                b_bitrate = r[1].strip()
-            if r[0] == 'Время звучания':
-                b_duration = int(r[1].split(':')[0])*60*60+int(r[1].split(':')[1])*60+int(r[1].split(':')[2])
+    for rec in soup.find('table', {'class':'data'}).findAll('td'):
+        if rec['class'] == 'e':
+            b_year = int(rec.find('span').text)
+        if rec['class'] == 'a':
+            b_autor = rec.find('a').text
+        if rec['class'] == 'b':
+            b_actor = rec.find('a').text
+        if rec['class'] == 'c':
+            b_publisher = rec.find('a').text
+        if rec['class'] == 'd':
+            b_duration = int(rec.find('span').text.split(':')[0])*60*60+int(rec.find('span').text.split(':')[1])*60+int(rec.find('span').text.split(':')[2])
 
     for j in soup.findAll('script', {'type':'text/javascript'}):
         if 'var flashvars = {' in j.text:
@@ -361,25 +355,31 @@ def Genre_List(params):
     html = get_URL(url)
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for rec in soup.find('ul', {'class':'side_block_cats'}).findAll('li'):
-        is_parent = (rec['class'] == 'parent_item')
+    for rec in soup.find('ul', {'class':'menu'}).findAll('li'):
+        try:
+            if rec['class'] == 'search': continue
+        except:
+            pass
+
+        is_parent = (rec.find('ul', {'class':'sub'}) != None)
+
 
         if is_parent:
-            name = rec.find('a').text+' '+rec.find('span').text
+            name = rec.find('a').text
             mode = 'EMPTY'
         else:
-            name = '  [COLOR FF00FF00]'+rec.find('a').text+'[/COLOR] [COLOR FF00FFF0]'+rec.find('span').text+'[/COLOR]'
+            name = '  [COLOR FF00FF00]'+rec.find('a').text +'[/COLOR]' # [COLOR FF00FFF0]'+rec.find('span').text+'[/COLOR]'
             mode = 'BOOK_LIST'
 
-        url = rec.find('a')['href']
+        url = 'http://asbook.ru/'+rec.find('a')['href']
         genre  = rec.find('a').text.encode('utf-8')
-        bcount = rec.find('span').text.replace('(','').replace(')','')
+        bcount = 0 #rec.find('span').text.replace('(','').replace(')','')
 
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode='+mode
         #-- filter parameters
         u += '&genre=%s'%urllib.quote_plus(genre)
-        u += '&bcount=%s'%urllib.quote_plus(bcount)
+        #u += '&bcount=%s'%urllib.quote_plus(bcount)
         u += '&url=%s'%urllib.quote_plus(url)
         u += '&page=%s'%urllib.quote_plus('1')
         u += '&pcount=%s'%urllib.quote_plus('0')
