@@ -110,7 +110,7 @@ def send_request_to_google_analytics(utm_url, ua):
 		
 	except:
 		#print ("GA fail: %s" % utm_url)     
-		showMessage('IVI Player', "GA fail: %s" % utm_url, 2000)
+		showMessage('ivi.ru Player', "GA fail: %s" % utm_url, 2000)
 	#print str(response)
 	return response
            
@@ -194,7 +194,7 @@ class IVIPlayer(xbmc.Player):
 		self.api_url = 'http://api.digitalaccess.ru/api/json/'
 		self.sID='s15'
 		self.vID=None
-		showMessage('IVI Player', 'Инициализация', 2000)
+		showMessage('ivi.ru Player', 'Инициализация', 2000)
 		self.content_file=None
 		self.ads_file=None
 		self.state='pre_roll'
@@ -424,10 +424,10 @@ class IVIPlayer(xbmc.Player):
 
 
 	def onPlayBackPaused( self ):
-		showMessage('IVI Player', 'Пауза', 2000)
+		showMessage('ivi.ru Player', 'Пауза', 2000)
 
 	def onPlayBackResumed( self ):
-		showMessage('IVI Player', 'Возобновление', 2000)
+		showMessage('ivi.ru Player', 'Возобновление', 2000)
 
 	def onPlayBackStarted( self ):
 		#showMessage('IVI Player', 'Поехали' , 2000)
@@ -448,7 +448,7 @@ class IVIPlayer(xbmc.Player):
 			if self.credits_begin_time <= 0 and len(self.postroll_params)>0:
 				self.state='postroll'
 				self.playselected(self.post_r)
-			showMessage('IVI Player', 'Конец фильма' , 2000)
+			showMessage('ivi.ru Player', 'Конец фильма' , 2000)
 
 			self.stop()
 			self.playl.clear()
@@ -541,7 +541,7 @@ def mainScreen(params):
 		'func': 'runearch'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('В центре внимания')
+	li = xbmcgui.ListItem('Рекомендованное')
 	
 	
 	uri = construct_request({
@@ -570,7 +570,7 @@ def runearch(params):
 	track_page_view2('search')
 	kbd = xbmc.Keyboard()
 	kbd.setDefault('')
-	kbd.setHeading('Поиск по IVI')
+	kbd.setHeading('Поиск по ivi.ru')
 	kbd.doModal()
 	if kbd.isConfirmed():
 		params['query'] = kbd.getText()
@@ -646,7 +646,7 @@ def readCat(params):
 def runSearch(params):
 	kbd = xbmc.Keyboard()
 	kbd.setDefault('')
-	kbd.setHeading('Поиск по IVI')
+	kbd.setHeading('Поиск по ivi.ru')
 	kbd.doModal()
 	if kbd.isConfirmed():
 		params['query'] = kbd.getText()
@@ -958,7 +958,7 @@ def get_params(paramstring):
 
 
 def addon_main():
-	xbmc.log( '<<<Start IVI PLayer>>>')
+	xbmc.log( '<<<Start ivi.ru PLayer>>>')
 	
 	params = get_params(sys.argv[2])
 	try:
