@@ -37,7 +37,7 @@ lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
 
 sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
 from BeautifulSoup  import BeautifulSoup
-from ElementTree  import Element, SubElement, ElementTree
+#from ElementTree  import Element, SubElement, ElementTree
 import xppod
 
 import HTMLParser
@@ -634,7 +634,7 @@ def Initialize():
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= 1
     else:
-        prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), '--cookies-file=', os.path.join(Addon.getAddonInfo('path'),'cookie.txt'), os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')]
+        prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), '--cookies-file='+os.path.join(Addon.getAddonInfo('path'),'cookie.txt'), os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')]
 
     try:
         process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
