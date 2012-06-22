@@ -5,8 +5,7 @@ page.onLoadFinished = function (status)
 {
   if (status == 'success')
   {	
-    console.log('Connection OK.');
-    console.log(document.cookie);	
+    console.log('Connection OK.');	
     phantom.exit();
   }
   else

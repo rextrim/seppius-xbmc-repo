@@ -28,15 +28,16 @@ import subprocess, ConfigParser, json
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 Addon = xbmcaddon.Addon(id='plugin.video.seasonvar.ru')
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
 # load XML library
+lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
 
 sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
 from BeautifulSoup  import BeautifulSoup
-lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
-
+from ElementTree  import Element, SubElement, ElementTree
 import xppod
 
 import HTMLParser
@@ -58,6 +59,7 @@ class Param:
     name            = ''
     img             = ''
     search          = ''
+    history         = ''
     playlist        = ''
 
 class Info:
@@ -98,6 +100,9 @@ def Get_Parameters(params):
     #-- search
     try:    p.search = urllib.unquote_plus(params['search'])
     except: p.search = ''
+    #-- history
+    try:    p.history = urllib.unquote_plus(params['history'])
+    except: p.history = ''
     #-- playlist url
     try:    p.playlist = urllib.unquote_plus(params['playlist'])
     except: p.playlist = ''
@@ -127,7 +132,7 @@ def Get_Header(par, count):
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- genre
-    if par.genre == 'all' and par.search == '':
+    if par.genre == 'all' and par.search == '' and par.history == '':
         name    = '[COLOR FFFF00FF]'+ '[ЖАНР]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=GENRE'
@@ -139,7 +144,7 @@ def Get_Header(par, count):
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- genre
-    if par.country == 'all' and par.search == '':
+    if par.country == 'all' and par.search == '' and par.history == '':
         name    = '[COLOR FFFFF000]'+ '[СТРАНА]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=COUNTRY'
@@ -150,13 +155,20 @@ def Get_Header(par, count):
         u += '&country_name=%s'%urllib.quote_plus(par.country_name)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    #-- search
-    if par.country == 'all' and par.genre == 'all' and par.search == '':
+    #-- search & history
+    if par.country == 'all' and par.genre == 'all' and par.search == '' and par.history == '':
         name    = '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=MOVIE'
         #-- filter parameters
         u += '&search=%s'%urllib.quote_plus('Y')
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        name    = '[COLOR FF00FF00]'+ '[ИСТОРИЯ]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        #-- filter parameters
+        u += '&history=%s'%urllib.quote_plus('Y')
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
 def Empty():
@@ -180,9 +192,8 @@ def Movie_List(params):
             return False
     else:
         url = 'http://seasonvar.ru/index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
+
     #== get movie list =====================================================
-
-
     post = None
     request = urllib2.Request(url, post)
 
@@ -224,7 +235,7 @@ def Movie_List(params):
 
         for rec in soup.findAll('div', {'class':'betterTip'}):
             list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'],
-                         'title' : rec.find('span')['title'].encode('utf-8'),
+                         'title' : rec.find('a').text.encode('utf-8'),
                          'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
 
     #-- add header info
@@ -623,7 +634,7 @@ def Initialize():
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= 1
     else:
-        prog = os.path.join(Addon.selfAddon.getSetting('PhantomJS_Path'),'phantomjs --cookies-file=')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+' '+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')
+        prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), '--cookies-file=', os.path.join(Addon.getAddonInfo('path'),'cookie.txt'), os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')]
 
     try:
         process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
