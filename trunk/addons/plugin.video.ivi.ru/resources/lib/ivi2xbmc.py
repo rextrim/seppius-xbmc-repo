@@ -22,6 +22,7 @@
 import httplib
 import urllib
 import urllib2
+import trans
 
 import re
 try:
@@ -216,6 +217,8 @@ class IVIPlayer(xbmc.Player):
 		req = urllib2.Request(self.api_url)
 		req.add_header('User-Agent', UA)
 		f = urllib2.urlopen(req, json.dumps(post))
+		#print 'postapi'
+		#print post
 		js = json.loads(f.read())
 		f.close()
 		try:
@@ -227,7 +230,7 @@ class IVIPlayer(xbmc.Player):
 			return js
 
 	def getAds(self):
-		json1 = self.POSTAPI({'method':'da.content.get_adv', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
+		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':uniq_id}]})
 		#print 'RekLAMA'
 		#print json1
 		if json1:
@@ -247,8 +250,9 @@ class IVIPlayer(xbmc.Player):
 				pass
 
 	def report_ads(self, curr_ads):
-		json1 = self.POSTAPI({'method':'da.content.adv_watched', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
-		#print curr_ads
+		
+		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads[0]['id'], {'site':self.sID,'advid':curr_ads[0]['id'],'watchid':uniq_id} ]})
+		#print curr_ads[0]['id']
 		#print curr_ads[0]['px_audit']
 		links= curr_ads[0]['px_audit']
 		if len(links)<8:
@@ -274,8 +278,8 @@ class IVIPlayer(xbmc.Player):
 				self.PosterImage = data['image']
 				self.main_item = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 				self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
-				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ]})
-				#print 'Conetent:'
+				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'contentid':self.vID, 'site':self.sID, 'uid':uniq_id} ]})
+				#print 'Content:'
 				#print json0
 				vc = json0['result']
 				self.content_file = self.find_best(vc)
@@ -394,7 +398,7 @@ class IVIPlayer(xbmc.Player):
 				pass
 			if self.percent==self.content_percent_to_mark and self.state=='play':
 				self.content_percent_to_mark=-1
-				json1 = self.POSTAPI({'params':[self.vID, {'site':self.sID, 'uid':uniq_id} ],'method':'da.content.content_watched' })
+				json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID ,'site':self.sID, 'uid':uniq_id} ],'method':'da.content.watched' })
 				#json1 = self.POSTAPI({'method':'da.content.content_watched', 'params':[self.vID,  {'site':self.sID} ]})
 				#print json1
 				#print uniq_id
@@ -536,6 +540,13 @@ def mainScreen(params):
 	#print GAcookie
 	#print uniq_id
 	
+	#li = xbmcgui.ListItem('Test')
+	#uri = construct_request({
+	#	'id': '7029',
+	#	'func':'play'
+	#})
+	#xbmcplugin.addDirectoryItem(hos, uri, li, False)
+	
 	li = xbmcgui.ListItem('Поиск')
 	uri = construct_request({
 		'func': 'runearch'
@@ -552,6 +563,7 @@ def mainScreen(params):
 	readCat('gg')
 
 def promo(params):
+
 	http = GET('http://www.ivi.ru/mobileapi/promo/')
 	if http == None: return False
 	jsdata = json.loads(http)
@@ -573,9 +585,16 @@ def runearch(params):
 	kbd.setHeading('Поиск по ivi.ru')
 	kbd.doModal()
 	if kbd.isConfirmed():
-		params['query'] = kbd.getText()
-		params['url'] = 'http://www.ivi.ru/mobileapi/search/?%s'
-		getlistcat(params)
+		try:
+			out = trans.detranslify(kbd.getText())
+			out=out.encode("utf-8") 
+		except:
+			out = kbd.getText()
+
+	params['query'] = out
+	params['url'] = 'http://www.ivi.ru/mobileapi/search/v2/?%s'
+	#print params['query']
+	getlistcat(params)
 
 def get_sort():
 
@@ -667,16 +686,16 @@ def getlistcat(params):
 	#print target % urllib.urlencode(params)
 	#print http
 	if http == None: return False
+	#print target % urllib.urlencode(params)
 	jsdata = json.loads(http)
 	if jsdata:
 
 		for video in jsdata:
 			data = get_metadata(video)
-			
 			if data:
 				i = xbmcgui.ListItem(data['infoLabels']['title'], iconImage = data['image'], thumbnailImage = data['image'])
 				#i.setInfo(type='video', infoLabels = data['info'])
-				if data['tc'] or data['sc']:
+				if data['tc'] or data['sc']>=0:
 					isFolder = True
 					if data['sc'] > 1:
 						osp = {'from':0, 'to':show_len-1,'func':'seasons', 'id': data['id'], 'seasons_count': data['sc']}
@@ -817,8 +836,11 @@ def get_metadata(video):
 	except: v_total_contents = None
 	try:    v_hru = video['hru'].encode('utf-8') # хру для показа сборника
 	except: v_hru = None
-	try:    v_seasons_count = video['seasons_count'] # количество сезонов
+	try:    
+		v_seasons_count = video['seasons_count'] # количество сезонов
 	except: v_seasons_count = None
+	#print 'seasons'
+	#print 	v_seasons_count
 	try:    v_seasons = video['seasons'] # список сезонов
 	except: v_seasons = None
 	if v_id and v_title:
@@ -931,7 +953,9 @@ def get_metadata(video):
 		#mysetInfo['genre']='Video'
 		#mysetInfo['tagline']='Cool movie'
 		
-		reti = {'infoLabels': info, 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count, 'desc':v_descr, 'info':mysetInfo}
+		reti = { 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count, 'desc':v_descr, 'info':mysetInfo, 'infoLabels': info}
+		#print 'it out data'
+		#print reti
 		return reti
 
 	else:
@@ -958,7 +982,7 @@ def get_params(paramstring):
 
 
 def addon_main():
-	xbmc.log( '<<<Start ivi.ru PLayer>>>')
+	#xbmc.log( '<<<Start ivi.ru PLayer>>>')
 	
 	params = get_params(sys.argv[2])
 	try:
