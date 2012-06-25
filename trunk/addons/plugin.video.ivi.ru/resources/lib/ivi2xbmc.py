@@ -230,7 +230,7 @@ class IVIPlayer(xbmc.Player):
 			return js
 
 	def getAds(self):
-		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':uniq_id}]})
+		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'uid':uniq_id}]})
 		#print 'RekLAMA'
 		#print json1
 		if json1:
@@ -251,7 +251,7 @@ class IVIPlayer(xbmc.Player):
 
 	def report_ads(self, curr_ads):
 		
-		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads[0]['id'], {'site':self.sID,'advid':curr_ads[0]['id'],'watchid':uniq_id} ]})
+		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads[0]['id'], {'site':self.sID,'advid':curr_ads[0]['id'],'uid':uniq_id} ]})
 		#print curr_ads[0]['id']
 		#print curr_ads[0]['px_audit']
 		links= curr_ads[0]['px_audit']
