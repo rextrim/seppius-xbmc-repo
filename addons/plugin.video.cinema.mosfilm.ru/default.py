@@ -19,13 +19,21 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, md5
-import xbmc, xbmcgui, xbmcplugin
+import re, os, urllib, urllib2, cookielib
+try:
+    from hashlib import md5 as md5
+except:
+    import md5
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+
+Addon = xbmcaddon.Addon(id='plugin.video.cinema.mosfilm.ru')
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 
 h = int(sys.argv[1])
-icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
-fcookies = os.path.join(os.getcwd(), r'resources', r'data', r'cookies.txt')
+fcookies = os.path.join(Addon.getAddonInfo('path'), 'cookies.txt')
+print fcookies
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
@@ -36,7 +44,7 @@ ACTION_PREVIOUS_MENU = 10
 class msgDialog(xbmcgui.Window):
   def __init__(self):
     #self.setCoordinateResolution(1) # 0 for 1080
-    self.addControl(xbmcgui.ControlImage(60,189,600,102, os.path.join(os.getcwd(), r'resources', r'image', r'background.png')))
+    self.addControl(xbmcgui.ControlImage(60,189,600,102, os.path.join(Addon.getAddonInfo('path'), r'resources', r'image', r'background.png')))
     self.strActionInfo = xbmcgui.ControlLabel(170, 210, 500, 50, '', 'font14', '0xFFFF00FF')
     self.addControl(self.strActionInfo)
     self.strActionInfo.setLabel('***')
@@ -80,6 +88,7 @@ def Get_Movie_Type():
         u += '&viewstat=%s'%urllib.quote_plus(viewstate[0])
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
+    cj.save(fcookies, ignore_discard=True)
     xbmcplugin.endOfDirectory(h)
 
 #-------------------------------------------------------------------------------
@@ -89,14 +98,15 @@ def Get_Movie_List(params):
     s_type      = urllib.unquote_plus(params['tag'])
     s_name      = urllib.unquote_plus(params['name'])
     s_viewstat  = urllib.unquote_plus(params['viewstat'])
-    if s_type == None: return False
 
+    cj.load(fcookies, ignore_discard=True)
     # load serials types
     url = 'http://cinema.mosfilm.ru/Films.aspx?sim=2'
 
     values = {'__EVENTTARGET'   : urllib.unquote(s_type),
               '__EVENTARGUMENT' : urllib.unquote(''),
-              '__VIEWSTATE'     : urllib.unquote(s_viewstat) }
+              '__VIEWSTATE'     : urllib.unquote(s_viewstat),
+              'ctl00$timeTag'   : '' }
 
     request = urllib2.Request(urllib.unquote(url), urllib.urlencode(values))
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
@@ -145,6 +155,7 @@ def Get_Movie_List(params):
         except:
             xbmc.log('***   ERROR '+i_name.encode('utf-8'))
 
+    cj.save(fcookies, ignore_discard=True)
     xbmcplugin.endOfDirectory(h)
 
 #---------- get movie ---------------------------------------------------------
@@ -153,6 +164,8 @@ def Get_Movie(params):
 
     if url == None:
         return False
+
+    cj.load(fcookies, ignore_discard=True)
 
     image = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
@@ -200,9 +213,10 @@ def Get_Movie(params):
             u += '&url=%s'%urllib.quote_plus(url)
             u += '&eventtarget=%s'%urllib.quote_plus(rec[0])
             u += '&viewstate=%s'%urllib.quote_plus(viewstate[0])
-            i.setProperty('IsPlayable', 'true')
+            #i.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(h, u, i, False)
 
+    cj.save(fcookies, ignore_discard=True)
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
 
@@ -211,6 +225,8 @@ def PLAY(params):
     eventtarget = urllib.unquote_plus(params['eventtarget'])
     viewstate   = urllib.unquote_plus(params['viewstate'])
     movie_name  = urllib.unquote_plus(params['name'])
+
+    cj.load(fcookies, ignore_discard=True)
 
     str = 'Загрузка "'+movie_name+'"'
     show_msg = msgDialog()
@@ -286,9 +302,11 @@ def get_params(paramstring):
 params=get_params(sys.argv[2])
 
 # get cookies from last session
-cj = cookielib.FileCookieJar(fcookies)
-hr  = urllib2.HTTPCookieProcessor(cj)
-opener = urllib2.build_opener(hr)
+cj = cookielib.MozillaCookieJar()
+cookie_handler  = urllib2.HTTPCookieProcessor(cj)
+redirect_handler= urllib2.HTTPRedirectHandler()
+
+opener = urllib2.build_opener(redirect_handler, cookie_handler)
 urllib2.install_opener(opener)
 
 mode = None
@@ -302,6 +320,7 @@ if mode == 'TYPE':
 	Get_Movie_List(params)
 elif mode == 'LIST':
 	Get_Movie(params)
-elif mode == 'PLAY':
+if mode == 'PLAY':
 	PLAY(params)
+
 
