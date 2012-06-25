@@ -347,8 +347,8 @@
 </addon>
 
 <addon id="plugin.video.cinema.mosfilm.ru"
-       name="Мосфильм (cinema.mosfilm.ru)"
-       version="1.0.1"
+       name="[COLOR FF00FF00]Мосфильм ([/COLOR][COLOR FFFFF000]cinema.mosfilm.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.2"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
