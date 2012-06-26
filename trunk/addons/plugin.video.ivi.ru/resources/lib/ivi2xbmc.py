@@ -527,11 +527,11 @@ def mainScreen(params):
 	#})
 	#xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	
-	li = xbmcgui.ListItem('Поиск')
-	uri = construct_request({
-		'func': 'runearch'
-	})
-	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	#li = xbmcgui.ListItem('Поиск')
+	#uri = construct_request({
+	#	'func': 'runearch'
+	#})
+	#xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('Рекомендованное')
 	
 	
@@ -597,6 +597,12 @@ def readCat(params):
 	gf.write(json.dumps(genres_data))
 	gf.close()
 	jsdata = json.loads(http)
+	li = xbmcgui.ListItem('Поиск')
+	uri = construct_request({
+		'func': 'runearch',
+		'category':categ
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	if categ:
 		if categ=='14': 
 			track_page_view('movies')
@@ -855,10 +861,10 @@ def get_metadata(video):
 		tname = ''
 		# v_cats - ?
 		if v_seasons_count:
-			if int(v_seasons_count) == 1:
-				tname = '. Многосерийный.'
-				plotoutline_arr.append('Тип: Многосерийный фильм')
-			elif int(v_seasons_count) > 1:
+		#	if int(v_seasons_count) <= 1:
+		#		tname = '. Многосерийный.'
+		#		plotoutline_arr.append('Тип: Многосерийный фильм')
+			if int(v_seasons_count) > 1:
 				tname = '. Сериал.'
 				plotoutline_arr.append('Тип: Сериал')
 
