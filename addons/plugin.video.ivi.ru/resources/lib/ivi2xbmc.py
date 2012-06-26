@@ -520,12 +520,12 @@ def mainScreen(params):
 		f.write('\n')
 		f.write(str(uniq_id))
 	
-	li = xbmcgui.ListItem('Test')
-	uri = construct_request({
-		'id': '7029',
-		'func':'playid'
-	})
-	xbmcplugin.addDirectoryItem(hos, uri, li, False)
+	#li = xbmcgui.ListItem('Test')
+	#uri = construct_request({
+	#	'id': '7029',
+	#	'func':'playid'
+	#})
+	#xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	
 	li = xbmcgui.ListItem('Поиск')
 	uri = construct_request({
