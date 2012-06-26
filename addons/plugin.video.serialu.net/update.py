@@ -1,6 +1,7 @@
 ﻿
 import xbmc,xbmcgui, xbmcaddon
 import urllib2, urllib, re, cookielib, sys, time, os
+from urlparse import urlparse
 
 try:
     from hashlib import md5 as md5
@@ -43,6 +44,46 @@ path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'data')
 cj      = cookielib.LWPCookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 urllib2.install_opener(opener)
+
+#-------------------------------------------------------------------------------
+def get_HTML(url, post = None, ref = None):
+    html = ''
+
+    if ref == None:
+        ref = 'http://'+urlparse(url).hostname
+
+    request = urllib2.Request(urllib.unquote(url), post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host', urlparse(url).hostname)
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer', ref)
+    request.add_header('Cookie', 'MG_6532=1')
+
+    ret = 502
+    idx = 5
+
+    while ret == 502 and idx > 0:
+        try:
+            f = urllib2.urlopen(request)
+            ret = 0
+        except IOError, e:
+            if hasattr(e, 'reason'):
+                xbmc.log('We failed to reach a server. Reason: '+ str(e.reason))
+            elif hasattr(e, 'code'):
+                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ str(e.code))
+                ret = e.code
+
+        if ret == 502:
+            time.sleep(1)
+        idx = idx -1
+
+    if ret == 0:
+        html = f.read()
+        f.close()
+
+    return html
 
 #---------- get serials info and save to XML --------------------------------------------------
 def Update_Serial_XML(mode):
@@ -131,24 +172,10 @@ def Get_Page_Number(url):
 
 #--- get serial info for selected page in category ------------------------------
 def Get_Film_Info(url, xml_serials, xml_types, xml_genres, serial_found, dp):
-    post = None
-    request = urllib2.Request(urllib.unquote(url), post)
+    html = get_HTML(url)
+    if html=='':
+        return False
 
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'serialu.net')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://google.com')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
     html_container = re.compile('<div class="container">(.+?)<div class="navigation">', re.MULTILINE|re.DOTALL).findall(html)
 
     # -- parsing web page ----------------------------------------------------------
@@ -169,14 +196,20 @@ def Get_Film_Info(url, xml_serials, xml_types, xml_genres, serial_found, dp):
         try:
             i_image = info.find("img")["src"]
         except:
-            ser_name = i_name.replace(u'”', u'"').replace(u'“',u'"').replace(u'«',u'"').replace(u'»',u'"')
+            ser_name = ser.find("h2").find("a").text.strip() #i_name.replace(u'”', u'"').replace(u'“',u'"').replace(u'«',u'"').replace(u'»',u'"')
             search_mask = '<p><img class="m_pic" alt="'+ser_name+'" align="left" src="(.+?)" /></p>'
             img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
             try:
                 i_image = img_alt[0]
             except:
-                i_image = '-'
-                xbmc.log(i_name + u' - image not found')
+                search_mask = '<p><img class="m_pic" alt="'+ser_name+'"" align="left" src="(.+?)" /></p>'
+                img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
+                try:
+                    i_image = img_alt[0]
+                except:
+                    i_image = '-'
+                    xbmc.log(i_name.encode('utf-8') + ' - image not found')
+
 
         o_name      = '-'
         i_year      = '-'

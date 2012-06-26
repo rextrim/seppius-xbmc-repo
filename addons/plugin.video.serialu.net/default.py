@@ -60,6 +60,45 @@ icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
+def get_HTML(url, post = None, ref = None):
+    html = ''
+
+    if ref == None:
+        ref = 'http://'+urlparse(url).hostname
+
+    request = urllib2.Request(urllib.unquote(url), post)
+
+    request.add_header('User-Agent', 'Mozilla/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host', urlparse(url).hostname)
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer', ref)
+    request.add_header('Cookie', 'MG_6532=1')
+
+    ret = 502
+    idx = 5
+
+    while ret == 502 and idx > 0:
+        try:
+            f = urllib2.urlopen(request)
+            ret = 0
+        except IOError, e:
+            if hasattr(e, 'reason'):
+                xbmc.log('We failed to reach a server. Reason: '+ str(e.reason))
+            elif hasattr(e, 'code'):
+                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ str(e.code))
+                ret = e.code
+
+        if ret == 502:
+            time.sleep(1)
+        idx = idx -1
+
+    if ret == 0:
+        html = f.read()
+        f.close()
+
+    return html
+
 #---------- get serials types --------------------------------------------------
 def Get_Serial_Type():
     # add search to the list
@@ -287,18 +326,9 @@ def Get_Serial(params):
 
     #-- get serial play list & parameters  -------------------------------------
     xbmc.log("URL: "+url)
-    post = None
-    request = urllib2.Request(urllib.unquote(url), post)
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host', urlparse(url).hostname)
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
-    request.add_header('Cookie', 'MG_6532=1')
-
-    o = urllib2.urlopen(request)
-    html = o.read()
-    o.close()
+    html = get_HTML(url, None, 'http://serialu.net/media/uppod.swf')
+    if html=='':
+        return False
 
     # -- parsing web page
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -321,17 +351,9 @@ def Get_Serial(params):
 
         #-- get playlist details ---------------------------------------------------
         xbmc.log("Playlist: "+pl_url)
-        request = urllib2.Request(urllib.unquote(pl_url), post)
-        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        request.add_header('Host', urlparse(pl_url).hostname)
-        request.add_header('Accept', '*/*')
-        request.add_header('Accept-Language', 'ru-RU')
-        request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
-        request.add_header('Cookie', 'MG_6532=1')
-
-        o = urllib2.urlopen(request)
-        html = o.read()
-        o.close()
+        html = get_HTML(pl_url, None, 'http://serialu.net/media/uppod.swf')
+        if html=='':
+            return False
 
         # -- check if playlist is encoded
         if html.find('{"playlist":[') == -1:
@@ -381,18 +403,9 @@ def Get_Play_List(pl_url, pos, img):
     pl.clear()
 
     #-- get playlist details ---------------------------------------------------
-    post = None
-    request = urllib2.Request(urllib.unquote(pl_url), post)
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host', 'serialu.net')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer', 'http://serialu.net/media/uppod.swf')
-    request.add_header('Cookie', 'MG_6532=1')
-
-    o = urllib2.urlopen(request)
-    html = o.read()
-    o.close()
+    html = get_HTML(pl_url, None, 'http://serialu.net/media/uppod.swf')
+    if html=='':
+        return pl
 
     # -- check if playlist is encoded
     if html.find('{"playlist":[') == -1:
