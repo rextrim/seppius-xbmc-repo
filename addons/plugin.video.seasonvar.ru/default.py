@@ -37,7 +37,6 @@ lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
 
 sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
 from BeautifulSoup  import BeautifulSoup
-#from ElementTree  import Element, SubElement, ElementTree
 import xppod
 
 import HTMLParser
@@ -502,15 +501,14 @@ def PLAY(params):
                     name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
                 if item.split(':')[0]== 'file':
                     s_url = item.split(':')[1]+':'+item.split(':')[2]
-
                 #-- add item to play list
                 if s_url == par.url:
                     is_found = True
 
-                if is_found:
-                    i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
-                    i.setProperty('IsPlayable', 'true')
-                    pl.add(s_url, i)
+            if is_found:
+                i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
+                i.setProperty('IsPlayable', 'true')
+                pl.add(s_url, i)
             s_num += 1
 
         xbmc.Player().play(pl)
