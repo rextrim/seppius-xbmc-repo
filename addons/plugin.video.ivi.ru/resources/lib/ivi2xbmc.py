@@ -433,6 +433,7 @@ class IVIPlayer(xbmc.Player):
 			if self.credits_begin_time <= 0 and len(self.postroll_params)>0:
 				self.state='postroll'
 				self.playselected(self.post_r)
+			track_page_view2('','event','5(Video*End)')
 			showMessage('ivi.ru Player', 'Конец фильма' , 2000)
 
 			self.stop()
@@ -463,6 +464,7 @@ class IVIPlayer(xbmc.Player):
 
 	def onPlayBackStopped( self ):
 		self.active = False
+		track_page_view2('','event','5(Video*Stop)')
 		self.playl.clear()
 		
 	def sleep(self, s):
