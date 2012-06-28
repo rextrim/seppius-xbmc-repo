@@ -25,7 +25,7 @@ import urlparse
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-Addon = xbmcaddon.Addon(id='plugin.video.hd720.ru')
+Addon = xbmcaddon.Addon(id='plugin.video.720hd.ru')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
