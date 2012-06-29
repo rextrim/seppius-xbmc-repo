@@ -44,10 +44,10 @@ import random
 from urllib import unquote, quote
 
 
-conf_file = os.path.join(xbmc.translatePath('special://temp/'), 'settings.ivi.txt')
+conf_file = os.path.join(xbmc.translatePath('special://temp/'), 'settings.ivi.new')
+adv_file = os.path.join(xbmc.translatePath('special://temp/'), 'settings.ivi.adv')
 
-
-__addon__ = xbmcaddon.Addon( id = 'plugin.video.ivi.ru' )
+__addon__ = xbmcaddon.Addon( id = 'plugin.video.ivi' )
 __language__ = __addon__.getLocalizedString
 
 addon_icon    = __addon__.getAddonInfo('icon')
@@ -59,6 +59,51 @@ addon_author  = __addon__.getAddonInfo('author')
 addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
+hos = int(sys.argv[1])
+
+
+def get_len():
+	try:
+		if __addon__.getSetting("cnt_v") == '0': return 10
+		if __addon__.getSetting("cnt_v") == '1': return 25
+		if __addon__.getSetting("cnt_v") == '2': return 50
+		if __addon__.getSetting("cnt_v") == '3': return 75
+		if __addon__.getSetting("cnt_v") == '4': return 100
+		return 50
+	except: return 50
+
+show_len=get_len()
+
+xbmcplugin.setContent(hos, 'movies')
+
+VERSION = '4.3as'
+DOMAIN = '131896016'
+GATrack='UA-30985824-1'
+UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+
+
+if os.path.isfile(conf_file):
+	try:
+		f = open(conf_file, 'r')
+		GAcookie=f.readline()
+		uniq_id=f.readline()
+		f.close()
+	except:
+		f = open(conf_file, 'w')
+		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+		uniq_id=random.random()*time.time()
+		f.write(GAcookie)
+		f.write('\n')
+		f.write(str(uniq_id))
+		f.close()
+else:
+	f = open(conf_file, 'w')
+	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+	uniq_id=random.random()*time.time()
+	f.write(GAcookie)
+	f.write('\n')
+	f.write(str(uniq_id))
+	f.close()
 genres_data = []
 genres_dat_file = os.path.join(addon_path, 'genres.dat')
 if os.path.isfile(genres_dat_file):
@@ -68,59 +113,19 @@ if os.path.isfile(genres_dat_file):
 		gdf.close()
 	except: pass
 
-
-hos = int(sys.argv[1])
-show_len=100
-xbmcplugin.setContent(hos, 'movies')
-
-UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
-
-VERSION = '4.3as'
-DOMAIN = '131896016'
-UATRACK = 'UA-11561457-31'
-UATRACK2 = 'UA-30985824-1'
-
-if os.path.isfile(conf_file):
-	try:
-		f = open(conf_file, 'r')
-		GAcookie=f.readline()
-		uniq_id=f.readline()
-	except:
-		f = open(conf_file, 'w')
-		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
-		uniq_id=random.random()*time.time()
-		f.write(GAcookie)
-		f.write('\n')
-		f.write(str(uniq_id))
-		f.close()
-else: 
-	f = open(conf_file, 'w')
-	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
-	uniq_id=random.random()*time.time()
-	f.write(GAcookie)
-	f.write('\n')
-	f.write(str(uniq_id))
-	f.close()
-
-
-def get_random_number():
-	return str(random.randint(0, 0x7fffffff))
-
-
-
-
 def send_request_to_google_analytics(utm_url, ua):
 
 	try:
 		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
 		response = urllib2.urlopen(req).read()
 		#print utm_url
-		
+
 	except:
-		showMessage('ivi.ru Player', "GA fail: %s" % utm_url, 2000)
+		ShowMessage('ivi.ru', "GA fail: %s" % utm_url, 2000)
 	return response
-           
-def track_page_view(path,nevent='', tevent=''):
+
+def track_page_view(path,nevent='', tevent='',UATRACK='UA-11561457-31'):
+	#print GAcookie
 	domain = DOMAIN
 	document_path = unquote(path)
 	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
@@ -141,37 +146,33 @@ def track_page_view(path,nevent='', tevent=''):
 		"&utmcc="+ GAcookie
 
 	return send_request_to_google_analytics(utm_url, UA)
-	
-def track_page_view2(path,nevent='', tevent=''):
-	domain = DOMAIN
-	document_path = unquote(path)
-	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-	extra = {}
-	extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')	
-	utm_url = utm_gif_location + "?" + \
-		"utmwv=" + VERSION + \
-		"&utmn=" + get_random_number() + \
-		"&utmsr=" + quote(extra.get("screen", "")) + \
-		"&utmt=" + nevent + \
-		"&utme=" + tevent +\
-		"&utmhn=localhost" + \
-		"&utmr=" + quote('-') + \
-		"&utmp=" + quote(document_path) + \
-		"&utmac=" + UATRACK2 + \
-		"&utmcc="+ GAcookie
 
-	return send_request_to_google_analytics(utm_url, UA)
+try:
+	import json
+except ImportError:
+	try:
+		import simplejson as json
+		xbmc.log( '[%s]: Error import json. Uses module simplejson' % addon_id, 2 )
+	except ImportError:
+		try:
+			import demjson3 as json
+			xbmc.log( '[%s]: Error import simplejson. Uses module demjson3' % addon_id, 3 )
+		except ImportError:
+			xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
 
+def get_random_number():
+	return str(random.randint(0, 0x7fffffff))
 
-def showMessage(heading, message, times = 3000, pics = addon_icon):
+def construct_request(params):
+	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
+
+def ShowMessage(heading, message, times = 3000, pics = addon_icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
 	except Exception, e:
-		xbmc.log( '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
+		xbmc.log( '[%s]: ShowMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
 		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
 		except Exception, e:
-			xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
-
-
+			xbmc.log( '[%s]: ShowMessage: exec failed [%s]' % (addon_id, e), 3 )
 
 def GET(target, post=None):
 	#print target
@@ -184,24 +185,36 @@ def GET(target, post=None):
 		return http
 	except Exception, e:
 		xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
-		showMessage('HTTP ERROR', e, 5000)
-		
+		ShowMessage('HTTP ERROR', e, 5000)
 
+def genre2name(gid):
+	gdf = open(genres_dat_file, 'r')
+	genres_data = json.loads(gdf.read())
+	gdf.close()
+	try:
+		for n in genres_data:
+			#print n
+			if int(n.split(';')[0]) == (gid):
+				reti=n.split(';')[1]
+				#showMessage('Genre', reti, 2000)
+		return reti
+	#try:
+	#	reti = genres_data[str(gid).encode('utf-8')]
+	except: return None
 
-class IVIPlayer(xbmc.Player):
-
-	def myway(self):
-		print 'ok'
+class ivi_player(xbmc.Player):
 
 	def __init__( self, *args, **kwargs ):
 		self.active = True
 		self.api_url = 'http://api.digitalaccess.ru/api/json/'
+		self.log_url = 'http://api.digitalaccess.ru'
 		self.sID='s15'
 		self.vID=None
-		showMessage('ivi.ru Player', 'Инициализация', 2000)
+		ShowMessage('ivi.ru player', 'Инициализация', 2000)
 		self.content_file=None
 		self.ads_file=None
 		self.state='pre_roll'
+		self.started=None
 		self.started = False
 		self.Time = 0.0
 		self.TotalTime = 0.0
@@ -216,7 +229,19 @@ class IVIPlayer(xbmc.Player):
 		self.tns_id=None
 		self.GA_id=None
 
+		self.watchid=None
+		self.advwatchid=None
+		self.lastad=None
+		self.start_timer=None
+		self.preroll_end=None
+		self.pre=None
+		self.adstart_timer=None
+		self.svideo_timer=None
+		self.content_start=None
+		self.paused=None
+		self.min=0
 	def POSTAPI(self, post):
+		#print post
 		req = urllib2.Request(self.api_url)
 		req.add_header('User-Agent', UA)
 		f = urllib2.urlopen(req, json.dumps(post))
@@ -224,15 +249,19 @@ class IVIPlayer(xbmc.Player):
 		f.close()
 		try:
 			e_m = js['error']
-			showMessage('Ошибка %s сервера %s' % (e_m['code'], js['server_name']), e_m['message'], times = 15000, pics = addon_icon)
+			#print js
+			ShowMessage('Ошибка %s сервера %s' % (e_m['code'], js['server_name']), e_m['message'], times = 15000, pics = addon_icon)
 			return None
 		except:
 			return js
 
 	def getAds(self):
-		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'uid':uniq_id}]})
-		#print 'RekLAMA'
-		#print json1
+		#print self.lastad
+		#print str(int(time.time()))
+		advtimer=int(time.time())-int(self.lastad)
+
+		#print 'timer ad %s'%(advtimer)
+		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid, 'last_adv':advtimer, 'uid':uniq_id} ]})
 		if json1:
 			try:
 				for ad in json1['result']:
@@ -241,25 +270,50 @@ class IVIPlayer(xbmc.Player):
 					if ad_file:
 						adrow = {'url': ad_file, 'id': ad['id'], 'title': ad['title'].encode('utf-8'), 'px_audit': ad['px_audit'],
 						'duration': ad['duration'], 'percent_to_mark': int(ad['percent_to_mark'])-1, 'save_show': ad['save_show']}
-						#print adrow
 						if ad['type'] == 'preroll': self.preroll_params.append(adrow)
 						elif ad['type'] == 'postroll': self.postroll_params.append(adrow)
 						elif ad['type'] == 'midroll':self.midroll_params.append(adrow)
 			except:
-				#print ' EXCEPT ********* НЕТ РЕКЛАМЫ ************ '
-				#showMessage('EXCEPT', 'НЕТ РЕКЛАМЫ', 3000)
+				# НЕТ РЕКЛАМЫ
 				pass
 
 	def report_ads(self, curr_ads):
-		
-		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads[0]['id'], {'site':self.sID,'advid':curr_ads[0]['id'],'uid':uniq_id} ]})
+
+		#print curr_ads
+		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads[0]['id'], {'contentid':self.vID,'site':self.sID, 'watchid':str(self.watchid),'advid':curr_ads[0]['id'],'uid':uniq_id, "advwatchid":str(self.advwatchid)} ]})
 		links= curr_ads[0]['px_audit']
+
+		f = open(adv_file, 'w')
+		last_ad=str(int(time.time()))
+		f.write(last_ad)
+		f.close()
+		self.lastad=last_ad
+
 		if len(links)<8:
 			for n in links:
+				#print n
 				GET(n)
-		else: 
-			GET(links)
+		else: GET(links)
 
+	def sendstat(self,path,post):
+		#print 'Stat: %s%s'%(path,post)
+		#print path
+		#print 'get'
+		print post
+
+		#headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+		#h = httplib.HTTPConnection('http://api.digitalaccess.ru/')
+		#h.request('POST', '/logger/adv/time', post, headers)
+		#js = h.getresponse()
+		req = urllib2.Request(path)
+		#req.add_header('User-Agent', UA)
+		req.add_header('Accept', 'text/plain')
+		req.add_header('Content-Type','application/x-www-form-urlencoded')
+		#req.add_data(post)
+		f = urllib2.urlopen(req,post)
+		js = f.read()
+		#print js
+		#ShowMessage('post',js,1000)
 
 	def getparam(self, vID):
 		self.playl.clear()
@@ -267,19 +321,15 @@ class IVIPlayer(xbmc.Player):
 		self.postroll_params = []
 		self.midroll_params = []
 		self.midroll = []
-		#print vID
-		#print 'GET JSON'
 		http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
 		if http:
-			data = get_metadata(json.loads(http))
+			data = get_video_data(json.loads(http))
 			if data:
-				self.infoLabels = data['infoLabels']
+				#self.infoLabels = data['infoLabels']
 				self.PosterImage = data['image']
-				self.main_item = xbmcgui.ListItem(self.infoLabels['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-				self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
-				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'contentid':self.vID, 'site':self.sID, 'uid':uniq_id} ]})
-				#print 'Content:'
-				#print json0
+				self.main_item = xbmcgui.ListItem(data['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+				#self.main_item.setInfo(type = 'video', infoLabels = self.infoLabels)
+				json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'contentid':self.vID,'watchid':self.watchid,'site':self.sID, 'uid':uniq_id} ]})
 				vc = json0['result']
 				self.content_file = self.find_best(vc)
 				try:    self.content_percent_to_mark = int(vc['percent_to_mark'])
@@ -294,15 +344,11 @@ class IVIPlayer(xbmc.Player):
 				if self.credits_begin_time==0: self.credits_begin_time=-1
 				try:    self.midroll = vc['midroll']
 				except: self.midroll = []
-				#print self.midroll
 				self.getAds()
-				#print self.preroll_params
-				#print self.postroll_params
-				#print self.midroll_params
 				if self.preroll_params and len(self.preroll_params):
 					self.ads_file = (self.preroll_params[0]['url'])
+					self.send_ads=self.preroll_params
 				else:
-					#showMessage('IVI Player', 'Нет рекламы в в нужном формате', 2000)
 					self.state='play'
 
 	def find_best(self, data):
@@ -319,15 +365,11 @@ class IVIPlayer(xbmc.Player):
 		if not play_file:
 			for vcfl in data['files']:
 				if vcfl['content_format'] == 'FLV-lo': play_file = vcfl['url']
-	#	if not play_file:
-	#		for vcfl in data['files']:
-	#			if vcfl['content_format'] == 'SWF': play_file = vcfl['url']
 		return play_file
-
 
 	def ivi_play(self, vID):
 		track_page_view('','event','5(Video*Videostart)')
-		track_page_view2('','event','5(Video*Videostart)')
+		track_page_view('','event','5(Video*Videostart)',UATRACK=GATrack)
 		self.vID=vID
 		ind=1
 		assert not self.isPlaying(), 'Player is already playing a video'
@@ -344,6 +386,7 @@ class IVIPlayer(xbmc.Player):
 			})
 			ind=ind+1
 			self.cont_ind=1
+
 		else: self.cont_ind=0
 		self.playl.add(self.content_file,listitem=i)
 
@@ -355,9 +398,6 @@ class IVIPlayer(xbmc.Player):
 					'time':na})
 				ind=ind+1
 				self.playl.add(self.midroll_params[0]['url'],iad)
-				#print 'add midroll [%s]:' & self.midroll_params[0]['url']
-				#self.playl.add(self.content_file)
-				#print self.content_file
 			except: pass
 
 		try:
@@ -371,78 +411,124 @@ class IVIPlayer(xbmc.Player):
 				self.post_r=ind
 		except: pass
 		self.playl.add(self.content_file,listitem=i)
+		json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid ,'uid':uniq_id} ],'method':'da.content.watched' })
 		self.play(self.playl)
 
 	def myloop(self):
 		self.last_ads_time=0
 		self.send_ads=None
 		while self.active:
-			#showMessage('IVI Player', 'index:' + str(self.playl.getposition()) , 100)
+
 			try:
 				self.Time = int(self.getTime())
 				self.TotalTime = self.getTotalTime()
 				self.percent = (100 * self.Time) / self.TotalTime
 			except:
 				pass
+
+			if not self.paused:
+				if self.state=='play':
+					seconds=int(time.time()-self.content_start)
+					if seconds<=60:
+						if self.state=='play' and self.content_start:
+							self.sendstat('http://api.digitalaccess.ru/logger/content/time/','contentid=%s&watchid=%s&fromstart=%s&seconds=%s'%(self.vID,self.watchid,int(self.Time),seconds))
+					if seconds>=60: self.min=self.min+1
+					if self.min>=60:
+						if self.state=='play' and self.content_start:
+							self.sendstat('http://api.digitalaccess.ru/logger/content/time/','contentid=%s&watchid=%s&fromstart=%s&seconds=%s'%(self.vID,self.watchid,int(self.Time),seconds))
+							self.min=0
+
+
+				if self.state=='pre_roll' and self.adstart_timer:
+					self.sendstat('http://api.digitalaccess.ru/logger/adv/time/','watchid=%s&advwatchid=%s&seconds=%s'%(self.watchid,self.advwatchid,int(time.time()-self.adstart_timer)))
+					#self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':self.watchid, 'advwatchid':self.advwatchid, 'seconds':})
+
 			if self.percent==self.content_percent_to_mark and self.state=='play':
 				self.content_percent_to_mark=-1
-				json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID ,'site':self.sID, 'uid':uniq_id} ],'method':'da.content.watched' })
-				#json1 = self.POSTAPI({'method':'da.content.content_watched', 'params':[self.vID,  {'site':self.sID} ]})
-				#print json1
-				#print uniq_id
-				#showMessage('IVI Player', 'Послан отчет о просмотре' , 3000)
-				#print json1
+				#json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid ,'uid':uniq_id} ],'method':'da.content.watched' })
 				pass
 			for m in self.ads:
 				if self.send_ads:
 					self.report_ads(self.send_ads)
 					self.send_ads=None
-				#print m
 				if int(self.Time)==m['time'] and int(self.Time)!=self.last_ads_time and self.state=='play':
 
 					if self.state=='play':
 						if len(self.midroll_params)>0:
 							self.last_ads_time=int(self.Time)
-							#showMessage('IVI Player', 'Показываю ролик' , 2000)
 							self.state=m['type']
 							self.playselected(m['ind'])
 							self.showed_ad=False
 							self.resume_timer=self.Time
 					else:
 						pass
-						#showMessage('IVI Player', 'Нет видео MIDROLL' , 20000)
-			#showMessage('IVI Player', 'index:' + str(self.playl.getposition()) , 2000)
-			self.sleep(300)
+
+			self.sleep(1000)
 
 
 	def onPlayBackPaused( self ):
-		showMessage('ivi.ru Player', 'Пауза', 2000)
+		self.paused=1
+		ShowMessage('ivi.ru Player', 'Пауза', 2000)
 
 	def onPlayBackResumed( self ):
-		showMessage('ivi.ru Player', 'Возобновление', 2000)
+		self.paused=None
+		ShowMessage('ivi.ru Player', 'Возобновление', 2000)
 
 	def onPlayBackStarted( self ):
+		if self.started and self.state=='pre_roll':
+			#print 'skip reklama'
+			self.preroll_end=time.time()
+			self.state='play'
+		self.paused=None
+		long_time=time.time()-self.start_timer
+		#print str(long_time)
 		if self.state=='play':
-			self.seekTime(self.resume_timer)
-
-
+			#self.min=0
+			if self.preroll_end:
+					self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/','watchid=%s&speed=%s'%(self.watchid,time.time()-self.preroll_end))
+					#self.sendstat('/mediainfo/speed/',time.time()-self.preroll_end)
+					self.content_start=time.time()
+					self.pre=1
+					self.preroll_end=None
+			elif not self.pre:
+				self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/','watchid=%s&speed=%s'%(self.watchid,time.time()-self.start_timer))
+				self.content_start=time.time()
+				self.preroll_end=None
+			if self.resume_timer>0:
+				self.seekTime(self.resume_timer)
+			self.svideo_timer=time.time()
+		if self.state=='pre_roll' and not self.started:
+			#print 'start reklama'
+			self.pre=1
+			self.advwatchid='%s_%s'%(self.preroll_params[0]['id'],str(int(time.time()*1000)))
+			self.send_ads=self.preroll_params
+			self.showed_ad=True
+			self.adstart_timer=time.time()
+			self.started=1
+		if self.state=='postroll':
+			self.send_ads=self.postroll_params
+			self.showed_ad=True
+			self.adstart_timer=time.time()
+		if self.state=='play_mid':
+			self.showed_ad=True
+			self.send_ads=self.midroll_params
+			self.adstart_timer=time.time()
 	def onPlayBackEnded( self ):
 
 		if self.state=='play':
-
 			if self.credits_begin_time <= 0 and len(self.postroll_params)>0:
 				self.state='postroll'
-				self.playselected(self.post_r)
-			track_page_view2('','event','5(Video*End)')
-			showMessage('ivi.ru Player', 'Конец фильма' , 2000)
+			ShowMessage('ivi.ru Player', 'Конец фильма' , 2000)
 
 			self.stop()
 			self.playl.clear()
 			self.active = False
 
 		if self.state=='pre_roll':
+			self.preroll_end=time.time()
+			#self.advwatchid='%s_%s'%(self.preroll_params[0]['id'],str(int(time.time()*1000)))
 			self.playselected(self.cont_ind)
-			self.send_ads=self.preroll_params
+			#self.send_ads=self.preroll_params
 			self.state='play'
 
 		if self.state=='postroll':
@@ -452,100 +538,296 @@ class IVIPlayer(xbmc.Player):
 				self.active = False
 			else:
 				self.playselected(self.cont_ind)
-				self.send_ads=self.postroll_params
-				self.showed_ad=True
+				#self.send_ads=self.postroll_params
+				#self.showed_ad=True
 				self.state='play'
 
 		if self.state=='play_mid':
 			self.playselected(self.cont_ind)
-			self.showed_ad=True
-			self.send_ads=self.midroll_params
+			#self.showed_ad=True
+			#self.send_ads=self.midroll_params
 			self.state='play'
 
 	def onPlayBackStopped( self ):
 		self.active = False
-		track_page_view2('','event','5(Video*Stop)')
 		self.playl.clear()
-		
 	def sleep(self, s):
 		xbmc.sleep(s)
 
 
 
-try:
-	import json
-except ImportError:
-	try:
-		import simplejson as json
-		xbmc.log( '[%s]: Error import json. Uses module simplejson' % addon_id, 2 )
-	except ImportError:
-		try:
-			import demjson3 as json
-			xbmc.log( '[%s]: Error import simplejson. Uses module demjson3' % addon_id, 3 )
-		except ImportError:
-			xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
+def main_screen(params):
 
-def construct_request(params):
-	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
-
-def genre2name(gid):
-	gdf = open(genres_dat_file, 'r')
-	genres_data = json.loads(gdf.read())
-	gdf.close()
-	try:
-		for n in genres_data:
-			#print n
-			if int(n.split(';')[0]) == (gid): 
-				reti=n.split(';')[1]
-				#showMessage('Genre', reti, 2000)
-		return reti
-	#try:
-	#	reti = genres_data[str(gid).encode('utf-8')]
-	except: return None
-
-def countrie2name(cid):
-	try:
-		reti = countries_data[str(cid)].encode('utf-8')
-		return reti
-	except: return None
-
-def mainScreen(params):
-	if os.path.isfile(conf_file):
-		f = open(conf_file, 'r')
-		GAcookie=f.readline()
-		uniq_id=f.readline()
-	else: 
-		f = open(conf_file, 'w')
-		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
-		uniq_id=random.random()*time.time()
-		f.write(GAcookie)
-		f.write('\n')
-		f.write(str(uniq_id))
-	
-	#li = xbmcgui.ListItem('Test')
-	#uri = construct_request({
-	#	'id': '7029',
-	#	'func':'playid'
-	#})
-	#xbmcplugin.addDirectoryItem(hos, uri, li, False)
-	
-	#li = xbmcgui.ListItem('Поиск')
-	#uri = construct_request({
-	#	'func': 'runearch'
-	#})
-	#xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('Рекомендованное')
-	
-	
+	li = xbmcgui.ListItem('Рекомендованное', iconImage = addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({
 		'func': 'promo',
 		'url': 'http://www.ivi.ru/mobileapi/promo/v2/?%s'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	readCat('gg')
 
-def promo(params):
+	http = GET('http://www.ivi.ru/mobileapi/categories/')
+	jsdata = json.loads(http)
+	for categoryes in jsdata:
+		li = xbmcgui.ListItem(categoryes['title'], iconImage = addon_icon, thumbnailImage = addon_icon)
+		uri = construct_request({
+			'func': 'read_category',
+			'category': categoryes['id']
+		})
+		xbmcplugin.addDirectoryItem(hos, uri, li, True)
+		for genre in categoryes['genres']:
+			genres_data.append(str(genre['id'])+';'+genre['title'])
+	gf = open(genres_dat_file, 'w')
+	gf.write(json.dumps(genres_data))
+	gf.close()
 
+	li = xbmcgui.ListItem('Поиск', iconImage = addon_icon, thumbnailImage = addon_icon)
+	uri = construct_request({
+		'func': 'run_search'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+
+	xbmcplugin.endOfDirectory(hos)
+
+def read_category(params):
+	show_len=get_len()
+	categ=params['category']
+	if categ=='14':
+		track_page_view('movies')
+		track_page_view('movies',UATRACK=GATrack)
+	if categ=='15':
+		track_page_view('series')
+		track_page_view('series',UATRACK=GATrack)
+	if categ=='16':
+		track_page_view('shows')
+		track_page_view('shows',UATRACK=GATrack)
+	if categ=='17':
+		track_page_view('animation')
+		track_page_view('animation',UATRACK=GATrack)
+	http = GET('http://www.ivi.ru/mobileapi/categories/')
+	jsdata = json.loads(http)
+	for categoryes in jsdata:
+		if categoryes['id']==int(params['category']):
+			li = xbmcgui.ListItem('Поиск в этой категории')
+			uri = construct_request({
+				'func': 'run_search',
+				'category': categoryes['id']
+			})
+			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+			li = xbmcgui.ListItem('Новинки')
+			uri = construct_request({
+				'func': 'read_dir',
+				'category': categoryes['id'],
+				'sort':'new',
+				'from':0,
+				'to':show_len-1
+
+			})
+			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+			li = xbmcgui.ListItem('Популярное')
+			uri = construct_request({
+				'func': 'read_dir',
+				'category': categoryes['id'],
+				'sort':'pop',
+				'from':0,
+				'to':show_len-1
+			})
+			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+			for genre in categoryes['genres']:
+				li = xbmcgui.ListItem(genre['title'], iconImage = addon_icon, thumbnailImage = addon_icon)
+				uri = construct_request({
+					'func': 'read_dir',
+					'genre': genre['id'],
+					'sorted':1,
+					'from':0,
+					'to':show_len-1
+				})
+				xbmcplugin.addDirectoryItem(hos, uri, li, True)
+
+	xbmcplugin.endOfDirectory(hos)
+
+def read_dir(params):
+	#print params
+	try:
+		target = params['url']
+		del params['url']
+	except: target = 'http://www.ivi.ru/mobileapi/catalogue/v2/?%s'
+	try:
+		if params['sorted']:
+			params['sort'] = get_sort()
+			params['sorted'] =None
+	except: pass
+	#print target % urllib.urlencode(params)
+	http = GET(target % urllib.urlencode(params))
+	if http == None:
+		ShowMessage('Ошибка', 'Данные не могут быть получены', 2000)
+		return False
+
+	jsdata = json.loads(http)
+	cnt=0
+	for video_ind in jsdata:
+		vdata=get_video_data(video_ind)
+		li = xbmcgui.ListItem(vdata['title'], iconImage = vdata['image'], thumbnailImage = vdata['image'])
+		li.setProperty('fanart_image', vdata['image'])
+		try: li.setInfo(type='video', infoLabels = vdata['info'])
+		except: pass
+		if int(vdata['seasons_cnt'])==-1:
+			uri = construct_request({
+				'func': 'playid',
+				'id':vdata['id']
+			})
+			cnt=cnt+1
+			xbmcplugin.addDirectoryItem(hos, uri, li, False)
+		if int(vdata['seasons_cnt'])==0 or int(vdata['seasons_cnt'])==1:
+			uri = construct_request({
+				'func': 'read_dir',
+				'id':vdata['id'],
+				'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s',
+				'sorted':1,
+				'from':0,
+				'to':show_len-1
+			})
+			cnt=cnt+1
+			#li.setProperty('fanart_image', vdata['image'])
+			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+		if int(vdata['seasons_cnt'])>1:
+			uri = construct_request({
+				'func': 'getser',
+				'id':vdata['id'],
+				'seasons_cnt':vdata['seasons_cnt']
+			})
+			cnt=cnt+1
+			#li.setProperty('fanart_image', vdata['image'])
+			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+
+	if cnt >= int(show_len):
+		li = xbmcgui.ListItem('Еще [>>]', iconImage = addon_icon, thumbnailImage = addon_icon)
+		params['url']=target
+		params['func'] = 'read_dir'
+		params['from'] = int(params['from'])+int(show_len)
+		params['to'] = int(params['from']) + int(show_len)
+		uri = '%s?%s' % (sys.argv[0], urllib.urlencode(params))
+		xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	xbmcplugin.endOfDirectory(hos)
+
+def playid(params):
+	try:
+		f = open(adv_file, 'r')
+		last_ad=f.readline()
+
+	except:
+		f = open(adv_file, 'w')
+		last_ad=str(int(time.time()))
+		f.write(last_ad)
+		f.close()
+	#print last_ad
+	#print 'playing id=%s'%(params['id'])
+	iviplay=ivi_player()
+	iviplay.lastad=last_ad
+	iviplay.start_timer=time.time()
+	iviplay.watchid='%s_%s_%s'%(params['id'],uniq_id,str(int(time.time()*1000)))
+	iviplay.ivi_play(params['id'])
+	iviplay.myloop()
+	iviplay.stop
+	#print iviplay.watchid
+
+def getser(params):
+	params['to']=999
+	target='http://www.ivi.ru/mobileapi/videofromcompilation/?%s'
+	http = GET(target % urllib.urlencode(params))
+	total=json.loads(http)
+	v_id = int(params['id'])
+	seasons=[]
+	for episode in total:
+		if episode['season'] not in seasons:
+			seasons.append(episode['season'])
+			i = xbmcgui.ListItem('Сезон %s' % episode['season'], iconImage = addon_icon, thumbnailImage = addon_icon)
+			i.setProperty('fanart_image', addon_fanart)
+			osp = {'func':'read_dir', 'id': v_id, 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s', 'season':episode['season'],'from':0,'to':show_len-1}
+			uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
+			i.setInfo(type = 'video', infoLabels = {'season': episode['season']})
+			xbmcplugin.addDirectoryItem(hos, uri, i, True)
+	xbmcplugin.endOfDirectory(hos)
+
+
+def get_video_data(video):
+	mysetInfo={}
+	try: title=video['title']
+	except: title=None
+	try: duration=video['duration']
+	except: duration=None
+	try: id=video['id']
+	except: id=None
+	try: seasons_cnt = video['seasons_count']
+	except: seasons_cnt = -1
+	try: images=video['thumbnails']
+	except: images=None
+	try: season=video['season']
+	except: season=None
+	try: episode=video['episode']
+	except: episode=None
+	try: genre=video['genres']
+	except: genre=None
+	try:    
+		mysetInfo['plot'] = video['descrtiption']
+		mysetInfo['plotoutline'] = video['descrtiption']
+	except: pass
+	try:    
+		mysetInfo['year'] = int(video['years'][0])
+	except: pass
+	try:    
+		v_ivi_rating = video['ivi_rating'] # рейтинг рассчитанный на основании голосов пользователей ivi
+		mysetInfo['rating'] = float(v_ivi_rating*2)
+	except: v_ivi_rating = None
+	if not v_ivi_rating:
+		try:    
+			v_ivi_rating = video['ivi_rating_10'] # рейтинг рассчитанный на основании голосов пользователей ivi
+			mysetInfo['rating'] = float(v_ivi_rating)
+		except: v_ivi_rating = None
+	try:    
+		mysetInfo['duration'] = v_duration
+	except: pass
+	lth = 0
+	ltw = 0
+	ltu = addon_icon
+
+
+	try:
+		for thumbnail in images:
+			if int(thumbnail['height']) >= lth:
+				ltu = thumbnail['path']
+				lth = int(thumbnail['height'])
+				ltw = int(thumbnail['width'])
+	except:
+
+		try: ltu = images[1]['path']
+		except: pass
+		try: ltu = images[0]['path']
+		except: pass
+		pass
+	genres=None
+	glist = []
+	if genre:
+		for gid in genre:
+				#print gid
+			g_name = genre2name(gid)
+
+			if g_name:
+				try: glist.index(g_name)
+				except: glist.append(g_name)
+		if len(glist):
+			#ShowMessage('ivi',', '.join(glist),100)
+			mysetInfo['genre'] = ', '.join(glist)
+			#print genres
+
+	#if season and episode: title='(S%sE%s)%s' % (season,episode,title)
+	#else: if episode: title='(Э%s)%s' % (episode,title)
+
+	export={'id':id,'title':title, 'duration':duration, 'seasons_cnt':seasons_cnt, 'image':ltu, 'info':mysetInfo}
+	return export
+
+def promo(params): 					# показ промо контента
+	track_page_view('promo')
+	track_page_view('promo',UATRACK=GATrack)
 	http = GET('http://www.ivi.ru/mobileapi/promo/')
 	if http == None: return False
 	jsdata = json.loads(http)
@@ -557,11 +839,10 @@ def promo(params):
 			li.setInfo('video',{'plot': video['text']})
 			xbmcplugin.addDirectoryItem(hos, uri, li, False)
 		xbmcplugin.endOfDirectory(hos)
-		
-		
-def runearch(params):
+
+def run_search(params):				# Поиск
 	track_page_view('search')
-	track_page_view2('search')
+	track_page_view('search',UATRACK=GATrack)
 	kbd = xbmc.Keyboard()
 	kbd.setDefault('')
 	kbd.setHeading('Поиск по ivi.ru')
@@ -569,381 +850,18 @@ def runearch(params):
 	if kbd.isConfirmed():
 		try:
 			out = trans.detranslify(kbd.getText())
-			out=out.encode("utf-8") 
+			out=out.encode("utf-8")
 		except:
 			out = kbd.getText()
 
 	params['query'] = out
 	params['url'] = 'http://www.ivi.ru/mobileapi/search/v2/?%s'
-	getlistcat(params)
+	read_dir(params)
 
 def get_sort():
 
 	if __addon__.getSetting("sort_v") == '1': return 'pop'
 	else: return 'new'
-
-def readCat(params):
-
-	try:
-		categ = params['category']
-		del params['category']
-	except:	categ = None
-	basep = {'from':0, 'to':show_len-1, 'sort':get_sort(), 'func':'readCat'}
-	http = GET('http://www.ivi.ru/mobileapi/categories/')
-	for categoryes in json.loads(http):
-		for genre in categoryes['genres']: 
-			#print genre
-			genres_data.append(str(genre['id'])+';'+genre['title'])
-	#print genres_data
-	gf = open(genres_dat_file, 'w')
-	gf.write(json.dumps(genres_data))
-	gf.close()
-	jsdata = json.loads(http)
-	li = xbmcgui.ListItem('Поиск')
-	uri = construct_request({
-		'func': 'runearch',
-		'category':categ
-	})
-	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	if categ:
-		if categ=='14': 
-			track_page_view('movies')
-			track_page_view2('movies')
-			#basep['url'] = 'http://www.ivi.ru/mobileapi/videos/?%s'
-		if categ=='15': 
-			track_page_view('series')
-			track_page_view2('series')
-		if categ=='16': 
-			track_page_view('shows')
-			track_page_view2('shows')
-		if categ=='17': 
-			track_page_view('animation')
-			track_page_view2('animation')
-		if jsdata:
-			for categoryes in jsdata:
-				if categoryes['id'] == int(categ):
-					flist=categ
-					for genre in categoryes['genres']:
-						
-						i = xbmcgui.ListItem(genre['title'], iconImage = addon_icon, thumbnailImage = addon_icon)
-						basep['func'] = 'getlistcat'
-						basep['genre'] = genre['id']
-						uri = '%s?%s' % (sys.argv[0], urllib.urlencode(basep))
-						#print uri
-						del basep['genre']
-						xbmcplugin.addDirectoryItem(hos, uri, i, True)
-					basep['func'] = 'getlistcat'
-					basep['category'] = categ
-					getlistcat(basep)
-					
-
-	else:
-		if http:
-			for categoryes in json.loads(http):
-				i = xbmcgui.ListItem(categoryes['title'], iconImage = addon_icon, thumbnailImage = addon_icon)
-				i.setProperty('fanart_image', addon_fanart)
-				basep['category'] = categoryes['id']
-				categ = categoryes['id']
-				uri = '%s?%s' % (sys.argv[0], urllib.urlencode(basep))
-				xbmcplugin.addDirectoryItem(hos, uri, i, True)
-				
-				
-	xbmcplugin.endOfDirectory(hos)
-
-
-
-
-def getlistcat(params):
-	#print params
-	try:
-		target = params['url']
-		del params['url']
-	except: target = 'http://www.ivi.ru/mobileapi/catalogue/v2/?%s'
-	params['sort'] = get_sort()
-	http = GET(target % urllib.urlencode(params))
-	#print target % urllib.urlencode(params)
-	#print http
-	if http == None: return False
-	#print target % urllib.urlencode(params)
-	jsdata = json.loads(http)
-	if jsdata:
-
-		for video in jsdata:
-			data = get_metadata(video)
-			if data:
-				i = xbmcgui.ListItem(data['infoLabels']['title'], iconImage = data['image'], thumbnailImage = data['image'])
-				#i.setInfo(type='video', infoLabels = data['info'])
-				if data['tc'] or data['sc']>=0:
-					isFolder = True
-					if data['sc'] > 1:
-						osp = {'from':0, 'to':show_len-1,'func':'seasons', 'id': data['id'], 'seasons_count': data['sc']}
-						uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
-					elif data['sc'] <= 1:
-						osp = {'from':0, 'to':500, 'func':'getlistcat', 'id': data['id'], 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s'}
-						uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
-					else: xbmc.log( '[%s]: unexpected value v_seasons_count=%s' % (addon_id, data['sc']), 2 )
-				else:
-					isFolder = False
-					i.setProperty('IsPlayable', 'false')
-					uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'playid', 'id': data['id']}))
-				#i.setInfo(type = 'video', infoLabels = data['infoLabels'])
-				#print data['info']
-				i.setInfo(type='video', infoLabels = data['info'])
-				i.setProperty('fanart_image', data['image'])
-				xbmcplugin.addDirectoryItem(hos, uri, i, isFolder)
-		if len(jsdata) == show_len:
-			i = xbmcgui.ListItem('Еще [>>]', iconImage = addon_icon, thumbnailImage = addon_icon)
-			i.setProperty('fanart_image', addon_fanart)
-			params['func'] = 'getlistcat'
-			params['from'] = int(params['to']) + 1
-			params['to'] = params['from'] + show_len
-			uri = '%s?%s' % (sys.argv[0], urllib.urlencode(params))
-			xbmcplugin.addDirectoryItem(hos, uri, i, True)
-		#xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_UNSORTED)
-		#xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_TITLE)
-		#xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-		xbmcplugin.endOfDirectory(hos)
-
-
-def seasons(params):
-	v_seasons_count = int(params['seasons_count'])
-	v_id = int(params['id'])
-	while v_seasons_count > 0:
-		i = xbmcgui.ListItem('Сезон %s' % v_seasons_count, iconImage = addon_icon, thumbnailImage = addon_icon)
-		i.setProperty('fanart_image', addon_fanart)
-		osp = {'func':'getlistcat', 'id': v_id, 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s', 'season':v_seasons_count}
-		uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
-		i.setInfo(type = 'video', infoLabels = {'season': v_seasons_count})
-		xbmcplugin.addDirectoryItem(hos, uri, i, True)
-		v_seasons_count -= 1
-	xbmcplugin.endOfDirectory(hos)
-
-
-def find_bst(dasta):
-
-	play_file = None
-	for vcfl in dasta['files']:
-		if vcfl['content_format'] == 'MP4-hi': play_file = vcfl['url']
-	if not play_file:
-		for vcfl in dasta['files']:
-			if vcfl['content_format'] == 'FLV-hi': play_file = vcfl['url']
-	if not play_file:
-		for vcfl in dasta['files']:
-			if vcfl['content_format'] == 'MP4-lo': play_file = vcfl['url']
-	if not play_file:
-		for vcfl in dasta['files']:
-			if vcfl['content_format'] == 'FLV-lo': play_file = vcfl['url']
-	return play_file
-
-
-
-
-
-def get_video_url(vid):
-
-	http = GET('http://www.ivi.ru/mobileapi/videofullinfo/?id=%s' % vid)
-	if http:
-		json0 = json.loads(http)
-		if http:
-			try:
-				vc = json0['result']
-				content_file = find_bst(vc)
-				return content_file
-			except:
-				return None
-
-def playid(params):
-	#print sys.argv[2]
-	#track_page_view('','event','5(Video*Videostart)')
-	#track_page_view2('','event','5(Video*Videostart)')
-	ivi_player = IVIPlayer()
-	ivi_player.ivi_play(params['id'])
-	ivi_player.myloop()
-	ivi_player.stop
-	#print 'END PLAY'
-
-
-def get_metadata(video):
-	mysetInfo = {}
-	
-	#print video
-	try:    v_id = video['id'] # идентификатор контента
-	except: v_id = None
-	try:    
-		v_title = video['title'].encode('utf-8') # название контента
-		mysetInfo['title'] = video['title']
-	except: v_title = None
-	try:    v_cats = video['categories'] # список идентификаторов категории []
-	except: v_cats = None
-	try:    
-		v_genres = video['genres'] # список идентификаторов жанров []
-		#print v_genres
-	except: v_genres = None
-	try:    v_thumbnails = video['thumbnails'] # список изображений контента []
-	except: v_thumbnails = None
-	try:    v_country = video['country'] # Идентификатор страны
-	except: v_country = None
-	try:    
-		v_descr = video['descrtiption'].encode('utf-8') # описание контента
-		mysetInfo['plot'] = video['descrtiption']
-		mysetInfo['plotoutline'] = video['descrtiption']
-	except: v_descr = None
-	try:    
-		v_years = video['years'] # год выхода контента []
-		mysetInfo['year'] = int(video['years'][0])
-	except: v_years = None
-	try:    
-		v_ivi_rating = video['ivi_rating'] # рейтинг рассчитанный на основании голосов пользователей ivi
-		mysetInfo['rating'] = float(v_ivi_rating*2)
-	except: v_ivi_rating = None
-	if not v_ivi_rating:
-		try:    
-			v_ivi_rating = video['ivi_rating_10'] # рейтинг рассчитанный на основании голосов пользователей ivi
-			mysetInfo['rating'] = float(v_ivi_rating)
-		except: v_ivi_rating = None
-	try:    
-		v_duration = video['duration'] # рейтинг рассчитанный на основании голосов пользователей ivi
-		mysetInfo['duration'] = v_duration
-	except: v_ivi_rating = None
-	try:    v_kp_rating = video['kp_rating'] # рейтинг ресурса КиноПоиск
-	except: v_kp_rating = None
-	try:    v_imdb_rating = video['imdb_rating'] # рейтинг ресурса рейтинг ресурса IMDB
-	except: v_imdb_rating = None
-	try:    v_compilation = video['compilation'] # Название сборника
-	except: v_compilation = None
-	try:    v_total_contents = video['total_contents'] # число контента в сборнике
-	except: v_total_contents = None
-	try:    v_hru = video['hru'].encode('utf-8') # хру для показа сборника
-	except: v_hru = None
-	try:    
-		v_seasons_count = video['seasons_count'] # количество сезонов
-	except: v_seasons_count = None
-	#print 'seasons'
-	#print 	v_seasons_count
-	try:    v_seasons = video['seasons'] # список сезонов
-	except: v_seasons = None
-	if v_id and v_title:
-		info = {}
-		#if v_hru:
-		#	info['plotoutline'] = v_hru
-		lth = 0
-		ltw = 0
-		ltu = addon_icon
-		
-		try:
-			for thumbnail in v_thumbnails:
-				if int(thumbnail['height']) >= lth:
-					ltu = thumbnail['path']
-					lth = int(thumbnail['height'])
-					ltw = int(thumbnail['width'])
-		except:
-			try: ltu = v_thumbnails[1]['path']
-			except: pass
-			try: ltu = v_thumbnails[0]['path']
-			except: pass
-		
-
-		plotoutline_arr = []
-
-		if v_descr: info['plot'] = str(v_descr)
-
-		years = []
-
-		if v_years:
-			try:
-				for yy in v_years:
-					if yy:
-						years.append(int(yy))
-			except:
-				try:
-					years.append(int(v_years))
-					info['year'] = min(years)
-				except: pass
-
-		tname = ''
-		# v_cats - ?
-		if v_seasons_count:
-		#	if int(v_seasons_count) <= 1:
-		#		tname = '. Многосерийный.'
-		#		plotoutline_arr.append('Тип: Многосерийный фильм')
-			if int(v_seasons_count) > 1:
-				tname = '. Сериал.'
-				plotoutline_arr.append('Тип: Сериал')
-
-
-		# ------------ Ratings -------------------- #
-		#v_ivi_rating,v_kp_rating,v_imdb_rating
-		rates = []
-		if v_ivi_rating:  rates.append(float(v_ivi_rating))
-		if v_kp_rating:   rates.append(float(v_kp_rating))
-		if v_imdb_rating: rates.append(float(v_imdb_rating))
-		if len(rates):
-			info['rating'] = max(rates)
-
-		# ------------ формовка жанров ------------ #
-		glist = []
-		#print v_genres
-		if v_genres:
-			for gid in v_genres:
-				#print gid
-				g_name = genre2name(gid)
-				
-				if g_name:
-					try: glist.index(g_name)
-					except: glist.append(g_name)
-		if len(glist):
-			mysetInfo['genre'] = ', '.join(glist)
-		
-		# ----------------------------------------- #
-		clist = []
-		if v_country:
-			#for cid in v_country:
-			c_name = countrie2name(v_country)
-			if c_name:
-				clist.append(c_name)
-				plotoutline_arr.append('Страна: %s' % c_name)
-
-		if len(years):
-			#years_l = ', '.join(years)
-
-			max_y = max(years)
-			min_y = min(years)
-			clist.append(str(min_y))
-			if max_y == min_y:
-				plotoutline_arr.append('Год: %s' % max_y)
-			else:
-				plotoutline_arr.append('Годы: %s-%s' % (min_y, max_y))
-
-		if len(clist):
-			#clists =
-			#if not (v_total_contents and v_seasons_count and v_seasons):
-			v_title = '%s (%s)%s' % (v_title, ', '.join(clist), tname)
-
-
-
-		if len(plotoutline_arr):
-			info['plotoutline'] = ', '.join(plotoutline_arr)
-		# ----------------------------------------- #
-
-		if ltw > lth:
-			info['season'] = 0
-			info['episode'] = 0
-
-		info['title'] = v_title
-		#print v_id
-		#print mysetInfo
-		#mysetInfo['rating']=4.4
-		#mysetInfo['year']=2000
-		#mysetInfo['genre']='Video'
-		#mysetInfo['tagline']='Cool movie'
-		
-		reti = { 'id': v_id, 'image': ltu, 'tc': v_total_contents, 'sc': v_seasons_count, 'desc':v_descr, 'info':mysetInfo, 'infoLabels': info}
-		#print 'it out data'
-		#print reti
-		return reti
-
-	else:
-		return False
 
 def get_params(paramstring):
 	param=[]
@@ -966,8 +884,6 @@ def get_params(paramstring):
 
 
 def addon_main():
-	#xbmc.log( '<<<Start ivi.ru PLayer>>>')
-	
 	params = get_params(sys.argv[2])
 	try:
 		func = params['func']
@@ -975,11 +891,11 @@ def addon_main():
 	except:
 		func = None
 		xbmc.log( '[%s]: Primary input' % addon_id, 1 )
-		mainScreen(params)
+		main_screen(params)
 	if func != None:
 		try: pfunc = globals()[func]
 		except:
 			pfunc = None
 			xbmc.log( '[%s]: Function "%s" not found' % (addon_id, func), 4 )
-			showMessage('Internal addon error', 'Function "%s" not found' % func, 2000)
+			ShowMessage('Internal addon error', 'Function "%s" not found' % func, 2000)
 		if pfunc: pfunc(params)
