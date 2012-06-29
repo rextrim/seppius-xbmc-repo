@@ -299,7 +299,7 @@ class ivi_player(xbmc.Player):
 		#print 'Stat: %s%s'%(path,post)
 		#print path
 		#print 'get'
-		print post
+		#print post
 
 		#headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
 		#h = httplib.HTTPConnection('http://api.digitalaccess.ru/')
