@@ -288,12 +288,12 @@ class ivi_player(xbmc.Player):
 		f.write(last_ad)
 		f.close()
 		self.lastad=last_ad
-
-		if len(links)<8:
-			for n in links:
-				#print n
-				GET(n)
-		else: GET(links)
+		if links:
+			if len(links)<8:
+				for n in links:
+					#print n
+					GET(n)
+			else: GET(links)
 
 	def sendstat(self,path,post):
 		#print 'Stat: %s%s'%(path,post)
@@ -740,12 +740,14 @@ def getser(params):
 	for episode in total:
 		if episode['season'] not in seasons:
 			seasons.append(episode['season'])
-			i = xbmcgui.ListItem('Сезон %s' % episode['season'], iconImage = addon_icon, thumbnailImage = addon_icon)
-			i.setProperty('fanart_image', addon_fanart)
-			osp = {'func':'read_dir', 'id': v_id, 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s', 'season':episode['season'],'from':0,'to':show_len-1}
-			uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
-			i.setInfo(type = 'video', infoLabels = {'season': episode['season']})
-			xbmcplugin.addDirectoryItem(hos, uri, i, True)
+	seasons.sort()	
+	for ind in seasons:	
+		i = xbmcgui.ListItem('Сезон %s' % ind, iconImage = addon_icon, thumbnailImage = addon_icon)
+		i.setProperty('fanart_image', addon_fanart)
+		osp = {'func':'read_dir', 'id': v_id, 'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s', 'season':ind,'from':0,'to':show_len-1}
+		uri = '%s?%s' % (sys.argv[0], urllib.urlencode(osp))
+		i.setInfo(type = 'video', infoLabels = {'season': ind})
+		xbmcplugin.addDirectoryItem(hos, uri, i, True)
 	xbmcplugin.endOfDirectory(hos)
 
 
