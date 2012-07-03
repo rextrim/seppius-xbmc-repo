@@ -337,7 +337,6 @@ def Source_List(params):
         s_url   = rec['src']
         s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
-        print s_title
         #--
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
@@ -354,7 +353,6 @@ def Source_List(params):
                 s_url = s.split('=',1)[1]
         s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
-        print s_title
         #--
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
@@ -409,9 +407,10 @@ def PLAY(params):
     if url == '*':
         return False
 
-    video = url
     # -- get VKontakte video url
     if vtype == 'VK':
+        url = url.replace('vkontakte.ru', 'vk.com')
+
         html = get_HTML(url)
         soup = BeautifulSoup(html, fromEncoding="windows-1251")
         for rec in soup.findAll('param', {'name':'flashvars'}):
@@ -488,9 +487,6 @@ try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
 	Movie_List(params)
-
-print mode
-print h
 
 if mode == 'MOVIE':
 	Movie_List(params)
