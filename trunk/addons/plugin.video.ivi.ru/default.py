@@ -3,10 +3,13 @@
 # Copyright (c) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
 # Writer (c) 2011, Kostynoy S.A., E-mail: seppius2@gmail.com
 
-import sys, os, xbmcaddon
+import sys, xbmcaddon
 
-__addon__ = xbmcaddon.Addon( id = 'plugin.video.ivi.ru' )
-sys.path.append( os.path.join( __addon__.getAddonInfo( 'path' ), 'resources', 'lib') )
+_id='plugin.video.ivi.ru'
+#resources directory
+_resdir = "special://home/addons/" + _id + "/resources"
+#add our library to python search path
+sys.path.append(xbmc.translatePath( _resdir + "/lib/"))
 
 if (__name__ == '__main__' ):
 	import ivi2xbmc
