@@ -407,6 +407,7 @@ def PLAY(params):
     if url == '*':
         return False
 
+    video = url
     # -- get VKontakte video url
     if vtype == 'VK':
         url = url.replace('vkontakte.ru', 'vk.com')
