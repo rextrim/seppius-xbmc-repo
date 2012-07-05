@@ -164,6 +164,21 @@ def main_menu(params):
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
 				games.append(entries['meta_game'])
 		except: pass
+	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=en')
+	json1=json.loads(http)
+	#games=[]
+	for entries in json1:
+		try: 
+			if entries['meta_game'] not in games:
+				li = xbmcgui.ListItem((entries['meta_game']), addon_fanart, addon_icon)
+				li.setProperty('IsPlayable', 'false')
+				uri = construct_request({
+					'game': entries['meta_game'],
+					'func': 'get_stream_list'
+				})
+				xbmcplugin.addDirectoryItem(hos, uri, li, True)
+				games.append(entries['meta_game'])
+		except: pass
 	xbmcplugin.addSortMethod(hos,xbmcplugin.SORT_METHOD_LABEL)
 	xbmcplugin.endOfDirectory(hos)
 	#print games
@@ -173,6 +188,21 @@ def main_menu(params):
 def get_stream_list(params):
 	track_page_view(params['game'])
 	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=ru')
+	json1=json.loads(http)
+	for entries in json1:
+		try:
+			#print entries['title']
+			if entries['meta_game']==params['game']:
+				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart, addon_icon)
+				li.setProperty('IsPlayable', 'true')
+				uri = construct_request({
+					'name': entries['name'],
+					'func': 'get_stream'
+				})
+				xbmcplugin.addDirectoryItem(hos, uri, li, True)
+			
+		except: pass
+	http = GET('http://api.justin.tv/api/stream/list.json?category=gaming&language=en')
 	json1=json.loads(http)
 	for entries in json1:
 		try:
