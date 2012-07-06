@@ -70,6 +70,8 @@ class Info:
     text        = ''
     artist      = ''
     orig        = ''
+    duration    = ''
+    rating      = ''
 
 #---------- get web page -------------------------------------------------------
 def get_HTML(url, post = None, ref = None):
@@ -325,12 +327,63 @@ def Source_List(params):
     name = urllib.unquote_plus(params['name'])
 
     #== get movie list =====================================================
-    html = get_HTML(url)
+    html = get_HTML(url).replace('<br />','|')
 
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
     # -- get movie info
+    for rec in soup.find('td', {'class':'full-story_text'}).text.split('|'):
+        if rec.split(':', 1)[0] == u'Название':
+            mi.tittle = rec.split(':', 1)[1]
 
+        if rec.split(':', 1)[0] == u'Оригинальное название':
+            mi.orig = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'Год':
+            mi.year = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'Страна':
+            mi.country = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'Жанр':
+            mi.genre = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'Режиссер':
+            mi.director = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'В главных ролях':
+            mi.artist = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'О фильме':
+            mi.text = rec.split(':', 1)[1]
+
+        if rec.split(':', 1)[0] == u'Продолжительность':
+            mi.duration = rec.split(':', 1)[1].split(u'мин.')[0]
+
+        if rec.split(':', 1)[0] == u'Рейтинг IMDB':
+            mi.rating = rec.split(':', 1)[1].split('(')[0]
+
+        #------------------------------------------------------
+        if rec.split(':', 1)[0] == u'Сценарий':
+            mi.text += '\n'+ rec
+
+        if rec.split(':', 1)[0] == u'Продюсер':
+            mi.text += '\n'+ rec
+
+        if rec.split(':', 1)[0] == u'Оператор':
+            mi.text += '\n'+ rec
+
+        if rec.split(':', 1)[0] == u'Композитор':
+            mi.text += '\n'+ rec
+
+        if rec.split(':', 1)[0] == u'Бюджет':
+            mi.text += '\n'+ rec
+
+        if rec.split(':', 1)[0] == u'Премьера (мир)':
+            mi.text += '\n'+ rec
+
+    print mi.text.encode('utf-8')
+    #get source info
     source_number = 1
 
     for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php\?')}):
@@ -344,6 +397,20 @@ def Source_List(params):
         u += '&url=%s'%urllib.quote_plus(s_url)
         u += '&img=%s'%urllib.quote_plus(img)
         u += '&vtype=%s'%urllib.quote_plus('VK')
+        try:
+            i.setInfo(type='video', infoLabels={'title':            mi.title,
+                                                'originaltitle':    mi.orig,
+                        						'year':             int(mi.year),
+                        						'director':         mi.director,
+                                                'artist':           mi.artist,
+                        						'plot':             mi.text,
+                        						'country':          mi.country,
+                        						'genre':            mi.genre,
+                                                'rating':           float(mi.rating),
+                                                'duration':         mi.duration
+                                                })
+        except:
+            pass
         #i.setProperty('fanart_image', img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
@@ -360,6 +427,20 @@ def Source_List(params):
         u += '&url=%s'%urllib.quote_plus(s_url)
         u += '&img=%s'%urllib.quote_plus(img)
         u += '&vtype=%s'%urllib.quote_plus('RV')
+        try:
+            i.setInfo(type='video', infoLabels={'title':            mi.title,
+                                                'originaltitle':    mi.orig,
+                        						'year':             int(mi.year),
+                        						'director':         mi.director,
+                                                'artist':           mi.artist,
+                        						'plot':             mi.text,
+                        						'country':          mi.country,
+                        						'genre':            mi.genre,
+                                                'rating':           float(mi.rating),
+                                                'duration':         mi.duration
+                                                })
+        except:
+            pass
         #i.setProperty('fanart_image', img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
