@@ -191,9 +191,10 @@ def get_stream_list(params):
 	json1=json.loads(http)
 	for entries in json1:
 		try:
-			#print entries['title']
+			#print entries
 			if entries['meta_game']==params['game']:
-				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart, addon_icon)
+				thumb = entries['channel']['image_url_large']
+				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart, thumb)
 				li.setProperty('IsPlayable', 'true')
 				uri = construct_request({
 					'name': entries['name'],
@@ -208,7 +209,8 @@ def get_stream_list(params):
 		try:
 			#print entries['title']
 			if entries['meta_game']==params['game']:
-				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart, addon_icon)
+				thumb = entries['channel']['image_url_large']
+				li = xbmcgui.ListItem('('+(entries['language']+') '+entries['title']), addon_fanart,  thumb)
 				li.setProperty('IsPlayable', 'true')
 				uri = construct_request({
 					'name': entries['name'],
