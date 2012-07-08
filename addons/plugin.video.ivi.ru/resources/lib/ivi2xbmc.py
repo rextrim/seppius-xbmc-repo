@@ -35,7 +35,7 @@ from urllib import unquote, quote
 conf_file = xbmc.translatePath('special://temp/'+ 'settings.ivi.new')
 adv_file = xbmc.translatePath('special://temp/'+ 'settings.ivi.adv')
 
-Addon = xbmcaddon.Addon(id='plugin.video.ivi')
+Addon = xbmcaddon.Addon(id='plugin.video.ivi.ru')
 language = Addon.getLocalizedString
 addon_icon    = Addon.getAddonInfo('icon')
 addon_fanart  = Addon.getAddonInfo('fanart')
@@ -272,7 +272,7 @@ class ivi_player(xbmc.Player):
 			else: GET(links)
 
 	def sendstat(self,path,post):
-
+		#print '%s:%s'%(path,post)
 		req = urllib2.Request(path)
 		req.add_header('Accept', 'text/plain')
 		req.add_header('Content-Type','application/x-www-form-urlencoded')
@@ -538,9 +538,19 @@ def main_screen(params):
 		'func': 'run_search'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-
+	
+	li = xbmcgui.ListItem(language(30030), iconImage = addon_icon, thumbnailImage = addon_icon)
+	li.setProperty('fanart_image', addon_fanart)
+	uri = construct_request({
+		'func': 'run_settings'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, False)
+	
 	xbmcplugin.endOfDirectory(hos)
 
+def run_settings(params):
+	Addon.openSettings()
+	
 def read_category(params):
 	show_len=get_len()
 	categ=params['category']
@@ -900,3 +910,4 @@ def addon_main():
 			xbmc.log( '[%s]: Function "%s" not found' % (addon_id, func), 4 )
 			ShowMessage('Internal addon error', 'Function "%s" not found' % func, 2000)
 		if pfunc: pfunc(params)
+#stop
