@@ -17,7 +17,7 @@
 #   along with this program; see the file COPYING.  If not, write to
 #   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #   http://www.gnu.org/licenses/gpl.html
-
+import platform
 import urllib
 import urllib2
 import trans
@@ -65,6 +65,8 @@ VERSION = '4.3as'
 DOMAIN = '131896016'
 GATrack='UA-30985824-1'
 UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
+UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
 
 
 if os.path.isfile(conf_file):
