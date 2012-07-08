@@ -30,7 +30,10 @@ import xbmcaddon
 import time
 import random
 from urllib import unquote, quote
-
+try:
+	from hashlib import md5
+except:
+	from md5 import md5
 
 conf_file = xbmc.translatePath('special://temp/'+ 'settings.ivi.new')
 adv_file = xbmc.translatePath('special://temp/'+ 'settings.ivi.adv')
@@ -120,6 +123,8 @@ def track_page_view(path,nevent='', tevent='',UATRACK='UA-11561457-31'):
 	extra = {}
 	extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
 
+	md5String = md5(str(uniq_id)).hexdigest()
+	gvid="0x" + md5String[:16]
 	utm_url = utm_gif_location + "?" + \
 		"utmwv=" + VERSION + \
 		"&utmn=" + get_random_number() + \
@@ -130,6 +135,7 @@ def track_page_view(path,nevent='', tevent='',UATRACK='UA-11561457-31'):
 		"&utmr=" + quote('-') + \
 		"&utmp=" + quote(document_path) + \
 		"&utmac=" + UATRACK + \
+		"&utmvid=" + gvid + \
 		"&utmcc="+ GAcookie
 
 	return send_request_to_google_analytics(utm_url, UA)
