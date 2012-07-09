@@ -94,7 +94,8 @@ def send_request_to_google_analytics(utm_url, ua):
 
 	try:
 		xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-		UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,
+		UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
+
 		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
 		response = urllib2.urlopen(req).read()
 		#print utm_url
