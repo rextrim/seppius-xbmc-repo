@@ -93,9 +93,11 @@ def get_random_number():
 def send_request_to_google_analytics(utm_url, ua):
 
 	try:
-		xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-		UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-
+		
+		try: 
+			xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
+			UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
+		except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
 		response = urllib2.urlopen(req).read()
 		#print utm_url
