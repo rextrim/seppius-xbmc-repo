@@ -67,10 +67,10 @@ xbmcplugin.setContent(hos, 'movies')
 VERSION = '4.3as'
 DOMAIN = '131896016'
 GATrack='UA-30985824-1'
-UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
-xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-
+try: 
+	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
+	UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
+except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
 if os.path.isfile(conf_file):
 	try:
