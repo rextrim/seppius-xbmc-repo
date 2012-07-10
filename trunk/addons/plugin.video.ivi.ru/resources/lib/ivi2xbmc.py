@@ -29,7 +29,7 @@ import xbmc
 import xbmcaddon
 import time
 import random
-from urllib import unquote, quote
+from urllib import unquote, quote, quote_plus
 try:
 	from hashlib import md5
 except:
@@ -67,10 +67,12 @@ xbmcplugin.setContent(hos, 'movies')
 VERSION = '4.3as'
 DOMAIN = '131896016'
 GATrack='UA-30985824-1'
-try: 
+
+try:
 	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
 	UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+except:
+	UA = 'XBMC/Unknown %s/%s/%s' % (urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
 if os.path.isfile(conf_file):
 	try:
@@ -107,10 +109,6 @@ if os.path.isfile(genres_dat_file):
 def send_request_to_google_analytics(utm_url, ua):
 
 	try:
-		try: 
-			xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-			UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-		except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
 		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
 		response = urllib2.urlopen(req).read()
@@ -285,13 +283,13 @@ class ivi_player(xbmc.Player):
 			else: GET(links)
 
 	def sendstat(self,path,post):
-		#print '%s:%s'%(path,post)
-		req = urllib2.Request(path)
+		post=urllib.urlencode(post).replace('.','%2E').replace('_','%5F')
+		#print post
+		req = urllib2.Request(path,post)
 		req.add_header('Accept', 'text/plain')
 		req.add_header('Content-Type','application/x-www-form-urlencoded')
-		f = urllib2.urlopen(req,post)
+		f = urllib2.urlopen(req)
 		js = f.read()
-
 	def getparam(self, vID):
 		self.playl.clear()
 		self.preroll_params = []
@@ -402,20 +400,20 @@ class ivi_player(xbmc.Player):
 				pass
 
 			if not self.paused:
-				if self.state=='play':
+				if self.state=='play' and self.content_start:
 					seconds=int(time.time()-self.content_start)
 					if seconds<=60:
 						if self.state=='play' and self.content_start:
-							self.sendstat('http://api.digitalaccess.ru/logger/content/time/','contentid=%s&watchid=%s&fromstart=%s&seconds=%s'%(self.vID,self.watchid,int(self.Time),seconds))
+							self.sendstat('http://api.digitalaccess.ru/logger/content/time/',{'contentid':self.vID,'watchid':self.watchid,'fromstart':int(self.Time),'seconds':seconds})
 					if seconds>=60: self.min=self.min+1
 					if self.min>=60:
 						if self.state=='play' and self.content_start:
-							self.sendstat('http://api.digitalaccess.ru/logger/content/time/','contentid=%s&watchid=%s&fromstart=%s&seconds=%s'%(self.vID,self.watchid,int(self.Time),seconds))
+							self.sendstat('http://api.digitalaccess.ru/logger/content/time/',{'contentid':self.vID,'watchid':self.watchid,'fromstart':int(self.Time),'seconds':seconds})
 							self.min=0
 
 
 				if self.state=='pre_roll' and self.adstart_timer:
-					self.sendstat('http://api.digitalaccess.ru/logger/adv/time/','watchid=%s&advwatchid=%s&seconds=%s'%(self.watchid,self.advwatchid,int(time.time()-self.adstart_timer)))
+					self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
 					
 			if self.percent==self.content_percent_to_mark and self.state=='play':
 				self.content_percent_to_mark=-1
@@ -456,12 +454,12 @@ class ivi_player(xbmc.Player):
 		if self.state=='play':
 			#self.min=0
 			if self.preroll_end:
-					self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/','watchid=%s&speed=%s'%(self.watchid,time.time()-self.preroll_end))
+					self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/',{'watchid':self.watchid,'speed':time.time()-self.preroll_end})
 					self.content_start=time.time()
 					self.pre=1
 					self.preroll_end=None
 			elif not self.pre:
-				self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/','watchid=%s&speed=%s'%(self.watchid,time.time()-self.start_timer))
+				self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/',{'watchid':self.watchid,'speed':time.time()-self.preroll_end})
 				self.content_start=time.time()
 				self.preroll_end=None
 			if self.resume_timer>0:
