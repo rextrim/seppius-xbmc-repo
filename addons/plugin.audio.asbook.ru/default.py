@@ -320,8 +320,11 @@ def Book_Info(params):
     # -- parsing web page --------------------------------------------------
     html = get_URL(b_url)
 
+    n=0
+
     playlist = json.loads(html)
     for rec in playlist['playlist']:
+        n+=1
         s_name = rec['comment'].encode('utf-8')
         s_url  = rec['file']
 
@@ -330,7 +333,7 @@ def Book_Info(params):
         u += '&url=%s'%urllib.quote_plus(b_url)
         u += '&name=%s'%urllib.quote_plus(s_name)
         u += '&img=%s'%urllib.quote_plus(b_img)
-        u += '&track=%s'%urllib.quote_plus(s_url)
+        u += '&track=%s'%urllib.quote_plus(str(n))
         i.setInfo(type='music', infoLabels={    'album':       b_name,
                                                 'title' :      s_name,
                         						'year':        b_year,
@@ -399,22 +402,20 @@ def PLAY(params):
     url  = urllib.unquote_plus(params['url'])
     name = urllib.unquote_plus(params['name'])
     img = urllib.unquote_plus(params['img'])
-    track = urllib.unquote_plus(params['track'])
+    track = int(urllib.unquote_plus(params['track']))
 
-    header = {  'Host'                  :urlparse(track).hostname,
+    header = {  'Host'                  :urlparse(url).hostname,
                 'Referer'               :'http://asbook.ru/player/uppod.swf',
-                'User-Agent'            :'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.63 Safari/535.7'
+                'User-Agent'            :'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C; .NET4.0E)'
              }
 
     html = get_URL(url)
-    is_load = 0
-
     n = 0
     playlist = json.loads(html)
     for rec in playlist['playlist']:
         n += 1
-        if track == rec['file']:
-            is_load = 1
+        print '***  '+str(n)+'  '+rec['file']
+        if track <= n:
             s_name = rec['comment'].encode('utf-8')
             s_url  = rec['file']+'|'+urllib.urlencode(header)
 
@@ -423,16 +424,7 @@ def PLAY(params):
                                                     'track':      str(n)})
             pl.add(s_url, i)
 
-        if is_load == 1:
-            s_name = rec['comment'].encode('utf-8')
-            s_url  = rec['file']+'|'+urllib.urlencode(header)
-
-            i = xbmcgui.ListItem(s_name, path = urllib.unquote(s_url), thumbnailImage=img)
-            i.setInfo(type='music', infoLabels={    'title' :     s_name,
-                                                    'track':      str(n)})
-            pl.add(s_url, i)
-
-    xbmc.Player(xbmc.PLAYER_CORE_MPLAYER).play(pl)
+    xbmc.Player().play(pl)
 
 #-------------------------------------------------------------------------------
 
