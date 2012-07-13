@@ -1126,16 +1126,6 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.twitch.tv" name="Twitch.tv" version="0.0.7" provider-name="NuisMons">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>TwitchTV - является крупнейшим в мире видео вещания игр сообществом.</summary>
-    <description>TwitchTV показывает видео от главных играющих лиц, игроков, турниров, лиг и комментария, в дополнение к самым активным и интересным обсуждениям вокруг видеоигр.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.ulitka.tv" name="Сериалы онлайн на Улитке" version="2.0.2" provider-name="Admin Ulitka.TV [admin@ulitka.tv]">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
