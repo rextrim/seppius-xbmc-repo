@@ -10,6 +10,7 @@
 	<string id="30107">    – всегда использовать google для поиска IMDB ID</string>
 	<string id="30108">    – добавлять фанарт с TMDB</string>
 	<string id="30109">    – добавлять постер с TMDB</string>
+	<string id="30110">    – добавлять название коллекции с TMDB</string>
 	
 	<string id="30200">Трейлер</string>
 	<string id="30201">Брать трейлер с сайта KinoPoisk</string>
