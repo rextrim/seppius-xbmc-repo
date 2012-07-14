@@ -10,6 +10,7 @@
 	<string id="30107">    – Force searching IMDB ID with google</string>
 	<string id="30108">    – Enable TMDb fanart</string>
 	<string id="30109">    – Add TMDB poster</string>
+	<string id="30110">    – Add TMDB set name</string>
 	
 	<string id="30200">Trailer</string>
 	<string id="30201">Get trailer from KinoPoisk.ru</string>
