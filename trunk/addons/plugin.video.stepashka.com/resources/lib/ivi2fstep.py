@@ -37,6 +37,8 @@ import time
 import random
 from urllib import unquote, quote
 
+print 'gooo'
+print hex(ord('_'))
 
 VERSION = '4.3as'
 DOMAIN = '131896016'
@@ -94,11 +96,11 @@ def send_request_to_google_analytics(utm_url, ua):
 
 	try:
 		
-		try: 
-			xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-			UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-		except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
-		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
+		#try: 
+		#	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
+		#	UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
+		#except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+		req = urllib2.Request(utm_url)
 		response = urllib2.urlopen(req).read()
 		#print utm_url
 		
@@ -150,9 +152,10 @@ from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 import socket
 socket.setdefaulttimeout(50)
 
-icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
+Addon = xbmcaddon.Addon(id='plugin.video.stepashka.com')
+icon    = Addon.getAddonInfo('icon')
 siteUrl = 'online.stepashka.com'
-httpSiteUrl = 'http://' + siteUrl
+httpSiteUrl = 'http://' + siteUrl+'/'
 sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.stepashka.com.cookies.sid')
 
 
@@ -218,7 +221,7 @@ def mainScreen(params):
 		if title!='None':
 			li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
 			li.setProperty('IsPlayable', 'false')
-			href = line['href']
+			href = httpSiteUrl+line['href']
 			uri = construct_request({
 				'href': href,
 				'func': 'readCategory'
@@ -259,7 +262,7 @@ def readCategory(params, postParams = None):
 					sec=0
 				else:
 					sec=1
-					href = link.find('a')['href']
+					href = httpSiteUrl+link.find('a')['href']
 					fimg=link.find('img')
 					li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['src'])
 					li.setProperty('IsPlayable', 'false')
@@ -279,7 +282,7 @@ def readCategory(params, postParams = None):
 			return False
 		else:
 			for link in dataRows:
-				href = link['href']
+				href = httpSiteUrl+link['href']
 				title = link.string
 				li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)
 				li.setProperty('IsPlayable', 'false')
