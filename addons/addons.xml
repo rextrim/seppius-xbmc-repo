@@ -216,7 +216,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.1"
+<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.2"
        provider-name="NuisMons">
   <requires>
     <import addon="script.module.simplejson" version="2.0.10"/>
