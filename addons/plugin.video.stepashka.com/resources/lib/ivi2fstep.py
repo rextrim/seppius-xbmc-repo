@@ -265,7 +265,6 @@ def readCategory(params, postParams = None):
 					href = httpSiteUrl+link.find('a')['href']
 					#print link
 					fimg=link.find('img')
-					print fimg
 					try:
 						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['pagespeed_lazy_src'])
 					except: pass
