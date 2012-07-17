@@ -265,8 +265,13 @@ def readCategory(params, postParams = None):
 					href = httpSiteUrl+link.find('a')['href']
 					#print link
 					fimg=link.find('img')
-					#print fimg['pagespeed_lazy_src']
-					li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['pagespeed_lazy_src'])
+					print fimg
+					try:
+						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['pagespeed_lazy_src'])
+					except: pass
+					try:	
+						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['src'])
+					except: li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)	
 					li.setProperty('IsPlayable', 'false')
 					uri = construct_request({
 						'title': title,
