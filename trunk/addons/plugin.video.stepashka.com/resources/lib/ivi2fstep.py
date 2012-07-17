@@ -244,7 +244,12 @@ def doSearch(params):
 def readCategory(params, postParams = None):
 	track_page_view(params['href'])
 	fimg=None
-	http = GET(params['href'])
+	try:
+		hlink=params['href']+params['page']
+	except:
+		hlink=params['href']
+	#print hlink
+	http = GET(hlink)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
  	content = beautifulSoup.find('div', attrs={'id': 'dle-content'})
@@ -274,8 +279,9 @@ def readCategory(params, postParams = None):
 					li.setProperty('IsPlayable', 'false')
 					uri = construct_request({
 						'title': title,
-						'href': href,
+						'href': params['href'],
 						'func': 'readFile',
+						'page': href,
 						'src': fimg['src']
 						})
 					xbmcplugin.addDirectoryItem(hos, uri, li, True)
@@ -288,13 +294,14 @@ def readCategory(params, postParams = None):
 			return False
 		else:
 			for link in dataRows:
-				href = httpSiteUrl+link['href']
+				href = link['href']
 				title = link.string
 				li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)
 				li.setProperty('IsPlayable', 'false')
 				uri = construct_request({
 					'title': title,
-					'href': href,
+					'href': params['href'],
+					'page': link['href'],
 					'func': 'readCategory',
 					})
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
