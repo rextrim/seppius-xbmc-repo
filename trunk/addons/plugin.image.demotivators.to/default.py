@@ -73,30 +73,38 @@ def findPic(url):
 	print url
 
 def get_main(params):
-	try:
-		page=params['page']
-		next='?page=%s'%str(page)
-		link=params['url']+next
-	except:
-		page=None
-		next=None
-		link=params['url']
-	http = GET(link)
-	if http == None: return False
-	beautifulSoup = BeautifulSoup(http)
-	content = beautifulSoup.find('div', attrs={'class': 'posterimage'})
-	content = beautifulSoup.find('table')
-	cats=content.findAll('a')
-	for im in cats:
-		if str(im).find('#comments')<0: 
-			listItem = xbmcgui.ListItem(im.find('img')['alt'], '', '', '', '')
-			xbmcplugin.addDirectoryItem(hos, findPic(im['href']), listItem, False)
+
+	max_pages=4
+	currpage=0
+	
+	
+	while currpage<max_pages:
+		try:
+			page=params['page']
+			next='?page=%s'%str(int(page)+currpage)
+			link=params['url']+next
+		except:
+			page=None
+			next=None
+			link=params['url']
+		http = GET(link)
+		if http == None: return False
+		beautifulSoup = BeautifulSoup(http)
+		content = beautifulSoup.find('div', attrs={'class': 'posterimage'})
+		content = beautifulSoup.find('table')
+		cats=content.findAll('a')
+		for im in cats:
+			if str(im).find('#comments')<0: 
+				listItem = xbmcgui.ListItem(im.find('img')['alt'], '', '', '', '')
+				xbmcplugin.addDirectoryItem(hos, findPic(im['href']), listItem, False)
+
+		currpage=currpage+1
 	listitem=xbmcgui.ListItem('Еще',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	if next:
 		uri = construct_request({
 			'url': params['url'],
-			'page':int(params['page'])+1,
+			'page':int(params['page'])+currpage,
 			'func': 'get_main'
 			})
 	else:
@@ -126,6 +134,14 @@ def mainScreen(params):
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivators.to/top/',
+		'page':1,
+		'func': 'get_main'
+		})
+	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+	listitem=xbmcgui.ListItem('Самые комментируемые',None,addon_icon)
+	listitem.setProperty('IsPlayable', 'false')
+	uri = construct_request({
+		'url': 'http://demotivators.to/mostcommented/',
 		'page':1,
 		'func': 'get_main'
 		})
