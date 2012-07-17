@@ -216,6 +216,24 @@
   </extension>
 </addon>
 
+<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.1"
+       provider-name="NuisMons">
+  <requires>
+    <import addon="script.module.simplejson" version="2.0.10"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>image</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary lang="en">View demotivators from demotivators.to</summary>
+    <description>
+      View demotivators from demotivators.to
+    </description>
+    <license>GPL 2.0</license>
+  </extension>
+</addon>
+
 <addon id="plugin.video.5-tv.ru"
        name="Пятый канал"
        version="1.0.2"
