@@ -279,7 +279,7 @@ def readCategory(params, postParams = None):
 					li.setProperty('IsPlayable', 'false')
 					uri = construct_request({
 						'title': title,
-						'href': params['href'],
+						'href': href,
 						'func': 'readFile',
 						'page': href,
 						'src': fimg['src']
@@ -310,21 +310,27 @@ def readCategory(params, postParams = None):
 
 def readFile(params):
 	http = GET(params['href'])
+	print params['href']
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('param', attrs={'name': 'flashvars'})
+	print content
 	findfile=str(content)
-	vurl=findfile.split(';')
+	print findfile
+	pat=re.compile('http://[a-zA-Z0-9-_.!/]+.flv', re.S)
+	mfil = pat.findall(findfile)
+	pass
+	vurl=findfile.split('&')
 	for ur in vurl:	findfile=ur
 	vurl=findfile.split('"')
 	lurl=vurl[0]
-	if lurl.split('=')[0]=='file': 
-		print 'play file ' + lurl.split('=')[1]
+	if mfil: 
+		print 'play file ' + mfil[0]
 		li = xbmcgui.ListItem(params['title'], addon_icon, params['src'])
 		li.setProperty('IsPlayable', 'true')
 		uri = construct_request({
 			'func': 'play',
-			'file': lurl.split('=')[1]
+			'file': mfil[0]
 			})
 		xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	else: 
