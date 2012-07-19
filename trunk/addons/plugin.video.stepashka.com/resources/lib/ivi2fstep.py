@@ -202,7 +202,7 @@ def mainScreen(params):
 	li = xbmcgui.ListItem('[Последние добавления]', addon_fanart, addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
-		'href': 'http://online.stepashka.com/index.php',
+		'href': 'http://online.stepashka.com/',
 		'func': 'readCategory'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
