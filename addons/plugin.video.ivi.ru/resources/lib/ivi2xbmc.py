@@ -395,7 +395,7 @@ class dig_player(xbmc.Player):
 								#ShowMessage('ivi','%s not present'%m['type'],1000)
 								pass
 						
-					if self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-2) and not self.ended:
+					if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-2) and not self.ended:
 						pre=self.getAds('postroll')
 						if pre:
 							#ShowMessage('ivi','Постролл после контента',1000)
@@ -414,7 +414,11 @@ class dig_player(xbmc.Player):
 	def onPlayBackEnded( self ):
 		if self.state!='play' and not self.ended: 
 			self.state='play'
-			#ShowMessage('ivi','ad ended',1000)
+			self.playl.clear()
+			i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+			i.setProperty('StartOffset', str(self.resume_timer))
+			self.playl.add(self.content,i)
+			self.play(self.playl)
 		elif self.state=='play': 
 			#ShowMessage('ivi','content ended',1000)
 			self.playl.clear()
@@ -480,12 +484,13 @@ class dig_player(xbmc.Player):
 	
 	def sendstat(self,path,post):
 		post=urllib.urlencode(post).replace('.','%2E').replace('_','%5F')
-		#print post
-		req = urllib2.Request(path,post)
-		req.add_header('Accept', 'text/plain')
-		req.add_header('Content-Type','application/x-www-form-urlencoded')
-		f = urllib2.urlopen(req)
-		js = f.read()
+		try:
+			req = urllib2.Request(path,post)
+			req.add_header('Accept', 'text/plain')
+			req.add_header('Content-Type','application/x-www-form-urlencoded')
+			f = urllib2.urlopen(req)
+			js = f.read()
+		except: pass
 		#print js
 	def find_best(self, data):
 		play_file = None
@@ -689,6 +694,9 @@ def read_dir(params):
 			params['sort'] = get_sort()
 			params['sorted'] =None
 	except: pass
+	try:
+		if not params['sort']: params['sort'] = get_sort()
+	except: params['sort'] = get_sort()
 	http = GET(target % urllib.urlencode(params))
 	if http == None:
 		ShowMessage('Error', 'Cant received data', 2000)
@@ -895,7 +903,7 @@ def run_search(params):				# Поиск
 
 def get_sort():
 
-	if __addon__.getSetting("sort_v") == '1': return 'pop'
+	if Addon.getSetting("sort_v") == '1': return 'pop'
 	else: return 'new'
 
 def get_params(paramstring):
