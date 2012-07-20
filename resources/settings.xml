@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+<category label="Настройки">
+<!--    <setting id="video_q" type="enum" label="Качество видео" values="Hi|Low" default="Hi" />    
+    <setting id="sort_v" type="enum" label="Сортирока" values="Новое|Популярное" default="new" />
+	<setting type="sep" />-->
+  </category>
+</settings>
