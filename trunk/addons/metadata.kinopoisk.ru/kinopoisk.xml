@@ -205,19 +205,19 @@
 			</RegExp>
 			<!--STUDIO-->
 			<RegExp input="$$1" output="&lt;url function=&quot;STUDIOS&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
-				<expression>"(/level/91/film/\d+/)"</expression>
+				<expression>(/film/\d+/studio/)</expression>
 			</RegExp>
 			<!--PEOPLE-->
-			<RegExp input="$$1" output="&lt;url function=&quot;PEOPLE&quot;&gt;http://www.kinopoisk.ru/level/19/film/\1&lt;/url&gt;" dest="5+">
-				<expression>href="/film/(\d+)/cast/"</expression>
+			<RegExp input="$$1" output="&lt;url function=&quot;PEOPLE&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+				<expression>(/film/\d+/cast/)</expression>
 			</RegExp>
 			<!--POSTERS-->
 			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;url function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
-				<expression>href="(/level/17/film/([0-9]+)/)"</expression>
+				<expression>(/film/\d+/posters)</expression>
 			</RegExp>
 			<!--TRAILER-->
-			<RegExp conditional="download_trailer" input="$$1" output="&lt;url function=&quot;GetTrailers&quot;&gt;http://www.kinopoisk.ru/level/16/film/\1&lt;/url&gt;" dest="5+">
-				<expression>&lt;a href="/level/16/film/(\d+)/</expression>
+			<RegExp conditional="download_trailer" input="$$1" output="&lt;url function=&quot;GetTrailers&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+				<expression>(/film/\d+/video/)</expression>
 			</RegExp>
 			<expression noclean="1"/>
 		</RegExp>
