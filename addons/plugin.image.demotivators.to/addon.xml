@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.2"
+<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.3"
        provider-name="NuisMons">
   <requires>
     <import addon="script.module.simplejson" version="2.0.10"/>
