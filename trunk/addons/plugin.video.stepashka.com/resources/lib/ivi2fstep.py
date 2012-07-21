@@ -171,18 +171,17 @@ def showMessage(heading, message, times = 3000, pics = addon_icon):
 		except Exception, e:
 			xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
 
-headers  = {
-	'User-Agent' : 'XBMC',
-	'Accept'     :' text/html, application/xml, application/xhtml+xml, image/png, image/jpeg, image/gif, image/x-xbitmap, */*',
-	'Accept-Language':'ru-RU,ru;q=0.9,en;q=0.8',
-	'Accept-Charset' :'utf-8, utf-16, *;q=0.1',
-	'Accept-Encoding':'identity, *;q=0'
-}
+
 
 def GET(target, post=None):
 	#print target
 	try:
-		req = urllib2.Request(url = target, data = post, headers = headers)
+		req = urllib2.Request(url = target, data = post)
+		req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+		#req.add_header('Host',	'online.stepashka.com')
+		req.add_header('Accept', '*/*')
+		req.add_header('Accept-Language', 'ru-RU')
+		req.add_header('Referer',	'http://www.stepashka.com')
 		resp = urllib2.urlopen(req)
 		CE = resp.headers.get('content-encoding')
 		http = resp.read()
@@ -221,7 +220,7 @@ def mainScreen(params):
 		if title!='None':
 			li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
 			li.setProperty('IsPlayable', 'false')
-			href = httpSiteUrl+line['href']
+			href = line['href']
 			uri = construct_request({
 				'href': href,
 				'func': 'readCategory'
@@ -246,6 +245,7 @@ def readCategory(params, postParams = None):
 	fimg=None
 	try:
 		hlink=params['href']+params['page']
+		hlink=params['href']
 	except:
 		hlink=params['href']
 	#print hlink
@@ -267,7 +267,8 @@ def readCategory(params, postParams = None):
 					sec=0
 				else:
 					sec=1
-					href = httpSiteUrl+link.find('a')['href']
+					href = link.find('a')['href']
+
 					#print link
 					fimg=link.find('img')
 					try:
@@ -318,8 +319,11 @@ def readFile(params):
 	findfile=str(content)
 	print findfile
 	pat=re.compile('http://[a-zA-Z0-9-_.!/]+.flv', re.S)
+	pat_pl=re.compile('pl=http://[a-zA-Z0-9-_.!/]+.flv', re.S)
 	mfil = pat.findall(findfile)
-	pass
+	pfil = pat_pl.findall(findfile)
+	if mfil: print mfil
+	if pfil: print pfil
 	vurl=findfile.split('&')
 	for ur in vurl:	findfile=ur
 	vurl=findfile.split('"')
@@ -336,6 +340,7 @@ def readFile(params):
 	else: 
 		print 'playlist in ' + lurl.split('=')[1]
 		http = GET(lurl.split('=')[1])
+		print http
 		f=http.find('{')
 		http=http[f:len(http)]
 		try:
@@ -349,7 +354,7 @@ def readFile(params):
 		playlist = jsdata['playlist']
 		#print playlist
 		for file in playlist:
-			#print file
+			print file
 			try:
 				li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
 				li.setProperty('IsPlayable', 'true')
