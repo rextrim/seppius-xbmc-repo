@@ -1,10 +1,12 @@
 [B]TODO:[/B]
 - Fix Adv playback skiping
 
+[B]Version 2.2.11[/B]
+- Search fix
+
 [B]Version 2.2.2[/B]
 - New fanart, icon
 - Firm Style
-- Последовательное воспроизведение многосерийных фильмов
 
 [B]Version 2.2.1[/B]
 - Fixed ads
