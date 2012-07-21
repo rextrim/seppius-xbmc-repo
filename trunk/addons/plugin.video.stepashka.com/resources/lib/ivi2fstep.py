@@ -301,7 +301,7 @@ def readCategory(params, postParams = None):
 				li.setProperty('IsPlayable', 'false')
 				uri = construct_request({
 					'title': title,
-					'href': params['href'],
+					'href': href,
 					'page': link['href'],
 					'func': 'readCategory',
 					})
