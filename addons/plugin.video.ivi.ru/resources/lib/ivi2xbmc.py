@@ -17,7 +17,7 @@
 #   along with this program; see the file COPYING.  If not, write to
 #   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #   http://www.gnu.org/licenses/gpl.html
-import platform
+
 import urllib
 import urllib2
 import trans
@@ -50,7 +50,13 @@ addon_name    = Addon.getAddonInfo('name')
 addon_version = Addon.getAddonInfo('version')
 
 hos = int(sys.argv[1])
-
+try:
+	import platform
+	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
+	UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
+except: 
+	UA = 'XBMC/Unknown %s/%s/%s' % (urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+	
 def get_len():
 	try:
 		if Addon.getSetting("cnt_v") == '0': return 10
@@ -67,12 +73,6 @@ show_len=get_len()
 VERSION = '4.3as'
 DOMAIN = '131896016'
 GATrack='UA-30985824-1'
-
-try:
-	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-	UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-except:
-	UA = 'XBMC/Unknown %s/%s/%s' % (urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
 if os.path.isfile(conf_file):
 	try:
@@ -112,14 +112,12 @@ def send_request_to_google_analytics(utm_url, ua):
 
 		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
 		response = urllib2.urlopen(req).read()
-		#print utm_url
 
 	except:
 		ShowMessage('ivi.ru', "GA fail: %s" % utm_url, 2000)
 	return response
 
 def track_page_view(path,nevent='', tevent='',UATRACK='UA-11561457-31'):
-	#print GAcookie
 	domain = DOMAIN
 	document_path = unquote(path)
 	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
@@ -172,7 +170,6 @@ def ShowMessage(heading, message, times = 3000, pics = addon_icon):
 
 def GET(target, post=None):
 	try:
-		#print target
 		req = urllib2.Request(url = target, data = post, headers = {'User-Agent':UA})
 		resp = urllib2.urlopen(req)
 		CE = resp.headers.get('content-encoding')
@@ -189,10 +186,8 @@ def genre2name(gid):
 	gdf.close()
 	try:
 		for n in genres_data:
-			#print n
 			if int(n.split(';')[0]) == (gid):
 				reti=n.split(';')[1]
-				#showMessage('Genre', reti, 2000)
 		return reti
 	except: return None
 
@@ -246,8 +241,7 @@ class dig_player(xbmc.Player):
 			else: GET(links)
 			
 	def POSTAPI(self, post):
-		#print self.api_url
-		#print 'post %s'%post
+
 		req = urllib2.Request(self.api_url)
 		req.add_header('User-Agent', UA)
 		f = urllib2.urlopen(req, json.dumps(post))
@@ -267,7 +261,6 @@ class dig_player(xbmc.Player):
 		json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'contentid':self.vID,'watchid':self.watchid,'site':self.sID, 'uid':uniq_id} ]})
 		vc = json0['result']
 		self.content = self.find_best(vc)
-		#print self.content
 		http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
 		if http:
 			data = get_video_data(json.loads(http))
@@ -286,14 +279,11 @@ class dig_player(xbmc.Player):
 		try:    self.credits_begin_time = int(vc['credits_begin_time'])
 		except: self.credits_begin_time = -1
 		if self.credits_begin_time==0: self.credits_begin_time=-1
-		#self.credits_begin_time = -1
 		try:    self.midroll = vc['midroll']
 		except: self.midroll = []
-		#print 'ext'
-		
+	
 		ind=0
 		pre=self.getAds('preroll')
-		#print 'pre:%s'%pre
 		if pre:
 			self.adv_file=pre['url']
 			self.advid=pre['id']
@@ -315,18 +305,14 @@ class dig_player(xbmc.Player):
 				'ind':ind,
 				'time':self.credits_begin_time
 			})
-		#print 'ADS:%s'%self.ads
-		
 		track_page_view('','event','5(Video*Videostart)')
 		track_page_view('','event','5(Video*Videostart)',UATRACK=GATrack)
-		#print self.send_ads
 		self.active=True
 		json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid ,'uid':uniq_id} ],'method':'da.content.watched' })
 		self.play(self.playl)
 		
 	
 	def play_loop(self):
-		#print 'loop started'
 		self.last_ads_time=0
 		added=None
 		self.active=True
@@ -356,7 +342,6 @@ class dig_player(xbmc.Player):
 				if self.state!='play' and self.adstart_timer:
 					self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
 				if self.state!='play' and not self.ended:
-					#print '%s-%s'%(self.Time,self.TotalTime-3)
 					if self.Time>=int(self.TotalTime-2) and not added:
 						if self.state=='preroll': 
 							self.pre_end=time.time()
@@ -364,23 +349,19 @@ class dig_player(xbmc.Player):
 						i.setProperty('StartOffset', str(self.resume_timer))
 						self.playl.add(self.content,i)
 						added=True
-					#ShowMessage('ivi','content added',1000)
 						self.state='play'
 						self.sleep(1000)
 						self.playselected(1)
-	
-			#print self.ads
+
 				else:
 				
 					for m in self.ads:
-						#print m
 						if int(self.Time)==int(m['time']) and int(self.Time)!=self.last_ads_time:
 							try: self.ads.remove(m)
 							except: pass
 							self.last_ads_time=int(self.Time)
 							pre=self.getAds(m['type'])
 							if pre: 
-								#ShowMessage('ivi',m['type'],1000)
 								self.state=m['type']
 								iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 								self.playl.add(pre['url'],iad)
@@ -389,16 +370,13 @@ class dig_player(xbmc.Player):
 								self.send_ads=pre
 								self.resume_timer=self.Time
 								added=None
-								self.playselected(1)
-							
+								self.playselected(1)		
 							else:
-								#ShowMessage('ivi','%s not present'%m['type'],1000)
 								pass
 						
 					if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-2) and not self.ended:
 						pre=self.getAds('postroll')
 						if pre:
-							#ShowMessage('ivi','Постролл после контента',1000)
 							self.state='postroll'
 							iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 							self.playl.add(pre['url'],iad)
@@ -409,7 +387,6 @@ class dig_player(xbmc.Player):
 							self.ended=True
 							self.playselected(1)
 			self.sleep(300)
-		#print 'loop ended'
 		
 	def onPlayBackEnded( self ):
 		if self.state!='play' and not self.ended: 
@@ -420,11 +397,9 @@ class dig_player(xbmc.Player):
 			self.playl.add(self.content,i)
 			self.play(self.playl)
 		elif self.state=='play': 
-			#ShowMessage('ivi','content ended',1000)
 			self.playl.clear()
 			self.active=None
 		elif self.ended:
-			#ShowMessage('ivi','content ended',1000)
 			self.playl.clear()
 			self.active=None
 			
@@ -434,44 +409,34 @@ class dig_player(xbmc.Player):
 		self.playl.clear()
 	def onPlayBackPaused( self ):
 		self.paused=1
-		#ShowMessage('ivi.ru player', language(30012), 2000)
 
 	def onPlayBackResumed( self ):
 		self.paused=None
-		#ShowMessage('ivi.ru player', language(30013), 2000)
 
 	def onPlayBackStarted( self ):
-		#print self.send_ads
 		if self.state=='play':
 			if not self.content_start: 
 				
 				self.content_start=time.time()
-				#ShowMessage('speed','%s'%(str(self.content_start-self.pre_end)),1000)
 				self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/',{'watchid':self.watchid,'speed':self.content_start-self.pre_end})
 			try: 
 				
 				self.playl.remove(self.adv_file)
-				#ShowMessage('ivi','ad killed',1000)
 			except: pass
 		else:
 			
 			try: 
 				
-				#ShowMessage('advid',str(self.advid),1000)
 				self.adstart_timer=time.time()
 				self.advwatchid='%s_%s'%(self.advid,str(int(self.adstart_timer*1000)))
-				#print 'report start'
 				json1 = self.POSTAPI({'method':'da.adv.got', 'params':[self.vID, self.advid, {'contentid':self.vID,'site':self.sID, 'watchid':str(self.watchid),'advid':self.advid,'uid':uniq_id, "advwatchid":str(self.advwatchid)} ]})							
 				self.report_ads(self.send_ads)
-				#print 'report end'
 				self.playl.remove(self.content)
-				#ShowMessage('ivi','content killed',1000)
 			except: pass
 	def getAds(self, phase):
 		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid, 'last_adv':self.lastad, 'uid':uniq_id},phase]} )
 		if json1:
 			try:
-				#print json1
 				for ad in json1['result']:
 					ad_file = self.find_best(ad)
 					if ad_file:
@@ -491,7 +456,7 @@ class dig_player(xbmc.Player):
 			f = urllib2.urlopen(req)
 			js = f.read()
 		except: pass
-		#print js
+
 	def find_best(self, data):
 		play_file = None
 		if not play_file:
@@ -519,7 +484,6 @@ def playid(params):
 	
 	ShowMessage('ivi','Инициализация',1000)
 	xbmc.sleep(1000)
-	#xbmcplugin.setContent(hos, 'files')
 	try: xbmcplugin.endOfDirectory(hos)
 	except: pass
 	xbmc.sleep(1000)
@@ -531,8 +495,6 @@ def playid(params):
 		pl_from=int(m_list.index(params['id']))
 		pl_to=int(len(m_list)-1)
 		sm_list=m_list[pl_from:pl_to]
-		#print sm_list
-		#print v_list
 	except: m_list=None
 	
 	try:
@@ -567,14 +529,6 @@ def playid(params):
 				aplay.stop
 
 def main_screen(params):
-
-	#li = xbmcgui.ListItem('test', iconImage = addon_icon, thumbnailImage = addon_icon)
-	#uri = construct_request({
-	#	'func': 'playid',
-	#	'id': 7029,
-	#})
-	#li.setProperty('fanart_image', addon_fanart)
-	#xbmcplugin.addDirectoryItem(hos, uri, li, False)
 
 	li = xbmcgui.ListItem(language(30014), iconImage = addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({
@@ -852,13 +806,12 @@ def get_video_data(video):
 			mysetInfo['genre'] = ', '.join(glist)
 	if cast: 
 		mysetInfo['cast'] = cast
-		#print cast
 	export={'id':id,'title':title, 'duration':duration, 'seasons_cnt':seasons_cnt, 'image':ltu, 'info':mysetInfo}
 	return export
 
 def promo(params): 					# показ промо контента
 	
-	#xbmcplugin.setContent(hos, 'movies')
+
 	track_page_view('promo')
 	track_page_view('promo',UATRACK=GATrack)
 	http = GET('http://www.ivi.ru/mobileapi/promo/')
@@ -873,8 +826,6 @@ def promo(params): 					# показ промо контента
 			
 			try: li.setInfo(type='video', infoLabels = vdata['info'])
 			except: pass
-			
-			#li = xbmcgui.ListItem(video['title'], thumbnailImage=video['img_wp7']['path'])
 			uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'playid', 'id': video['content_id']}))
 			
 			li.setProperty('fanart_image', addon_fanart)
@@ -897,6 +848,8 @@ def run_search(params):				# Поиск
 		except:
 			out = kbd.getText()
 
+	params['from'] = 0
+	params['to']= int(show_len)
 	params['query'] = out
 	params['url'] = 'http://www.ivi.ru/mobileapi/search/v2/?%s'
 	read_dir(params)
@@ -943,4 +896,3 @@ def addon_main():
 			xbmc.log( '[%s]: Function "%s" not found' % (addon_id, func), 4 )
 			ShowMessage('Internal addon error', 'Function "%s" not found' % func, 2000)
 		if pfunc: pfunc(params)
-#stop
