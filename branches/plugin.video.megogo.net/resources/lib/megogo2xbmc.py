@@ -58,62 +58,124 @@ except ImportError:
 			
 			
 def GET(mCmd, mParams):
-	req_params = urllib.urlencode(mParams)
+	req_p1 = []
+	req_p2 = []
+	if mParams:
+		if len(mParams):
+			for mKey in mParams:
+				req_p1.append('%s=%s' % (mKey, urllib.quote_plus(mParams[mKey])))
+				req_p2.append('%s=%s' % (mKey, mParams[mKey]))
+	req_params = '&'.join(req_p1)
+	req_hash = ''.join(req_p2)
 	m = hashlib.md5()
-	m.update('%s%s'%(req_params,'ced6ad86a33defca'[::-1]))
+	m.update('%s%s'%(req_hash,'ced6ad86a33defca'[::-1]))
 	target = 'http://megogo.net/p/%s?%s&sign=%s' % (mCmd, req_params, '%s%s' % (m.hexdigest(), '_xbmc'))
 	print 'GET: TARGET: %s' % target
-	
 	req = urllib2.Request(url = target, data = None, headers = {'User-Agent':UA})
 	resp = urllib2.urlopen(req)
 	http = resp.read()
 	resp.close()
 
-	data = json.loads(http)
-	if data['result'] != 'ok':
-		showMessage('ОШИБКА', 'Подробности в журнале', 5000)
-		print data
-		data = None
-	print data
-	return data
+	#print http
+
+	try:
+		return json.loads(http)
+	except:
+		return None
+		
+#	if data['result'] != 'ok':
+#		showMessage('ОШИБКА', 'Подробности в журнале', 5000)
+#		print data
+#		data = None
+	
+	
 	
 
 def mainScreen(params):
+	session = None
+	data = GET('login', {'login': __addon__.getSetting('username'), 'pwd':__addon__.getSetting('password')})
+	if data:
+		if data['result'] == 'ok':
+			session = data['session']
+			user = data['user']
+			if len(user['nickname']):
+				username = user['nickname']
+			else:
+				username = user['email']
+			usr_avatar = 'http://megogo.net%s' % user['avatar_url']
+			i = xbmcgui.ListItem('%s - MEGOGO.NET приветствует Вас!' % username.encode('utf-8'), iconImage = usr_avatar, thumbnailImage = usr_avatar)
+			xbmcplugin.addDirectoryItem(hos, '', i, True)
+		else:
+			i = xbmcgui.ListItem('Вы не авторизованы. Проверьте Ваши логин и пароль в настройках дополнения.')
+			xbmcplugin.addDirectoryItem(hos, '', i, False)
+	
+	
 	data = GET('categories', [])
 	if data:
 		for cat in data['category_list']:
-			i = xbmcgui.ListItem('%s (%s)' % (cat['title'], cat['total_num']), iconImage = addon_icon, thumbnailImage = addon_icon)
+			title = '%s (%s)' % (cat['title'], cat['total_num'])
+			urip = {'func':'videos', 'category': cat['id'], 'offset': 0, 'limit': 100 }
+			if session: urip['session'] = session
+			uri = '%s?%s' % (sys.argv[0], urllib.urlencode(urip))
+			i = xbmcgui.ListItem(title, iconImage = addon_icon, thumbnailImage = addon_icon)
 			i.setProperty('fanart_image', addon_fanart)
-			uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'videos', 'category': cat['id']}))
-			xbmcplugin.addDirectoryItem(hos, uri, i, True)
-		xbmcplugin.endOfDirectory(hos)
-
-
-
-		
-def genres(params):
-	data = GET('genres', params)
-	if data:
-		for cat in data['category_list']:
-			i = xbmcgui.ListItem('%s (%s)' % (cat['title'], cat['total_num']), iconImage = addon_icon, thumbnailImage = addon_icon)
-			i.setProperty('fanart_image', addon_fanart)
-			uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'openCat', 'cat_id': cat['id']}))
+			i.setInfo(type = 'video', infoLabels = {'title':title})
 			xbmcplugin.addDirectoryItem(hos, uri, i, True)
 		xbmcplugin.endOfDirectory(hos)
 
 		
 		
 def videos(params):
+	try:    session = params['session']
+	except: session = None
 	data = GET('videos', params)
 	if data:
 		for video in data['video_list']:
 			poster = u'http://megogo.net%s' % video['poster']
-			i = xbmcgui.ListItem('%s (%s)' % (video['title'], video['title_orig']), iconImage =poster , thumbnailImage = poster)
+			i = xbmcgui.ListItem('%s (%s)' % (video['title'], video['title_orig']), iconImage = poster , thumbnailImage = poster)
 			i.setProperty('fanart_image', video['poster'])
-			uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'play', 'video': video['id']}))
+			urip = {'func':'play', 'video': video['id']}
+			if session: urip['session'] = session
+			uri = '%s?%s' % (sys.argv[0], urllib.urlencode(urip))
+			i.setProperty('IsPlayable', 'true')
+			i.setInfo(type = 'video', infoLabels = {'title':video['title']})
 			xbmcplugin.addDirectoryItem(hos, uri, i, False)
+
+		i = xbmcgui.ListItem('ЕЩЕ!', iconImage = addon_icon , thumbnailImage = addon_icon)
+		i.setProperty('fanart_image', addon_fanart)
+		
+		params['func'] = 'videos'
+		params['offset'] = int(params['offset']) + int(params['limit']) # TODO x3
+		
+		uri = '%s?%s' % (sys.argv[0], urllib.urlencode(params))
+
+		i.setInfo(type = 'video', infoLabels = {'title':'ЕЩЕ!'})
+
+		xbmcplugin.addDirectoryItem(hos, uri, i, True)
+			
+			
 		xbmcplugin.endOfDirectory(hos)
 
+		
+#def genres(params):
+#	data = GET('genres', params)
+#	if data:
+#		for cat in data['category_list']:
+#			i = xbmcgui.ListItem('%s (%s)' % (cat['title'], cat['total_num']), iconImage = addon_icon, thumbnailImage = addon_icon)
+#			i.setProperty('fanart_image', addon_fanart)
+#			uri = '%s?%s' % (sys.argv[0], urllib.urlencode({'func':'openCat', 'cat_id': cat['id']}))
+#			xbmcplugin.addDirectoryItem(hos, uri, i, True)
+#		xbmcplugin.endOfDirectory(hos)
+
+
+
+def play(params):
+	data = GET('info', params)
+	i = xbmcgui.ListItem( path = data['src'] )
+	xbmcplugin.setResolvedUrl(hos, True, i)
+
+
+	
 def get_params(paramstring):
 	param=[]
 	if len(paramstring)>=2:
