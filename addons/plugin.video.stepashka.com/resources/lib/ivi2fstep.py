@@ -57,9 +57,16 @@ addon_author  = __addon__.getAddonInfo('author')
 addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
+PLUGIN_ID = 'plugin.video.stepashka.com'
+PLUGIN_NAME='stepashka.com'
+if not __addon__.getSetting('ga_uid'):
+	from random import randint
+	from ga import get_visitor_id
+	ga_uid = get_visitor_id(str(randint(0, 0x7fffffff)) + PLUGIN_NAME + PLUGIN_ID, None)
+	__addon__.setSetting('ga_uid', ga_uid)
+	xbmc.log('[%s] GA uid set to %s' % (PLUGIN_NAME, __addon__.getSetting('ga_uid')))
 hos = int(sys.argv[1])
 show_len=50
-UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
 
 if os.path.isfile(conf_file):
 	try:
@@ -82,58 +89,32 @@ else:
 	f.write('\n')
 	f.write(str(uniq_id))
 	f.close()
+try:
+	ver = sys.version_info
+	ver1 = '%s.%s.%s' % (ver[0], ver[1], ver[2])
+	osname = '%s %s; %s' % (os.name, sys.platform, ver1)
+	pyver = platform.python_version()
+	isXBMC = 'XBMC'
+	if getattr(xbmc, "nonXBMC", None) is not None:
+		isXBMC = 'nonXBMC'
+	UA = '%s/%s (%s; %s) %s/%s stepashka.com/%s user/%s' % (isXBMC, xbmc.getInfoLabel('System.BuildVersion').split(" ")[0], xbmc.getInfoLabel('System.BuildVersion'), osname, __addon__.getAddonInfo('id'), __addon__.getAddonInfo('version'), '0.0.1', str(uniq_id))
+	xbmc.log('UA: %s' % UA)
+except:
+	UA = '%s/%s %s/%s/%s' % (addon_type, addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
+
+
 #print GAcookie
 #print uniq_id
 
-def get_random_number():
-	return str(random.randint(0, 0x7fffffff))
 
-#COOKIEJAR = None
-#COOKIEFILE = os.path.join(xbmc.translatePath('special://temp/'), 'cookie.%s.txt' % DOMAIN)
-
-
-def send_request_to_google_analytics(utm_url, ua):
-
-	try:
-		
-		#try: 
-		#	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
-		#	UA = 'XBMC/%s (%s; U; %s %s %s %s) %s/%s XBMC/%s'% (xbmcver,platform.system(),platform.system(),platform.release(), platform.version(), platform.machine(),addon_id,addon_version,xbmcver)
-		#except: UA = 'XBMC/%s %s/%s/%s' % (addon_id, urllib.quote_plus(addon_author), addon_version, urllib.quote_plus(addon_name))
-		req = urllib2.Request(utm_url)
-		response = urllib2.urlopen(req).read()
-		#print utm_url
-		
-	except:
-		#print ("GA fail: %s" % utm_url)     
-		showMessage('IVI Player', "GA fail: %s" % utm_url, 2000)
-	#print str(response)
-	return response
-           
 def track_page_view(path,nevent='', tevent=''):
-	domain = DOMAIN
-	document_path = unquote(path)
-	utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-	extra = {}
-	extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
-	md5String = md5(str(uniq_id)).hexdigest()
-	gvid="0x" + md5String[:16]
-        # // Construct the gif hit url.
-	utm_url = utm_gif_location + "?" + \
-		"utmwv=" + VERSION + \
-		"&utmn=" + get_random_number() + \
-		"&utmsr=" + quote(extra.get("screen", "")) + \
-		"&utmt=" + nevent + \
-		"&utme=" + tevent +\
-		"&utmhn=localhost" + \
-		"&utmr=" + quote('-') + \
-		"&utmp=" + quote(document_path) + \
-		"&utmac=" + UATRACK + \
-		"&utmvid=" + gvid + \
-		"&utmcc="+ GAcookie
-        # dbgMsg("utm_url: " + utm_url) 
-	#print "Analitycs: %s" % utm_url
-	return send_request_to_google_analytics(utm_url, UA)
+	from ga import track_page_view_a
+	extras = {}
+	extras['screen'] = xbmc.getInfoLabel('System.ScreenMode')
+	try:
+		track_page_view_a(__addon__.getSetting('ga_uid'), path, UA, extras,tevent) 
+	except:
+		xbmc.log('problems tracking GA')
 
 try:
 	import json
@@ -311,13 +292,13 @@ def readCategory(params, postParams = None):
 
 def readFile(params):
 	http = GET(params['href'])
-	print params['href']
+	#print params['href']
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('param', attrs={'name': 'flashvars'})
-	print content
+	#print content
 	findfile=str(content)
-	print findfile
+	#print findfile
 	pat=re.compile('http://[a-zA-Z0-9-_.!/]+.flv', re.S)
 	pat_pl=re.compile('pl=http://[a-zA-Z0-9-_.!/]+.flv', re.S)
 	mfil = pat.findall(findfile)
@@ -329,7 +310,7 @@ def readFile(params):
 	vurl=findfile.split('"')
 	lurl=vurl[0]
 	if mfil: 
-		print 'play file ' + mfil[0]
+		#print 'play file ' + mfil[0]
 		li = xbmcgui.ListItem(params['title'], addon_icon, params['src'])
 		li.setProperty('IsPlayable', 'true')
 		uri = construct_request({
@@ -338,9 +319,9 @@ def readFile(params):
 			})
 		xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	else: 
-		print 'playlist in ' + lurl.split('=')[1]
+		#print 'playlist in ' + lurl.split('=')[1]
 		http = GET(lurl.split('=')[1])
-		print http
+		#print http
 		f=http.find('{')
 		http=http[f:len(http)]
 		try:
@@ -354,7 +335,7 @@ def readFile(params):
 		playlist = jsdata['playlist']
 		#print playlist
 		for file in playlist:
-			print file
+			#print file
 			try:
 				li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
 				li.setProperty('IsPlayable', 'true')
