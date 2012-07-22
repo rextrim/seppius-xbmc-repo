@@ -485,7 +485,7 @@
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.7.4"
+       version="1.7.5"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
