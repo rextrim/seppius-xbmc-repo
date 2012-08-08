@@ -23,7 +23,7 @@ import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
 from urlparse import urlparse
 
-import subprocess, ConfigParser, json
+import subprocess, ConfigParser
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
@@ -225,7 +225,7 @@ def Movie_List(params):
             name = s['suggestions'][i].encode('utf-8')
             list.append({'title':name, 'url':'http://seasonvar.ru/'+s['data'][i], 'img': icon})
     else:                                               #-- parsing serial list
-        soup = BeautifulSoup(html, fromEncoding="windows-1251")
+        soup = BeautifulSoup(html, fromEncoding="utf-8")
         # -- get number of serials
         try:
             count = len(soup.findAll('div', {'class':'betterTip'}))
@@ -233,7 +233,7 @@ def Movie_List(params):
             return False
 
         for rec in soup.findAll('div', {'class':'betterTip'}):
-            list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'],
+            list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'].encode('utf-8'),
                          'title' : rec.find('a').text.encode('utf-8'),
                          'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
 
@@ -567,6 +567,16 @@ def Get_PlayList(soup, parent_url):
     #-- get play list url
     for rec in soup.findAll('script', {'type':'text/javascript'}):
         if rec.text.find('swfobject.embedSWF') > -1:
+            z = '{'+ re.compile('var flashvars = \{(.+?)\};', re.MULTILINE|re.DOTALL).findall(rec.text)[0]+'}'
+            for r in z.split(','):
+                if r.split(':')[0] == '"pl"':
+                    html = r.split(':')[1].replace('"', '')
+
+    url = 'http://seasonvar.ru/' + xppod.Decode(html)
+    '''
+    #-- get play list url
+    for rec in soup.findAll('script', {'type':'text/javascript'}):
+        if rec.text.find('swfobject.embedSWF') > -1:
             z = rec.text.replace('$.post("','[').replace('", {',']')
             urlx = re.compile('\$\.post\("(.+?)", \{"(.+?)":"(.+?)"\}', re.MULTILINE|re.DOTALL).findall(rec.text)
             url = 'http://seasonvar.ru/'+urlx[0][0]
@@ -599,6 +609,7 @@ def Get_PlayList(soup, parent_url):
     html = f.read()
 
     url = 'http://seasonvar.ru/' + xppod.Decode(html)
+    '''
 
     # -- get play list
     post = None
@@ -628,7 +639,6 @@ def Initialize():
     startupinfo = None
     if os.name == 'nt':
         prog = '"'+os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe" --cookies-file="')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+'" "'+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js"')
-        print prog
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= 1
     else:
