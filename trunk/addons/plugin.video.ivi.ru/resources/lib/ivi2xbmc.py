@@ -50,6 +50,7 @@ addon_name    = Addon.getAddonInfo('name')
 addon_version = Addon.getAddonInfo('version')
 
 hos = int(sys.argv[1])
+fhos = sys.argv[0]
 try:
 	import platform
 	xbmcver=xbmc.getInfoLabel( "System.BuildVersion" ).replace(' ','_').replace(':','_')
@@ -158,7 +159,8 @@ def get_random_number():
 	return str(random.randint(0, 0x7fffffff))
 
 def construct_request(params):
-	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
+	return '%s?%s' % (fhos, urllib.urlencode(params))
+	#except: return fhos
 
 def ShowMessage(heading, message, times = 3000, pics = addon_icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
@@ -226,6 +228,7 @@ class dig_player(xbmc.Player):
 		self.send_ads=[]
 		self.start_timer=None
 		self.show=True
+		self.playing=False
 	def report_ads(self, curr_ads):
 		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads['id'], {'contentid':self.vID,'site':self.sID, 'watchid':str(self.watchid),'advid':curr_ads['id'],'uid':uniq_id, "advwatchid":str(self.advwatchid)} ]})
 		links= curr_ads['px_audit']
@@ -281,7 +284,8 @@ class dig_player(xbmc.Player):
 		if self.credits_begin_time==0: self.credits_begin_time=-1
 		try:    self.midroll = vc['midroll']
 		except: self.midroll = []
-	
+		flname=self.content
+		fio=i
 		ind=0
 		pre=self.getAds('preroll')
 		if pre:
@@ -290,6 +294,8 @@ class dig_player(xbmc.Player):
 			self.playl.add(self.adv_file,iad)
 			self.state='preroll'
 			self.send_ads=pre
+			flname=self.adv_file
+			fio=iad
 		else: self.state='play'
 		
 		for na in self.midroll:
@@ -309,7 +315,8 @@ class dig_player(xbmc.Player):
 		track_page_view('','event','5(Video*Videostart)',UATRACK=GATrack)
 		self.active=True
 		json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid ,'uid':uniq_id} ],'method':'da.content.watched' })
-		self.play(self.playl)
+		self.playing=False
+		self.play(flname,fio)
 		
 	
 	def play_loop(self):
@@ -318,84 +325,97 @@ class dig_player(xbmc.Player):
 		self.active=True
 		self.min=0
 		last=0
+		self.Time = 0
+		self.TotalTime = 9999
+		self.percent = 0
 		while self.active:
-			
-			try:
-				self.Time = int(self.getTime())
-				self.TotalTime = self.getTotalTime()
-				self.percent = (100 * self.Time) / self.TotalTime
-			except:
-				pass
-				
-			if not self.paused and last!=self.Time:
-				last=self.Time
-				if self.state=='play' and self.content_start:
-					seconds=int(time.time()-self.content_start)
-					if seconds<=60:
-						if self.state=='play' and self.content_start:
-							self.sendstat('http://api.digitalaccess.ru/logger/content/time/',{'contentid':self.vID,'watchid':self.watchid,'fromstart':int(self.Time),'seconds':seconds})
-					if seconds>=60: self.min=self.min+1
-					if self.min>=60:
-						if self.state=='play' and self.content_start:
-							self.sendstat('http://api.digitalaccess.ru/logger/content/time/',{'contentid':self.vID,'watchid':self.watchid,'fromstart':int(self.Time),'seconds':seconds})
-							self.min=0
-				if self.state!='play' and self.adstart_timer:
-					self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
-				if self.state!='play' and not self.ended:
-					if self.Time>=int(self.TotalTime-2) and not added:
-						if self.state=='preroll': 
-							self.pre_end=time.time()
-						i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-						i.setProperty('StartOffset', str(self.resume_timer))
-						self.playl.add(self.content,i)
-						added=True
-						self.state='play'
-						self.sleep(1000)
-						self.playselected(1)
+			if self.playing:
+				try:
+					self.Time = int(self.getTime())
+					self.TotalTime = self.getTotalTime()
+					self.percent = (100 * self.Time) / self.TotalTime
+				except:
+					self.TotalTime = 999999
+					self.Time = 0
+					self.percent = 0
+				#print '%s-%s-%s'%(self.Time,self.TotalTime,self.state)
+				if not self.paused and last!=self.Time:
+					last=self.Time
+					if self.state=='play' and self.content_start:
+						seconds=int(time.time()-self.content_start)
+						if seconds<=60:
+							if self.state=='play' and self.content_start:
+								self.sendstat('http://api.digitalaccess.ru/logger/content/time/',{'contentid':self.vID,'watchid':self.watchid,'fromstart':int(self.Time),'seconds':seconds})
+						if seconds>=60: self.min=self.min+1
+						if self.min>=60:
+							if self.state=='play' and self.content_start:
+								self.sendstat('http://api.digitalaccess.ru/logger/content/time/',{'contentid':self.vID,'watchid':self.watchid,'fromstart':int(self.Time),'seconds':seconds})
+								self.min=0
+					if self.state!='play' and self.adstart_timer:
+						self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
+					if self.state!='play' and not self.ended:
+						if self.Time>=int(self.TotalTime-2) and self.Time>5 and not added:
+							if self.state=='preroll': 
+								self.pre_end=time.time()
+							if self.state=='postroll':
+								print '%s-%s-%s'%(self.Time,self.TotalTime,self.state)
+							i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+							i.setProperty('StartOffset', str(self.resume_timer))
+							self.playl.add(self.content,i)
+							added=True
+							self.state='play'
+							#self.sleep(1000)
+							#print 'start content'
+							self.playing=False
+							self.play(self.content,i)
 
-				else:
+					else:
 				
-					for m in self.ads:
-						if int(self.Time)==int(m['time']) and int(self.Time)!=self.last_ads_time:
-							try: self.ads.remove(m)
-							except: pass
-							self.last_ads_time=int(self.Time)
-							pre=self.getAds(m['type'])
-							if pre: 
-								self.state=m['type']
+						for m in self.ads:
+							if int(self.Time)==int(m['time']) and int(self.Time)!=self.last_ads_time:
+								try: self.ads.remove(m)
+								except: pass
+								self.last_ads_time=int(self.Time)
+								pre=self.getAds(m['type'])
+								if pre: 
+									self.state=m['type']
+									iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+									self.playl.add(pre['url'],iad)
+									self.advid=pre['id']
+									self.adv_file=pre['url']
+									self.send_ads=pre
+									self.resume_timer=self.Time
+									added=None
+									self.playing=False
+									self.play(self.adv_file,iad)		
+								else:
+									pass
+						
+						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-2) and not self.ended:
+							pre=self.getAds('postroll')
+							#print pre
+							#print 'to post'
+							if pre:
+								self.state='postroll'
 								iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 								self.playl.add(pre['url'],iad)
 								self.advid=pre['id']
 								self.adv_file=pre['url']
 								self.send_ads=pre
-								self.resume_timer=self.Time
 								added=None
-								self.playselected(1)		
-							else:
-								pass
-						
-					if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-2) and not self.ended:
-						pre=self.getAds('postroll')
-						if pre:
-							self.state='postroll'
-							iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-							self.playl.add(pre['url'],iad)
-							self.advid=pre['id']
-							self.adv_file=pre['url']
-							self.send_ads=pre
-							added=None
-							self.ended=True
-							self.playselected(1)
+								self.ended=True
+								self.playing=False
+								self.play(pre['url'],iad)
 			self.sleep(300)
 		
 	def onPlayBackEnded( self ):
 		if self.state!='play' and not self.ended: 
 			self.state='play'
 			self.playl.clear()
-			i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-			i.setProperty('StartOffset', str(self.resume_timer))
-			self.playl.add(self.content,i)
-			self.play(self.playl)
+			#i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+			#i.setProperty('StartOffset', str(self.resume_timer))
+			#self.playl.add(self.content,i)
+			#self.play(self.playl)
 		elif self.state=='play': 
 			self.playl.clear()
 			self.active=None
@@ -414,15 +434,18 @@ class dig_player(xbmc.Player):
 		self.paused=None
 
 	def onPlayBackStarted( self ):
+		self.playing=True
+		print 'started'
+		print self.state
 		if self.state=='play':
 			if not self.content_start: 
 				
 				self.content_start=time.time()
 				self.sendstat('http://api.digitalaccess.ru/logger/mediainfo/speed/',{'watchid':self.watchid,'speed':self.content_start-self.pre_end})
-			try: 
+			#try: 
 				
-				self.playl.remove(self.adv_file)
-			except: pass
+				#self.playl.remove(self.adv_file)
+			#except: pass
 		else:
 			
 			try: 
@@ -431,7 +454,7 @@ class dig_player(xbmc.Player):
 				self.advwatchid='%s_%s'%(self.advid,str(int(self.adstart_timer*1000)))
 				json1 = self.POSTAPI({'method':'da.adv.got', 'params':[self.vID, self.advid, {'contentid':self.vID,'site':self.sID, 'watchid':str(self.watchid),'advid':self.advid,'uid':uniq_id, "advwatchid":str(self.advwatchid)} ]})							
 				self.report_ads(self.send_ads)
-				self.playl.remove(self.content)
+				#self.playl.remove(self.content)
 			except: pass
 	def getAds(self, phase):
 		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid, 'last_adv':self.lastad, 'uid':uniq_id},phase]} )
@@ -449,6 +472,7 @@ class dig_player(xbmc.Player):
 	
 	def sendstat(self,path,post):
 		post=urllib.urlencode(post).replace('.','%2E').replace('_','%5F')
+		print post
 		try:
 			req = urllib2.Request(path,post)
 			req.add_header('Accept', 'text/plain')
@@ -666,40 +690,42 @@ def read_dir(params):
 				v_list=v_list+str(vdata['id'])+';'
 	for video_ind in jsdata:
 		vdata=get_video_data(video_ind)
+		
+		vid=vdata['id']
+		print "%s--%s"%(vdata,vid)
 		li = xbmcgui.ListItem(vdata['title'], iconImage = vdata['image'], thumbnailImage = vdata['image'])
 		li.setProperty('fanart_image', addon_fanart)
 		try: li.setInfo(type='video', infoLabels = vdata['info'])
 		except: pass
-		if int(vdata['seasons_cnt'])==-1:
-			uri = construct_request({
-				'func': 'playid',
-				'id':vdata['id'],
-				'playlist':v_list
-			})
-			cnt=cnt+1
-			xbmcplugin.addDirectoryItem(hos, uri, li, False)
-		if int(vdata['seasons_cnt'])==0 or int(vdata['seasons_cnt'])==1:
-			uri = construct_request({
-				'func': 'read_dir',
-				'id':vdata['id'],
-				'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s',
-				'sorted':1,
-				'from':0,
-				'list':'list',
-				'to':show_len-1
-			})
-			cnt=cnt+1
-			li.setProperty('fanart_image', addon_fanart)
-			xbmcplugin.addDirectoryItem(hos, uri, li, True)
-		if int(vdata['seasons_cnt'])>1:
-			uri = construct_request({
-				'func': 'getser',
-				'id':vdata['id'],
-				'seasons_cnt':vdata['seasons_cnt']
-			})
-			cnt=cnt+1
-			li.setProperty('fanart_image', addon_fanart)
-			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+		#if int(vdata['seasons_cnt'])==-1:
+		#	print '%s-%s'%(vid,v_list)
+		#	uri = construct_request({
+		#		'func': 'playid',
+		#		'id':vid,
+		#		'playlist':v_list
+		#	})
+		#	cnt=cnt+1
+		#	xbmcplugin.addDirectoryItem(hos, uri, li, False)
+		#if int(vdata['seasons_cnt'])==0 or int(vdata['seasons_cnt'])>=1:
+		ur = {
+			'func': 'read_dir',
+			'id':vdata['id'],
+			'url': 'http://www.ivi.ru/mobileapi/videofromcompilation/?%s',
+			'sorted':1,
+			'from':0,
+			'list':'list',
+			'to':show_len-1
+		}
+		if int(vdata['seasons_cnt'])>0: ur['func']='getser'
+		if int(vdata['seasons_cnt'])==-1: 
+			ur['func']='playid'
+			ur['playlist']=v_list
+		uri=construct_request(ur)
+		cnt=cnt+1
+		li.setProperty('fanart_image', addon_fanart)
+		if int(vdata['seasons_cnt'])==-1: xbmcplugin.addDirectoryItem(hos, uri, li, False)
+		else: xbmcplugin.addDirectoryItem(hos, uri, li, True)
+
 
 	if cnt >= int(show_len):
 		li = xbmcgui.ListItem(language(30019), iconImage = addon_icon, thumbnailImage = addon_icon)
