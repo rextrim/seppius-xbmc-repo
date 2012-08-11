@@ -19,7 +19,7 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib, time
+import re, os, urllib, urllib2, cookielib, time, sys, urlparse
 from time import gmtime, strftime
 
 try:
@@ -39,6 +39,7 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 Addon = xbmcaddon.Addon(id='plugin.video.tvisio.tv')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'cookies.txt'))
 
 # load XML library
 try:
@@ -61,29 +62,38 @@ h = int(sys.argv[1])
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
+#---------- get web page -------------------------------------------------------
+def get_HTML(url, post = None, ref = None):
+    request = urllib2.Request(url, post)
+
+    host = urlparse.urlsplit(url).hostname
+    if ref==None:
+        ref='http://'+host
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',   host)
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',             ref)
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+           xbmc.log('We failed to reach a server.')
+        elif hasattr(e, 'code'):
+           xbmc.log('The server couldn\'t fulfill the request.')
+
+    html = f.read()
+
+    return html
+
 #---------- get Moscow Time ----------------------------------------------------
 def MSK_time():
     try:
         #-- get MSK time page from Time&Date server
         url = 'http://www.timeanddate.com/worldclock/city.html?n=166'
-        post = None
-        request = urllib2.Request(url, post)
-
-        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        request.add_header('Host',	'timeanddate.com')
-        request.add_header('Accept', '*/*')
-        request.add_header('Accept-Language', 'ru-RU')
-        request.add_header('Referer',	'http://www.google.com')
-
-        try:
-            f = urllib2.urlopen(request)
-        except IOError, e:
-            if hasattr(e, 'reason'):
-                xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-            elif hasattr(e, 'code'):
-                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-        html = f.read()
+        html = get_HTML(url)
 
         MSK_TOff =  re.compile('<td>Current time zone offset:<\/td><td><strong>UTC\/GMT \+(.+?) hours<\/strong>', re.MULTILINE|re.DOTALL).findall(html)
         TOff = int(MSK_TOff[0])
@@ -97,31 +107,37 @@ def MSK_time():
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
     url = 'http://tvisio.tv'
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'tvisio.tv')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://weewza.com')
+    html = get_HTML(url)
 
     try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+        #-- get authenticity token
+        token = re.compile('<input name="authenticity_token" type="hidden" value="(.+?)" \/>', re.MULTILINE|re.DOTALL).findall(html)[0]
+        #-- login to tvisio.tv
+        login       = Addon.getSetting('Login')
+        password    = Addon.getSetting('Password')
 
-    html = f.read()
+        values = {
+              'user[email]' : login,
+              'user[password]' : password,
+              'user[remember_me]' : 1,
+              'authenticity_token' : token,
+              'commit' : 'Войти',
+              'utf8' : '✓'
+            }
+
+        post = urllib.urlencode(values)
+
+        url = 'http://tvisio.tv/users/login'
+        html = get_HTML(url, post)
+    except:
+        pass
 
     # -- parsing web page ------------------------------------------------------
-
+    html = re.compile('<body>(.+?)<\/body>', re.MULTILINE|re.DOTALL).findall(html)[0]
     soup = BeautifulSoup(html)
 
-    nav = soup.find("div", { "id" : "channels_list" })
-    for ch in nav.findAll('a'):
+    nav = soup.find('div', { 'id':"channels_list"})
+    for ch in nav.findAll("a"):
         name    = unescape(ch.find('img')['alt']).encode('utf-8')
         img     = 'http://tvisio.tv'+ch.find('img')['src']
         ch_url  = 'http://tvisio.tv'+ch['href']
@@ -162,27 +178,10 @@ def Get_EPG(params):
     url = urllib.unquote_plus(params['url'])
     img = urllib.unquote_plus(params['img'])
 
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'tvisio.tv')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://weewza.com')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
-
+    html = re.compile('<body>(.+?)<\/body>', re.MULTILINE|re.DOTALL).findall(html)[0]
     soup = BeautifulSoup(html)
 
     nav = soup.findAll("div", { "class" : "broadcast" })
@@ -224,24 +223,7 @@ def PLAY(params):
         return False
 
     # -- check if video available
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'tvisio.tv')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://tvisio.tv')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ----------------------------------------------------------
     var = re.compile('flashvars.(.+?) = "(.+?)";', re.MULTILINE|re.DOTALL).findall(html)
@@ -250,12 +232,18 @@ def PLAY(params):
             v_stream = rec[1]
         elif rec[0].find('start') > -1:
             v_start = rec[1]
+        elif rec[0].find('server') > -1:
+            v_server = rec[1]
+        elif rec[0].find('session') > -1:
+            v_session = rec[1]
 
     swf = re.compile('swfobject.embedSWF\("(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
     v_swf = swf[0]
 
     # -- assemble RTMP link ----------------------------------------------------
-    video = 'rtmp://tvisio.tv/rtmp swfUrl=http://tvisio.tv%s pageUrl=%s playpath=%s?start=%s' % (v_swf, url, v_stream, v_start)
+    video = 'rtmp://%s/rtmp app=rtmp swfUrl=http://tvisio.tv%s pageUrl=%s playpath=%s?start=%s conn=S:%s' % (v_server, v_swf, url, v_stream, v_start, v_session)
+
+    print video
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
@@ -297,6 +285,15 @@ def get_params(paramstring):
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
+# get cookies from last session
+cj = cookielib.MozillaCookieJar(fcookies)
+try:
+    cj.load()
+except:
+    pass
+hr  = urllib2.HTTPCookieProcessor(cj)
+opener = urllib2.build_opener(hr)
+urllib2.install_opener(opener)
 
 mode = None
 
@@ -311,5 +308,8 @@ elif mode == 'EPG':
 	Get_EPG(params)
 elif mode == 'PLAY':
 	PLAY(params)
+
+#-- store cookies
+cj.save()
 
 
