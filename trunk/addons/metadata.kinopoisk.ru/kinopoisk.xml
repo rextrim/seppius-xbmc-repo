@@ -159,19 +159,19 @@
 			</RegExp>
 			<!--Рейтинг и голоса -->
 			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
-				<RegExp input="$$1" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
-					<expression>IMDb: ([0-9.]+) \(([0-9\s]+)\)&lt;/div&gt;</expression>
-				</RegExp>
-				<expression>IMDB</expression>
-			</RegExp>
-			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
 				<RegExp input="$$1" output="\1:::\2 \3 \4" dest="2">
 					<expression>itemprop=&quot;ratingValue&quot;.+?&lt;span&gt;(.+?)&lt;/span&gt;.+?itemprop=&quot;ratingCount&quot;&gt;(?:&amp;nbsp;|[ ])*([0-9]*)(?:&amp;nbsp;|[ ])*([0-9]*)(?:&amp;nbsp;|[ ])*([0-9]*)(?:&amp;nbsp;|[ ])*&lt;</expression>
 				</RegExp>
 				<RegExp input="$$2" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
 					<expression trim="1,2">(.*):::(.*)</expression>
 				</RegExp>
-				<expression>Kinopoisk</expression>
+				<expression>.+</expression>
+			</RegExp>
+			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
+				<RegExp input="$$1" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
+					<expression>IMDb: ([0-9.]+) \(([0-9\s]+)\)&lt;/div&gt;</expression>
+				</RegExp>
+				<expression>IMDB</expression>
 			</RegExp>
 			<!--GENRE-->
 			<RegExp input="$$1" output="&lt;genre&gt;\1&lt;/genre&gt;" dest="5+">
@@ -377,7 +377,7 @@
 	<PEOPLE dest="10">
 		<RegExp input="$$7" output="&lt;?xml version=&quot;1.0&quot; encoding=&quot;windows-1251&quot; standalone=&quot;yes&quot;?&gt;&lt;details&gt;\1&lt;/details&gt;" dest="10">
 			<RegExp input="$$1" output="\1" dest="9">
-				<expression clear="yes" noclean="1">&lt;tr&gt;&lt;td colspan=3&gt;&lt;a name="actor"&gt;&lt;/td&gt;&lt;/tr&gt;.+?&lt;/table&gt;(.*?)&lt;table</expression>
+				<expression clear="yes" noclean="1">&lt;a name=&quot;actor&quot;&gt;(.*?)&lt;a name</expression>
 			</RegExp>
 			<RegExp conditional="!rus_actor_names" input="$$9" output="&lt;n&gt;\2&lt;r&gt;\3&lt;t&gt;http://st.kinopoisk.ru/images/actor/\1&lt;/e&gt;" dest="9">
 				<expression repeat="yes" trim="3">title=&quot;/images/(?:sm_actor/([0-9]+.jpg)|no-poster.gif)&quot; alt=.+?&quot;name&quot;&gt;&lt;a href=&quot;/name/\d+/&quot;&gt;(.*?)&lt;/a&gt;.+?&quot;role&quot;&gt;[. ]*([^&lt;]*)&lt;</expression>
@@ -397,13 +397,13 @@
 			</RegExp>
 			<!-- -->
 			<RegExp input="$$1" output="\1" dest="8">
-				<expression clear="yes" noclean="1">&lt;tr&gt;&lt;td colspan=3&gt;&lt;a name="director"&gt;&lt;/td&gt;&lt;/tr&gt;.+?&lt;/table&gt;(.*?)&lt;table</expression>
+				<expression clear="yes" noclean="1">&lt;a name=&quot;director&quot;&gt;(.*?)&lt;a name</expression>
 			</RegExp>
 			<RegExp input="$$8" output="&lt;director&gt;\1&lt;/director&gt;" dest="7+">
 				<expression repeat="yes" trim="3">&quot;name&quot;&gt;&lt;a href=&quot;/name/\d+/&quot;&gt;([^&lt;]+)&lt;/a&gt;</expression>
 			</RegExp>
 			<RegExp input="$$1" output="\1" dest="8">
-				<expression clear="yes" noclean="1">&lt;tr&gt;&lt;td colspan=3&gt;&lt;a name="writer"&gt;&lt;/td&gt;&lt;/tr&gt;(.*?)&lt;table</expression>
+				<expression clear="yes" noclean="1">&lt;a name=&quot;writer&quot;&gt;(.*?)&lt;a name</expression>
 			</RegExp>
 			<RegExp input="$$8" output="&lt;credits&gt;\1&lt;/credits&gt;" dest="7+">
 				<expression repeat="yes" trim="3">&quot;name&quot;&gt;&lt;a href=&quot;/name/\d+/&quot;&gt;([^&lt;]+)&lt;/a&gt;</expression>
