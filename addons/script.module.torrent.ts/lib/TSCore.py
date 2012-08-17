@@ -115,7 +115,7 @@ class TSengine(object):
 		self.files={}
 		if self.file_count>1:
 			flist=json.loads(self.filelist)
-			for list in files['files']:
+			for list in flist['files']:
 				self.files[list[0]]=list[1]
 		elif self.file_count==1:
 			flist=json.loads(self.filelist)
