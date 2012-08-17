@@ -160,6 +160,7 @@ class TSengine(object):
 				#!!!!!!!!!1тут буду использовать _com_received
 				if plr.duration: 
 					comm='DUR '+self.r.got_url.replace('\r','').replace('\n','')+' '+str(plr.duration)
+					comm='PLAYBACK '+self.r.got_url.replace('\r','').replace('\n','')+' 0'
 					self._TSpush(comm)
 					plr.duration=None
 				
@@ -216,11 +217,11 @@ class _TSpull(threading.Thread):
 				if st=='prebuf': 
 					self.state='Предварительная буфферизация'
 					self.progress=int(text.split(';')[1])+0.1
-					self.label='Пиры:%s Скорость:%s'%(text.split(';')[8],text.split(';')[5])
+					self.label='Пиры:%s Скорость:%s'%(text.split(';')[6],text.split(';')[3])
 				if st=='buf': 
 					self.state='Буфферизация'
 					self.progress=int(text.split(';')[1])+0.1
-					self.label='Пиры:%s Скорость:%s'%(text.split(';')[8],text.split(';')[5])
+					self.label='Пиры:%s Скорость:%s'%(text.split(';')[6],text.split(';')[3])
 				if st=='dl': 
 					self.state='Скачивание'
 					self.progress=int(text.split(';')[1])+0.1
