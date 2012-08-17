@@ -217,7 +217,7 @@ class _TSpull(threading.Thread):
 				if st=='prebuf': 
 					self.state='Предварительная буфферизация'
 					self.progress=int(text.split(';')[1])+0.1
-					self.label='Пиры:%s Скорость:%s'%(text.split(';')[6],text.split(';')[3])
+					self.label='Пиры:%s Скорость:%s'%(text.split(';')[8],text.split(';')[5])
 				if st=='buf': 
 					self.state='Буфферизация'
 					self.progress=int(text.split(';')[1])+0.1
