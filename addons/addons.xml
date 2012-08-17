@@ -973,6 +973,23 @@ RuTube - отличная стартовая площадка для незав�
     </extension>
 </addon>
 
+<addon id="plugin.video.torrent.gnu"
+       name="torrent.gnu"
+       version="0.1.7"
+       provider-name="nuismons">
+    <requires>
+		<import addon="script.module.torrent.ts"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Просмотр Торрент файлов</summary>
+        <description>Тестирование TorrentStream</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.video.torrenter" name="Torrenter" version="1.0.5.4" provider-name="vadim.skorba@gmail.com">
     <requires>
         <import addon="xbmc.python" version="2.0"/>
@@ -1210,6 +1227,17 @@ RuTube - отличная стартовая площадка для незав�
 		<disclaimer>There are add-ons that allow viewing popular Russian resources in the program XBMC</disclaimer>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id='script.module.torrent.ts' version='0.1.3' name='TorrentStream Engine Support' provider-name='NuisMons'>
+  <requires>
+    <import addon='xbmc.python' version='2.0'/>
+  </requires>
+  <extension point='xbmc.addon.metadata'>
+    <platform>all</platform>
+    <summary>TorrentStream Engine Playing</summary>
+  </extension>
+  <extension point='xbmc.python.module' library='lib' />
 </addon>
 
 <addon id="script.yandex.tvguide" name="Яндекс телепрограмма" version="0.0.3" provider-name="HD-Lab Team">
