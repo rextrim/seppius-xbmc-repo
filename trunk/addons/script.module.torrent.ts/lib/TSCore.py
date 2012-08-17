@@ -164,16 +164,16 @@ class TSengine(object):
 					plr.duration=None
 				
 				if plr.paused: 
-					print 'paused'
+					#print 'paused'
 					if not visible: 
-						print 'make window'
+						#print 'make window'
 						self.dialog = progress.DownloadProgress()
 						self.dialog.create('Инициализация TS Engine', "")
 						self.dialog.update(self.r.progress,self.r.state,self.r.label)
 						visible=True
 					if visible: self.dialog.update(self.r.progress,self.r.state,self.r.label)
 				elif visible:
-					print 'delete window'
+					#print 'delete window'
 					self.dialog.close()
 					visible=None
 				#print self.r.state
@@ -214,6 +214,10 @@ class _TSpull(threading.Thread):
 				st=s1.split(':')[1]
 				#print st
 				if st=='prebuf': 
+					self.state='Предварительная буфферизация'
+					self.progress=int(text.split(';')[1])+0.1
+					self.label='Пиры:%s Скорость:%s'%(text.split(';')[8],text.split(';')[5])
+				if st=='buf': 
 					self.state='Буфферизация'
 					self.progress=int(text.split(';')[1])+0.1
 					self.label='Пиры:%s Скорость:%s'%(text.split(';')[8],text.split(';')[5])
