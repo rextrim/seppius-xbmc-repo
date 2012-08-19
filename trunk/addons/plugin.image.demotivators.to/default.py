@@ -1,4 +1,4 @@
-#!/usr/bin/python
+п»ї#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import urllib2
@@ -111,7 +111,7 @@ def get_news_me(params):
 		listItem = xbmcgui.ListItem(title, '', '', '', '')
 		xbmcplugin.addDirectoryItem(hos, img, listItem, False)
 		
-	listitem=xbmcgui.ListItem('Еще',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р•С‰Рµ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': params['url'],
@@ -149,7 +149,7 @@ def get_main(params):
 				xbmcplugin.addDirectoryItem(hos, findPic(im['href']), listItem, False)
 
 		currpage=currpage+1
-	listitem=xbmcgui.ListItem('Еще',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р•С‰Рµ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	if next:
 		uri = construct_request({
@@ -170,7 +170,7 @@ def get_main(params):
 
 	#xbmcplugin.endOfDirectory(hos)
 def demotivation(params):
-	listitem=xbmcgui.ListItem('Главная demotivation.me',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р“Р»Р°РІРЅР°СЏ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivation.me/',
@@ -179,7 +179,7 @@ def demotivation(params):
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 	
-	listitem=xbmcgui.ListItem('Свежие demotivation.me',None,addon_icon)
+	listitem=xbmcgui.ListItem('РЎРІРµР¶РёРµ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivation.me/recent.php',
@@ -187,7 +187,7 @@ def demotivation(params):
 		'func': 'get_news_me'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Наиболее Комментируемые demotivation.me',None,addon_icon)
+	listitem=xbmcgui.ListItem('РќР°РёР±РѕР»РµРµ РљРѕРјРјРµРЅС‚РёСЂСѓРµРјС‹Рµ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivation.me/discussed.php',
@@ -195,7 +195,7 @@ def demotivation(params):
 		'func': 'get_main_me'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Рандом demotivation.me',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р Р°РЅРґРѕРј',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivation.me/random.php',
@@ -203,7 +203,7 @@ def demotivation(params):
 		'func': 'get_news_me'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Выбор Редакции demotivation.me',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р’С‹Р±РѕСЂ Р РµРґР°РєС†РёРё',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivation.me/editors_choise.php',
@@ -213,7 +213,7 @@ def demotivation(params):
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 	xbmcplugin.endOfDirectory(hos)
 def dem_to(params):
-	listitem=xbmcgui.ListItem('Главная',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р“Р»Р°РІРЅР°СЏ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivators.to/',
@@ -221,7 +221,7 @@ def dem_to(params):
 		'func': 'get_main'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Топ',None,addon_icon)
+	listitem=xbmcgui.ListItem('РўРѕРї',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivators.to/top/',
@@ -229,7 +229,7 @@ def dem_to(params):
 		'func': 'get_main'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Самые комментируемые',None,addon_icon)
+	listitem=xbmcgui.ListItem('РЎР°РјС‹Рµ РєРѕРјРјРµРЅС‚РёСЂСѓРµРјС‹Рµ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivators.to/mostcommented/',
@@ -237,7 +237,7 @@ def dem_to(params):
 		'func': 'get_main'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Дзен',None,addon_icon)
+	listitem=xbmcgui.ListItem('Р”Р·РµРЅ',None,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'url': 'http://demotivators.to/dzan/',
@@ -258,13 +258,13 @@ def mainScreen(params):
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 	
-	listitem=xbmcgui.ListItem('demotivators.ru',None,addon_icon)
-	listitem.setProperty('IsPlayable', 'false')
-	uri = construct_request({
-		'func': 'dem_to'
-		})
-	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-
+	#listitem=xbmcgui.ListItem('demotivators.ru',None,addon_icon)
+	#listitem.setProperty('IsPlayable', 'false')
+	#uri = construct_request({
+	#	'func': 'dem_to'
+	#	})
+	#xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+#
 	xbmcplugin.endOfDirectory(hos)
 	
 def get_params(paramstring):
