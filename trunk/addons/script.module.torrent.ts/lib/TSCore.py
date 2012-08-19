@@ -56,7 +56,9 @@ class TSengine(object):
 	
 	def _TSpush(self,command):
 		#print '>>'+command
-		_sock.send(command+'\r\n')
+		try:
+			_sock.send(command+'\r\n')
+		except: print 'send error'
 	
 	def __init__(self):
 		self.addon_icon=None
