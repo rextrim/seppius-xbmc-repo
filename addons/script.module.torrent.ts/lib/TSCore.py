@@ -16,10 +16,13 @@ import json
 
 import xbmcgui
 import xbmc
+import xbmcaddon
 
 _sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-addon_icon=None
 
+Addon = xbmcaddon.Addon(id='script.module.torrent.ts')
+language = Addon.getLocalizedString
+addon_icon    = Addon.getAddonInfo('icon')
 import TSEProgress as progress
 
 #Надо объедениить с TSengine!!!!!!!!!
@@ -52,7 +55,7 @@ class myPlayer(xbmc.Player):
 class TSengine(object):
 	
 	def _TSpush(self,command):
-		print '>>'+command
+		#print '>>'+command
 		_sock.send(command+'\r\n')
 	
 	def __init__(self):
@@ -66,14 +69,16 @@ class TSengine(object):
 		self.playing=False
 		self.error_num=None
 		self.dialog = progress.DownloadProgress()
-		self.dialog.create('Инициализация TS Engine', "")
+		self.dialog.create(language(1000), "")
 		self.timeout=10
 		self.mode=''
 	def load_torrent(self, torrent, mode, host='127.0.0.1', port=62062 ):
-		self.dialog.update(0,'Соединяюсь с TS Engine')
+		self.dialog.update(0,language(1001))
 		try:
 			_sock.connect((host, port))
 		except:
+			self.dialog.update(100,language(1010))
+			xbmc.sleep(2000)
 			self.dialog.close()
 			return False
 			exit
@@ -82,21 +87,21 @@ class TSengine(object):
 		self.r.start()
 		comm="HELLOBG"
 		self._TSpush(comm)
-		self.dialog.update(0,'Жду ответа от TS Engine')
+		self.dialog.update(0,language(1002))
 		timeout=self.timeout
 		while not self.r.last_com:
 			timeout=timeout-1
 			if timeout==0: break
 			time.sleep(1)
 		if timeout==0: 
-			self.dialog.update(100,'Ошибка загрузки торрента')
+			self.dialog.update(100,language(1011))
 			xbmc.sleep(2000)
 			self.dialog.close()
 			return 'No responce'
 		comm='READY'
 		self._TSpush(comm)
 		self.ready=True
-		self.dialog.update(100,'Передаю торрент')
+		self.dialog.update(100,language(1003))
 		self.url=torrent
 		comm='LOADASYNC '+ str(random.randint(0, 0x7fffffff)) +' '+mode+' ' + torrent+ ' 0 0 0'
 		self._TSpush(comm)
@@ -106,7 +111,7 @@ class TSengine(object):
 			if timeout==0: break
 			time.sleep(1)
 		if timeout==0: 
-			self.dialog.update(100,'Ошибка загрузки торрента')
+			self.dialog.update(100,language(1012))
 			xbmc.sleep(2000)
 			self.dialog.close()
 			return 'Load Failed'	
@@ -127,7 +132,7 @@ class TSengine(object):
 		
 
 	def play_url_ind(self, index=0, title='', icon=None, thumb=None):
-		self.dialog.update(0,'Получаю ссылку')
+		self.dialog.update(0,language(1004))
 		comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) +' 0 0 0'
 		self._TSpush(comm)
 		off_timer=180
@@ -147,7 +152,7 @@ class TSengine(object):
 		if self.r.got_url:
 			plr=myPlayer()
 			lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
-			self.dialog.update(100,'Начинаю воспроизведение')
+			self.dialog.update(100,language(1005))
 			plr.play(self.r.got_url, lit)
 			while not plr.duration:
 				self.dialog.update(self.r.progress,self.r.state,self.r.label)
@@ -169,7 +174,7 @@ class TSengine(object):
 					if not visible: 
 						#print 'make window'
 						self.dialog = progress.DownloadProgress()
-						self.dialog.create('Инициализация TS Engine', "")
+						self.dialog.create(language(1000), "")
 						self.dialog.update(self.r.progress,self.r.state,self.r.label)
 						visible=True
 					if visible: self.dialog.update(self.r.progress,self.r.state,self.r.label)
@@ -181,7 +186,7 @@ class TSengine(object):
 				xbmc.sleep(1000)
 			#self.end()
 		else: 
-			self.dialog.update(0,'Не дождался ссылки')
+			self.dialog.update(0,language(1013))
 			time.sleep(3)
 		try: self.dialog.close()
 		except: pass
@@ -215,27 +220,27 @@ class _TSpull(threading.Thread):
 				st=s1.split(':')[1]
 				#print st
 				if st=='prebuf': 
-					self.state='Предварительная буфферизация'
+					self.state=language(1100)
 					self.progress=int(text.split(';')[1])+0.1
-					self.label='Пиры:%s Скорость:%s'%(text.split(';')[8],text.split(';')[5])
+					self.label=language(1150)%(text.split(';')[8],text.split(';')[5])
 				if st=='buf': 
-					self.state='Буфферизация'
+					self.state=language(1101)
 					self.progress=int(text.split(';')[1])+0.1
-					self.label='Пиры:%s Скорость:%s'%(text.split(';')[6],text.split(';')[3])
+					self.label=language(1150)%(text.split(';')[6],text.split(';')[3])
 				if st=='dl': 
-					self.state='Скачивание'
+					self.state=language(1102)
 					self.progress=int(text.split(';')[1])+0.1
-					self.label='Пиры:%s Скорость:%s'%(text.split(';')[6],text.split(';')[3])
+					self.label=language(1150)%(text.split(';')[6],text.split(';')[3])
 				if st=='check': 
-					self.state='Проверка'
+					self.state=language(1103)
 					self.progress=int(text.split(';')[1])
 					self.label=None
 				if st=='idle': 
-					self.state='TS Engine бездействует'
+					self.statelanguage(1104)
 					self.progress=0
 				if st=='wait': 
-					self.state='TS Engine ожидает'
-					self.label='Секунд %ы'%(text.split(';')[1])
+					self.state=language(1105)
+					self.label=language(1151)%(text.split(';')[1])
 					self.progress=0
 				#print self.state
 				#print self.label
