@@ -52,7 +52,7 @@ class myPlayer(xbmc.Player):
 class TSengine(object):
 	
 	def _TSpush(self,command):
-		#print '>>'+command
+		print '>>'+command
 		_sock.send(command+'\r\n')
 	
 	def __init__(self):
@@ -116,11 +116,11 @@ class TSengine(object):
 		if self.file_count>1:
 			flist=json.loads(self.filelist)
 			for list in flist['files']:
-				self.files[list[0]]=list[1]
+				self.files[urllib.unquote_plus(urllib.quote(list[0]))]=list[1]
 		elif self.file_count==1:
 			flist=json.loads(self.filelist)
 			list=flist['files'][0]
-			self.files[list[0]]=list[1]
+			self.files[urllib.unquote_plus(urllib.quote(list[0]))]=list[1]
 		#print self.files
 		#self.dialog.close()
 		return 'Ok'
