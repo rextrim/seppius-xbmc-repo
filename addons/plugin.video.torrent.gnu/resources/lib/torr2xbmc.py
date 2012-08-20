@@ -109,7 +109,7 @@ def mainScreen(params):
 
 def play_file(params):
 	#получаем содержимое файла в base64
-	filename=xbmc.translatePath(ktv_folder + params['file'])
+	filename=ktv_folder + params['file']
 	f = open(filename, 'rb')
 	buf=f.read()
 	f.close
