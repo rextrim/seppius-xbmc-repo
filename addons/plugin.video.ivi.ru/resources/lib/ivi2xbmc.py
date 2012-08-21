@@ -75,28 +75,17 @@ VERSION = '4.3as'
 DOMAIN = '131896016'
 GATrack='UA-30985824-1'
 
-if os.path.isfile(conf_file):
-	try:
-		f = open(conf_file, 'r')
-		GAcookie=f.readline()
-		uniq_id=f.readline()
-		f.close()
-	except:
-		f = open(conf_file, 'w')
-		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
-		uniq_id=random.random()*time.time()
-		f.write(GAcookie)
-		f.write('\n')
-		f.write(str(uniq_id))
-		f.close()
-else:
-	f = open(conf_file, 'w')
+if not Addon.getSetting('GAcookie'):
+	from random import randint
 	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
+	Addon.setSetting('GAcookie', GAcookie)
+if not Addon.getSetting('uniq_id'):
 	uniq_id=random.random()*time.time()
-	f.write(GAcookie)
-	f.write('\n')
-	f.write(str(uniq_id))
-	f.close()
+	Addon.setSetting('uniq_id', str(uniq_id))
+
+GAcookie =Addon.getSetting('GAcookie')
+uniq_id=Addon.getSetting('uniq_id')
+
 
 genres_data = []
 genres_dat_file = os.path.join(addon_path, 'genres.dat')
@@ -354,7 +343,7 @@ class dig_player(xbmc.Player):
 					if self.state!='play' and self.adstart_timer:
 						self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
 					if self.state!='play' and not self.ended:
-						if self.Time>=int(self.TotalTime-2) and self.Time>5 and not added:
+						if self.Time>=int(self.TotalTime-0.6) and self.Time>5 and not added:
 							if self.state=='preroll': 
 								self.pre_end=time.time()
 							if self.state=='postroll':
@@ -372,7 +361,9 @@ class dig_player(xbmc.Player):
 					else:
 				
 						for m in self.ads:
+							
 							if int(self.Time)==int(m['time']) and int(self.Time)!=self.last_ads_time:
+								self.resume_timer=int(m['time'])
 								try: self.ads.remove(m)
 								except: pass
 								self.last_ads_time=int(self.Time)
@@ -384,14 +375,14 @@ class dig_player(xbmc.Player):
 									self.advid=pre['id']
 									self.adv_file=pre['url']
 									self.send_ads=pre
-									self.resume_timer=self.Time
+									
 									added=None
 									self.playing=False
 									self.play(self.adv_file,iad)		
 								else:
 									pass
 						
-						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-2) and not self.ended:
+						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-0.6) and not self.ended:
 							pre=self.getAds('postroll')
 							#print pre
 							#print 'to post'
