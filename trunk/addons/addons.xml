@@ -293,10 +293,11 @@
 
 <addon id="plugin.video.RuTor"
        name="RuTor"
-       version="0.7.3"
+       version="0.9.0"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -311,10 +312,11 @@
 
 <addon id="plugin.video.TorPoisk"
        name="TorPoisk"
-       version="0.9.5"
+       version="0.9.7"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -595,7 +597,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.2.30" provider-name="ivi.ru (NuisMons)">
+<addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.3.0" provider-name="ivi.ru (NuisMons)">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
