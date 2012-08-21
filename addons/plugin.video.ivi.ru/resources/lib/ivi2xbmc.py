@@ -80,6 +80,7 @@ if not Addon.getSetting('GAcookie'):
 	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
 	Addon.setSetting('GAcookie', GAcookie)
 if not Addon.getSetting('uniq_id'):
+	from random import randint
 	uniq_id=random.random()*time.time()
 	Addon.setSetting('uniq_id', str(uniq_id))
 
