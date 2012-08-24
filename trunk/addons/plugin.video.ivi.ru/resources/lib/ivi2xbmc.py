@@ -347,8 +347,8 @@ class dig_player(xbmc.Player):
 						if self.Time>=int(self.TotalTime-0.6) and self.Time>5 and not added:
 							if self.state=='preroll': 
 								self.pre_end=time.time()
-							if self.state=='postroll':
-								print '%s-%s-%s'%(self.Time,self.TotalTime,self.state)
+							#if self.state=='postroll':
+							#	print '%s-%s-%s'%(self.Time,self.TotalTime,self.state)
 							i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
 							i.setProperty('StartOffset', str(self.resume_timer))
 							self.playl.add(self.content,i)
@@ -427,8 +427,8 @@ class dig_player(xbmc.Player):
 
 	def onPlayBackStarted( self ):
 		self.playing=True
-		print 'started'
-		print self.state
+		#print 'started'
+		#print self.state
 		if self.state=='play':
 			if not self.content_start: 
 				
@@ -464,7 +464,7 @@ class dig_player(xbmc.Player):
 	
 	def sendstat(self,path,post):
 		post=urllib.urlencode(post).replace('.','%2E').replace('_','%5F')
-		print post
+		#print post
 		try:
 			req = urllib2.Request(path,post)
 			req.add_header('Accept', 'text/plain')
@@ -684,7 +684,7 @@ def read_dir(params):
 		vdata=get_video_data(video_ind)
 		
 		vid=vdata['id']
-		print "%s--%s"%(vdata,vid)
+		#print "%s--%s"%(vdata,vid)
 		li = xbmcgui.ListItem(vdata['title'], iconImage = vdata['image'], thumbnailImage = vdata['image'])
 		li.setProperty('fanart_image', addon_fanart)
 		try: li.setInfo(type='video', infoLabels = vdata['info'])
