@@ -21,6 +21,7 @@
 # */
 import re, os, urllib, urllib2, cookielib, time, sys, urlparse
 from time import gmtime, strftime
+from operator import itemgetter
 
 try:
     import json
@@ -112,6 +113,7 @@ def Get_TV_Channels():
 #-------------------------------------------------------------------------------
 
 def Get_EPG_Date(params):
+    list = []
     # -- parameters
     url  = urllib.unquote_plus(params['url'])
     img = urllib.unquote_plus(params['img'])
@@ -124,6 +126,9 @@ def Get_EPG_Date(params):
     #-- fill up ETR data list
     nav = soup.find('div', {'id':'mtvprg-week'})
 
+    ord_asc     = 1
+    ord_desc    = 1000
+
     for rec in nav.findAll('a'):
         if rec['class'] == 'old' or rec['class'] == 'old cur' or rec['class'] == 'now cur':
             durl = 'http://www.cn.ru'+rec['href']
@@ -131,17 +136,29 @@ def Get_EPG_Date(params):
             dw = rec.find('small').text
             name = '[COLOR FF00FF00]'+date.encode('utf-8')+'[/COLOR] ('+dw.encode('utf-8')+')'
 
-            i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
+            list.append({'name':name, 'url':durl, 'img':img, 'desc':ord_desc, 'asc': ord_asc})
+
+            ord_asc  += 1
+            ord_desc -= 1
+
+    if Addon.getSetting('back_date') == 'true':
+        list = sorted(list, key=itemgetter('desc'))
+    else:
+        list = sorted(list, key=itemgetter('asc'))
+
+    for rec in list:
+            i = xbmcgui.ListItem(rec['name'], iconImage=rec['img'], thumbnailImage=rec['img'])
             u = sys.argv[0] + '?mode=EPG'
-            u += '&name=%s'%urllib.quote_plus(name)
-            u += '&url=%s'%urllib.quote_plus(durl)
-            u += '&img=%s'%urllib.quote_plus(img)
+            u += '&name=%s'%urllib.quote_plus(rec['name'])
+            u += '&url=%s'%urllib.quote_plus(rec['url'])
+            u += '&img=%s'%urllib.quote_plus(rec['img'])
             xbmcplugin.addDirectoryItem(h, u, i, True)
 
     xbmcplugin.endOfDirectory(h)
 
 #---------- get EPG for selected channel ---------------------------------------
 def Get_EPG(params):
+    list = []
     # -- parameters
     url = urllib.unquote_plus(params['url'])
     img = urllib.unquote_plus(params['img'])
@@ -151,6 +168,9 @@ def Get_EPG(params):
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
     nav = soup.find('div', {'id':'mtvprg-program'})
+
+    ord_asc     = 1
+    ord_desc    = 1000
 
     for rec in nav.findAll('li'):
         prg = '*'
@@ -176,12 +196,23 @@ def Get_EPG(params):
         if detail <> '':
             name += '[COLOR FFBEBEBE] ('+unescape(detail).encode('utf-8')+')[/COLOR]'
 
-        i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(name)
-        u += '&url=%s'%urllib.quote_plus(prg)
-        u += '&img=%s'%urllib.quote_plus(img)
-        xbmcplugin.addDirectoryItem(h, u, i, False)
+        list.append({'name':name, 'url':prg, 'img':img, 'desc':ord_desc, 'asc': ord_asc})
+
+        ord_asc  += 1
+        ord_desc -= 1
+
+    if Addon.getSetting('back_time') == 'true':
+        list = sorted(list, key=itemgetter('desc'))
+    else:
+        list = sorted(list, key=itemgetter('asc'))
+
+    for rec in list:
+            i = xbmcgui.ListItem(rec['name'], iconImage=rec['img'], thumbnailImage=rec['img'])
+            u = sys.argv[0] + '?mode=EPG'
+            u += '&name=%s'%urllib.quote_plus(rec['name'])
+            u += '&url=%s'%urllib.quote_plus(rec['url'])
+            u += '&img=%s'%urllib.quote_plus(rec['img'])
+            xbmcplugin.addDirectoryItem(h, u, i, True)
 
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
