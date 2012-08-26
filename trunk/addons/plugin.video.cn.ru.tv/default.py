@@ -208,7 +208,7 @@ def Get_EPG(params):
 
     for rec in list:
             i = xbmcgui.ListItem(rec['name'], iconImage=rec['img'], thumbnailImage=rec['img'])
-            u = sys.argv[0] + '?mode=EPG'
+            u = sys.argv[0] + '?mode=PLAY'
             u += '&name=%s'%urllib.quote_plus(rec['name'])
             u += '&url=%s'%urllib.quote_plus(rec['url'])
             u += '&img=%s'%urllib.quote_plus(rec['img'])
