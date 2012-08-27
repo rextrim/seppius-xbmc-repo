@@ -248,8 +248,8 @@ def Movie_List(params):
 
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html, fromEncoding="windows-1251")
-        # -- get movie info
 
+        # -- get movie info
         for rec in soup.find('div',{'id':'dle-content'}).findAll('table'):
             try:
                 #--
@@ -383,6 +383,37 @@ def Source_List(params):
             mi.text += '\n'+ rec
 
     print mi.text.encode('utf-8')
+
+    # -- get trailer
+    try:
+        s_url = re.compile('<!--dle_video_begin:(.+?)-->', re.MULTILINE|re.DOTALL).findall(html)[0]
+        s_title = '[COLOR FFFF4000]Трейлер:[/COLOR]'
+
+        #--
+        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+        u = sys.argv[0] + '?mode=PLAY'
+        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+        u += '&url=%s'%urllib.quote_plus(s_url)
+        u += '&img=%s'%urllib.quote_plus(img)
+        u += '&vtype=%s'%urllib.quote_plus('MP4')
+        try:
+            i.setInfo(type='video', infoLabels={'title':            mi.title,
+                                                'originaltitle':    mi.orig,
+                        						'year':             int(mi.year),
+                        						'director':         mi.director,
+                                                'artist':           mi.artist,
+                        						'plot':             mi.text,
+                        						'country':          mi.country,
+                        						'genre':            mi.genre,
+                                                'rating':           float(mi.rating)
+                                                })
+        except:
+            pass
+        #i.setProperty('fanart_image', img)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+    except:
+        pass
+
     #get source info
     source_number = 1
 
