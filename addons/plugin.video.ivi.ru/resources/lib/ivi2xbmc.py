@@ -344,7 +344,7 @@ class dig_player(xbmc.Player):
 					if self.state!='play' and self.adstart_timer:
 						self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
 					if self.state!='play' and not self.ended:
-						if self.Time>=int(self.TotalTime-0.6) and self.Time>5 and not added:
+						if self.Time>=int(self.TotalTime-1.6) and self.Time>5 and not added:
 							if self.state=='preroll': 
 								self.pre_end=time.time()
 							#if self.state=='postroll':
@@ -383,7 +383,7 @@ class dig_player(xbmc.Player):
 								else:
 									pass
 						
-						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-0.6) and not self.ended:
+						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-1.6) and not self.ended:
 							pre=self.getAds('postroll')
 							#print pre
 							#print 'to post'
