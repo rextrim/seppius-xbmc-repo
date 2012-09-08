@@ -23,6 +23,8 @@ import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
 from urlparse import urlparse
 
+import demjson3 as json
+
 import subprocess, ConfigParser
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
@@ -178,12 +180,16 @@ def Movie_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
+    print 'par.search: '+par.search
+
     # show search dialog
     if par.search == 'Y':
         skbd = xbmc.Keyboard()
         skbd.setHeading('Поиск сериалов.')
         skbd.doModal()
+        print 'Search form is opened'
         if skbd.isConfirmed():
+            print skbd.getText()
             SearchStr = skbd.getText().split(':')
             url = 'http://seasonvar.ru/autocomplete.php?query='+urllib.quote(SearchStr[0])
             par.search = SearchStr[0]
@@ -191,6 +197,8 @@ def Movie_List(params):
             return False
     else:
         url = 'http://seasonvar.ru/index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
+
+    print url
 
     #== get movie list =====================================================
     post = None
@@ -211,6 +219,9 @@ def Movie_List(params):
             xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
     html = f.read()
+
+    if par.search != '':
+        print html
 
     # -- parsing web page --------------------------------------------------
     count = 1
