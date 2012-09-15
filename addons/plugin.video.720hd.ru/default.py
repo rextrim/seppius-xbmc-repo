@@ -58,6 +58,7 @@ class Param:
     max_page    = 0
     count       = 0
     url         = ''
+    search      = ''
 
 class Info:
     img         = ''
@@ -119,6 +120,9 @@ def Get_Parameters(params):
     #-- url
     try:    p.url = urllib.unquote_plus(params['url'])
     except: p.url = ''
+    #-- search
+    try:    p.search = urllib.unquote_plus(params['search'])
+    except: p.search = ''
 
     #-----
     return p
@@ -172,6 +176,9 @@ def Get_Header(par):
     if par.genre <> '':
         info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre_name + '[/COLOR]'
 
+    if par.search <> '':
+        info  += ' | Поиск: ' + '[COLOR FFFFFF00]'+ par.search +'[/COLOR]'
+
     #-- info line
     name    = info
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
@@ -185,8 +192,8 @@ def Get_Header(par):
     u += '&count=%s'%urllib.quote_plus(str(par.count))
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    #-- genres
-    if par.genre == '' and par.page == '1':
+    #-- genres & search
+    if par.genre == '' and par.search == '' and par.page == '1':
         name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=GENRES'
@@ -199,8 +206,15 @@ def Get_Header(par):
         u += '&count=%s'%urllib.quote_plus(str(par.count))
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
+        name    = '[COLOR FFFFFF00]' + '[ПОИСК]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=SEARCH'
+        #-- filter parameters
+        u += '&search=%s'%urllib.quote_plus('Y')
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
     #-- previous page
-    if int(par.page) > 1 :
+    if int(par.page) > 1 and par.search == '':
         name    = '[COLOR FF00FF00][PAGE -1][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=MOVIE'
@@ -214,7 +228,7 @@ def Get_Header(par):
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- previous page
-    if int(par.page) >= 10 :
+    if int(par.page) >= 10 and par.search == '':
         name    = '[COLOR FF00FF00][PAGE -10][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=MOVIE'
@@ -245,7 +259,6 @@ def Movie_List(params):
         #== get movie list =====================================================
         url = Get_URL(par)
         html = get_HTML(url).replace('<br />','|')
-
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
@@ -320,6 +333,108 @@ def Movie_List(params):
 
         xbmcplugin.endOfDirectory(h)
 
+#---------- movie search list --------------------------------------------------
+def Movie_Search(params):
+        #-- get filter parameters
+        par = Get_Parameters(params)
+
+        # show search dialog
+        if par.search == 'Y':
+            skbd = xbmc.Keyboard()
+            skbd.setHeading('Поиск фильмов.')
+            skbd.doModal()
+            if skbd.isConfirmed():
+                SearchStr = skbd.getText().split(':')
+                par.search = SearchStr[0]
+            else:
+                return False
+        #-- get search url
+        url = 'http://720hd.ru/index.php?do=search'
+        #-- serach parameters ---------
+        values = {
+                        'beforeafter'       :	'after',
+                        #'catlist[]'	        :   0,
+                        'do'                :	'search',
+                        'full_search'       :	1,
+                        'replyless'         :	0,
+                        'replylimit'        :	0,
+                        'resorder'          :	'asc',
+                        'result_from'       :	1,
+                        'result_num'        :	200,
+                        'search_start'      :	1,
+                        'searchdate'        :	0,
+                        'searchuser'	    :   '',
+                        'showposts'         :	0,
+                        'sortby'            :	'title',
+                        'story'         	:   par.search.decode('utf-8').encode('cp1251'),
+                        'subaction'         :	'search',
+                        'titleonly'         :  	3
+                    }
+
+        post = urllib.urlencode(values)
+
+        #== get movie list =====================================================
+        html = get_HTML(url, post).replace('<div id="sort">', '<div id="MOVIE"><div id="sort">').replace('<div class="bottom_content">', '</div><div class="bottom_content">').replace('<br />','|')
+        # -- parsing web page ------------------------------------------------------
+        soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+        for rec in soup.findAll('div', {'class':'middle_content'}):
+            if rec.find('form'):
+                s = rec.text.replace(u'По Вашему запросу найдено', '##').replace(u'ответов', '##')
+                try:
+                    par.count = int(re.compile('## (.+?) ##').findall(s)[0])
+                except:
+                    pass
+
+
+
+        # -- add header info
+        Get_Header(par)
+
+        for rec in soup.findAll('div', {'id':'MOVIE'}):
+            try:
+                mi.title = rec.find('div', {'id':'sort'}).find('a').text
+                mi.year     = int(re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(mi.title)[0][1])
+                mi.title    = re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(mi.title)[0][0].encode('utf-8')
+
+                mi.url      = rec.find('div', {'id':'sort'}).find('a')['href']
+
+                mi.img      = 'http://720hd.ru'+rec.find('img')['src']
+
+                for r in rec.find('div', {'id':re.compile('news-id-')}).text.split('|'):
+                    if r.split(':', 1)[0] == u'Оригинальное название':
+                        mi.orig     = r.split(':',1)[1].encode('utf-8')
+                    elif r.split(':')[0] == u'Страна':
+                        mi.country  = r.split(':')[1].encode('utf-8')
+                    elif r.split(':')[0] == u'Жанр':
+                        mi.genre    = r.split(':')[1].encode('utf-8')
+                    elif r.split(':', 1)[0] == u'В главных ролях':
+                        mi.artist   = r.split(':', 1)[1].encode('utf-8')
+                    elif r.split(':')[0] == u'Режиссер':
+                        mi.director = r.split(':')[1].encode('utf-8')
+                    elif r.split(':', 1)[0] == u'О фильме':
+                        mi.text     = r.split(':', 1)[1].encode('utf-8')
+                #--
+                i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
+                u = sys.argv[0] + '?mode=SOURCE'
+                u += '&name=%s'%urllib.quote_plus(mi.title)
+                u += '&url=%s'%urllib.quote_plus(mi.url)
+                u += '&img=%s'%urllib.quote_plus(mi.img)
+                i.setInfo(type='video', infoLabels={ 'title':      mi.title,
+                                                    'originaltitle':mi.orig,
+                            						'year':        mi.year,
+                            						'director':    mi.director,
+                                                    'artist':      mi.artist,
+                            						'plot':        mi.text,
+                            						'country':     mi.country,
+                            						'genre':       mi.genre})
+                #i.setProperty('fanart_image', mi.img)
+                xbmcplugin.addDirectoryItem(h, u, i, True)
+            except:
+                pass
+
+        xbmcplugin.endOfDirectory(h)
+
 #---------- source list ---------------------------------------------------------
 def Source_List(params):
     url  = urllib.unquote_plus(params['url'])
@@ -381,8 +496,6 @@ def Source_List(params):
 
         if rec.split(':', 1)[0] == u'Премьера (мир)':
             mi.text += '\n'+ rec
-
-    print mi.text.encode('utf-8')
 
     # -- get trailer
     try:
@@ -510,44 +623,46 @@ def Genre_List(params):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    # -- parameters
-    url  = urllib.unquote_plus(params['url'])
-    img  = urllib.unquote_plus(params['img'])
-    name = urllib.unquote_plus(params['name'])
-    vtype = urllib.unquote_plus(params['vtype'])
+    try:
+        # -- parameters
+        url  = urllib.unquote_plus(params['url'])
+        img  = urllib.unquote_plus(params['img'])
+        name = urllib.unquote_plus(params['name'])
+        vtype = urllib.unquote_plus(params['vtype'])
 
-    if url == '*':
-        return False
+        if url == '*':
+            return False
 
-    video = url
-    # -- get VKontakte video url
-    if vtype == 'VK':
-        url = url.replace('vkontakte.ru', 'vk.com')
+        video = url
+        # -- get VKontakte video url
+        if vtype == 'VK':
+            url = url.replace('vkontakte.ru', 'vk.com')
 
-        html = get_HTML(url)
-        soup = BeautifulSoup(html, fromEncoding="windows-1251")
-        for rec in soup.findAll('param', {'name':'flashvars'}):
-            for s in rec['value'].split('&'):
-                if s.split('=',1)[0] == 'uid':
-                    uid = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'vtag':
-                    vtag = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'host':
-                    host = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'vid':
-                    vid = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'oid':
-                    oid = s.split('=',1)[1]
-            video = host+'/u'+uid+'/video/'+vtag+'.720.mp4'
+            html = get_HTML(url)
+            soup = BeautifulSoup(html, fromEncoding="windows-1251")
+            for rec in soup.findAll('param', {'name':'flashvars'}):
+                for s in rec['value'].split('&'):
+                    if s.split('=',1)[0] == 'uid':
+                        uid = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'vtag':
+                        vtag = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'host':
+                        host = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'vid':
+                        vid = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'oid':
+                        oid = s.split('=',1)[1]
+                video = host+'/u'+uid+'/video/'+vtag+'.720.mp4'
 
-        url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
-        ref = soup.find('param',{'name':'movie'})['value']
-        html = get_HTML(url, None, ref)
+            url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
+            ref = soup.find('param',{'name':'movie'})['value']
+            html = get_HTML(url, None, ref)
 
-    # -- play video
-    i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
-    xbmc.Player().play(video, i)
-
+        # -- play video
+        i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
+        xbmc.Player().play(video, i)
+    except:
+        pass
 #-------------------------------------------------------------------------------
 
 def unescape(text):
@@ -603,7 +718,9 @@ except:
 
 if mode == 'MOVIE':
 	Movie_List(params)
-if mode == 'SOURCE':
+elif mode == 'SEARCH':
+	Movie_Search(params)
+elif mode == 'SOURCE':
 	Source_List(params)
 elif mode == 'GENRES':
     Genre_List(params)
