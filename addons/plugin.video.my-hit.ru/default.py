@@ -366,7 +366,8 @@ def Search_List(params):
             return False
 
         #== get movie list =====================================================
-        url = 'http://my-hit.ru/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&result_perpage=1000&search_string=%EA%E8%ED&x=0&y=0'
+        url = 'http://my-hit.ru/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&result_perpage=1000&search_string=%s&x=0&y=0'%urllib.quote(par.search.decode('utf-8').encode('cp1251'))
+        print url
         html = get_HTML(url)
 
         # -- parsing web page --------------------------------------------------
