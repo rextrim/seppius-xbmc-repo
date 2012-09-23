@@ -21,7 +21,7 @@
 # */
 import re, os, urllib, urllib2, cookielib, time
 from time import gmtime, strftime
-from urlparse import urlparse
+import urlparse
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
@@ -58,6 +58,7 @@ class Param:
     letter  = ''
     letter_name = ''
     year    = ''
+    search  = ''
 
 class Info:
     img         = ''
@@ -88,12 +89,43 @@ def Get_Parameters(params):
     #-- year
     try:    p.year = urllib.unquote_plus(params['year'])
     except: p.year = ''
+    #--search
+    try:    p.search = urllib.unquote_plus(params['search'])
+    except: p.search = ''
     #-----
     return p
 
+#---------- get web page -------------------------------------------------------
+def get_HTML(url, post = None, ref = None):
+    request = urllib2.Request(url, post)
+
+    host = urlparse.urlsplit(url).hostname
+    if ref==None:
+        ref='http://'+host
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',   host)
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',             ref)
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+           xbmc.log('We failed to reach a server.')
+        elif hasattr(e, 'code'):
+           xbmc.log('The server couldn\'t fulfill the request.')
+
+    html = f.read()
+
+    return html
+
 #---------- get MY-HIT.RU URL --------------------------------------------------
 def Get_URL(par):
-    url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=1'
+    # http://my-hit.ru/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&search_string=%EA%E8%ED&x=0&y=0
+
+    url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=1&search_string=%EA%E8%ED'
 
     #-- year
     if par.year <> '':
@@ -126,6 +158,9 @@ def Get_Header(par, mcount, pcount):
     if par.letter <> '':
         info += ' | Название: ' + '[COLOR FFFF00FF]'+ par.letter_name + '[/COLOR]'
 
+    if par.search <> '':
+        info += ' | Поиск: ' + '[COLOR FFFF9933]'+ par.search + '[/COLOR]'
+
     #-- info line
     name    = info
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
@@ -140,9 +175,23 @@ def Get_Header(par, mcount, pcount):
     u += '&year=%s'%urllib.quote_plus(par.year)
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
+    #-- search
+    if par.genre == '' and par.letter == '' and par.page == '1' and par.search == '':
+        name    = '[COLOR FFFF9933][Поиск][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=SEARCH'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&letter=%s'%urllib.quote_plus(par.letter)
+        u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
+        u += '&year=%s'%urllib.quote_plus(par.year)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- genres
-    if par.genre == '' and par.letter == '' and par.page == '1':
-        name    = '[Жанры]'
+    if par.genre == '' and par.letter == '' and par.page == '1' and par.search == '':
+        name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=GENRES'
         u += '&name=%s'%urllib.quote_plus(name)
@@ -155,8 +204,8 @@ def Get_Header(par, mcount, pcount):
         u += '&year=%s'%urllib.quote_plus(par.year)
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- alphabet
-    if par.letter == '' and par.genre == '' and par.page == '1':
-        name    = '[Алфавит]'
+    if par.letter == '' and par.genre == '' and par.page == '1' and par.search == '':
+        name    = '[COLOR FFFF00FF][Алфавит][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=ALPHABET'
         u += '&name=%s'%urllib.quote_plus(name)
@@ -169,8 +218,8 @@ def Get_Header(par, mcount, pcount):
         u += '&year=%s'%urllib.quote_plus(par.year)
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- year
-    if par.year == '' and par.page == '1':
-        name    = '[Год]'
+    if par.year == '' and par.page == '1' and par.search == '':
+        name    = '[COLOR FFFFF000][Год][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=YEAR'
         u += '&name=%s'%urllib.quote_plus(name)
@@ -193,26 +242,7 @@ def Movie_List(params):
 
         #== get movie list =====================================================
         url = Get_URL(par)
-        xbmc.log("*** URL:" + url)
-
-        post = None
-        request = urllib2.Request(url, post)
-
-        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        request.add_header('Host',	'my-hit.ru')
-        request.add_header('Accept', '*/*')
-        request.add_header('Accept-Language', 'ru-RU')
-        request.add_header('Referer',	'http://my-hit.ru')
-
-        try:
-            f = urllib2.urlopen(request)
-        except IOError, e:
-            if hasattr(e, 'reason'):
-                xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-            elif hasattr(e, 'code'):
-                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-        html = f.read()
+        html = get_HTML(url)
 
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -293,7 +323,6 @@ def Movie_List(params):
             u += '&name=%s'%urllib.quote_plus(mi.title)
             u += '&url=%s'%urllib.quote_plus(mi.url)
             u += '&img=%s'%urllib.quote_plus(mi.img)
-            xbmcplugin.addDirectoryItem(h, u, i, False)
             i.setInfo(type='video', infoLabels={ 'title':      mi.title,
                         						'year':        mi.year,
                         						'director':    mi.director,
@@ -301,6 +330,7 @@ def Movie_List(params):
                         						'country':     mi.country,
                         						'genre':       mi.genre})
             i.setProperty('fanart_image', mi.img)
+            xbmcplugin.addDirectoryItem(h, u, i, False)
 
         #-- next page link
         if int(par.page) < pcount :
@@ -317,7 +347,72 @@ def Movie_List(params):
             u += '&year=%s'%urllib.quote_plus(par.year)
             xbmcplugin.addDirectoryItem(h, u, i, True)
 
-        #xbmc.log("** "+str(pcount)+"  :  "+str(mcount))
+        xbmcplugin.endOfDirectory(h)
+
+#---------- search movie list --------------------------------------------------
+def Search_List(params):
+        list = []
+        #-- get filter parameters
+        par = Get_Parameters(params)
+
+        # show search dialog
+        skbd = xbmc.Keyboard()
+        skbd.setHeading('Поиск фильмов.')
+        skbd.doModal()
+        if skbd.isConfirmed():
+            SearchStr = skbd.getText().split(':')
+            par.search = SearchStr[0]
+        else:
+            return False
+
+        #== get movie list =====================================================
+        url = 'http://my-hit.ru/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&result_perpage=1000&search_string=%EA%E8%ED&x=0&y=0'
+        html = get_HTML(url)
+
+        # -- parsing web page --------------------------------------------------
+        soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+        pcount = 1
+        mcount = 0
+
+        # -- get list of found movies
+        flag = 0
+        for rec in soup.findAll("tr"):
+            try:
+                if rec.find('a').text.find(u'(фильм)')<>-1:
+                    m_name = rec.find('a').text.replace(u'(фильм)', '').encode('utf-8')
+                    flag = 1
+                elif flag==1:
+                    m_url  = rec.find('a')['href']
+                    m_url = 'http://my-hit.ru/film/'+m_url.split('&id=')[1]+'/online'
+
+                    m_img  = 'http://my-hit.ru'+rec.find('img')['src']
+                    m_text = unescape(rec.text).encode('utf-8')
+                    flag = 0
+                    list.append({'name':m_name, 'url':m_url, 'img':m_img, 'text':m_text})
+            except:
+                pass
+        mcount = len(list)
+
+        if mcount == 0:
+            return False
+
+        #-- add header info
+        Get_Header(par, mcount, pcount)
+
+        for mov in list:
+            #-- add movie to the list ------------------------------------------
+            name = '[COLOR FFC3FDB8]'+mov['name']+'[/COLOR]'
+
+            i = xbmcgui.ListItem(name, iconImage=mi.img, thumbnailImage=mi.img)
+            u = sys.argv[0] + '?mode=PLAY'
+            u += '&name=%s'%urllib.quote_plus(mov['name'])
+            u += '&url=%s'%urllib.quote_plus(mov['url'])
+            u += '&img=%s'%urllib.quote_plus(mov['img'])
+            i.setInfo(type='video', infoLabels={ 'title':      mov['name'],
+                        						'plot':        mov['text']})
+            i.setProperty('fanart_image', mov['img'])
+            xbmcplugin.addDirectoryItem(h, u, i, False)
 
         xbmcplugin.endOfDirectory(h)
 
@@ -328,25 +423,7 @@ def Genre_List(params):
 
     #-- get generes
     url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
-
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'my-hit.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://my-hit.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -372,45 +449,25 @@ def Genre_List(params):
 
 #---------- get year list -----------------------------------------------------
 def Year_List(params):
+    list = []
     #-- get filter parameters
     par = Get_Parameters(params)
 
     #-- get generes
     url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
-
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'my-hit.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://my-hit.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
     nav = soup.find("table", { "id" : "_years_" }).find("table")
     for year in nav.findAll('td'):
-
-        try: i = int(year.text)
+        try: list.append(int(year.text))
         except: continue
 
-        revyear = 3000 - i
-
-        name     = unescape(year.text).encode('utf-8')
+    for year in sorted(list, reverse=True):
+        name     = str(year).encode('utf-8')
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        i.setInfo(type='video', infoLabels={ 'count': revyear})
         u = sys.argv[0] + '?mode=MOVIE'
         u += '&name=%s'%urllib.quote_plus(name)
         #-- filter parameters
@@ -419,10 +476,9 @@ def Year_List(params):
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&letter=%s'%urllib.quote_plus(par.letter)
         u += '&letter_name=%s'%urllib.quote_plus(par.letter_name)
-        u += '&year=%s'%urllib.quote_plus(year.text)
+        u += '&year=%s'%urllib.quote_plus(name)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    xbmcplugin.addSortMethod(h, xbmcplugin.SORT_METHOD_PROGRAM_COUNT)
     xbmcplugin.endOfDirectory(h)
 
 #---------- get year list -----------------------------------------------------
@@ -432,25 +488,7 @@ def Alphabet_List(params):
 
     #-- get generes
     url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
-
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'my-hit.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://my-hit.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -488,31 +526,14 @@ def PLAY(params):
         return False
 
     # -- check if video available
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'my-hit.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://my-hit.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
     nav = soup.find("embed")
     p_refer = nav['src']
     p_params = dict([part.split('=') for part in  nav['flashvars'].split('&')])
-    p_host = urlparse(p_params['file']).hostname
+    p_host = urlparse.urlparse(p_params['file']).hostname
 
     # -- assemble RTMP link ----------------------------------------------------
     video = '%s?start=0&id=%s' % (p_params['file'], p_params['id'])
@@ -575,6 +596,8 @@ except:
 
 if mode == 'MOVIE':
 	Movie_List(params)
+if mode == 'SEARCH':
+	Search_List(params)
 elif mode == 'GENRES':
     Genre_List(params)
 elif mode == 'YEAR':
