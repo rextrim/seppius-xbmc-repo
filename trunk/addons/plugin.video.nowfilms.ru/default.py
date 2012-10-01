@@ -61,6 +61,7 @@ class Param:
     max_page    = 0
     count       = 0
     url         = ''
+    pl          = ''
 
 class Info:
     img         = ''
@@ -121,6 +122,9 @@ def Get_Parameters(params):
     #-- url
     try:    p.url = urllib.unquote_plus(params['url'])
     except: p.url = ''
+    #-- pl
+    try:    p.pl = urllib.unquote_plus(params['pl'])
+    except: p.pl = ''
 
     #-----
     return p
@@ -316,10 +320,27 @@ def Source_List(params):
     name = urllib.unquote_plus(params['name'])
 
     #== get movie list =====================================================
+    list = Get_PlayList(url, name)
+
+    if len(list) == 1:
+        url = '*'
+
+    for rec in list:
+        i = xbmcgui.ListItem(rec['name'], iconImage=img, thumbnailImage=img)
+        u = sys.argv[0] + '?mode=PLAY'
+        u += '&name=%s'%urllib.quote_plus(name)
+        u += '&url=%s'%urllib.quote_plus(rec['url'])
+        u += '&img=%s'%urllib.quote_plus(img)
+        u += '&pl=%s'%urllib.quote_plus(url)
+        u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
+        #i.setProperty('fanart_image', img)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    xbmcplugin.endOfDirectory(h)
+
+def Get_PlayList(url, name):
     html = get_HTML(url)
-
     list = []
-
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
     # -- get movie info
@@ -336,20 +357,15 @@ def Source_List(params):
         pl = json.loads(html)
 
         for rec in pl['playlist']:
-            list.append({'name': rec['comment'], 'url': rec['file']})
+            try:
+                for rec1 in rec['playlist']:
+                    list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
+            except:
+                list.append({'name': rec['comment'], 'url': rec['file']})
     else:
         list.append({'name': name, 'url': video})
 
-    for rec in list:
-        i = xbmcgui.ListItem(rec['name'], iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(name)
-        u += '&url=%s'%urllib.quote_plus(rec['url'])
-        u += '&img=%s'%urllib.quote_plus(img)
-        #i.setProperty('fanart_image', img)
-        xbmcplugin.addDirectoryItem(h, u, i, False)
-
-    xbmcplugin.endOfDirectory(h)
+    return list
 
 #---------- get genge list -----------------------------------------------------
 def Genre_List(params):
@@ -414,13 +430,33 @@ def Type_List(params):
 
 def PLAY(params):
     # -- parameters
-    url  = urllib.unquote_plus(params['url'])
-    img  = urllib.unquote_plus(params['img'])
-    name = urllib.unquote_plus(params['name'])
+    url     = urllib.unquote_plus(params['url'])
+    img     = urllib.unquote_plus(params['img'])
+    name    = urllib.unquote_plus(params['name'])
+    plurl   = urllib.unquote_plus(params['pl'])
+    sel     = urllib.unquote_plus(params['sel'])
 
-    # -- play video
-    i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
-    xbmc.Player().play(url, i)
+    if plurl == '*':
+        # -- play video
+        i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
+        xbmc.Player().play(url, i)
+    else:
+        pl=xbmc.PlayList(1)
+        pl.clear()
+        flag = 0
+
+        list = Get_PlayList(plurl, name)
+
+        for rec in list:
+            if rec['name'].encode('utf-8') == sel:
+                flag = 1
+
+            if flag == 1:
+                i = xbmcgui.ListItem(rec['name'], path = urllib.unquote(rec['url']), thumbnailImage=img)
+                i.setProperty('IsPlayable', 'true')
+                pl.add(rec['url'], i)
+
+        xbmc.Player().play(pl)
 
 #-------------------------------------------------------------------------------
 
