@@ -332,7 +332,8 @@ def Source_List(params):
         u += '&url=%s'%urllib.quote_plus(rec['url'])
         u += '&img=%s'%urllib.quote_plus(img)
         u += '&pl=%s'%urllib.quote_plus(url)
-        u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
+        if url <> '*':
+            u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
         #i.setProperty('fanart_image', img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
@@ -434,13 +435,13 @@ def PLAY(params):
     img     = urllib.unquote_plus(params['img'])
     name    = urllib.unquote_plus(params['name'])
     plurl   = urllib.unquote_plus(params['pl'])
-    sel     = urllib.unquote_plus(params['sel'])
 
     if plurl == '*':
         # -- play video
         i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
         xbmc.Player().play(url, i)
     else:
+        sel     = urllib.unquote_plus(params['sel'])
         pl=xbmc.PlayList(1)
         pl.clear()
         flag = 0
