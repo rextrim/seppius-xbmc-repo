@@ -752,6 +752,7 @@ def getser(params):
 
 
 def get_video_data(video):
+	print video
 	mysetInfo={}
 	try: title=video['title']
 	except: title=None
@@ -763,6 +764,7 @@ def get_video_data(video):
 	except: seasons_cnt = -1
 	try: images=video['thumbnails']
 	except: images=None
+	print images
 	try: season=video['season']
 	except: season=None
 	try: episode=video['episode']
@@ -798,19 +800,18 @@ def get_video_data(video):
 	ltu = addon_icon
 
 
+	
 	try:
+		try: ltu = images[0]['path']
+		except: pass
+		try: ltu = images[1]['path']
+		except: pass
+	except:
 		for thumbnail in images:
 			if int(thumbnail['height']) >= lth:
 				ltu = thumbnail['path']
 				lth = int(thumbnail['height'])
 				ltw = int(thumbnail['width'])
-	except:
-
-		try: ltu = images[1]['path']
-		except: pass
-		try: ltu = images[0]['path']
-		except: pass
-		pass
 	genres=None
 	glist = []
 	if genre:
