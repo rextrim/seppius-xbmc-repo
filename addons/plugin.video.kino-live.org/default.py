@@ -25,6 +25,7 @@ import re
 import sys
 import os
 import Cookie
+from datetime import date
 
 import xbmcplugin
 import xbmcgui
@@ -120,15 +121,27 @@ def mainScreen(params):
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
 
+	li = xbmcgui.ListItem('[По годам]')
+	uri = construct_request({
+		'mode': 'getTags'
+	})
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 	li = xbmcgui.ListItem('[Поиск]')
 	uri = construct_request({
 		'mode': 'runSearch'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-	readCategory({
-		'href': httpSiteUrl
-	});
+	
+	
+	try:
+		today = date.today()
+		readCategory({
+		        'href': httpSiteUrl + '/tags/' + str(today.year)
+		});
+	except:
+		xbmcplugin.endOfDirectory(h)
+		
 
 def readCategory(params, postParams = None):
 	categoryUrl = urllib.unquote_plus(params['href'])
@@ -207,6 +220,34 @@ def getCategories(params):
 				title = link.string
 				if title == None:
 					title = link.find("h2").string
+				href = link['href']
+				if href.find("://") < 0:
+					href = httpSiteUrl + href
+				li = xbmcgui.ListItem('[%s]' % title)
+				li.setProperty('IsPlayable', 'false')
+				uri = construct_request({
+					'href': href,
+					'mode': 'readCategory'
+				})
+				xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	xbmcplugin.endOfDirectory(h)
+
+def getTags(params):
+	http = GET(httpSiteUrl + '/tags/', httpSiteUrl)
+	if http == None: return False
+
+	beautifulSoup = BeautifulSoup(http)
+	tagsContainer = beautifulSoup.find('td', 'news')
+	tags = tagsContainer.findAll('a')
+	if len(tags) == 0:
+		showMessage('ОШИБКА', 'Неверная страница', 3000)
+		return False
+	else:
+		tags.reverse()
+		for link in tags:
+			if link != None:
+				title = link.string
 				href = link['href']
 				if href.find("://") < 0:
 					href = httpSiteUrl + href
