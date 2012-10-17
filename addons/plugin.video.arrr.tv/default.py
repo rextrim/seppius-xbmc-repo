@@ -195,7 +195,11 @@ def getmovies(params):
 				plot = movie['description'][lang]
 			except:
 				plot = ""
-			title = getTitle(movie['title']["ru"], movie['title']["en"], id)
+
+			try:
+				title = getTitle(movie['title']["ru"], movie['title']["en"], id)
+			except:
+				title = '[No-title]'
 			video = movie['video']
 			availableLanguages = getAvailableLanguages(video)
 
