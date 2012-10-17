@@ -349,7 +349,7 @@
 
 <addon id="plugin.video.arrr.tv"
        name="Arrr.tv"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
