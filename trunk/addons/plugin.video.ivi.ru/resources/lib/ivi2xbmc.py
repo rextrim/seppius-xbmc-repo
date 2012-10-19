@@ -29,6 +29,8 @@ import xbmc
 import xbmcaddon
 import time
 import random
+import threading
+
 from urllib import unquote, quote, quote_plus
 try:
 	from hashlib import md5
@@ -132,19 +134,9 @@ def track_page_view(path,nevent='', tevent='',UATRACK='UA-11561457-31'):
 
 	return send_request_to_google_analytics(utm_url, UA)
 
-try:
-	import json
-except ImportError:
-	try:
-		import simplejson as json
-		xbmc.log( '[%s]: Error import json. Uses module simplejson' % addon_id, 2 )
-	except ImportError:
-		try:
-			import demjson3 as json
-			xbmc.log( '[%s]: Error import simplejson. Uses module demjson3' % addon_id, 3 )
-		except ImportError:
-			xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
 
+import simplejson as json
+			
 def get_random_number():
 	return str(random.randint(0, 0x7fffffff))
 
@@ -167,6 +159,7 @@ def GET(target, post=None):
 		CE = resp.headers.get('content-encoding')
 		http = resp.read()
 		resp.close()
+		#print http
 		return http
 	except Exception, e:
 		xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
@@ -183,6 +176,52 @@ def genre2name(gid):
 		return reti
 	except: return None
 
+class adv_sender(threading.Thread):
+	def __init__(self,interval):
+		threading.Thread.__init__(self)
+		self.daemon = True
+		self.interval = interval	
+		self.active = True	
+		self.path=None
+		self.post=None
+		self.send_list=[]
+		self.psend_list=[]
+	def run(self):
+		while self.active:
+			
+			if len(self.send_list)>=1:
+				#print '--------'
+				#print len(self.send_list)
+				#print self.send_list
+				#print self.psend_list
+				self.post=self.send_list[0]
+				self.path=self.psend_list[0]
+				self.send_list=self.send_list[1:]
+			else: self.post=self.path=None
+			
+			#print self.post
+			#print self.path
+			
+			if self.post!=None:
+				#print self.post
+				#self.post=urllib.urlencode(self.post).replace('.','%2E').replace('_','%5F')
+		#print post
+				try:
+					#print self.post
+					req = urllib2.Request(self.path,self.post)
+					req.add_header('Accept', 'text/plain')
+					req.add_header('Content-Type','application/x-www-form-urlencoded')
+					f = urllib2.urlopen(req)
+					js = f.read()
+				except: pass
+				self.post=None
+			xbmc.sleep(300)
+	def end(self):
+		#self.active=False
+		#xbmc.sleep(300)
+		self.daemon = False
+		
+	
 class dig_player(xbmc.Player):
 	
 	def __init__( self, *args, **kwargs ):
@@ -219,6 +258,8 @@ class dig_player(xbmc.Player):
 		self.start_timer=None
 		self.show=True
 		self.playing=False
+		self.sender = adv_sender(1)
+		self.sender.start()
 	def report_ads(self, curr_ads):
 		json1 = self.POSTAPI({'method':'da.adv.watched', 'params':[self.vID, curr_ads['id'], {'contentid':self.vID,'site':self.sID, 'watchid':str(self.watchid),'advid':curr_ads['id'],'uid':uniq_id, "advwatchid":str(self.advwatchid)} ]})
 		links= curr_ads['px_audit']
@@ -254,59 +295,61 @@ class dig_player(xbmc.Player):
 		json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'contentid':self.vID,'watchid':self.watchid,'site':self.sID, 'uid':uniq_id} ]})
 		vc = json0['result']
 		self.content = self.find_best(vc)
-		http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
-		if http:
-			data = get_video_data(json.loads(http))
-			self.PosterImage = data['image']
-			self.main_item = xbmcgui.ListItem(data['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-			self.title=data['title']
-			i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-			iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
-		try:    self.content_percent_to_mark = int(vc['percent_to_mark'])
-		except: self.content_percent_to_mark = 0
-		try:    self.GA_id = int(vc['google_analytics_id'])
-		except: self.GA_id = None
-		try:    self.tns_id = int(vc['tns_id'])
-		except: self.tns_id = None
-		self.title=vc['title']
-		try:    self.credits_begin_time = int(vc['credits_begin_time'])
-		except: self.credits_begin_time = -1
-		if self.credits_begin_time==0: self.credits_begin_time=-1
-		try:    self.midroll = vc['midroll']
-		except: self.midroll = []
-		flname=self.content
-		fio=i
-		ind=0
-		pre=self.getAds('preroll')
-		if pre:
-			self.adv_file=pre['url']
-			self.advid=pre['id']
-			self.playl.add(self.adv_file,iad)
-			self.state='preroll'
-			self.send_ads=pre
-			flname=self.adv_file
-			fio=iad
-		else: self.state='play'
-		
-		for na in self.midroll:
-			try:
-				self.ads.append({
-					'type':'midroll',
+		if self.content:
+			http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
+			if http:
+				#print http
+				data = get_video_data(json.loads(http))
+				self.PosterImage = data['image']
+				self.main_item = xbmcgui.ListItem(data['title'], iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+				self.title=data['title']
+				i = xbmcgui.ListItem(self.title, iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+				iad = xbmcgui.ListItem(language(30011), iconImage = self.PosterImage, thumbnailImage = self.PosterImage)
+			try:    self.content_percent_to_mark = int(vc['percent_to_mark'])
+			except: self.content_percent_to_mark = 0
+			try:    self.GA_id = int(vc['google_analytics_id'])
+			except: self.GA_id = None
+			try:    self.tns_id = int(vc['tns_id'])
+			except: self.tns_id = None
+			self.title=vc['title']
+			try:    self.credits_begin_time = int(vc['credits_begin_time'])
+			except: self.credits_begin_time = -1
+			if self.credits_begin_time==0: self.credits_begin_time=-1
+			try:    self.midroll = vc['midroll']
+			except: self.midroll = []
+			flname=self.content
+			fio=i
+			ind=0
+			pre=self.getAds('preroll')
+			if pre:
+				self.adv_file=pre['url']
+				self.advid=pre['id']
+				self.playl.add(self.adv_file,iad)
+				self.state='preroll'
+				self.send_ads=pre
+				flname=self.adv_file
+				fio=iad
+			else: self.state='play'
+			
+			for na in self.midroll:
+				try:
+					self.ads.append({
+						'type':'midroll',
+						'ind':ind,
+						'time':na})
+					ind=ind+1
+				except: pass
+			self.ads.append({
+					'type':'postroll',
 					'ind':ind,
-					'time':na})
-				ind=ind+1
-			except: pass
-		self.ads.append({
-				'type':'postroll',
-				'ind':ind,
-				'time':self.credits_begin_time
-			})
-		track_page_view('','event','5(Video*Videostart)')
-		track_page_view('','event','5(Video*Videostart)',UATRACK=GATrack)
-		self.active=True
-		json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid ,'uid':uniq_id} ],'method':'da.content.watched' })
-		self.playing=False
-		self.play(flname,fio)
+					'time':self.credits_begin_time
+				})
+			track_page_view('','event','5(Video*Videostart)')
+			track_page_view('','event','5(Video*Videostart)',UATRACK=GATrack)
+			self.active=True
+			json1 = self.POSTAPI({'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid ,'uid':uniq_id} ],'method':'da.content.watched' })
+			self.playing=False
+			self.play(flname,fio)
 		
 	
 	def play_loop(self):
@@ -318,6 +361,7 @@ class dig_player(xbmc.Player):
 		self.Time = 0
 		self.TotalTime = 9999
 		self.percent = 0
+		
 		while self.active:
 			if self.playing:
 				try:
@@ -344,7 +388,7 @@ class dig_player(xbmc.Player):
 					if self.state!='play' and self.adstart_timer:
 						self.sendstat('http://api.digitalaccess.ru/logger/adv/time/',{'watchid':quote(self.watchid),'advwatchid':quote(self.advwatchid),'seconds':int(time.time()-self.adstart_timer)})
 					if self.state!='play' and not self.ended:
-						if self.Time>=int(self.TotalTime-1.6) and self.Time>5 and not added:
+						if self.Time>=int(self.TotalTime-0.3) and self.Time>5 and not added:
 							if self.state=='preroll': 
 								self.pre_end=time.time()
 							#if self.state=='postroll':
@@ -383,7 +427,7 @@ class dig_player(xbmc.Player):
 								else:
 									pass
 						
-						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-1.6) and not self.ended:
+						if self.state=='play' and self.credits_begin_time==-1 and self.Time>=int(self.TotalTime-0.3) and not self.ended:
 							pre=self.getAds('postroll')
 							#print pre
 							#print 'to post'
@@ -398,8 +442,12 @@ class dig_player(xbmc.Player):
 								self.ended=True
 								self.playing=False
 								self.play(pre['url'],iad)
-			self.sleep(300)
-		
+			#print self.TotalTime-self.Time
+			if self.TotalTime-self.Time>5:
+				self.sleep(300)
+			else: self.sleep(100)
+		self.sender.active=False
+	
 	def onPlayBackEnded( self ):
 		if self.state!='play' and not self.ended: 
 			self.state='play'
@@ -464,14 +512,23 @@ class dig_player(xbmc.Player):
 	
 	def sendstat(self,path,post):
 		post=urllib.urlencode(post).replace('.','%2E').replace('_','%5F')
+		#print 'sender:%s-%s'%(post,path)
+		#print path
+		#self.sender.path=path
+		#self.sender.post=post
+		self.sender.psend_list.append(path)
+		#print self.sender.psend_list
+		self.sender.send_list.append(post)
+		#print self.sender.send_list
+		#post=urllib.urlencode(post).replace('.','%2E').replace('_','%5F')
 		#print post
-		try:
-			req = urllib2.Request(path,post)
-			req.add_header('Accept', 'text/plain')
-			req.add_header('Content-Type','application/x-www-form-urlencoded')
-			f = urllib2.urlopen(req)
-			js = f.read()
-		except: pass
+		#try:
+		#	req = urllib2.Request(path,post)
+		#	req.add_header('Accept', 'text/plain')
+		#	req.add_header('Content-Type','application/x-www-form-urlencoded')
+		#	f = urllib2.urlopen(req)
+		#	js = f.read()
+		#except: pass
 
 	def find_best(self, data):
 		play_file = None
@@ -499,10 +556,10 @@ def show_info():
 def playid(params):
 	
 	ShowMessage('ivi','Инициализация',1000)
-	xbmc.sleep(1000)
+	#xbmc.sleep(1000)
 	try: xbmcplugin.endOfDirectory(hos)
 	except: pass
-	xbmc.sleep(1000)
+	#xbmc.sleep(1000)
 	v_list=[]
 	try:
 		v_list = params['playlist']
@@ -530,8 +587,16 @@ def playid(params):
 		aplay.lastad=last_ad
 		aplay.pre_end=time.time()
 		aplay.getData(params['id'])
-		aplay.play_loop()
-		aplay.stop
+		if aplay.content!=None:
+			aplay.play_loop()
+			aplay.stop
+			aplay.sender.end
+		else: 
+			ShowMessage('IVI Error', 'Контент1 недоступен', 2000)
+			aplay.stop
+			aplay.sender.end
+			
+			
 	else:
 		aplay=dig_player()
 		aplay.init()
@@ -541,8 +606,15 @@ def playid(params):
 				aplay.init()
 				aplay.pre_end=time.time()
 				aplay.getData(id)
-				aplay.play_loop()
-				aplay.stop
+				if aplay.content!=None:
+					aplay.play_loop()
+					aplay.stop
+					aplay.sender.end
+				else: 
+					ShowMessage('IVI Error', 'Контент2 недоступен', 2000)
+					aplay.stop
+					aplay.sender.end
+					break
 
 def main_screen(params):
 
@@ -752,7 +824,7 @@ def getser(params):
 
 
 def get_video_data(video):
-	print video
+	#print video
 	mysetInfo={}
 	try: title=video['title']
 	except: title=None
@@ -762,9 +834,15 @@ def get_video_data(video):
 	except: id=None
 	try: seasons_cnt = video['seasons_count']
 	except: seasons_cnt = -1
-	try: images=video['thumbnails']
+	try: 
+		images=video['thumbnails']
+		#print images
 	except: images=None
-	print images
+	try: 
+		images2=video['thumb_originals']
+		#print images2[0]['path']
+	except: images2=None
+	
 	try: season=video['season']
 	except: season=None
 	try: episode=video['episode']
@@ -795,23 +873,21 @@ def get_video_data(video):
 	try:    
 		mysetInfo['duration'] = duration
 	except: pass
-	lth = 0
+	lth = -1
 	ltw = 0
 	ltu = addon_icon
 
-
 	
 	try:
-		try: ltu = images[0]['path']
+		ltu=images[0]['path']
+		if images[0]['type']=='B2BImageFile':
+			ltu=images2[0]['path']
+	except: 
+		try: ltu=images2[0]['path']
 		except: pass
-		try: ltu = images[1]['path']
-		except: pass
-	except:
-		for thumbnail in images:
-			if int(thumbnail['height']) >= lth:
-				ltu = thumbnail['path']
-				lth = int(thumbnail['height'])
-				ltw = int(thumbnail['width'])
+
+	#ltu=images[0]['path']
+	print ltu
 	genres=None
 	glist = []
 	if genre:
@@ -840,6 +916,7 @@ def promo(params): 					# показ промо контента
 		for video in jsdata:
 			http=GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s'%video['content_id'])
 			vdata = get_video_data(json.loads(http))
+			#print vdata['image']
 			li = xbmcgui.ListItem(vdata['title'], iconImage = vdata['image'], thumbnailImage = vdata['image'])
 			li.setProperty('fanart_image', addon_fanart)
 			
