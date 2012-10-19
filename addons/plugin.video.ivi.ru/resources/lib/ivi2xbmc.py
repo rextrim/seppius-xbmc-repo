@@ -887,7 +887,7 @@ def get_video_data(video):
 		except: pass
 
 	#ltu=images[0]['path']
-	print ltu
+	#print ltu
 	genres=None
 	glist = []
 	if genre:
