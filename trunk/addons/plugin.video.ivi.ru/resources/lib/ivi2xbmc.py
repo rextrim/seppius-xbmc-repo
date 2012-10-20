@@ -293,9 +293,12 @@ class dig_player(xbmc.Player):
 		self.vID=vID
 		self.watchid='%s_%s_%s'%(self.vID,uniq_id,str(int(time.time()*1000)))
 		json0 = self.POSTAPI({'method':'da.content.get', 'params':[self.vID, {'contentid':self.vID,'watchid':self.watchid,'site':self.sID, 'uid':uniq_id} ]})
-		vc = json0['result']
-		self.content = self.find_best(vc)
-		if self.content:
+		try:
+			vc = json0['result']
+			self.content = self.find_best(vc)
+		except: vc=None
+		
+		if self.content and vc:
 			http = GET('http://www.ivi.ru/mobileapi/videoinfo/?id=%s' % self.vID)
 			if http:
 				#print http
