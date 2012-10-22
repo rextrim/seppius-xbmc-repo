@@ -278,7 +278,7 @@ def Serial_Info(params):
     post = None
     request = urllib2.Request(url, post)
 
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.5; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host',	'seasonvar.ru')
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
@@ -575,6 +575,8 @@ def Get_Cookies(url): #soup):
 
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(soup, parent_url):
+
+    '''
     #-- get play list url
     for rec in soup.findAll('script', {'type':'text/javascript'}):
         if rec.text.find('swfobject.embedSWF') > -1:
@@ -585,42 +587,23 @@ def Get_PlayList(soup, parent_url):
 
     url = 'http://seasonvar.ru/' + xppod.Decode(html)
     '''
-    #-- get play list url
+     #-- get play list url
     for rec in soup.findAll('script', {'type':'text/javascript'}):
-        if rec.text.find('swfobject.embedSWF') > -1:
-            z = rec.text.replace('$.post("','[').replace('", {',']')
-            urlx = re.compile('\$\.post\("(.+?)", \{"(.+?)":"(.+?)"\}', re.MULTILINE|re.DOTALL).findall(rec.text)
-            url = 'http://seasonvar.ru/'+urlx[0][0]
-            code1 = urlx[0][1]
-            code2 = urlx[0][2]
-            break
+        if rec.text.find('swfobject') > -1 and rec.text.find('flashvars') > -1:
+            SWF_code = rec.text
+    #---
+    fcode = Run_Java(SWF_code)
+    print fcode
 
-    values = {code1 : code2}
-    post = urllib.urlencode(values)
+    z = '{'+ re.compile('var flashvars=\{(.+?)\};', re.MULTILINE|re.DOTALL).findall(fcode)[0]+'}'
+    for r in z.split(','):
+        if r.split(':')[0] == '"pl"':
+            html = r.split(':')[1].replace('"', '')
 
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'seasonvar.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	parent_url)
-    request.add_header('Content-Type',	'application/x-www-form-urlencoded')
-    request.add_header('Cookie',	Get_Cookies(parent_url))
-    request.add_header('X-Requested-With',	'XMLHttpRequest')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    print html
 
     url = 'http://seasonvar.ru/' + xppod.Decode(html)
-    '''
+
 
     # -- get play list
     post = None
@@ -660,6 +643,38 @@ def Initialize():
         process.wait()
     except:
         xbmc.log('*** PhantomJS is not found or failed.')
+
+def Run_Java(SWF_code):
+    #---
+    f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.tpl'), 'r')
+    f2 = open(os.path.join(Addon.getAddonInfo('path'),'test.js') , 'w')
+    fcode = f1.read().replace('$script$', SWF_code.replace('eval(', 'document.write('))
+    f2.write(fcode)
+    f1.close()
+    f2.close()
+    #--
+    startupinfo = None
+    if os.name == 'nt':
+        prog = '"'+os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe" "')+os.path.join(Addon.getAddonInfo('path'),'test.js"')
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= 1
+    else:
+        prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), os.path.join(Addon.getAddonInfo('path'),'test.js')]
+
+    #try:
+    output_f = open(os.path.join(Addon.getAddonInfo('path'),'test.txt'),'w')
+    process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= output_f, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
+    process.wait()
+    output_f.close()
+    #except:
+    #    xbmc.log('*** PhantomJS is not found or failed (run java).')
+
+    #--
+    f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.txt'), 'r')
+    fcode = f1.read()
+    f1.close()
+
+    return fcode
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
