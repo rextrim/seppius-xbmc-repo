@@ -180,16 +180,12 @@ def Movie_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
-    print 'par.search: '+par.search
-
     # show search dialog
     if par.search == 'Y':
         skbd = xbmc.Keyboard()
         skbd.setHeading('Поиск сериалов.')
         skbd.doModal()
-        print 'Search form is opened'
         if skbd.isConfirmed():
-            print skbd.getText()
             SearchStr = skbd.getText().split(':')
             url = 'http://seasonvar.ru/autocomplete.php?query='+urllib.quote(SearchStr[0])
             par.search = SearchStr[0]
@@ -197,8 +193,6 @@ def Movie_List(params):
             return False
     else:
         url = 'http://seasonvar.ru/index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
-
-    print url
 
     #== get movie list =====================================================
     post = None
@@ -219,9 +213,6 @@ def Movie_List(params):
             xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
     html = f.read()
-
-    if par.search != '':
-        print html
 
     # -- parsing web page --------------------------------------------------
     count = 1
@@ -349,10 +340,10 @@ def Serial_Info(params):
 
         #---------------------------
         try:
-            playlist, playlist_url = Get_PlayList(soup, url)
+            playlist, playlist_url, swf_player = Get_PlayList(soup, url)
         except:
             Initialize()
-            playlist, playlist_url = Get_PlayList(soup, url)
+            playlist, playlist_url, swf_player = Get_PlayList(soup, url)
 
         for rec in playlist:
             for par in rec.replace('"','').split(','):
@@ -592,18 +583,20 @@ def Get_PlayList(soup, parent_url):
         if rec.text.find('swfobject') > -1 and rec.text.find('flashvars') > -1:
             SWF_code = rec.text
     #---
-    fcode = Run_Java(SWF_code)
-    print fcode
+    plcode = Run_Java(SWF_code)
 
+    swf_player  = plcode.split(',')[1]
+    plcode      = plcode.split(',')[0]
+
+    '''
     z = '{'+ re.compile('var flashvars=\{(.+?)\};', re.MULTILINE|re.DOTALL).findall(fcode)[0]+'}'
     for r in z.split(','):
         if r.split(':')[0] == '"pl"':
             html = r.split(':')[1].replace('"', '')
 
     print html
-
-    url = 'http://seasonvar.ru/' + xppod.Decode(html)
-
+    '''
+    url = 'http://seasonvar.ru' + xppod.Decode(plcode)
 
     # -- get play list
     post = None
@@ -626,7 +619,7 @@ def Get_PlayList(soup, parent_url):
     html = f.read()
     html = xppod.Decode(html)
 
-    return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url
+    return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url, swf_player
 
 #-------------------------------------------------------------------------------
 def Initialize():
@@ -648,7 +641,7 @@ def Run_Java(SWF_code):
     #---
     f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.tpl'), 'r')
     f2 = open(os.path.join(Addon.getAddonInfo('path'),'test.js') , 'w')
-    fcode = f1.read().replace('$script$', SWF_code.replace('eval(', 'document.write('))
+    fcode = f1.read().replace('$script$', SWF_code.replace('eval(', '" "+('))
     f2.write(fcode)
     f1.close()
     f2.close()
