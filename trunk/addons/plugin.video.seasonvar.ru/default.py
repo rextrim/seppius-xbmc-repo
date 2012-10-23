@@ -578,13 +578,14 @@ def Get_PlayList(soup, parent_url):
 
     url = 'http://seasonvar.ru/' + xppod.Decode(html)
     '''
-     #-- get play list url
+    #-- get play list url
+    plcode = ''
     for rec in soup.findAll('script', {'type':'text/javascript'}):
-        if rec.text.find('swfobject') > -1 and rec.text.find('flashvars') > -1:
-            SWF_code = rec.text
+        if rec.text.find('eval(') > -1:
+            plcode = Run_Java(rec.text)
+            if len(plcode.split(',')) > 1:
+                break
     #---
-    plcode = Run_Java(SWF_code)
-
     swf_player  = plcode.split(',')[1]
     plcode      = plcode.split(',')[0]
 
@@ -654,15 +655,11 @@ def Run_Java(SWF_code):
     else:
         prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), os.path.join(Addon.getAddonInfo('path'),'test.js')]
 
-    #try:
     output_f = open(os.path.join(Addon.getAddonInfo('path'),'test.txt'),'w')
     process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= output_f, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
     process.wait()
     output_f.close()
-    #except:
-    #    xbmc.log('*** PhantomJS is not found or failed (run java).')
 
-    #--
     f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.txt'), 'r')
     fcode = f1.read()
     f1.close()
