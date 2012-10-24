@@ -598,9 +598,14 @@ def Get_PlayList(soup, parent_url):
     print html
     '''
 
+
     url = xppod.Decode(plcode)
-    if url.find('http:') == -1:
+    if url.find('seasonvar.ru') == -1:
         url = 'http://seasonvar.ru' + url
+    if url.find('http') == -1:
+        url = 'http:' + url
+
+    print url
 
     # -- get play list
     post = None
