@@ -175,6 +175,29 @@ def Get_Header(par, count):
 def Empty():
     return False
 
+def GetTag(soup):
+    list = {}
+
+    for rec in soup.findAll('div'):
+        if len(rec.findAll('a')) > 0:
+            try:
+                try:
+                    list[rec["class"]] = list[rec["class"]]+1
+                except:
+                    list[rec["class"]] = 1
+            except:
+                pass
+
+    key = ''
+    count = 0
+
+    for l in list:
+        if count < list[l]:
+            count = list[l]
+            key = l
+
+    return key
+
 #---------- movie list ---------------------------------------------------------
 def Movie_List(params):
     #-- get filter parameters
@@ -229,12 +252,9 @@ def Movie_List(params):
     else:                                               #-- parsing serial list
         soup = BeautifulSoup(html, fromEncoding="utf-8")
         # -- get number of serials
-        try:
-            count = len(soup.findAll('div', {'class':'betterTip'}))
-        except:
-            return False
+        mtag = GetTag(soup)
 
-        for rec in soup.findAll('div', {'class':'betterTip'}):
+        for rec in soup.findAll('div', {'class':mtag}):
             list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'].encode('utf-8'),
                          'title' : rec.find('a').text.encode('utf-8'),
                          'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
