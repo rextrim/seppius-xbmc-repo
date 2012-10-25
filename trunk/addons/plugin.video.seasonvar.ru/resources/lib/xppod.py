@@ -19,10 +19,14 @@ def Decode(param):
     loc_2 = ''
     #-- define hash parameters for decoding
     dec = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
-    hash1 = ["J", "p", "v", "n", "s", "R", "0", "3", "T", "m", "w", "u", "9", "x", "g", "a", "G", "L", "U", "X", "z", "t", "b", "7", "H", "="]
-    hash2 = ["f", "N", "W", "5", "e", "l", "V", "D", "y", "Z", "I", "i", "M", "o", "Q", "1", "B", "8", "2", "6", "c", "d", "4", "Y", "k", "C"]
+    #hash1 = ["J", "p", "v", "n", "s", "R", "0", "3", "T", "m", "w", "u", "9", "x", "g", "a", "G", "L", "U", "X", "z", "t", "b", "7", "H", "="]
+    #hash2 = ["f", "N", "W", "5", "e", "l", "V", "D", "y", "Z", "I", "i", "M", "o", "Q", "1", "B", "8", "2", "6", "c", "d", "4", "Y", "k", "C"]
+
+    hash1 = ["J", "y", "7", "4", "L", "k", "w", "p", "x", "v", "n", "s", "Q", "i", "U", "e", "Y", "2", "8", "N", "T", "9", "H", "M", "u", "="]
+    hash2 = ["I", "c", "z", "0", "m", "o", "6", "G", "D", "l", "t", "W", "f", "R", "d", "Z", "3", "b", "X", "B", "5", "g", "a", "V", "1", "r"]
 
     #-- decode
+
     for i in range(0, len(hash1)):
         re1 = hash1[i]
         re2 = hash2[i]
