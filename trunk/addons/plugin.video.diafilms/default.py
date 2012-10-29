@@ -79,15 +79,18 @@ def Get_Categories():
 
     df_nav = soup.findAll("li", { "class" : "sublnk" })
     for df in df_nav:
-        if '/diafilmy' in df.find("a")["href"]:
-            for dfr in df.findAll('li'):
-                name = unescape(dfr.find('b').text).encode('utf-8')
-                url  = 'http://www.diafilmy.su' + dfr.find('a')['href']
-                i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-                u = sys.argv[0] + '?mode=LIST'
-                u += '&name=%s'%urllib.quote_plus(name)
-                u += '&url=%s'%urllib.quote_plus(url)
-                xbmcplugin.addDirectoryItem(h, u, i, True)
+        try:
+            if '/diafilmy' in df.find("a")["href"]:
+                for dfr in df.findAll('li'):
+                    name = unescape(dfr.find('b').text).encode('utf-8')
+                    url  = 'http://www.diafilmy.su' + dfr.find('a')['href']
+                    i = xbmcgui.ListItem('[COLOR FF00FF00]'+name+'[/COLOR]', iconImage=icon, thumbnailImage=icon)
+                    u = sys.argv[0] + '?mode=LIST'
+                    u += '&name=%s'%urllib.quote_plus(name)
+                    u += '&url=%s'%urllib.quote_plus(url)
+                    xbmcplugin.addDirectoryItem(h, u, i, True)
+        except:
+            pass
 
     xbmcplugin.endOfDirectory(h)
 
