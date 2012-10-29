@@ -69,8 +69,13 @@ def get_len():
         return 50
     except: return 50
 show_len=get_len()
+try:
+    if Addon.getSetting("adult") == 'false': 
+        adult=False
+    else: adult=True
+except: adult=False
 
-
+print adult
 
 VERSION = '4.3as'
 DOMAIN = '131896016'
@@ -625,7 +630,7 @@ def read_category(params):
                     'from':0,
                     'to':show_len-1
                 })
-                xbmcplugin.addDirectoryItem(hos, uri, li, True)
+                if genre['id']<>169 or adult: xbmcplugin.addDirectoryItem(hos, uri, li, True)
 
     xbmcplugin.endOfDirectory(hos)
 
@@ -685,8 +690,9 @@ def read_dir(params):
         cnt=cnt+1
         li.setProperty('fanart_image', addon_fanart)
         li.setProperty('IsPlayable', 'true')
-        if int(vdata['seasons_cnt'])==-1: xbmcplugin.addDirectoryItem(hos, url=u, listitem=li)
-        else: xbmcplugin.addDirectoryItem(hos, uri, li, True)
+        if vdata['adult']==0 or adult:
+            if int(vdata['seasons_cnt'])==-1: xbmcplugin.addDirectoryItem(hos, url=u, listitem=li)
+            else: xbmcplugin.addDirectoryItem(hos, uri, li, True)
 
 
     if cnt >= int(show_len):
@@ -782,8 +788,10 @@ def get_video_data(video):
         except: pass
     genres=None
     glist = []
+    m_adult=0
     if genre:
         for gid in genre:
+            if gid==169: m_adult=1
             g_name = genre2name(gid)
 
             if g_name:
@@ -793,7 +801,7 @@ def get_video_data(video):
             mysetInfo['genre'] = ', '.join(glist)
     if cast:
         mysetInfo['cast'] = cast
-    export={'id':id,'title':title, 'duration':duration, 'seasons_cnt':seasons_cnt, 'image':ltu, 'info':mysetInfo}
+    export={'adult':m_adult, 'id':id,'title':title, 'duration':duration, 'seasons_cnt':seasons_cnt, 'image':ltu, 'info':mysetInfo}
     return export
 
 def promo(params):                     # показ промо контента
