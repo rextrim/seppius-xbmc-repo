@@ -1,5 +1,9 @@
-[B]TODO:[/B]
-- Fix Adv playback skiping
+[B]Version 2.4.9[/B]
+- Release
+
+[B]Version 2.4.5[/B]
+- New posters API fix
+
 
 [B]Version 2.3.4[/B]
 - Posters Fix
