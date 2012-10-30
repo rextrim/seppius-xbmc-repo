@@ -27,7 +27,7 @@ import demjson3 as json
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-Addon = xbmcaddon.Addon(id='plugin.video.720hd.ru')
+Addon = xbmcaddon.Addon(id='plugin.video.nowfilms.ru')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
@@ -354,8 +354,11 @@ def Get_PlayList(url, name):
             video = rec.split('=',1)[1]
 
     if video[-3:] == 'txt':
-        html = get_HTML(video).decode('utf-8')
-        pl = json.loads(html)
+        html = get_HTML(video)
+        html = html.replace('\n', '')
+        if html[0] <> '[' and html[-1] == ']':
+            html = html[:-1]
+        pl = json.loads(html.decode('utf-8'))
 
         for rec in pl['playlist']:
             try:
