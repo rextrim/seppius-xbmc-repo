@@ -21,7 +21,8 @@
 # */
 import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
-from urlparse import urlparse
+#from urlparse
+import urlparse
 
 import demjson3 as json
 
@@ -48,6 +49,32 @@ h = int(sys.argv[1])
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
+
+#---------- HTPP interface -----------------------------------------------------
+def get_HTML(url, post = None, ref = None):
+    request = urllib2.Request(url, post)
+
+    host = urlparse.urlsplit(url).hostname
+    if ref==None:
+        ref='http://'+host
+
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('Host',   host)
+    request.add_header('Accept', '*/*')
+    request.add_header('Accept-Language', 'ru-RU')
+    request.add_header('Referer',             ref)
+
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+           print 'We failed to reach a server.'
+        elif hasattr(e, 'code'):
+           print 'The server couldn\'t fulfill the request.'
+
+    html = f.read()
+
+    return html
 
 #---------- parameter/info structure -------------------------------------------
 class Param:
@@ -652,6 +679,17 @@ def Get_PlayList(soup, parent_url):
 
 #-------------------------------------------------------------------------------
 def Initialize():
+    #-- remote PhantomJS service
+    if Addon.getSetting('External_PhantomJS') == 'true':
+        url = 'http://'+Addon.getSetting('PhantomJS_IP')+':'+Addon.getSetting('PhantomJS_Port')
+        str = get_HTML(url)
+        f = open(os.path.join(Addon.getAddonInfo('path'),'cookie.txt'), 'w')
+        f.write(str)
+        f.close()
+
+        return
+
+    #-- local PhantomJS service
     startupinfo = None
     if os.name == 'nt':
         prog = '"'+os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe" --cookies-file="')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+'" "'+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js"')
@@ -667,7 +705,16 @@ def Initialize():
         xbmc.log('*** PhantomJS is not found or failed.')
 
 def Run_Java(SWF_code):
-    #---
+    #-- remote PhantomJS service
+    if Addon.getSetting('External_PhantomJS') == 'true':
+        url = 'http://'+Addon.getSetting('PhantomJS_IP')+':'+Addon.getSetting('PhantomJS_Port')
+        values = {'swf_code' :	SWF_code}
+        post = urllib.urlencode(values)
+
+        fcode = get_HTML(url, post)
+        return fcode
+
+    #-- local PhantomJS service
     f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.tpl'), 'r')
     f2 = open(os.path.join(Addon.getAddonInfo('path'),'test.js') , 'w')
     fcode = f1.read().replace('$script$', SWF_code.replace('eval(', '" "+('))
