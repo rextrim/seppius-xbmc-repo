@@ -371,6 +371,7 @@ def Get_Movie_Info(url):
     #year
     try:
         mi.year = main_rec.find('div', {'class':"field field-name-field-serial-date field-type-text field-label-inline"}).find('span', {'class':"field-item even"}).text.encode('utf-8')
+        mi.year = mi.year[-4:]
     except:
         mi.year = '0'
     # directors
