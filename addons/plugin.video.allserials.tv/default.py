@@ -344,6 +344,7 @@ def Serial_Info(params):
 
 #---------- movie detail info --------------------------------------------------
 def Get_Movie_Info(url):
+    print url
     html = get_HTML(url)
     soup = BeautifulSoup(html, fromEncoding="utf-8")
     main_rec = soup.find('div', {'id':'main'})
@@ -371,9 +372,14 @@ def Get_Movie_Info(url):
     #year
     try:
         mi.year = main_rec.find('div', {'class':"field field-name-field-serial-date field-type-text field-label-inline"}).find('span', {'class':"field-item even"}).text.encode('utf-8')
-        mi.year = mi.year[-4:]
+        if mi.year[-4:].isnumeric():
+            mi.year = mi.year[-4:]
+        else:
+            mi.year = mi.year[:4]
     except:
         mi.year = '0'
+
+    print mi.year
     # directors
     try:
         mi.director = main_rec.find('div', {'class':"field field-name-field-serial-producer field-type-text field-label-inline"}).find('span', {'class':"field-item even"}).text.encode('utf-8')
