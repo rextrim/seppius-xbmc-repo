@@ -44,8 +44,12 @@ def get_HTML(url, post = None, ref = None):
 
 #-------------------------------------------------------------------------------
 post = None
-url = 'http://ultimatv.net/index.php?id=nasekino'
+url = 'http://www.cn.ru/tv/xml/1/channels/?' # 'http://www.cn.ru/tv/xml/1/schedule/?channel=19343529'
 html = get_HTML(url, post)
+
+print html
+
+'''
 soup = BeautifulSoup(html, fromEncoding="utf-8")
 
 url = soup.find('iframe')['src']
@@ -73,7 +77,7 @@ video = 'rtmpdump -r "'+stream_sd+'/'+chanel_sd+'" -p http://clients.cdnet.tv/fl
 
 print video
 
-'''
+
 #-- userid=0&              videoid=1042&         videotype=stream&   sessid=ae570789943d61a78413c78bde9dd6a3
 
 #-- ?userid=" + param1 + "&videoid=" + param2 + "&type=" + param3 + "&sessid=" + param4
