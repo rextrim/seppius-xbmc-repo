@@ -135,12 +135,13 @@ def Get_Parameters(params):
 
 # ----- search on site --------------------------------------------------------
 def get_Search_HTML(search_str):
+    print search_str
     url = 'http://nowfilms.ru/index.php?do=search'
     str = search_str.decode('utf-8').encode('windows-1251')
 
     values = {
             'beforeafter'	    : 'after',
-            'catlist[]'         : [1, 6, 12, 35, 67],
+            'catlist[]'         : 0,
             'do'	            : 'search',
             'full_search'	    : 1,
             'replyless'	        : 0,
@@ -284,9 +285,14 @@ def Movie_List(params):
             for rec in soup.findAll('div', {'class':'full'}):
                 if rec.find('div', {'class':'full2'}).find('a'):
                     mi.url = rec.find('div', {'class':'full2'}).find('a')['href']
+                    print mi.url
+                    if '/music/' in mi.url or '/play/' in mi.url or '/soft/' in mi.url:
+                        continue
+
                     mi.title = rec.find('div', {'class':'full2'}).find('a').text.encode('utf-8')
                     mi.img = rec.find('div', {'class':'full5 full6'}).find('img')['src']
-
+                    if mi.img[:4] <> 'http':
+                        mi.img = 'http://nowfilms.ru'+mi.img
                     #-- paint title ---
                     try:
                         m = min(mi.title.index('/'), mi.title.index('('))
