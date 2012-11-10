@@ -103,16 +103,31 @@ if os.path.isfile(genres_dat_file):
 		genres_data = json.loads(gdf.read())
 		gdf.close()
 	except: pass
+	
+import Cookie, cookielib	
+cook_file = xbmc.translatePath('special://temp/'+ 'ivi_ga.cookies')
 
 def send_request_to_google_analytics(utm_url, ua):
+	print utm_url
+	response=None
+	#try:
 
-	try:
-
-		req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
-		response = urllib2.urlopen(req).read()
-
-	except:
-		ShowMessage('ivi.ru', "GA fail: %s" % utm_url, 2000)
+		#req = urllib2.Request(utm_url, None, {'User-Agent':UA} )
+	#response = urllib2.urlopen(req).read()
+	cookiejar = cookielib.MozillaCookieJar()
+	urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+	#req = urllib2.Request(url = utm_url, data = None, headers = {'User-Agent':UA} )
+	#resp = urllib2.urlopen(req)
+	request = urllib2.Request(utm_url, None, {'User-Agent':ua} )
+	url = urlOpener.open(request)
+	http=url.read()
+	#print http
+	response=http
+	for cook in cookiejar:
+		print "%s=%s"%(cook.name,cook.value)
+	cookiejar.save(cook_file)
+	#except:
+	#	ShowMessage('ivi.ru', "GA fail: %s" % utm_url, 2000)
 	return response
 
 def track_page_view(path,nevent='', tevent='',UATRACK='UA-11561457-31'):
@@ -453,10 +468,11 @@ class dig_player(xbmc.Player):
 			except: pass
 	def getAds(self, phase):
 		json1 = self.POSTAPI({'method':'da.adv.get', 'params':[self.vID, {'contentid':self.vID,'site':self.sID, 'watchid':self.watchid, 'last_adv':(int(int(time.time())-int(self.lastad))), 'uid':uniq_id},phase]} )
-		
+		print json1
 		if json1:
 			try:
 				ad=json1['result'][0]
+				print ad
 				ad_file = self.find_best(ad)
 				if ad_file:
 					adrow = {'url': ad_file, 'id': ad['id'], 'title': ad['title'].encode('utf-8'), 'px_audit': ad['px_audit'],
@@ -785,7 +801,8 @@ def get_video_data(video):
 
 	try:
 		ltu=images[0]['path']
-		if images[0]['type']=='B2BImageFile':
+		ltu=ltu.split('.jpg')[0]+'.jpg'
+		if images[0]['type']=='B2BImageFile' and images2:
 			ltu=images2[0]['path']
 	except:
 		try: ltu=images2[0]['path']
