@@ -126,11 +126,17 @@ def Update_Serial_XML(mode):
     #start_time = datetime.now()
     serial_found = 0
 
+    # get max page number for update
+    try:
+        max_page = (10,20,30,50,100)[int(Addon.getSetting('update_len'))]
+    except:
+        max_page = 10
+
     # get number of webpages to grab information
     page_num = Get_Page_Number(url)
 
     if isUpdate == 1:
-        page_num = min(page_num, 10)
+        page_num = min(page_num, max_page)
 
     # get all serials
     for count in range(1, page_num+1):
