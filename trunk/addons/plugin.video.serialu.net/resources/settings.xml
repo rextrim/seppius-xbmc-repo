@@ -6,5 +6,6 @@
 	<setting label="30651" type="lsep"/>  
 	<setting id="Info" label="Информация по списку сериалов" type="action" action="RunScript($CWD/update.py, INFO)"/>      
 	<setting label="30651" type="lsep"/>  
-	<setting id="Update" label="Обновить список сериалов" type="action" action="RunScript($CWD/update.py, UPDATE)"/>   
+	<setting id="Update" label="Обновить список сериалов" type="action" action="RunScript($CWD/update.py, UPDATE)"/>  	
+	<setting id="update_len"  type="enum"  label="Кол-во страниц для обновления"  values="10|20|30|50|100" default="1" />    
 </settings> 
