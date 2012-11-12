@@ -1283,7 +1283,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.vesti.ru"
        name="VESTI.RU"
-       version="1.0.6"
+       version="1.0.6nu"
        provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
