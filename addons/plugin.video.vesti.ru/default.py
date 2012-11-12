@@ -28,7 +28,7 @@ VESTI_URL  = 'http://www.vesti.ru'
 
 handle = int(sys.argv[1])
 vesti_thumb   = os.path.join( os.getcwd(), "default.tbn" )
-
+import simplejson as json
 def get_params():
 	param=[]
 	paramstring=sys.argv[2]
@@ -46,6 +46,18 @@ def get_params():
 				param[splitparams[0]]=splitparams[1]
 	return param
 
+def GET(target, post=None):
+	try:
+		req = urllib2.Request(url = target)
+		req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 5.1; rv:16.0) Gecko/20100101 Firefox/16.0')
+		req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+		resp = urllib2.urlopen(req)
+		#CE = resp.headers.get('content-encoding')
+		http = resp.read()
+		resp.close()
+		return http
+	except: return None
+	
 def clean(name):
 	remove=[('<span>',' '),('</span>',' '),('&amp;','&'),('&quot;','"'),('&#39;','\''),('&nbsp;',' '),('&laquo;','"'),('&raquo;', '"'),('&#151;','-'),('<nobr>',''),('</nobr>',''),('<P>',''),('</P>','')]
 	for trash, crap in remove:
@@ -68,7 +80,10 @@ def get_programs(isLive=False):
 	PubDate_array = []
 	ImageURL_array = []
 	array_size = 0
-
+	#print a
+	#<enclosure url="http://www.vesti.ru/videos?vid=461367" type="video/x-flv" />
+	
+	
 	start_prog = re.compile('<item>(.*?)</item>', re.DOTALL).findall(a)
 	x = 2
 	if len(start_prog) > 0:
@@ -80,7 +95,20 @@ def get_programs(isLive=False):
 			if len(item_data) > 0:
 				for Title, Link, PDALink, Descr, PubDate, Category, ImageURL, VideoURL, FullText in item_data:
 					vid_id = re.compile('.*vid=([0-9]*)').findall(VideoURL)[0]
-					flv_url = 'http://www.vesti.ru/flv.html?vid='+str(vid_id)+'.flv'
+					#print vid_id
+					extvidlink='http://www.vesti.ru/xml/playlist.html?type=%s'%str(vid_id)
+					http= GET(extvidlink)
+					json1=json.loads(http)
+					#print json1
+					surl=''
+					try: surl= json1[0]['video'].replace('/','\\').replace('www.vgtrk.cdnvideo.ru','cdn1.vesti.ru').replace(';','&').replace('&amp','')
+					except: pass
+					try: surl= json1['video'].replace('/','\\').replace('www.vgtrk.cdnvideo.ru','cdn1.vesti.ru').replace(';','&').replace('&amp','')
+					except: pass
+					#surl=surl.split('?')[0]
+					flv_url =surl
+					#var html5 = {"picture":"http:\/\/cdn1.vesti.ru\/vh\/pictures\/b\/230\/228.jpg","video":"http:\/\/cdn1.vesti.ru\/_cdn_auth\/secure\/v\/vh\/mp4\/medium\/176\/098.mp4?auth=vh&vid=176098"};
+					#flv_url = '' #'http://www.vesti.ru/flv.html?vid='+str(vid_id)+'.flv'
 					cln_title = clean(Title)
 					Plot = clean(FullText)
 					listitem=xbmcgui.ListItem(str(x)+'. '+cln_title,iconImage=ImageURL,thumbnailImage=ImageURL)
@@ -105,7 +133,8 @@ def get_programs(isLive=False):
 							ImageURL_array.append(ImageURL)
 
 					else:
-						xbmcplugin.addDirectoryItem(handle, flv_url, listitem, False)
+						try: xbmcplugin.addDirectoryItem(handle, flv_url, listitem, False)
+						except: pass
 					x += 1
 	if isLive:
 		i = 0
