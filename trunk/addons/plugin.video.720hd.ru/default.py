@@ -652,7 +652,7 @@ def PLAY(params):
                         vid = s.split('=',1)[1]
                     if s.split('=',1)[0] == 'oid':
                         oid = s.split('=',1)[1]
-                video = host+'/u'+uid+'/video/'+vtag+'.720.mp4'
+                video = host+'/u'+uid+'/videos/'+vtag+'.720.mp4'
 
             url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
             ref = soup.find('param',{'name':'movie'})['value']
