@@ -322,9 +322,10 @@ def Source_List(params):
     # -- get movie info
 
     source_number = 1
+
     for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php\?')}):
         s_url   = rec['src']
-        s_title = '[COLOR FF00FF00]#'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
+        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
         print s_title
         #--
@@ -337,12 +338,11 @@ def Source_List(params):
         #i.setProperty('fanart_image', img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
-    source_number = 1
     for rec in soup.findAll('param', {'name':'flashvars'}):
         for s in rec['value'].split('&'):
             if s.split('=',1)[0] == 'file':
                 s_url = s.split('=',1)[1]
-        s_title = '[COLOR FF00FF00]#'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
+        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
         print s_title
         #--
@@ -385,7 +385,7 @@ def Genre_List(params):
             xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- add serials
-    name     = '[COLOR FF00FFF0]Сериалы[/COLOR]'
+    name     = 'Сериалы'
     genre_id = '/serialy'
 
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
@@ -398,7 +398,7 @@ def Genre_List(params):
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- add new movies
-    name     = '[COLOR FF00FF00]Новинки кино[/COLOR]'
+    name     = 'Новинки кино'
     genre_id = '/novinki'
 
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
@@ -429,7 +429,6 @@ def PLAY(params):
     video = url
     # -- get VKontakte video url
     if vtype == 'VK':
-        url = url.replace('vkontakte.ru', 'vk.com')
         html = get_HTML(url)
         soup = BeautifulSoup(html, fromEncoding="windows-1251")
         for rec in soup.findAll('param', {'name':'flashvars'}):
@@ -444,7 +443,7 @@ def PLAY(params):
                     vid = s.split('=',1)[1]
                 if s.split('=',1)[0] == 'oid':
                     oid = s.split('=',1)[1]
-            video = host+'/u'+uid+'/video/'+vtag+'.720.mp4'
+            video = host+'/u'+uid+'/videos/'+vtag+'.720.mp4'
 
         url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
         ref = soup.find('param',{'name':'movie'})['value']
