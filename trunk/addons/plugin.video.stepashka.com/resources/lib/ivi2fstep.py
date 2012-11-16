@@ -17,6 +17,7 @@ import xbmcaddon
 import httplib
 import urllib
 import urllib2
+import base64
 
 import re
 try:
@@ -28,22 +29,18 @@ import sys
 import os
 import Cookie
 import subprocess
-
 import xbmcplugin
 import xbmcgui
 import xbmc
 import xbmcaddon
 import time
 import random
+import xppod
 from urllib import unquote, quote
 
 print 'gooo'
 print hex(ord('_'))
 
-VERSION = '4.3as'
-DOMAIN = '131896016'
-UATRACK = 'UA-31027962-1'
-conf_file = os.path.join(xbmc.translatePath('special://temp/'), 'settings.stepashka.dat')
 
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.stepashka.com' )
 __language__ = __addon__.getLocalizedString
@@ -59,36 +56,12 @@ addon_version = __addon__.getAddonInfo('version')
 
 PLUGIN_ID = 'plugin.video.stepashka.com'
 PLUGIN_NAME='stepashka.com'
-if not __addon__.getSetting('ga_uid'):
-	from random import randint
-	from ga import get_visitor_id
-	ga_uid = get_visitor_id(str(randint(0, 0x7fffffff)) + PLUGIN_NAME + PLUGIN_ID, None)
-	__addon__.setSetting('ga_uid', ga_uid)
-	xbmc.log('[%s] GA uid set to %s' % (PLUGIN_NAME, __addon__.getSetting('ga_uid')))
+
+
 hos = int(sys.argv[1])
 show_len=50
+import keyboardint
 
-if os.path.isfile(conf_file):
-	try:
-		f = open(conf_file, 'r')
-		GAcookie=f.readline()
-		uniq_id=f.readline()
-	except:
-		f = open(conf_file, 'w')
-		GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
-		uniq_id=random.random()*time.time()
-		f.write(GAcookie)
-		f.write('\n')
-		f.write(str(uniq_id))
-		f.close()
-else: 
-	f = open(conf_file, 'w')
-	GAcookie ="__utma%3D"+DOMAIN+"."+str(random.randint(0, 0x7fffffff))+"."+str(random.randint(0, 0x7fffffff))+"."+str(int(time.time()))+"."+str(int(time.time()))+".1%3B"
-	uniq_id=random.random()*time.time()
-	f.write(GAcookie)
-	f.write('\n')
-	f.write(str(uniq_id))
-	f.close()
 try:
 	ver = sys.version_info
 	ver1 = '%s.%s.%s' % (ver[0], ver[1], ver[2])
@@ -106,15 +79,6 @@ except:
 #print GAcookie
 #print uniq_id
 
-
-def track_page_view(path,nevent='', tevent=''):
-	from ga import track_page_view_a
-	extras = {}
-	extras['screen'] = xbmc.getInfoLabel('System.ScreenMode')
-	try:
-		track_page_view_a(__addon__.getSetting('ga_uid'), path, UA, extras,tevent) 
-	except:
-		xbmc.log('problems tracking GA')
 
 try:
 	import json
@@ -176,7 +140,8 @@ def mainScreen(params):
 	li = xbmcgui.ListItem('[Поиск]', addon_fanart, addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
-		'func': 'doSearch'
+		'func': 'doSearch',
+		'mode': '1'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[Последние добавления]', addon_fanart, addon_icon)
@@ -191,9 +156,6 @@ def mainScreen(params):
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('ul', attrs={'class': 'lmenu reset'})
 	cats=content.findAll('a')
-	#print content
-	#dat_file = os.path.join(addon_path, 'categories.txt')
-	#f = open(dat_file, 'r')
 	for line in cats:
 		title=None
 		if line.string:	title = str(line.string)
@@ -211,18 +173,50 @@ def mainScreen(params):
 	xbmcplugin.endOfDirectory(hos)
 
 def doSearch(params):
-	track_page_view('search')
-	kbd = xbmc.Keyboard()
-	kbd.setDefault('')
-	kbd.setHeading('Поиск')
-	kbd.doModal()
-	if kbd.isConfirmed():
-		sts=kbd.getText();
-		params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=' + sts
+	print 'statr %s'%params
+	if params['mode']=='1':
+	#li = xbmcgui.ListItem('Искать далее', addon_fanart, addon_icon)
+	#uri = construct_request({
+	#	'func': 'search2'
+	#})
+	#xbmcplugin.addDirectoryItem(hos, uri, li, True)
+
+		xbmcplugin.endOfDirectory(hos)
+	
+
+	#kbd = xbmc.Keyboard()
+	#kbd.setDefault('')
+	#kbd.setHeading('Поиск')
+	#kbd.doModal()
+		out=keyboardint.getRuText()
+		xbmc.sleep(1000)
+		__addon__.setSetting('querry',str(out))
+		href = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
+		xbmc.executebuiltin('Container.Refresh(%s?func=doSearch&mode=0&href=%s)' % (sys.argv[0],  quote(href)))
+	else:
+		params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
 		readCategory(params)	
 
+	#xbmcplugin.endOfDirectory(hos)
+	#out=quote(out)
+	#print out
+	#ins='http://online.stepashka.com/?do=search&subaction=search&story='
+	#print ins+out
+	#params['href'] = ins+out
+	#print params
+#	readCategory(params)	
+	#if kbd.isConfirmed():
+	#	sts=kbd.getText();
+	#	params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=' + sts
+	#readCategory(params)	
+def search2(params):
+	#print params
+	print __addon__.getSetting('querry')
+	params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
+	#print params['href']
+	readCategory(params)	
 def readCategory(params, postParams = None):
-	track_page_view(params['href'])
+	print 'read'
 	fimg=None
 	try:
 		hlink=params['href']+params['page']
@@ -243,7 +237,14 @@ def readCategory(params, postParams = None):
 		for link in dataRows:
 			sec=0
 			if link != None:
+				#print 'link: '+str(link)
 				title = link.find('a').string
+				#description_start = link.find('</div><br /><br />')
+				#print 'description_start='+str(description_start)+'in link='+str(link)
+				#description= link[description_start:len(str(link))]
+				#description_end = description.find('</div>')
+				#description= link.find('div').string
+				#print 'title: '+title
 				if sec==1:
 					sec=0
 				else:
@@ -292,16 +293,20 @@ def readCategory(params, postParams = None):
 
 def readFile(params):
 	http = GET(params['href'])
-	#print params['href']
+	#print 'http orig:'+http
+	#torr_link=xppod.Decode(http)
+	#print 'torlink='+torr_link
+	print 'ok'
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('param', attrs={'name': 'flashvars'})
 	#print content
 	findfile=str(content)
 	#print findfile
-	pat=re.compile('http://[a-zA-Z0-9-_.!/]+.flv', re.S)
+	pat=re.compile('amp;file=http://[a-zA-Z0-9-_.!/]+.flv', re.S)
 	pat_pl=re.compile('pl=http://[a-zA-Z0-9-_.!/]+.flv', re.S)
 	mfil = pat.findall(findfile)
+	#print 'mfil'+mfil
 	pfil = pat_pl.findall(findfile)
 	if mfil: print mfil
 	if pfil: print pfil
@@ -309,21 +314,36 @@ def readFile(params):
 	for ur in vurl:	findfile=ur
 	vurl=findfile.split('"')
 	lurl=vurl[0]
-	if mfil: 
+	#print 'lurl'+lurl
+	if lurl.split('=')[0]=='amp;file':
 		#print 'play file ' + mfil[0]
 		li = xbmcgui.ListItem(params['title'], addon_icon, params['src'])
 		li.setProperty('IsPlayable', 'true')
+		#print 'mfil0: '+xppod.Decode(lurl.split('=')[1])
 		uri = construct_request({
 			'func': 'play',
-			'file': mfil[0]
+			'file': xppod.Decode(lurl.split('=')[1])
 			})
+		#print 'uri for addDir: '+uri
 		xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	else: 
 		#print 'playlist in ' + lurl.split('=')[1]
-		http = GET(lurl.split('=')[1])
-		#print http
+		http=xppod.Decode(lurl.split('=')[1])
+		#print 'after xppod: '+http
+		http = GET(http)
+		#print 'http pl='+http
 		f=http.find('{')
-		http=http[f:len(http)]
+		f1=0
+		f1=http.rfind('}]}]}{');
+		print 'f1: '+str(f1)
+		if f1 == -1:
+			#print 'f1=0'
+			http=http[f:len(http)]
+		else:
+			#print 'f<>0'
+			http=http[f:f1+5]
+		http=http.replace('}]}]}{','}]}]')
+		#print 'http after replace: '+http
 		try:
 			jsdata=json.loads(http)
 		except:
@@ -381,7 +401,7 @@ def geturl(url):
 	return f['url']
 
 def play(params):
-	track_page_view('','event','5(Video*Videostart)')
+
 	i = xbmcgui.ListItem(path = params['file'])
 	xbmcplugin.setResolvedUrl(hos, True, i)
 	
