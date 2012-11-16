@@ -266,13 +266,14 @@ def readFile(params):
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('param', attrs={'name': 'flashvars'})
-	#print content.find('pl')
+	print content
 	findfile=str(content)
 	print findfile
 	pat=re.compile('le=[^/]+"', re.S)
 	pat_pl=re.compile('pl=[^/]+"', re.S)
 	mfil = pat.findall(findfile)
 	pfil = pat_pl.findall(findfile)
+	flname=None
 	if mfil: 
 		print mfil[0][3:-1]
 		flname=xppod.Decode(mfil[0][3:-1])
@@ -281,6 +282,7 @@ def readFile(params):
 		print pfil[0][3:-1]
 		flname=xppod.Decode(pfil[0][3:-1])
 		print flname
+	if not flname: return False
 	vurl=findfile.split('&')
 	for ur in vurl:	findfile=ur
 	vurl=findfile.split('"')
@@ -298,7 +300,7 @@ def readFile(params):
 		#print 'uri for addDir: '+uri
 		xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	else: 
-		print 'playlist in ' + lurl.split('=')[1]
+		#print 'playlist in ' + lurl.split('=')[1]
 		http=flname
 		print 'after xppod: '+http
 		http = GET(http)
