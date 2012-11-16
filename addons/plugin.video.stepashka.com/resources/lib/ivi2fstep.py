@@ -222,12 +222,19 @@ def readCategory(params, postParams = None):
 
 					#print link
 					fimg=link.find('img')
+					print fimg
+					desc= str(link.find(id=re.compile("news-id-[0-9]+")))
+					pat=re.compile('<br />[^@]+<', re.S)
+					try: mfil = pat.findall(desc)[0].split('</div>')[1].replace('<br />','').replace('<br>','/n')
+					except: mfil = pat.findall(desc)[0].replace('<br />','').replace('<br>','/n')
+					print mfil
 					try:
 						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['pagespeed_lazy_src'])
 					except: pass
 					try:	
 						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['src'])
 					except: li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)	
+					li.setInfo(type='video', infoLabels = {'plot':mfil})
 					li.setProperty('IsPlayable', 'false')
 					uri = construct_request({
 						'title': title,
