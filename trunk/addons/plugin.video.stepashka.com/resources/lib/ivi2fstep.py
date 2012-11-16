@@ -60,7 +60,7 @@ PLUGIN_NAME='stepashka.com'
 
 hos = int(sys.argv[1])
 show_len=50
-import keyboardint
+import keyboard_ru as keyboardint
 
 try:
 	ver = sys.version_info
