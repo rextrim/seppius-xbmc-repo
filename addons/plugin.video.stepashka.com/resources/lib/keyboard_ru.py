@@ -17,6 +17,7 @@ skindir  = os.path.join( path,'resources','skins' )
 XBMC_SKIN  = xbmc.getSkinDir()
 BASE_RESOURCE_PATH = os.path.join( path, 'resources', 'lib' )
 sys.path.append (BASE_RESOURCE_PATH)
+print XBMC_SKIN 
 settings = addon
 COMMBUTONS=['en','ru','shift','del','clear','caps','enter','space','cancel']
 
@@ -94,7 +95,7 @@ class GUI(xbmcgui.WindowXMLDialog):
 		# Put your List Populating code/ and GUI startup stuff here
  
 	def onAction(self, action):
-		self.label.setText(self.text)
+		#self.label.setText(self.text)
 		# Same as normal python Windows.
 		pass
  
@@ -135,11 +136,12 @@ class GUI(xbmcgui.WindowXMLDialog):
 		pass
 		
 	def onFocus(self, controlID):
-		self.label.setText(self.text)
+		#self.label.setText(self.text)
 		pass
 
 
 def getRuText():
+	print path
 	ui = GUI("new.xml",path)
 	#ui.show()
 	ui.doModal()
