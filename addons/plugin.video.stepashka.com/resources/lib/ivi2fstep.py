@@ -175,19 +175,7 @@ def mainScreen(params):
 def doSearch(params):
 	print 'statr %s'%params
 	if params['mode']=='1':
-	#li = xbmcgui.ListItem('Искать далее', addon_fanart, addon_icon)
-	#uri = construct_request({
-	#	'func': 'search2'
-	#})
-	#xbmcplugin.addDirectoryItem(hos, uri, li, True)
-
 		xbmcplugin.endOfDirectory(hos)
-	
-
-	#kbd = xbmc.Keyboard()
-	#kbd.setDefault('')
-	#kbd.setHeading('Поиск')
-	#kbd.doModal()
 		out=keyboardint.getRuText()
 		xbmc.sleep(1000)
 		__addon__.setSetting('querry',str(out))
@@ -197,24 +185,6 @@ def doSearch(params):
 		params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
 		readCategory(params)	
 
-	#xbmcplugin.endOfDirectory(hos)
-	#out=quote(out)
-	#print out
-	#ins='http://online.stepashka.com/?do=search&subaction=search&story='
-	#print ins+out
-	#params['href'] = ins+out
-	#print params
-#	readCategory(params)	
-	#if kbd.isConfirmed():
-	#	sts=kbd.getText();
-	#	params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=' + sts
-	#readCategory(params)	
-def search2(params):
-	#print params
-	print __addon__.getSetting('querry')
-	params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
-	#print params['href']
-	readCategory(params)	
 def readCategory(params, postParams = None):
 	print 'read'
 	fimg=None
@@ -223,7 +193,6 @@ def readCategory(params, postParams = None):
 		hlink=params['href']
 	except:
 		hlink=params['href']
-	#print hlink
 	http = GET(hlink)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
@@ -293,43 +262,45 @@ def readCategory(params, postParams = None):
 
 def readFile(params):
 	http = GET(params['href'])
-	#print 'http orig:'+http
-	#torr_link=xppod.Decode(http)
-	#print 'torlink='+torr_link
-	print 'ok'
+	#print http
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('param', attrs={'name': 'flashvars'})
-	#print content
+	#print content.find('pl')
 	findfile=str(content)
-	#print findfile
-	pat=re.compile('amp;file=http://[a-zA-Z0-9-_.!/]+.flv', re.S)
-	pat_pl=re.compile('pl=http://[a-zA-Z0-9-_.!/]+.flv', re.S)
+	print findfile
+	pat=re.compile('le=[^/]+"', re.S)
+	pat_pl=re.compile('pl=[^/]+"', re.S)
 	mfil = pat.findall(findfile)
-	#print 'mfil'+mfil
 	pfil = pat_pl.findall(findfile)
-	if mfil: print mfil
-	if pfil: print pfil
+	if mfil: 
+		print mfil[0][3:-1]
+		flname=xppod.Decode(mfil[0][3:-1])
+		print flname
+	if pfil: 
+		print pfil[0][3:-1]
+		flname=xppod.Decode(pfil[0][3:-1])
+		print flname
 	vurl=findfile.split('&')
 	for ur in vurl:	findfile=ur
 	vurl=findfile.split('"')
 	lurl=vurl[0]
 	#print 'lurl'+lurl
-	if lurl.split('=')[0]=='amp;file':
+	if mfil: 
 		#print 'play file ' + mfil[0]
 		li = xbmcgui.ListItem(params['title'], addon_icon, params['src'])
 		li.setProperty('IsPlayable', 'true')
 		#print 'mfil0: '+xppod.Decode(lurl.split('=')[1])
 		uri = construct_request({
 			'func': 'play',
-			'file': xppod.Decode(lurl.split('=')[1])
+			'file': flname
 			})
 		#print 'uri for addDir: '+uri
 		xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	else: 
-		#print 'playlist in ' + lurl.split('=')[1]
-		http=xppod.Decode(lurl.split('=')[1])
-		#print 'after xppod: '+http
+		print 'playlist in ' + lurl.split('=')[1]
+		http=flname
+		print 'after xppod: '+http
 		http = GET(http)
 		#print 'http pl='+http
 		f=http.find('{')

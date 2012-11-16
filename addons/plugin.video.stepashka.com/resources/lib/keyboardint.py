@@ -94,6 +94,7 @@ class GUI(xbmcgui.WindowXMLDialog):
 		# Put your List Populating code/ and GUI startup stuff here
  
 	def onAction(self, action):
+		self.label.setText(self.text)
 		# Same as normal python Windows.
 		pass
  
