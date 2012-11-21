@@ -216,7 +216,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.6"
+<addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.7"
        provider-name="NuisMons">
   <requires>
     <import addon="script.module.simplejson" version="2.0.10"/>
@@ -235,7 +235,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.image.manga24.ru" name="manga24.ru" version="0.0.3"
+<addon id="plugin.image.manga24.ru" name="manga24.ru" version="0.0.4"
        provider-name="NuisMons">
   <requires>
     <import addon="script.module.simplejson" version="2.0.10"/>
