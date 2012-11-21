@@ -76,7 +76,7 @@ def get_manga(params):
 		for scene in cats:
 			title= str(scene).split('"')[1].split('/')[2]
 			path= scene.find('a')['href']
-			listitem=xbmcgui.ListItem(title,None,addon_icon)
+			listitem=xbmcgui.ListItem(title,addon_icon,addon_icon)
 			listitem.setProperty('IsPlayable', 'false')
 			
 			uri = construct_request({
@@ -88,7 +88,7 @@ def get_manga(params):
 		try:
 			content = beautifulSoup.find('div', attrs={'class': 'item2'})
 			path= content.find('a')['href']
-			listitem=xbmcgui.ListItem("Читать",None,addon_icon)
+			listitem=xbmcgui.ListItem("Читать",addon_icon,addon_icon)
 			listitem.setProperty('IsPlayable', 'false')
 			uri = construct_request({
 				'func': 'read_manga',
@@ -123,7 +123,7 @@ def read_manga(params):
 			i_f=True
 	for ism in img:
 		try:
-			mm=xbmcgui.ListItem(ism,None,addon_icon)
+			mm=xbmcgui.ListItem(ism,addon_icon,addon_icon)
 			xbmcplugin.addDirectoryItem(hos,url+ism,mm,False)
 			print ism
 		except: pass
@@ -141,7 +141,7 @@ def mainScreen(params):
 			manga.prettify()
 			title=manga.string
 			path=str(manga).split('"')[1]
-			listitem=xbmcgui.ListItem(title,None,addon_icon)
+			listitem=xbmcgui.ListItem(title,addon_icon,addon_icon)
 			listitem.setProperty('IsPlayable', 'false')
 			listitem.setLabel(title)
 			uri = construct_request({
@@ -155,13 +155,13 @@ def mainScreen(params):
 	xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 	
 def zmainScreen(params):
-	listitem=xbmcgui.ListItem('Самое популярное',None,addon_icon)
+	listitem=xbmcgui.ListItem('Самое популярное',addon_icon,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'func': 'get_pop'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	listitem=xbmcgui.ListItem('Каталог',None,addon_icon)
+	listitem=xbmcgui.ListItem('Каталог',addon_icon,addon_icon)
 	listitem.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'func': 'get_all'
