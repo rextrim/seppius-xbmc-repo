@@ -261,7 +261,7 @@ def PLAY(params):
         stream_sd = soup.find('root')['stream_sd']
         chanel_sd = soup.find('root')['chanel_sd']
 
-    video = '%s/%s swfUrl=http://clients.cdnet.tv/flashplayer/player.swf pageUrl=http://clients.cdnet.tv/flashbroadcast.php?channel=%s token=%s live=true swfVfy=true' % (stream_sd, chanel_sd, varsideoid, 'Ys#QBn%3O0@l1')
+    video = '%s/%s swfUrl=http://clients.cdnet.tv/flashplayer/player.swf pageUrl=http://clients.cdnet.tv/flashbroadcast.php?channel=%s token=%s live=true swfVfy=true' % (stream_sd, chanel_sd, varsideoid, 'Rd#n@k72JDh')
 
     #-- save history
     Save_History(par.name, par.url, par.img)
