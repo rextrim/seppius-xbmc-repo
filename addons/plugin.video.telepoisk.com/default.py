@@ -95,24 +95,45 @@ def MSK_time():
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels(params):
     # -- parameters
-    epg_date     = urllib.unquote_plus(params['date'])
-    url = 'http://telepoisk.com/arhiv-tv/'+ epg_date
-    print url
-    html = get_HTML(url)
+    archiv = []
 
-    # -- parsing web page ------------------------------------------------------
+    #-- get link to archive TV
+    url = 'http://telepoisk.com/arhiv-tv/'
+    html = get_HTML(url)
+    # -- parsing web page
     soup = BeautifulSoup(html, fromEncoding="utf-8")
     for rec in soup.findAll('div', {'class':'products-img'}):
         try:
-            name    = rec.find('img')['alt'].encode('utf-8')
-            img     = 'http://telepoisk.com'+rec.find('img')['src']
+            img     = rec.find('img')['src']
+            archiv.append(img)
+        except:
+            pass
 
-            i = xbmcgui.ListItem('[COLOR FFC3FDB8]'+name+'[/COLOR]', iconImage=img, thumbnailImage=img)
-            u = sys.argv[0] + '?mode=EPG'
-            u += '&name=%s'%urllib.quote_plus(name)
-            u += '&date=%s'%urllib.quote_plus(epg_date)
-            u += '&img=%s'%urllib.quote_plus(img)
-            xbmcplugin.addDirectoryItem(h, u, i, True)
+    url = 'http://telepoisk.com/online-tv'
+    html = get_HTML(url)
+    archive_flag = 'N'
+    # -- parsing web page
+    soup = BeautifulSoup(html, fromEncoding="utf-8")
+    for rec in soup.find('div', {'id':'aside'}).findAll('li'):
+        try:
+            name    = rec.find('h3').find('a').text.encode('utf-8')
+            img     = 'http://telepoisk.com'+rec.find('img')['src']
+            live    = 'http://telepoisk.com'+rec.find('a')['href']
+
+            if rec.find('img')['src'] in archiv:
+                i = xbmcgui.ListItem('[COLOR FF00FF00]'+name+'[/COLOR]', iconImage=img, thumbnailImage=img)
+                u = sys.argv[0] + '?mode=LIVE_ARCHIVE'
+                u += '&name=%s'%urllib.quote_plus(name)
+                u += '&url=%s'%urllib.quote_plus(live)
+                u += '&img=%s'%urllib.quote_plus(img)
+                xbmcplugin.addDirectoryItem(h, u, i, True)
+            else:
+                i = xbmcgui.ListItem('[COLOR FF00FFFF]'+name+'[/COLOR]', iconImage=img, thumbnailImage=img)
+                u = sys.argv[0] + '?mode=PLAY_LIVE'
+                u += '&name=%s'%urllib.quote_plus(name)
+                u += '&url=%s'%urllib.quote_plus(live)
+                u += '&img=%s'%urllib.quote_plus(img)
+                xbmcplugin.addDirectoryItem(h, u, i, False)
         except:
             pass
 
@@ -120,16 +141,9 @@ def Get_TV_Channels(params):
 #-------------------------------------------------------------------------------
 
 def Get_EPG_Date(params):
-    '''
-    #-- watch realtime
-    name = '[COLOR FF3BB9FF]Онлайн ТВ[/COLOR]'
-    prg = 'http://telepoisk.com/online-tv'
+    img      = urllib.unquote_plus(params['img'])
+    ch_name  = urllib.unquote_plus(params['name'])
 
-    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-    u = sys.argv[0] + '?mode=CHANNEL_RT'
-    u += '&url=%s'%urllib.quote_plus(prg)
-    xbmcplugin.addDirectoryItem(h, u, i, False)
-    '''
     #-- watch archive
     #-- get MSK time
     MSK = time.mktime(MSK_time())
@@ -138,9 +152,11 @@ def Get_EPG_Date(params):
         ETR_date = time.localtime(MSK-day_off*24*60*60)
         name = '[COLOR FF00FF00]'+unescape(strftime("%Y-%m-%d", ETR_date)).encode('utf-8')+'[/COLOR] ([COLOR FF3BB9FF]'+unescape(strftime("%A", ETR_date)).encode('utf-8')+'[/COLOR])'
         id   = strftime("%d-%m-%Y", ETR_date)
-        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=CHANNEL'
+        i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
+        u = sys.argv[0] + '?mode=EPG'
         u += '&date=%s'%urllib.quote_plus(id)
+        u += '&name=%s'%urllib.quote_plus(name)
+        u += '&img=%s'%urllib.quote_plus(img)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     xbmcplugin.endOfDirectory(h)
@@ -191,6 +207,27 @@ def Get_EPG(params):
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
 
+def Get_Live_Archive(params):
+    # -- parameters
+    img      = urllib.unquote_plus(params['img'])
+    name     = urllib.unquote_plus(params['name'])
+    url      = urllib.unquote_plus(params['url'])
+
+    #-- show live TV
+    i = xbmcgui.ListItem('[COLOR FF3BB9FF]Онлайн ТВ[/COLOR]', iconImage=img, thumbnailImage=img)
+    u = sys.argv[0] + '?mode=PLAY_LIVE'
+    u += '&name=%s'%urllib.quote_plus(name)
+    u += '&url=%s'%urllib.quote_plus(url)
+    u += '&img=%s'%urllib.quote_plus(img)
+    xbmcplugin.addDirectoryItem(h, u, i, False)
+    #-- show EPG
+    i = xbmcgui.ListItem('[COLOR FFC3FDB8]Архив телепередач[/COLOR]', iconImage=img, thumbnailImage=img)
+    u = sys.argv[0] + '?mode=EPG_DATE'
+    u += '&name=%s'%urllib.quote_plus(name)
+    u += '&img=%s'%urllib.quote_plus(img)
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    xbmcplugin.endOfDirectory(h)
 
 #-------------------------------------------------------------------------------
 
@@ -222,6 +259,52 @@ def PLAY(params):
 
     xbmc.Player( xbmc.PLAYER_CORE_MPLAYER).play(video, i)
 
+#-------------------------------------------------------------------------------
+
+def PLAY_LIVE(params):
+    #-- get filter parameters
+    url  = urllib.unquote_plus(params['url'])
+    img  = urllib.unquote_plus(params['img'])
+    name = urllib.unquote_plus(params['name'])
+
+    #-- assemble video link
+    post = None
+    html = get_HTML(url, post)
+    soup = BeautifulSoup(html, fromEncoding="utf-8")
+
+    url = soup.find('iframe')['src']
+
+    html = get_HTML(url, post)
+    soup = BeautifulSoup(html, fromEncoding="utf-8")
+
+    f_str = soup.find('param',{'name':'flashVars'})['value']
+    for rec in f_str.split('&'):
+        if rec.split('=')[0] == 'videoid':
+            varsideoid = rec.split('=')[1]
+        if rec.split('=')[0] == 'sessid':
+            sessid = rec.split('=')[1]
+
+    url = 'http://clients.cdnet.tv/flashplayer/instruction.php?' + soup.find('object').find('param',{'name':'flashVars'})['value'].replace('videotype=','type=')+'&0.19851545616984367'
+    html = get_HTML(url, post, 'http://clients.cdnet.tv/flashplayer/player.swf')
+
+    soup = BeautifulSoup(html, fromEncoding="utf-8")
+    if Addon.getSetting('HQ') == 'true':
+        try:
+            stream_sd = soup.find('root')['stream_hd']
+            chanel_sd = soup.find('root')['chanel_hd']
+        except:
+            stream_sd = soup.find('root')['stream_sd']
+            chanel_sd = soup.find('root')['chanel_sd']
+    else:
+        stream_sd = soup.find('root')['stream_sd']
+        chanel_sd = soup.find('root')['chanel_sd']
+
+    video = '%s/%s swfUrl=http://clients.cdnet.tv/flashplayer/player.swf pageUrl=http://clients.cdnet.tv/flashbroadcast.php?channel=%s token=%s live=true swfVfy=true' % (stream_sd, chanel_sd, varsideoid, 'Rd#n@k72JDh')
+
+    #-- play TV
+    i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
+    i.setProperty('IsPlayable', 'true')
+    xbmc.Player( xbmc.PLAYER_CORE_MPLAYER).play(video, i)
 #-------------------------------------------------------------------------------
 
 def unescape(text):
@@ -274,12 +357,16 @@ mode = None
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	Get_EPG_Date(params) #Get_TV_Channels()
-
-if mode == 'CHANNEL':
 	Get_TV_Channels(params)
+
+if mode == 'EPG_DATE':
+	Get_EPG_Date(params)
 elif mode == 'EPG':
 	Get_EPG(params)
+elif mode == 'LIVE_ARCHIVE':
+	Get_Live_Archive(params)
+elif mode == 'PLAY_LIVE':
+	PLAY_LIVE(params)
 elif mode == 'PLAY':
 	PLAY(params)
 
