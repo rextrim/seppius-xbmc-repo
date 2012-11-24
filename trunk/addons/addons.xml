@@ -913,7 +913,7 @@
 
 <addon id="plugin.video.online.anidub.com"
        name="Online.anidub.com"
-       version="0.1.1"
+       version="0.1.2"
        provider-name="NuisMons">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
