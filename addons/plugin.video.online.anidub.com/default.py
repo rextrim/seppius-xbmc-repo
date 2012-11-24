@@ -498,7 +498,10 @@ def get_anime(params):
 	options = content.findAll('option')
 	if options:
 		for list in options:
-			print list['value'].split('|')[0]
+			lnk=''
+			try:
+				lnk=list['value'].split('|')[0]
+			except: lnk=list['value']
 			links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
 			img= links.find('img')['src']
 			listitem=xbmcgui.ListItem(list.string,img,img)
@@ -506,7 +509,7 @@ def get_anime(params):
 			uri = construct_request({
 					'func': 'play_anime',
 					'img':img,
-					'm_path':list['value'].split('|')[0]
+					'm_path':lnk
 					})
 			xbmcplugin.addDirectoryItem(hos, uri, listitem)
 	else: 
