@@ -24,7 +24,7 @@ import urllib2
 import re
 import sys
 import os
-import Cookie
+import cookielib
 from datetime import date
 
 import xbmcplugin
@@ -39,7 +39,12 @@ socket.setdefaulttimeout(50)
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
 siteUrl = 'kino-live.org'
 httpSiteUrl = 'http://' + siteUrl
-sid_file = os.path.join(xbmc.translatePath('special://temp/'), 'plugin.video.kino-live.org.cookies.sid')
+
+__settings__ = xbmcaddon.Addon(id='plugin.video.kino-live.org')
+__addondir__ =xbmc.translatePath(__settings__.getAddonInfo('profile'))
+if os.path.exists(__addondir__) == False:
+	os.mkdir(__addondir__)
+cookiepath = os.path.join(__addondir__, 'plugin.video.kino-live.org.lwp')
 
 h = int(sys.argv[1])
 
@@ -60,60 +65,77 @@ headers  = {
 	'Accept-Encoding':'identity, *;q=0'
 }
 
-def GET(target, referer, post_params = None, accept_redirect = True, get_redirect_url = False):
-	try:
-		connection = httplib.HTTPConnection(siteUrl)
+def GET(url, referer, post_params = None):
+	headers['Referer'] = referer
 
-		if post_params == None:
-			method = 'GET'
-			post = None
-		else:
-			method = 'POST'
-			post = urllib.urlencode(post_params)
-			headers['Content-Type'] = 'application/x-www-form-urlencoded'
+	if post_params != None:
+		post_params = urllib.urlencode(post_params)
+		headers['Content-Type'] = 'application/x-www-form-urlencoded'
+	elif headers.has_key('Content-Type'):
+		del headers['Content-Type']
 
-		if os.path.isfile(sid_file):
-			fh = open(sid_file, 'r')
-			csid = fh.read()
-			fh.close()
-			headers['Cookie'] = 'session=%s' % csid
+	jar = cookielib.LWPCookieJar(cookiepath)
+	if os.path.isfile(cookiepath):
+		jar.load()
 
-		headers['Referer'] = referer
-		connection.request(method, target, post, headers = headers)
-		response = connection.getresponse()
+	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
+	urllib2.install_opener(opener)
+	req = urllib2.Request(url, post_params, headers)
 
-		if response.status == 403:
-			raise Exception("Forbidden, check credentials")
-		if response.status == 404:
-			raise Exception("File not found")
-		if accept_redirect and response.status in (301, 302):
-			target = response.getheader('location', '')
-			if target.find("://") < 0:
-				target = httpSiteUrl + target
-			if get_redirect_url:
-				return target
+	response = opener.open(req)
+	the_page = response.read()
+	response.close()
+
+	jar.save()
+
+	return the_page
+
+def logout(params):
+	GET(httpSiteUrl + '/index.php?action=logout', httpSiteUrl)
+	__settings__.setSetting("Login", "");
+	__settings__.setSetting("Password", "")
+
+def check_login():
+	login = __settings__.getSetting("Login")
+	password = __settings__.getSetting("Password")
+
+	if len(login) > 0:
+		http = GET(httpSiteUrl, httpSiteUrl)
+		if http == None: return None
+
+		beautifulSoup = BeautifulSoup(http)
+		userPanel = beautifulSoup.find('a', {"id": "loginlink"})
+
+		if userPanel == None:
+			os.remove(cookiepath)
+			
+			loginResponse = GET(httpSiteUrl, httpSiteUrl, {
+				'login': 'submit',
+				'login_name': login,
+				'login_password': password,
+				'submit': 'Вход'
+			})
+
+			loginSoup = BeautifulSoup(loginResponse)
+			userPanel = loginSoup.find('a', {"id": "loginlink"})
+			if userPanel == None:
+				showMessage('Login', 'Check login and password', 3000)
 			else:
-				return GET(target, referer, post_params, False)
-
-		try:
-			sc = Cookie.SimpleCookie()
-			sc.load(response.msg.getheader('Set-Cookie'))
-			fh = open(sid_file, 'w')
-			fh.write(sc['session'].value)
-			fh.close()
-		except: pass
-
-		if get_redirect_url:
-			return False
+				return userPanel.text.encode('utf-8', 'cp1251')
 		else:
-			http = response.read()
-			return http
-
-	except Exception, e:
-		showMessage('Error', e, 5000)
-		return None
+			return userPanel.text.encode('utf-8', 'cp1251')
+	return None
 
 def mainScreen(params):
+	login = check_login()
+	if login != None:
+		li = xbmcgui.ListItem('[Закладки %s]' % login.replace('Привет, ', ''))
+		uri = construct_request({
+			'href': httpSiteUrl + '/favorites/',
+			'mode': 'readCategory'
+		})
+		xbmcplugin.addDirectoryItem(h, uri, li, True)
+
 	li = xbmcgui.ListItem('[Категории]')
 	uri = construct_request({
 		'href': httpSiteUrl,
@@ -132,16 +154,16 @@ def mainScreen(params):
 		'mode': 'runSearch'
 	})
 	xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+	li = xbmcgui.ListItem('[Поиск]')
+	uri = construct_request({
+		'mode': 'runSearch'
+	})
+	xbmcplugin.addDirectoryItem(h, uri, li, True)
 	
-	
-	try:
-		today = date.today()
-		readCategory({
-		        'href': httpSiteUrl + '/tags/' + str(today.year)
-		});
-	except:
-		xbmcplugin.endOfDirectory(h)
-		
+	readCategory({
+	        'href': httpSiteUrl + '/lastnews/'
+	});
 
 def readCategory(params, postParams = None):
 	categoryUrl = urllib.unquote_plus(params['href'])
