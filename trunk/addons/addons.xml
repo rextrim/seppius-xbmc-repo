@@ -654,7 +654,7 @@
 
 <addon id="plugin.video.hdkinoklub.ru"
        name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]hdkinoklub.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

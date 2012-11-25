@@ -58,6 +58,7 @@ class Param:
     max_page    = 0
     count       = 0
     url         = ''
+    search      = ''
 
 class Info:
     img         = ''
@@ -117,6 +118,9 @@ def Get_Parameters(params):
     #-- url
     try:    p.url = urllib.unquote_plus(params['url'])
     except: p.url = ''
+    #-- search
+    try:    p.search = urllib.unquote_plus(params['search'])
+    except: p.search = ''
 
     #-----
     return p
@@ -131,6 +135,36 @@ def Get_URL(par):
     url += '/page/'+par.page+'/'
 
     return url
+
+
+# ----- search on site --------------------------------------------------------
+def get_Search_HTML(search_str):
+    url = 'http://hdkinoklub.ru/index.php?do=search'
+    str = search_str.decode('utf-8').encode('windows-1251')
+    values = {
+            'do'	        : 'search',
+            'story'         : str,
+            'subaction'	    : 'search',
+            'full_search'	: 1,
+            'result_from'	: 1,
+            'result_num'	: 100,
+            'search_start'	: 1,
+            'beforeafter'	: 'after',
+            'catlist[]'	    : 0,
+            'replyless'	    : 0,
+            'replylimit'	: 0,
+            'resorder'	    : 'asc',
+            'searchdate'	: 0,
+            'searchuser'    : '',
+            'showposts'	    : 0,
+            'sortby'	    : 'title',
+            'titleonly'	    : 3
+        }
+
+    post = urllib.urlencode(values)
+    html = get_HTML(url, post)
+    return html
+
 
 #----------- get page count & number of movies ---------------------------------
 def Get_Page_and_Movies_Count(par):
@@ -170,6 +204,9 @@ def Get_Header(par):
     if par.genre <> '':
         info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre_name + '[/COLOR]'
 
+    if par.search <> '':
+        info += ' | Поиск: ' + '[COLOR FFFFFF00]'+ par.search + '[/COLOR]'
+
     #-- info line
     name    = info
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
@@ -182,6 +219,22 @@ def Get_Header(par):
     u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
     u += '&count=%s'%urllib.quote_plus(str(par.count))
     xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- search
+    if par.genre == '' and par.page == '1' and par.search == '':
+        name    = '[COLOR FFFFFF00]' + '[ПОИСК]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        #-- filter parameters
+        u += '&search=%s'%urllib.quote_plus('Y')
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+        u += '&count=%s'%urllib.quote_plus(str(par.count))
+        xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- genres
     if par.genre == '' and par.page == '1':
@@ -233,31 +286,60 @@ def Movie_List(params):
         #-- get filter parameters
         par = Get_Parameters(params)
 
-        # -- get total number of movies and pages if not provided
-        if par.count == 0:
-            (par.max_page, par.count) = Get_Page_and_Movies_Count(par)
+        # show search dialog
+        if par.search == 'Y':
+            skbd = xbmc.Keyboard()
+            skbd.setHeading('Поиск сериалов.')
+            skbd.doModal()
+            if skbd.isConfirmed():
+                SearchStr = skbd.getText().split(':')
+                par.search = SearchStr[0]
+            else:
+                return False
+            #-- get and parce result
+            html = get_Search_HTML(par.search).replace('<br/>','|')
+            soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+            par.max_page = 1
+            try:
+                txt = soup.find('div', {'class':'dpad radial infoblock'}).text
+                par.count = int(re.compile(u'Вашему запросу найдено (.+?) ответов', re.MULTILINE|re.DOTALL).findall(txt)[0])
+            except:
+                return False
+
+            is_search = True
+        else:
+            # -- get total number of movies and pages if not provided
+            if par.count == 0:
+                (par.max_page, par.count) = Get_Page_and_Movies_Count(par)
+
+            #== get movie list =====================================================
+            url = Get_URL(par)
+            html = get_HTML(url).replace('<br/>','|')
+
+            # -- parsing web page --------------------------------------------------
+            soup = BeautifulSoup(html, fromEncoding="windows-1251")
+            is_search = False
 
         # -- add header info
         Get_Header(par)
 
-        #== get movie list =====================================================
-        url = Get_URL(par)
-        html = get_HTML(url).replace('<br/>','|')
-
-        # -- parsing web page --------------------------------------------------
-        soup = BeautifulSoup(html, fromEncoding="windows-1251")
         # -- get movie info
-
         for rec in soup.find('div',{'id':'dle-content'}).findAll('table'):
             try:
                 #--
-                mi.url      = rec.find('div',{'class':'eTitle'}).find('a')['href']
-                mi.title    = rec.find('div',{'class':'eTitle'}).find('a').text.encode('utf-8')
+                r = rec.find('div',{'class':'eTitle'})
+                try:
+                    mi.url      = r.find('a')['href']
+                except:
+                    continue
+                mi.title    = r.find('a').text.encode('utf-8')
                 #--
                 mi.img      = rec.find('div',{'class':'eMessage'}).find('img')['src']
                 if mi.img[0] == '/':
                     mi.img =  'http://hdkinoklub.ru'+mi.img
-                mi.text     = rec.find('div',{'class':'eMessage'}).find('div',{'style':'display:inline;'}).text.encode('utf-8')
+
+                mi.text     = rec.find('div',{'class':'eMessage'}).text.encode('utf-8')
                 #--
                 for r in rec.find('div',{'class':'full_history'}).text.split('|'):
                     if r.split(':', 1)[0] == u'Год выхода':
@@ -272,14 +354,16 @@ def Movie_List(params):
                 u += '&img=%s'%urllib.quote_plus(mi.img)
                 i.setInfo(type='video', infoLabels={ 'title':      mi.title,
                             						 'year':        mi.year,
-                            						 'genre':       mi.genre})
+                            						 'genre':       mi.genre,
+                                					 'plot':        mi.text
+                                                   })
                 #i.setProperty('fanart_image', mi.img)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
                 pass
 
         #-- next page link
-        if int(par.page) < par.max_page :
+        if int(par.page) < par.max_page and is_search == False:
             name    = '[COLOR FF00FF00][PAGE +1][/COLOR]'
             i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
             u = sys.argv[0] + '?mode=MOVIE'
@@ -292,7 +376,7 @@ def Movie_List(params):
             u += '&count=%s'%urllib.quote_plus(str(par.count))
             xbmcplugin.addDirectoryItem(h, u, i, True)
 
-        if int(par.page)+10 <= par.max_page :
+        if int(par.page)+10 <= par.max_page and is_search == False:
             name    = '[COLOR FF00FF00][PAGE +10][/COLOR]'
             i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
             u = sys.argv[0] + '?mode=MOVIE'
@@ -327,7 +411,6 @@ def Source_List(params):
         s_url   = rec['src']
         s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
-        print s_title
         #--
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
@@ -344,7 +427,6 @@ def Source_List(params):
                 s_url = s.split('=',1)[1]
         s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
-        print s_title
         #--
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
@@ -373,7 +455,6 @@ def Genre_List(params):
         if rec['href'] <> '/vip':
             name     = unescape(rec.text).encode('utf-8')
             genre_id = rec['href']
-            print name
 
             i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
             u = sys.argv[0] + '?mode=MOVIE'
@@ -505,9 +586,6 @@ try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
 	Movie_List(params)
-
-print mode
-print h
 
 if mode == 'MOVIE':
 	Movie_List(params)
