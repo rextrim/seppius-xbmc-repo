@@ -221,12 +221,12 @@ def readCategory(params, postParams = None):
 
 					#print link
 					fimg=link.find('img')
-					print fimg
+					#print fimg
 					desc= str(link.find(id=re.compile("news-id-[0-9]+")))
 					pat=re.compile('<br />[^@]+<', re.S)
 					try: mfil = pat.findall(desc)[0].split('</div>')[1].replace('<br />','').replace('<br>','/n')
 					except: mfil = pat.findall(desc)[0].replace('<br />','').replace('<br>','/n')
-					print mfil
+					#print mfil
 					try:
 						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['pagespeed_lazy_src'])
 					except: pass
@@ -275,19 +275,19 @@ def readFile(params):
 	#print content
 	findfile=str(content)
 	#print findfile
-	pat=re.compile('le=[^/]+"', re.S)
-	pat_pl=re.compile('pl=[^/]+"', re.S)
+	pat=re.compile('le=.+"', re.S)
+	pat_pl=re.compile('pl=.+"', re.S)
 	mfil = pat.findall(findfile)
 	pfil = pat_pl.findall(findfile)
 	flname=None
 	if mfil: 
 		#print mfil[0][3:-1]
 		flname=xppod.Decode(mfil[0][3:-1])
-		#print flname
+		print flname
 	if pfil: 
 		#print pfil[0][3:-1]
 		flname=xppod.Decode(pfil[0][3:-1])
-		#print flname
+		print flname
 	if not flname: return False
 	vurl=findfile.split('&')
 	for ur in vurl:	findfile=ur
@@ -308,12 +308,18 @@ def readFile(params):
 	else: 
 		#print 'playlist in ' + lurl.split('=')[1]
 		http=flname
-		print 'after xppod: '+http
+		#print 'after xppod: '+http
 		http = GET(http)
 		#print 'http pl='+http
 		f=http.find('{')
 		f1=0
 		f1=http.rfind('}]}]}{');
+		pat=re.compile('[\w\d=.,+]+', re.S)
+		http = pat.findall(http)[0]
+		#print http
+		http= xppod.Decode(http)
+		#print http.encode('utf-8')
+		'''
 		print 'f1: '+str(f1)
 		if f1 == -1:
 			#print 'f1=0'
@@ -323,20 +329,28 @@ def readFile(params):
 			http=http[f:f1+5]
 		http=http.replace('}]}]}{','}]}]')
 		#print 'http after replace: '+http
+		print http
+		'''
 		try:
-			jsdata=json.loads(http)
+			jsdata=json.loads(str(http),'iso-8859-1')
 		except:
-			f1=http.rfind(']}')
-			http=http[0:f1-1]
+
+			#f1=http.rfind(']}')
+			#http=http[0:f1-1]
+			
 			jsdata=json.loads(http)
 		#print jsdata
 		has_sesons=False
 		playlist = jsdata['playlist']
 		#print playlist
 		for file in playlist:
-			#print file
+			tt= file['comment']
+			tt=tt.encode("latin-1","ignore")
+			l=''
+			#for n in tt: l=l+ str(ord(n))+','
+			#print l
 			try:
-				li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
+				li = xbmcgui.ListItem(tt, addon_icon, params['src'])
 				li.setProperty('IsPlayable', 'true')
 				uri = construct_request({
 					'func': 'play',
@@ -347,7 +361,7 @@ def readFile(params):
 			try:
 				for t in file['playlist']:
 				#print t
-					li = xbmcgui.ListItem(t['comment'], addon_icon, params['src'])
+					li = xbmcgui.ListItem(t['comment'].encode("latin-1","ignore"), addon_icon, params['src'])
 					li.setProperty('IsPlayable', 'true')
 					uri = construct_request({
 						'func': 'play',
@@ -356,7 +370,7 @@ def readFile(params):
 					has_sesons=True
 					xbmcplugin.addDirectoryItem(hos, uri, li, False)
 				if has_sesons==False:
-					li = xbmcgui.ListItem(file['comment'], addon_icon, params['src'])
+					li = xbmcgui.ListItem(file['comment'].encode("latin-1","ignore"), addon_icon, params['src'])
 					li.setProperty('IsPlayable', 'true')
 					uri = construct_request({
 						'func': 'play',
