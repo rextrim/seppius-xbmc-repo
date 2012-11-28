@@ -524,31 +524,6 @@ def unescape(text):
 def get_url(url):
     return "http:"+urllib.quote(url.replace('http:', ''))
 
-#-------------------------------------------------------------------------------  !!!
-#---------- cleanup javac code -------------------------------------------------
-def Java_CleanUP(html):
-    html = re.sub(re.compile("/\*.*?\*/",re.DOTALL ) ,"" ,html)
-    txt = ''
-    for rec in html.split('\n'):
-        s = rec.split('//')[0]
-        txt += s+'\n'
-
-    return txt
-
-#---------- set cookies --------------------------------------------------------
-def Get_Cookies(url): #soup):
-
-    config = ConfigParser.ConfigParser()
-    config.read(os.path.join(Addon.getAddonInfo('path'),'cookie.txt'))
-
-    sec = 'www.seasonvar.ru'
-    cookie = ''
-    for op in config.options(sec):
-        if config.get(sec, op) != 'null':
-            cookie += op+'=';
-            cookie += config.get(sec, op)+';'
-
-    return cookie
 
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(url):
@@ -561,50 +536,6 @@ def Get_PlayList(url):
         plist.append({'comment':rec['comment'], 'file':rec['file']})
 
     return plist
-
-#-------------------------------------------------------------------------------
-def Initialize():
-    startupinfo = None
-    if os.name == 'nt':
-        prog = '"'+os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe" --cookies-file="')+os.path.join(Addon.getAddonInfo('path'),'cookie.txt')+'" "'+os.path.join(Addon.getAddonInfo('path'),'seasonvar.js"')
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= 1
-    else:
-        prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), '--cookies-file='+os.path.join(Addon.getAddonInfo('path'),'cookie.txt'), os.path.join(Addon.getAddonInfo('path'),'seasonvar.js')]
-
-    try:
-        process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
-        process.wait()
-    except:
-        xbmc.log('*** PhantomJS is not found or failed.')
-
-def Run_Java(SWF_code):
-    #---
-    f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.tpl'), 'r')
-    f2 = open(os.path.join(Addon.getAddonInfo('path'),'test.js') , 'w')
-    fcode = f1.read().replace('$script$', SWF_code.replace('eval(', '" "+('))
-    f2.write(fcode)
-    f1.close()
-    f2.close()
-    #--
-    startupinfo = None
-    if os.name == 'nt':
-        prog = '"'+os.path.join(Addon.getAddonInfo('path'),'phantomjs.exe" "')+os.path.join(Addon.getAddonInfo('path'),'test.js"')
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= 1
-    else:
-        prog = [os.path.join(Addon.getSetting('PhantomJS_Path'),'phantomjs'), os.path.join(Addon.getAddonInfo('path'),'test.js')]
-
-    output_f = open(os.path.join(Addon.getAddonInfo('path'),'test.txt'),'w')
-    process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= output_f, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
-    process.wait()
-    output_f.close()
-
-    f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.txt'), 'r')
-    fcode = f1.read()
-    f1.close()
-
-    return fcode
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
@@ -643,22 +574,14 @@ urllib2.install_opener(opener)
 
 p  = Param()
 mi = Info()
-#a,b,c = xppod.Correction(lib_path)
-#eval(compile(a,b,c))
 
 mode = None
 
 #---------------------------------
-#Test(params)
-
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	mode = '$'
-
-if mode == '$':
-    Initialize()
-    mode = 'MOVIE'
+	mode = 'MOVIE'
 
 if mode == 'MOVIE':
 	Movie_List(params)
