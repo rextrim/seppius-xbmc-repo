@@ -496,7 +496,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.debilizator.tva" name="[COLOR FFC85F1C]Debilizator.TVA[/COLOR]" version="0.4.3" provider-name="Silhouette">
+<addon id="plugin.video.debilizator.tva" name="[COLOR FFC85F1C]Debilizator.TVA[/COLOR]" version="0.5.0" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -690,7 +690,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.inetcom.tv" name="[COLOR FF86BA0D]Inetcom.tv[/COLOR]" version="0.2.0" provider-name="Silhouette">
+<addon id="plugin.video.inetcom.tv" name="[COLOR FF86BA0D]Inetcom.tv[/COLOR]" version="0.2.1" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -713,7 +713,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.2.2" provider-name="Silhouette">
+<addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.2.3" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -772,7 +772,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.kinochi.org" name="[COLOR FFFD0100]KINOCHI.ORG[/COLOR]" version="0.2.0" provider-name="Silhouette">
+<addon id="plugin.video.kinochi.org" name="[COLOR FFFD0100]KINOCHI.ORG[/COLOR]" version="0.3.2" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -882,7 +882,7 @@
   </extension>
 </addon>
 
-<addon id="plugin.video.new-kino.net" name="New-Kino.net" version="0.5.0" provider-name="Silhouette">
+<addon id="plugin.video.new-kino.net" name="New-Kino.net" version="0.5.1" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
