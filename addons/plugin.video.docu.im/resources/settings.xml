@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>  
+<settings>        <!-- General -->    
+	<setting label="30651" type="lsep"/> 
+	<setting id="HQ"  type="bool"  label="Высокое качество (HQ)"    default="false"/>	   
+	<setting label="30651" type="lsep"/> 
+	<setting id="LNG" type="bool"  label="Русский перевод"          default="false"/>	    	 
+</settings> 
