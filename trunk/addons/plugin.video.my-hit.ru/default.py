@@ -527,10 +527,17 @@ def PLAY(params):
         return False
 
     # -- check if video available
+    print url
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
+    for rec in soup.findAll('script', {'type':'text/javascript'}):
+        if 'flowplayer' in rec.text:
+            for r in re.compile('clip: {(.+?)}', re.MULTILINE|re.DOTALL).findall(rec.text)[0].replace(' ', '').split('\r\n'):
+                if r.split(':', 1)[0] == 'url':
+                    video = r.split(':', 1)[1][1:-2]
+    '''
     nav = soup.find("embed")
     p_refer = nav['src']
     p_params = dict([part.split('=') for part in  nav['flashvars'].split('&')])
@@ -538,6 +545,7 @@ def PLAY(params):
 
     # -- assemble RTMP link ----------------------------------------------------
     video = '%s?start=0&id=%s' % (p_params['file'], p_params['id'])
+    '''
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)

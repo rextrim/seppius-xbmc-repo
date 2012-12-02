@@ -872,7 +872,7 @@
 
 <addon id="plugin.video.my-hit.ru"
        name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]my-hit.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
