@@ -72,9 +72,6 @@ def Decode_String(param, hash_key):
         hash1 = hash_key.split('\n')[0]
         hash2 = hash_key.split('\n')[1]
 
-        print hash1
-        print hash2
-
         #-- decode
         for i in range(0, len(hash1)):
             re1 = hash1[i]
