@@ -613,18 +613,6 @@ def Get_Cookies(url): #soup):
 
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(soup, parent_url):
-
-    '''
-    #-- get play list url
-    for rec in soup.findAll('script', {'type':'text/javascript'}):
-        if rec.text.find('swfobject.embedSWF') > -1:
-            z = '{'+ re.compile('var flashvars = \{(.+?)\};', re.MULTILINE|re.DOTALL).findall(rec.text)[0]+'}'
-            for r in z.split(','):
-                if r.split(':')[0] == '"pl"':
-                    html = r.split(':')[1].replace('"', '')
-
-    url = 'http://seasonvar.ru/' + xppod.Decode(html)
-    '''
     #-- get play list url
     plcode = ''
     for rec in soup.findAll('script', {'type':'text/javascript'}):
@@ -636,23 +624,12 @@ def Get_PlayList(soup, parent_url):
     swf_player  = plcode.split(',')[1]
     plcode      = plcode.split(',')[0]
 
-    '''
-    z = '{'+ re.compile('var flashvars=\{(.+?)\};', re.MULTILINE|re.DOTALL).findall(fcode)[0]+'}'
-    for r in z.split(','):
-        if r.split(':')[0] == '"pl"':
-            html = r.split(':')[1].replace('"', '')
-
-    print html
-    '''
-
 
     url = xppod.Decode(plcode)
     if url.find('seasonvar.ru') == -1:
         url = 'http://seasonvar.ru' + url
     if url.find('http') == -1:
         url = 'http:' + url
-
-    print url
 
     # -- get play list
     post = None
