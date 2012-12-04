@@ -1,67 +1,73 @@
 ﻿import re, os, urllib, urllib2, sys, urlparse
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
-#---------- get web page -------------------------------------------------------
-def get_HTML(url, post = None, ref = None):
-    request = urllib2.Request(url, post)
 
-    host = urlparse.urlsplit(url).hostname
-    if ref==None:
-        ref='http://'+host
+class XPpod():
+    #----------------- init ----------------------------------------------------
+    def __init__(self, Addon):
+        self.Addon = Addon
 
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',   host)
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',             ref)
+    #---------- get web page -------------------------------------------------------
+    def get_HTML(self, url, post = None, ref = None):
+        request = urllib2.Request(url, post)
 
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-           xbmc.log('We failed to reach a server.')
-        elif hasattr(e, 'code'):
-           xbmc.log('The server couldn\'t fulfill the request.')
+        host = urlparse.urlsplit(url).hostname
+        if ref==None:
+            ref='http://'+host
 
-    html = f.read()
+        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+        request.add_header('Host',   host)
+        request.add_header('Accept', '*/*')
+        request.add_header('Accept-Language', 'ru-RU')
+        request.add_header('Referer',             ref)
 
-    return html
+        try:
+            f = urllib2.urlopen(request)
+        except IOError, e:
+            if hasattr(e, 'reason'):
+               xbmc.log('We failed to reach a server.')
+            elif hasattr(e, 'code'):
+               xbmc.log('The server couldn\'t fulfill the request.')
 
-#-------------------------------------------------------------------------------
-# Юppod decoder (for seasonvar.ru)
-#-------------------------------------------------------------------------------
-def Decode(param):
-    #-- get hash keys
-    f = open(os.path.join(os.getcwd(), r'resources', r'lib', r'hash.key'), 'r')
-    hash_key = f.read()
-    f.close()
+        html = f.read()
 
-    rez = Decode_String(param, hash_key)
-    if not 'html:' in rez:
-        #---- get new hash keys
-        url = 'http://justpaste.it/1gj7'
-        html = get_HTML(url)
+        return html
 
-        code = re.compile('<div id="articleContent">(.+?)<div class="noteFotter">', re.MULTILINE|re.DOTALL).findall(html)[0]
+    #-------------------------------------------------------------------------------
+    # Юppod decoder (for seasonvar.ru)
+    #-------------------------------------------------------------------------------
+    def Decode(self, param):
+        #-- get hash keys
+        f = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'r')
+        hash_key = f.read()
+        f.close()
 
-        hash_list = []
-        for rec in re.compile('<p>(.+?)<\/p>', re.MULTILINE|re.DOTALL).findall(code):
-            hash_list.append(rec)
+        rez = self.Decode_String(param, hash_key)
+        if not 'html:' in rez:
+            #---- get new hash keys
+            url = 'http://justpaste.it/1gj7'
+            html = self.get_HTML(url)
 
-        #---- save new hash keys
-        swf = open(os.path.join(os.getcwd(), r'resources', r'lib', r'hash.key'), 'w')
-        swf.write(hash_list[0]+'\n'+hash_list[1])
-        swf.close()
+            code = re.compile('<div id="articleContent">(.+?)<div class="noteFotter">', re.MULTILINE|re.DOTALL).findall(html)[0]
 
-        #---
-        hash_key= hash_list[0]+'\n'+hash_list[1]
-        rez = Decode_String(param, hash_key)
+            hash_list = []
+            for rec in re.compile('<p>(.+?)<\/p>', re.MULTILINE|re.DOTALL).findall(code):
+                hash_list.append(rec)
 
-    return rez
+            #---- save new hash keys
+            swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
+            swf.write(hash_list[0]+'\n'+hash_list[1])
+            swf.close()
 
-def Decode_String(param, hash_key):
-    try:
+            #---
+            hask_key = hash_list[0]+'\n'+hash_list[1]
+            rez = self.Decode_String(param, hash_key)
+
+        return rez
+
+    def Decode_String(self, param, hash_key):
         #-- define variables
         loc_3 = [0,0,0,0]
         loc_4 = [0,0,0]
@@ -102,7 +108,5 @@ def Decode_String(param, hash_key):
                 j = j + 1
 
             i = i + 4;
-    except:
-        pass
 
-    return loc_2
+        return loc_2

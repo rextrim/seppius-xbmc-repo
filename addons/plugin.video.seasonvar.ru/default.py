@@ -40,7 +40,9 @@ lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
 
 sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
 from BeautifulSoup  import BeautifulSoup
+
 import xppod
+Decoder = xppod.XPpod(Addon)
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
@@ -538,7 +540,7 @@ def PLAY(params):
                 xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
         html = f.read()
-        html = xppod.Decode(html)
+        html = Decoder.Decode(html)
 
         s_num = 0
         s_url = ''
@@ -624,8 +626,7 @@ def Get_PlayList(soup, parent_url):
     swf_player  = plcode.split(',')[1]
     plcode      = plcode.split(',')[0]
 
-
-    url = xppod.Decode(plcode)
+    url = Decoder.Decode(plcode)
     if url.find('seasonvar.ru') == -1:
         url = 'http://seasonvar.ru' + url
     if url.find('http') == -1:
@@ -650,7 +651,7 @@ def Get_PlayList(soup, parent_url):
             xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
 
     html = f.read()
-    html = xppod.Decode(html)
+    html = Decoder.Decode(html)
 
     return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url, swf_player
 
@@ -755,8 +756,6 @@ urllib2.install_opener(opener)
 
 p  = Param()
 mi = Info()
-#a,b,c = xppod.Correction(lib_path)
-#eval(compile(a,b,c))
 
 mode = None
 
