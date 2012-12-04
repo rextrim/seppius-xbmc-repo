@@ -396,7 +396,7 @@ def mainScreen(params):
 				info['plot'] = str(desc)
 				info['plotoutline'] = str(desc)
 			except: pass
-			listitem.setInfo(type='video', infoLabels = info)
+			if info: listitem.setInfo(type='video', infoLabels = info)
 			xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 			#print desc
 		#except: pass
