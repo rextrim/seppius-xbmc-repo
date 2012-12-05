@@ -313,6 +313,25 @@
   </extension>
 </addon>
 
+<addon id="plugin.video.LostFilm"
+       name="LostFilm"
+       version="0.0.1"
+       provider-name="TDW">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.module.torrent.ts"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>LostFilm</summary>
+    <description>LostFilm for TorrentStreem</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.RuTor"
        name="RuTor"
        version="0.9.1"
@@ -763,7 +782,7 @@
 
 <addon id="plugin.video.kino-live.org"
        name="kino-live.org"
-       version="1.7.0"
+       version="1.7.1"
        provider-name="x86demon">
     <requires>
         <import addon="xbmc.python" version="1.0"/>

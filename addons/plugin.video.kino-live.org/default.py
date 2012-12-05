@@ -180,10 +180,13 @@ def readCategory(params, postParams = None):
 	else:
 		for data in dataRows:
 			img = data.find('img')
-			cover = img['src']
-			if cover.find("://") < 0:
-				cover = httpSiteUrl + cover
-			titleText = img['alt'].encode('utf-8', 'cp1251')
+			cover = None
+			if img != None:
+				cover = img['src']
+				if cover.find("://") < 0:
+					cover = httpSiteUrl + cover
+			href = data.findPrevious('div', 'ah1').find('a')
+			titleText = href.text.encode('utf-8', 'cp1251')
 
 			link = data.findNextSibling('div', 'more').find('a')
 			href = link['href']
