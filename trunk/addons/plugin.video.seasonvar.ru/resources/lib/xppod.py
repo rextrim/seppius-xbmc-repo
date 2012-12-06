@@ -44,9 +44,9 @@ class XPpod():
         f = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'r')
         hash_key = f.read()
         f.close()
-
         rez = self.Decode_String(param, hash_key)
-        if not 'html:' in rez:
+
+        if not 'html://' in rez and not '/list.xml' in rez and not 'playlist' in rez and not '/playls/' in rez:
             #-- hash servers
             url = 'http://justpaste.it/xbmc_list'
             html = self.get_HTML(url)
@@ -57,19 +57,18 @@ class XPpod():
 
             #---- get new hash keys
             for url in self.url:
-
                 html = self.get_HTML(url)
                 code = re.compile('<div id="articleContent">(.+?)<div class="noteFotter">', re.MULTILINE|re.DOTALL).findall(html)[0]
 
                 hash_list = []
                 for rec in re.compile('<p>(.+?)<\/p>', re.MULTILINE|re.DOTALL).findall(code):
-                    hash_list.append(rec)
+                    hash_list.append(rec.replace(' ', ''))
 
                 #-- assemble hash key
                 hash_key = hash_list[0]+'\n'+hash_list[1]
                 rez = self.Decode_String(param, hash_key)
 
-                if 'html:' in rez:
+                if 'html:' in rez or '.xml' in rez or 'playlist' in rez or '/playls/' in rez:
                     #-- save new hash keys
                     swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
                     swf.write(hash_list[0]+'\n'+hash_list[1])

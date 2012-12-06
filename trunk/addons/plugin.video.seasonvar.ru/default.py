@@ -393,6 +393,8 @@ def Serial_Info(params):
         except:
             Initialize()
             playlist, playlist_url, swf_player = Get_PlayList(soup, url)
+            if playlist == '':
+                return False
 
         for rec in playlist:
             for par in rec.replace('"','').split(','):
@@ -627,6 +629,7 @@ def Get_PlayList(soup, parent_url):
     plcode      = plcode.split(',')[0]
 
     url = Decoder.Decode(plcode)
+
     if url.find('seasonvar.ru') == -1:
         url = 'http://seasonvar.ru' + url
     if url.find('http') == -1:
