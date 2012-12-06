@@ -153,8 +153,8 @@ def mainScreen(params):
 	http = GET(httpSiteUrl)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
-	content = beautifulSoup.find('ul', attrs={'class': 'lmenu reset'})
-	cats=content.findAll('a')
+	content = beautifulSoup.find('ul', attrs={'id': 'menu'})
+	cats=content.findAll(href=re.compile("http://online.stepashka.com/[^i].+"))
 	for line in cats:
 		title=None
 		if line.string:	title = str(line.string)
