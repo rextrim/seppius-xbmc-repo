@@ -42,7 +42,8 @@ class myPlayer(xbmc.Player):
 		self.play(self.playl)
 		self.playselected(ind)
 	def onPlayBackStarted( self ):
-		self.duration= int(xbmc.Player().getTotalTime()*1000)
+		try: self.duration= int(xbmc.Player().getTotalTime()*1000)
+		except: pass
 	def onPlayBackResumed( self ):
 		self.paused = False
 	def onPlayBackEnded( self ):
@@ -55,13 +56,13 @@ class myPlayer(xbmc.Player):
 class TSengine(object):
 	
 	def _TSpush(self,command):
-		#print '>>'+command
+		print '>>'+command
 		try:
 			_sock.send(command+'\r\n')
 		except: print 'send error'
 	
 	def __init__(self):
-		self.addon_icon=None
+		self.addon_icon=addon_icon
 		self.ready = False
 		self.filelist = None
 		self.files = {}
@@ -70,40 +71,46 @@ class TSengine(object):
 		self.player=None
 		self.playing=False
 		self.error_num=None
-		self.dialog = progress.DownloadProgress()
-		self.dialog.create(language(1000), "")
+		self.dialog = progress.dwprogress()
+		#self.dialog.show()
+		#self.dialog.create(language(1000), "")
 		self.timeout=10
 		self.mode=''
-	def load_torrent(self, torrent, mode, host='127.0.0.1', port=62062 ):
-		self.dialog.update(0,language(1001))
+	def load_torrent(self, torrent, mode, host='127.0.0.1', port=53725 ):
+		self.dialog.updater(0,language(1001))
+		self.dialog.updater(5)
+		
 		try:
 			_sock.connect((host, port))
 		except:
-			self.dialog.update(100,language(1010))
+			self.dialog.updater(100,language(1010))
 			xbmc.sleep(2000)
-			self.dialog.close()
+			#self.dialog.close()
+			print "FAIL CONNECT"
+			self.dialog.updater(59)
 			return False
 			exit
+		
 		self.mode=mode	
 		self.r = _TSpull(1)
 		self.r.start()
 		comm="HELLOBG"
 		self._TSpush(comm)
-		self.dialog.update(0,language(1002))
+		self.dialog.updater(0,language(1002))
 		timeout=self.timeout
 		while not self.r.last_com:
 			timeout=timeout-1
 			if timeout==0: break
 			time.sleep(1)
 		if timeout==0: 
-			self.dialog.update(100,language(1011))
+			self.dialog.updater(100,language(1011))
 			xbmc.sleep(2000)
-			self.dialog.close()
+			#self.dialog.close()
 			return 'No responce'
 		comm='READY'
 		self._TSpush(comm)
 		self.ready=True
-		self.dialog.update(100,language(1003))
+		self.dialog.updater(100,language(1003))
 		self.url=torrent
 		comm='LOADASYNC '+ str(random.randint(0, 0x7fffffff)) +' '+mode+' ' + torrent+ ' 0 0 0'
 		self._TSpush(comm)
@@ -113,13 +120,14 @@ class TSengine(object):
 			if timeout==0: break
 			time.sleep(1)
 		if timeout==0: 
-			self.dialog.update(100,language(1012))
+			self.dialog.updater(100,language(1012))
 			xbmc.sleep(2000)
-			self.dialog.close()
+			#self.dialog.close()
 			return 'Load Failed'	
 		self.filelist=self.r.files
 		self.file_count = self.r.count
 		self.files={}
+		self.dialog.updater(89)
 		if self.file_count>1:
 			flist=json.loads(self.filelist)
 			for list in flist['files']:
@@ -129,42 +137,47 @@ class TSengine(object):
 			list=flist['files'][0]
 			self.files[urllib.unquote_plus(urllib.quote(list[0]))]=list[1]
 		#print self.files
-		#self.dialog.close()
+		#self.dialog.show()
+		self.dialog.close()
 		return 'Ok'
 		
 
 	def play_url_ind(self, index=0, title='', icon=None, thumb=None):
-		self.dialog.update(0,language(1004))
+		self.dialog2 = progress.dwprogress()
+		self.dialog2.updater(0,language(1004))
 		comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) +' 0 0 0'
 		self._TSpush(comm)
 		off_timer=180
 		while not self.r.got_url:
 			if self.r.last_com=='STATUS':
 				try:
-					if self.r.state: self.dialog.update(self.r.progress,self.r.state,self.r.label)
+					if self.r.state: self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
 					#!!!!!!!!!тут буду использовать _com_received вместо ^^^
-					
+					pass
 				except: pass
-				#print r.last_received
+				print "waiting"
 				xbmc.sleep(1000)
 				off_timer=off_timer-1
 				if off_timer<=0: 
 					
 					break
+		print 'got url'
 		if self.r.got_url:
+			print self.r.got_url
 			plr=myPlayer()
 			lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
-			self.dialog.update(100,language(1005))
+			self.dialog2.updater(100,language(1005))
 			plr.play(self.r.got_url, lit)
-			while not plr.duration:
-				self.dialog.update(self.r.progress,self.r.state,self.r.label)
-				xbmc.sleep(1000)
-			self.dialog.close()
+			self.dialog2.hide()
+			#while not plr.duration:
+			#	self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
+			#	xbmc.sleep(1000)
+			#self.dialog2.hide()
 			visible=False
-
+			print 'strat it'
 			
 			while plr.active:
-				#!!!!!!!!!1тут буду использовать _com_received
+				print 'active'
 				if plr.duration: 
 					comm='DUR '+self.r.got_url.replace('\r','').replace('\n','')+' '+str(plr.duration)
 					comm='PLAYBACK '+self.r.got_url.replace('\r','').replace('\n','')+' 0'
@@ -175,34 +188,35 @@ class TSengine(object):
 					#print 'paused'
 					if not visible: 
 						#print 'make window'
-						self.dialog = progress.DownloadProgress()
-						self.dialog.create(language(1000), "")
-						self.dialog.update(self.r.progress,self.r.state,self.r.label)
+						#self.dialog = progress.DownloadProgress()
+						#self.dialog.create(language(1000), "")
+						self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
 						visible=True
-					if visible: self.dialog.update(self.r.progress,self.r.state,self.r.label)
+					if visible: self.dialog2.show()
 				elif visible:
 					#print 'delete window'
-					self.dialog.close()
+					self.dialog2.hide()
 					visible=None
 				#print self.r.state
 				xbmc.sleep(1000)
 			#self.end()
 		else: 
-			self.dialog.update(0,language(1013))
+			self.dialog.updater(0,language(1013))
 			time.sleep(3)
-		try: self.dialog.close()
-		except: pass
+		#try: #self.dialog.close()
+		#except: pass
 	def end(self):
 		#print self.r.received
-		
-		comm="SHUTDOWN"
-		self._TSpush(comm)
-		self.r.active = False
+		try:
+			comm="SHUTDOWN"
+			self._TSpush(comm)
+			self.r.active = False
+		except: pass
 		#self.r.end()
 		_sock.close()
 		#print 'Done'
-		try: self.dialog.close()
-		except: pass
+		#try: #self.dialog.close()
+		#except: pass
 class _TSpull(threading.Thread):
 
 	def _com_received(self,text):
@@ -272,10 +286,11 @@ class _TSpull(threading.Thread):
 		while self.active:
 			try:
 				self.last_received=_sock.recv(self.buffer)
-				#print self.last_received
+				print self.last_received
 				#self.received.append(self.last_received)
 				self.last_com = self._com_received(self.last_received)
 				
+				if self.last_com=='START': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
 				if self.last_com=='PLAY': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
 				if self.last_com=='LOADRESP': 
 					fil = self.last_received
