@@ -76,7 +76,7 @@ class TSengine(object):
 		#self.dialog.create(language(1000), "")
 		self.timeout=10
 		self.mode=''
-	def load_torrent(self, torrent, mode, host='127.0.0.1', port=53725 ):
+	def load_torrent(self, torrent, mode, host='127.0.0.1', port=62062 ):
 		self.dialog.updater(0,language(1001))
 		self.dialog.updater(5)
 		
