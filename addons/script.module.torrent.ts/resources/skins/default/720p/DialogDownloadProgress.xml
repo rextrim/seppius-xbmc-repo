@@ -1,17 +1,20 @@
 <window>
 	<defaultcontrol>2006</defaultcontrol>
+	<coordinates>
+
+		<system>1</system>
+
+		<posx>0</posx>
+		<posy>0</posy>
+
+	</coordinates>
+	<animation effect="fade" time="250">WindowOpen</animation>
+
+	<animation effect="fade" time="250">WindowClose</animation>
 	<controls>
-		<control type="label" id="1999">
-			<description>Dialog animations</description>
-			<visible>false</visible>
-			<label>
-				['WindowOpen', 'effect=fade start=0 end=100 time=200']
-				['WindowClose', 'effect=fade start=100 end=0 time=200']
-			</label>
-		</control>
 		<control type="group" id="2000">
 			<description>Coordinates</description>
-			<visible>false</visible>
+			<visible>true</visible>
 			<posx>660</posx>
 			<posy>630</posy>
 			<control type="image" id="2001">
@@ -27,7 +30,7 @@
 				<posy>10</posy>
 				<width>550</width>
 				<height>20</height>
-				<label>font=font12_title,textColor=FFFFFFFF,alignment=left+centery</label>
+				<label>инфо1</label>
 				<textcolor>white</textcolor>
 			</control>
 			<control type="label" id="2003">
@@ -36,7 +39,7 @@
 				<posy>30</posy>
 				<width>550</width>
 				<height>20</height>
-				<label>font=font12_title,textColor=8800FFFF,alignment=left+centery</label>
+				<label>инфо2</label>
 				<textcolor>grey2</textcolor>
 			</control>
 			<control type="progress" id="2004">
@@ -45,12 +48,7 @@
 				<posy>55</posy>
 				<width>555</width>
 				<height>8</height>
-				<visible>false</visible>
-			</control>
-			<control type="label" id="2045">
-				<description>Infos Progress Images</description>
-				<label>texturebg=ProgressBack.png,texturemid=ProgressFront.png,textureleft=,textureright=,textureoverlay=</label>
-				<visible>false</visible>
+				<visible>true</visible>
 			</control>
 		</control>
 	</controls>
