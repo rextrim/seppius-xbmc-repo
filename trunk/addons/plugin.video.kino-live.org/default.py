@@ -185,7 +185,10 @@ def readCategory(params, postParams = None):
 				cover = img['src']
 				if cover.find("://") < 0:
 					cover = httpSiteUrl + cover
-			href = data.findPrevious('div', 'ah1').find('a')
+			titleContainer = data.findPrevious('div', 'ah1')
+			if titleContainer == None:
+				titleContainer = data.findPrevious('h1')
+			href = titleContainer.find('a')
 			titleText = href.text.encode('utf-8', 'cp1251')
 
 			link = data.findNextSibling('div', 'more').find('a')
