@@ -43,7 +43,7 @@ class myPlayer(xbmc.Player):
 		self.playselected(ind)
 	def onPlayBackStarted( self ):
 		try: self.duration= int(xbmc.Player().getTotalTime()*1000)
-		except: pass
+		except: self.duration=0
 	def onPlayBackResumed( self ):
 		self.paused = False
 	def onPlayBackEnded( self ):
@@ -56,7 +56,7 @@ class myPlayer(xbmc.Player):
 class TSengine(object):
 	
 	def _TSpush(self,command):
-		print '>>'+command
+		#print '>>'+command
 		try:
 			_sock.send(command+'\r\n')
 		except: print 'send error'
@@ -71,12 +71,13 @@ class TSengine(object):
 		self.player=None
 		self.playing=False
 		self.error_num=None
-		self.dialog = progress.dwprogress()
+		
 		#self.dialog.show()
 		#self.dialog.create(language(1000), "")
 		self.timeout=10
 		self.mode=''
 	def load_torrent(self, torrent, mode, host='127.0.0.1', port=62062 ):
+		self.dialog = progress.dwprogress()
 		self.dialog.updater(0,language(1001))
 		self.dialog.updater(5)
 		
@@ -155,55 +156,56 @@ class TSengine(object):
 					#!!!!!!!!!тут буду использовать _com_received вместо ^^^
 					pass
 				except: pass
-				print "waiting"
+				#print "waiting"
 				xbmc.sleep(1000)
 				off_timer=off_timer-1
 				if off_timer<=0: 
 					
 					break
-		print 'got url'
+		#print 'got url'
+		self.dialog2.close()
 		if self.r.got_url:
-			print self.r.got_url
+			#print self.r.got_url
 			plr=myPlayer()
 			lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
 			self.dialog2.updater(100,language(1005))
 			plr.play(self.r.got_url, lit)
-			self.dialog2.hide()
+			
+			#self.dialog2.hide()
 			#while not plr.duration:
 			#	self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
 			#	xbmc.sleep(1000)
 			#self.dialog2.hide()
 			visible=False
-			print 'strat it'
-			
-			while plr.active:
-				print 'active'
-				if plr.duration: 
+			#print 'strat it'
+			if plr.duration!=0: 
 					comm='DUR '+self.r.got_url.replace('\r','').replace('\n','')+' '+str(plr.duration)
 					comm='PLAYBACK '+self.r.got_url.replace('\r','').replace('\n','')+' 0'
 					self._TSpush(comm)
 					plr.duration=None
+			while plr.active:
+				#print 'active'
 				
 				if plr.paused: 
 					#print 'paused'
 					if not visible: 
 						#print 'make window'
-						#self.dialog = progress.DownloadProgress()
-						#self.dialog.create(language(1000), "")
-						self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
+						self.dialog = progress.dwprogress()
+						#self.dialog.updater(language(1000), "")
+						self.dialog.updater(self.r.progress,self.r.state,self.r.label)
 						visible=True
-					if visible: self.dialog2.show()
+					#if visible: self.dialog2.show()
 				elif visible:
 					#print 'delete window'
-					self.dialog2.hide()
-					visible=None
-				#print self.r.state
+					self.dialog.close()
+					visible=False
+				#print self.r.state'''
 				xbmc.sleep(1000)
 			#self.end()
-		else: 
-			self.dialog.updater(0,language(1013))
-			time.sleep(3)
-		#try: #self.dialog.close()
+		#else: 
+		#	self.dialog.updater(0,language(1013))
+		#	time.sleep(3)
+		#self.dialog2.close()
 		#except: pass
 	def end(self):
 		#print self.r.received
@@ -286,7 +288,7 @@ class _TSpull(threading.Thread):
 		while self.active:
 			try:
 				self.last_received=_sock.recv(self.buffer)
-				print self.last_received
+				#print self.last_received
 				#self.received.append(self.last_received)
 				self.last_com = self._com_received(self.last_received)
 				
@@ -311,7 +313,7 @@ class _TSpull(threading.Thread):
 						
 			except:
 				pass
-				
+		xbmc.sleep(300)
 	def end(self):
 		self.daemon = False
 
