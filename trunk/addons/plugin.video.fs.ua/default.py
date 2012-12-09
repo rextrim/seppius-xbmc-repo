@@ -364,6 +364,10 @@ def readcategory(params):
 	categoryUrl = getUrlWithSortBy(urllib.unquote_plus(params['href']), params['section'])
 	http = GET(categoryUrl, httpSiteUrl)
 	if http == None: return False
+	try:
+		params['filter']
+	except:
+		params['filter'] = ''
 
 	showUpdateInfo = __settings__.getSetting("Show update info") == "true"
 	beautifulSoup = BeautifulSoup(http)
