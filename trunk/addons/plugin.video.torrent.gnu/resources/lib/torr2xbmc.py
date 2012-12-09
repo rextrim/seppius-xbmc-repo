@@ -172,7 +172,7 @@ def mainScreen(params):
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmcplugin.endOfDirectory(hos)
-
+from urllib import unquote, quote, quote_plus
 def tpl(params):
 	path=ktv_folder
 	dirList=os.listdir(unicode(path))
@@ -180,7 +180,7 @@ def tpl(params):
 	for fname in dirList:
 		if re.search('.+.torrent', fname):
 			torrlink='a'
-			#print fname.decode().encode()
+			print fname.encode('utf-8')
 			li = xbmcgui.ListItem(fname)
 			uri = construct_request({
 				'func': 'play_file',
@@ -191,8 +191,9 @@ def tpl(params):
 
 def play_file(params):
 	#получаем содержимое файла в base64
-	filename=ktv_folder + params['file']
-	f = open(filename, 'rb')
+	filename=ktv_folder + str(params['file'])
+	#print unicode(filename)
+	f = open((filename.decode('utf-8')), 'rb')
 	buf=f.read()
 	f.close
 	torr_link=base64.b64encode(buf)
