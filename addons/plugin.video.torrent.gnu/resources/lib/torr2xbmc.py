@@ -166,6 +166,14 @@ def mainScreen(params):
 		'func': 'rutor'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('.torrent Player')
+	uri = construct_request({
+		'func': 'tpl'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	xbmcplugin.endOfDirectory(hos)
+
+def tpl(params):
 	path=ktv_folder
 	dirList=os.listdir(unicode(path))
 	#print os.listdir(unicode(path, encoding='cp1252'))
