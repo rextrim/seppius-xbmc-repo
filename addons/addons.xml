@@ -1230,7 +1230,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.torrent.gnu"
        name="torrent.gnu"
-       version="0.1.8"
+       version="0.2.0"
        provider-name="nuismons">
     <requires>
 		<import addon="script.module.torrent.ts"/>

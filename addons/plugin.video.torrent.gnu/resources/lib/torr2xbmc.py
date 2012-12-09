@@ -14,6 +14,7 @@ import xbmcgui
 import xbmcaddon
 import xbmc
 import xbmcaddon
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 
 from TSCore import TSengine as tsengine
 import base64
@@ -34,9 +35,28 @@ addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
 ktv_folder=__addon__.getSetting('download_path')
+prt_file=__addon__.getSetting('port_path')
+aceport=62062
+try:
+	if prt_file: 
+		gf = open(prt_file, 'r')
+		aceport=int(gf.read())
+		gf.close()
+except: prt_file=None
+
+if not prt_file:
+	try:
+		fpath= os.path.expanduser("~")
+		pfile= os.path.join(fpath,'AppData\Roaming\TorrentStream\engine' ,'acestream.port')
+		gf = open(pfile, 'r')
+		aceport=int(gf.read())
+		gf.close()
+		__addon__.setSetting('port_path',pfile)
+		print aceport
+	except: aceport=62062
+	
 while not __addon__.getSetting('download_path'): __addon__.openSettings()
 ktv_folder=__addon__.getSetting('download_path')
-
 # JSON понадобится, когда будет несколько файлов в торренте
 try:
 	import json
@@ -88,21 +108,75 @@ def rutor(params):
 			})
 		xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmcplugin.endOfDirectory(hos)
+	
+def stream (params):
+	torr_link='f4a94963c11a47f213b145697f494b5fc5485b02'
+	TSplayer=tsengine()
+	out=TSplayer.load_torrent(torr_link,'INFOHASH',port=aceport)
+	if out=='Ok':
+		TSplayer.play_url_ind(0,'stream',None)
+	TSplayer.end()
+def ttv (params):
+	http = GET('http://torrent-tv.ru/channels.php')
+	beautifulSoup = BeautifulSoup(http)
+	channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
+	for ch in channels: 
+		link =ch.find('a')['href']
+		title= ch.find('strong').string.encode('utf-8')
+		img='http://torrent-tv.ru/'+ch.find('img')['src']
+		li = xbmcgui.ListItem(title,img,img)
+		uri = construct_request({
+				'func': 'play_ch',
+				'img':img,
+				'title':title,
+				'file':link
+			})
+		xbmcplugin.addDirectoryItem(hos, uri, li)
+	xbmcplugin.endOfDirectory(hos)
+	
+def play_ch(params):
+	http = GET('http://torrent-tv.ru/'+params['file'])
+	beautifulSoup = BeautifulSoup(http)
+	tget= beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
+	#print tget
+	#this.loadTorrent("http://94.242.221.195:7773/file?name=%D0%A2%D0%9D%D0%A2"
+	#print http
+	#print 'http://torrent-tv.ru/'+params['file']
+	m=re.search('http:(.+)"', str(tget))
+	torr_link= m.group(0).split('"')[0]
+	TSplayer=tsengine()
+	out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
+	if out=='Ok':
+		TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
+	TSplayer.end()
+	showMessage('Торрент', 'Стоп', 2000)    
 def mainScreen(params):
+	li = xbmcgui.ListItem('test stream')
+	uri = construct_request({
+		'func': 'stream'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('torrent-tv')
+	uri = construct_request({
+		'func': 'ttv'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('rutor.top')
 	uri = construct_request({
 		'func': 'rutor'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	path=ktv_folder
-	dirList=os.listdir(path)
+	dirList=os.listdir(unicode(path))
+	#print os.listdir(unicode(path, encoding='cp1252'))
 	for fname in dirList:
-		if re.search('[^/]+.torrent', fname):
+		if re.search('.+.torrent', fname):
 			torrlink='a'
+			#print fname.decode().encode()
 			li = xbmcgui.ListItem(fname)
 			uri = construct_request({
 				'func': 'play_file',
-				'file':fname
+				'file':fname.encode('utf-8')
 			})
 			xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmcplugin.endOfDirectory(hos)
@@ -116,7 +190,7 @@ def play_file(params):
 	torr_link=base64.b64encode(buf)
 	
 	TSplayer=tsengine()
-	out=TSplayer.load_torrent(torr_link,'RAW')
+	out=TSplayer.load_torrent(torr_link,'RAW',port=aceport)
 	if out=='Ok':
 		for k,v in TSplayer.files.iteritems():
 			li = xbmcgui.ListItem(urllib.unquote(k))
@@ -134,7 +208,7 @@ def play_file(params):
 def play_it(params):
 	torr_link=params['torr_url']	
 	TSplayer=tsengine()
-	out=TSplayer.load_torrent(torr_link,'RAW')
+	out=TSplayer.load_torrent(torr_link,'RAW',port=aceport)
 	if out=='Ok':
 		TSplayer.play_url_ind(int(params['ind']),params['title'],addon_icon,params['img'])
 	TSplayer.end()
@@ -144,7 +218,7 @@ def play_url(params):
 	torr_link=params['file']
 	
 	TSplayer=tsengine()
-	out=TSplayer.load_torrent(torr_link,'TORRENT')
+	out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
 	if out=='Ok':
 		for k,v in TSplayer.files.iteritems():
 			li = xbmcgui.ListItem(urllib.unquote(k))
@@ -162,7 +236,7 @@ def play_url(params):
 def play_url2(params):
 	torr_link=params['torr_url']	
 	TSplayer=tsengine()
-	out=TSplayer.load_torrent(torr_link,'TORRENT')
+	out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
 	if out=='Ok':
 		TSplayer.play_url_ind(int(params['ind']),params['title'],addon_icon,params['img'])
 	TSplayer.end()
