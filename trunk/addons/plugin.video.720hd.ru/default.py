@@ -59,6 +59,7 @@ class Param:
     count       = 0
     url         = ''
     search      = ''
+    par_url     = ''
 
 class Info:
     img         = ''
@@ -123,6 +124,9 @@ def Get_Parameters(params):
     #-- search
     try:    p.search = urllib.unquote_plus(params['search'])
     except: p.search = ''
+    #-- par_url
+    try:    p.par_url = urllib.unquote_plus(params['par_url'])
+    except: p.par_url = ''
 
     #-----
     return p
@@ -540,6 +544,7 @@ def Source_List(params):
         u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
         u += '&url=%s'%urllib.quote_plus(s_url)
         u += '&img=%s'%urllib.quote_plus(img)
+        u += '&par_url=%s'%urllib.quote_plus(url)
         u += '&vtype=%s'%urllib.quote_plus('VK')
         try:
             i.setInfo(type='video', infoLabels={'title':            mi.title,
@@ -570,6 +575,7 @@ def Source_List(params):
         u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
         u += '&url=%s'%urllib.quote_plus(s_url)
         u += '&img=%s'%urllib.quote_plus(img)
+        u += '&par_url=%s'%urllib.quote_plus(url)
         u += '&vtype=%s'%urllib.quote_plus('RV')
         try:
             i.setInfo(type='video', infoLabels={'title':            mi.title,
@@ -625,10 +631,11 @@ def Genre_List(params):
 def PLAY(params):
     try:
         # -- parameters
-        url  = urllib.unquote_plus(params['url'])
-        img  = urllib.unquote_plus(params['img'])
-        name = urllib.unquote_plus(params['name'])
+        url   = urllib.unquote_plus(params['url'])
+        img   = urllib.unquote_plus(params['img'])
+        name  = urllib.unquote_plus(params['name'])
         vtype = urllib.unquote_plus(params['vtype'])
+        ref   = urllib.unquote_plus(params['par_url'])
 
         if url == '*':
             return False
@@ -637,9 +644,21 @@ def PLAY(params):
         # -- get VKontakte video url
         if vtype == 'VK':
             url = url.replace('vkontakte.ru', 'vk.com')
+            html = get_HTML(url, None, ref)
 
-            html = get_HTML(url)
             soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+            for rec in soup.findAll('script', {'type':'text/javascript'}):
+                if 'video_host' in rec.text:
+                    for r in re.compile('var (.+?) = \'(.+?)\';').findall(html):
+                        if r[0] == 'video_host':
+                            video_host = r[1].replace('userapi', 'vk')
+                        if r[0] == 'video_uid':
+                            video_uid = r[1]
+                        if r[0] == 'video_vtag':
+                            video_vtag = r[1]
+            video = '%s/u%s/videos/%s.720.mp4'%(video_host, video_uid, video_vtag)
+
             for rec in soup.findAll('param', {'name':'flashvars'}):
                 for s in rec['value'].split('&'):
                     if s.split('=',1)[0] == 'uid':
@@ -652,14 +671,13 @@ def PLAY(params):
                         vid = s.split('=',1)[1]
                     if s.split('=',1)[0] == 'oid':
                         oid = s.split('=',1)[1]
-                video = host+'/u'+uid+'/videos/'+vtag+'.720.mp4'
 
             url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
             ref = soup.find('param',{'name':'movie'})['value']
             html = get_HTML(url, None, ref)
 
         # -- play video
-        i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
+        i = xbmcgui.ListItem(name, video, thumbnailImage=img) #path = urllib.unquote(video)
         xbmc.Player().play(video, i)
     except:
         pass

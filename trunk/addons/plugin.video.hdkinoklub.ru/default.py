@@ -498,41 +498,57 @@ def Genre_List(params):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    # -- parameters
-    url  = urllib.unquote_plus(params['url'])
-    img  = urllib.unquote_plus(params['img'])
-    name = urllib.unquote_plus(params['name'])
-    vtype = urllib.unquote_plus(params['vtype'])
+    try:
+        # -- parameters
+        url   = urllib.unquote_plus(params['url'])
+        img   = urllib.unquote_plus(params['img'])
+        name  = urllib.unquote_plus(params['name'])
+        vtype = urllib.unquote_plus(params['vtype'])
 
-    if url == '*':
-        return False
+        if url == '*':
+            return False
 
-    video = url
-    # -- get VKontakte video url
-    if vtype == 'VK':
-        html = get_HTML(url)
-        soup = BeautifulSoup(html, fromEncoding="windows-1251")
-        for rec in soup.findAll('param', {'name':'flashvars'}):
-            for s in rec['value'].split('&'):
-                if s.split('=',1)[0] == 'uid':
-                    uid = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'vtag':
-                    vtag = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'host':
-                    host = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'vid':
-                    vid = s.split('=',1)[1]
-                if s.split('=',1)[0] == 'oid':
-                    oid = s.split('=',1)[1]
-            video = host+'/u'+uid+'/videos/'+vtag+'.720.mp4'
+        video = url
+        # -- get VKontakte video url
+        if vtype == 'VK':
+            url = url.replace('vkontakte.ru', 'vk.com')
+            html = get_HTML(url)
 
-        url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
-        ref = soup.find('param',{'name':'movie'})['value']
-        html = get_HTML(url, None, ref)
+            soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    # -- play video
-    i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
-    xbmc.Player().play(video, i)
+            for rec in soup.findAll('script', {'type':'text/javascript'}):
+                if 'video_host' in rec.text:
+                    for r in re.compile('var (.+?) = \'(.+?)\';').findall(html):
+                        if r[0] == 'video_host':
+                            video_host = r[1].replace('userapi', 'vk')
+                        if r[0] == 'video_uid':
+                            video_uid = r[1]
+                        if r[0] == 'video_vtag':
+                            video_vtag = r[1]
+            video = '%s/u%s/videos/%s.720.mp4'%(video_host, video_uid, video_vtag)
+
+            for rec in soup.findAll('param', {'name':'flashvars'}):
+                for s in rec['value'].split('&'):
+                    if s.split('=',1)[0] == 'uid':
+                        uid = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'vtag':
+                        vtag = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'host':
+                        host = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'vid':
+                        vid = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'oid':
+                        oid = s.split('=',1)[1]
+
+            url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
+            ref = soup.find('param',{'name':'movie'})['value']
+            html = get_HTML(url, None, ref)
+
+        # -- play video
+        i = xbmcgui.ListItem(name, video, thumbnailImage=img) #path = urllib.unquote(video)
+        xbmc.Player().play(video, i)
+    except:
+        pass
 
 #-------------------------------------------------------------------------------
 
