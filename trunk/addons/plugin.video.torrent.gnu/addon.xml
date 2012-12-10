@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.torrent.gnu"
        name="torrent.gnu"
-       version="0.2.2"
+       version="0.2.3"
        provider-name="nuismons">
     <requires>
 		<import addon="script.module.torrent.ts"/>
