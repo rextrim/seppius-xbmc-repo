@@ -181,7 +181,13 @@ def tpl(params):
 		if re.search('.+.torrent', fname):
 			torrlink='a'
 			print fname.encode('utf-8')
-			li = xbmcgui.ListItem(fname)
+			img=None
+			timg=ktv_folder + fname.replace('.torrent','')+'.png'
+			if os.path.isfile(timg): img=timg
+			timg=ktv_folder + fname.replace('.torrent','')+'.jpg'
+			if os.path.isfile(timg): img=timg
+			if img: li = xbmcgui.ListItem(fname.replace('.torrent',''),img,img)
+			else: li = xbmcgui.ListItem(fname.replace('.torrent',''))
 			uri = construct_request({
 				'func': 'play_file',
 				'file':fname.encode('utf-8')
@@ -202,6 +208,7 @@ def play_file(params):
 	out=TSplayer.load_torrent(torr_link,'RAW',port=aceport)
 	if out=='Ok':
 		for k,v in TSplayer.files.iteritems():
+
 			li = xbmcgui.ListItem(urllib.unquote(k))
 			uri = construct_request({
 				'torr_url': torr_link,
