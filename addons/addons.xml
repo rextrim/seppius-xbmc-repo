@@ -278,7 +278,7 @@
 
 <addon id="plugin.video.720hd.ru"
        name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]720hd.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.7"
+       version="1.0.8"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -692,7 +692,7 @@
 
 <addon id="plugin.video.hdkinoklub.ru"
        name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]hdkinoklub.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
