@@ -7,5 +7,7 @@
 	<setting id="PhantomJS_IP" type="ipaddress" label="IP адрес внешнего сервиса PhantomJS" default="127.0.0.1"/>
 	<setting id="PhantomJS_Port" type="number" label="Порт внешнего сервиса PhantomJS" default="88"/>
 	<setting label="30651" type="lsep"/> 
-	<setting id="continue_play" type="bool"  label="Играть все серии"    default="true"/>   	 
+	<setting id="continue_play" type="bool"  label="Играть все серии"    default="true"/>   	
+	<setting label="30651" type="lsep"/> 
+	<setting id="SWF_Decode" type="bool"  label="Декодировать SWF"    default="false"/>   	  
 </settings> 

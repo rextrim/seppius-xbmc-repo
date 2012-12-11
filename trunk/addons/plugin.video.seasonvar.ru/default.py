@@ -21,13 +21,10 @@
 # */
 import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
-#from urlparse
+
 import urlparse
-
 import demjson3 as json
-
 import subprocess, ConfigParser
-
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 Addon = xbmcaddon.Addon(id='plugin.video.seasonvar.ru')
@@ -544,6 +541,9 @@ def PLAY(params):
         html = f.read()
         html = Decoder.Decode(html)
 
+        if html == '':
+            return False
+
         s_num = 0
         s_url = ''
         is_found = False
@@ -628,7 +628,10 @@ def Get_PlayList(soup, parent_url):
     swf_player  = plcode.split(',')[1]
     plcode      = plcode.split(',')[0]
 
-    url = Decoder.Decode(plcode)
+    url = Decoder.Decode(plcode, swf_player)
+
+    if url == '':
+        return False
 
     if url.find('seasonvar.ru') == -1:
         url = 'http://seasonvar.ru' + url

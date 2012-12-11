@@ -1,5 +1,6 @@
 ﻿import re, os, urllib, urllib2, sys, urlparse
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+import subprocess
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
@@ -9,6 +10,7 @@ class XPpod():
     def __init__(self, Addon):
         self.Addon = Addon
         self.url = []
+        self.path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'swf')
 
     #---------- get web page -------------------------------------------------------
     def get_HTML(self, url, post = None, ref = None):
@@ -39,7 +41,8 @@ class XPpod():
     #-------------------------------------------------------------------------------
     # Юppod decoder (for seasonvar.ru)
     #-------------------------------------------------------------------------------
-    def Decode(self, param):
+    def Decode(self, param, swf_player = None):
+        is_OK = True
         #-- get hash keys
         f = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'r')
         hash_key = f.read()
@@ -47,6 +50,7 @@ class XPpod():
         rez = self.Decode_String(param, hash_key)
 
         if not 'html://' in rez and not '/list.xml' in rez and not 'playlist' in rez and not '/playls/' in rez:
+            is_OK = False
             #-- hash servers
             url = 'http://justpaste.it/xbmc_list'
             html = self.get_HTML(url)
@@ -74,9 +78,29 @@ class XPpod():
                     swf.write(hash_list[0]+'\n'+hash_list[1])
                     swf.close()
                     #-- exit from search
+                    is_OK = True
                     break
+
+        if is_OK == False and self.Addon.getSetting('SWF_Decode') == 'true' and os.path.isdir(self.path) == True:
+            hash_list = self.Get_SWF_Hash(swf_player)
+            #-- assemble hash key
+            hash_key = hash_list[0]+'\n'+hash_list[1]
+            rez = self.Decode_String(param, hash_key)
+
+            if 'html:' in rez or '.xml' in rez or 'playlist' in rez or '/playls/' in rez:
+                #-- save new hash keys
+                swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
+                swf.write(hash_list[0]+'\n'+hash_list[1])
+                swf.close()
+                #-- exit from search
+                is_OK = True
+
+        if is_OK == False:
+            rez = ''
+
         return rez
 
+    #---------------------------------------------------------------------------
     def Decode_String(self, param, hash_key):
         try:
             #-- define variables
@@ -123,3 +147,77 @@ class XPpod():
             loc_2 = ''
 
         return loc_2
+
+    #---------------------------------------------------------------------------
+    def Get_SWF_Hash(self, swf_player):
+        #---- get SWF ------------------------------------------------------------------
+        url = swf_player
+        swf = open(os.path.join(self.path, 'player.swf'), 'wb')
+        post = None
+        code = self.get_HTML(url, post, 'http://seasonvar.ru')
+        swf.write(code)
+        swf.close()
+
+        zcode = code[0:3] #-- type of SWF compression
+
+        #---- decode SWF ---------------------------------------------------------------
+        startupinfo = None
+
+        if zcode == 'CWS':
+            if os.name == 'nt':
+                prog = '"'+os.path.join(self.path,'swfdecompress.exe"')+' "'+os.path.join(self.path,'player.swf"')
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= 1
+            else:
+                prog = [os.path.join(self.path,'swfdecompress'), os.path.join(self.path,'player.swf')]
+
+            try:
+                process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
+                process.wait()
+            except:
+                print('ERROR 0')
+
+        if os.name == 'nt':
+            prog = '"'+os.path.join(self.path,'abcexport.exe"')+' "'+os.path.join(self.path,'player.swf"')
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= 1
+        else:
+            prog = [os.path.join(self.path,'abcexport'), os.path.join(self.path,'player.swf')]
+
+        try:
+            process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
+            process.wait()
+        except:
+            print('ERROR 1')
+
+        if os.name == 'nt':
+            prog = '"'+os.path.join(self.path, 'rabcdasm.exe"')+' "'+os.path.join(self.path,'player-0.abc"')
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= 1
+        else:
+            prog = [os.path.join(self.path,'rabcdasm'), os.path.join(self.path,'player-0.abc')]
+
+        try:
+            process = subprocess.Popen(prog, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.PIPE,shell= False, startupinfo=startupinfo)
+            process.wait()
+        except:
+            print('ERROR 2')
+
+        #---- grab hash for decoder ----------------------------------------------------
+        fname = os.path.join(self.path,'player-0','com','uppod', 'Main.class.asasm')
+
+        f = open(fname, 'r')
+        code = f.read()
+        f.close
+
+        hash_list = []
+
+        for rec in re.compile('findpropstrict      QName\(PackageNamespace\(""\), "Array"\)(.+?)constructprop', re.MULTILINE|re.DOTALL).findall(code):
+            hash = ''
+            for l in rec.replace(' ','').replace('\n','').split('pushstring'):
+                if l <> '':
+                    hash += l.replace('"','')
+            if hash <> '':
+                hash_list.append(hash)
+
+        return hash_list
