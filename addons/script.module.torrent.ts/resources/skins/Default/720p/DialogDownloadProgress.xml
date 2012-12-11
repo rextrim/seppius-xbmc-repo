@@ -40,7 +40,7 @@
 				<width>550</width>
 				<height>20</height>
 				<label>инфо2</label>
-				<textcolor>grey2</textcolor>
+				<textcolor>white</textcolor>
 			</control>
 			<control type="progress" id="2004">
 				<description>progress control</description>
