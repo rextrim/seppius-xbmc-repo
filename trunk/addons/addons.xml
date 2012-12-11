@@ -1504,7 +1504,7 @@ RuTube - отличная стартовая площадка для незав�
 	</extension>
 </addon>
 
-<addon id='script.module.torrent.ts' version='0.2.9' name='TorrentStream Engine Support' provider-name='NuisMons'>
+<addon id='script.module.torrent.ts' version='0.2.10' name='TorrentStream Engine Support' provider-name='NuisMons'>
   <requires>
     <import addon='xbmc.python' version='2.0'/>
 	<import addon='script.common.plugin.cache' version='1.0.0'/>
@@ -1513,6 +1513,7 @@ RuTube - отличная стартовая площадка для незав�
   <extension point='xbmc.addon.metadata'>
     <platform>all</platform>
     <summary>TorrentStream Engine Playing</summary>
+	<description>TorrentStream Engine Playing</description>
   </extension>
   <extension point='xbmc.python.module' library='lib' />
 </addon>
