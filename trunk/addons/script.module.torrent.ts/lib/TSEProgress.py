@@ -63,7 +63,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 
 class dwprogress():
 	def __init__(self, *args, **kwargs):
-		self.ui = WTSEngine("DialogDownloadProgress.xml",addonDir)
+		self.ui = WTSEngine("ddp.xml",addonDir)
 		self.ui.show()
 	def onInit(self):
 		#self.ui = WTSEngine("DialogDownloadProgress.xml",addonDir)
