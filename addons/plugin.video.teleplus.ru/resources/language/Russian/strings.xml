@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string id="2000">Логин</string>
+	<string id="2001">Пароль</string>
+	<string id="2002">Ошибка авторизации</string>
+	<string id="2003">Пожалуйста проверьте правильность имени пользователя и пароля.</string>
+	<string id="2004">Абонемент истек</string>
+	<string id="2005">Необходимо продлить абонемент</string>
+</strings>
+
