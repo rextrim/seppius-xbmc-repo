@@ -41,7 +41,7 @@ class XPpod():
     #-------------------------------------------------------------------------------
     # Юppod decoder (for seasonvar.ru)
     #-------------------------------------------------------------------------------
-    def Decode(self, param, swf_player = None):
+    def Decode(self, param, swf_player = None, page_url = None):
         is_OK = True
         #-- get hash keys
         f = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'r')
@@ -51,6 +51,7 @@ class XPpod():
 
         if not 'html://' in rez and not '/list.xml' in rez and not 'playlist' in rez and not '/playls/' in rez:
             is_OK = False
+        '''
             #-- hash servers
             url = 'http://justpaste.it/xbmc_list'
             html = self.get_HTML(url)
@@ -80,20 +81,40 @@ class XPpod():
                     #-- exit from search
                     is_OK = True
                     break
+        '''
+        if is_OK == False and self.Addon.getSetting('SWF_Decode') == 'true':
+            if self.Addon.getSetting('External_PhantomJS') == 'true':
+                url = 'http://'+self.Addon.getSetting('PhantomJS_IP')+':'+self.Addon.getSetting('PhantomJS_Port')
+                values = {'swf_url' :	page_url}
+                post = urllib.urlencode(values)
+                try:
+                    hash_key = self.get_HTML(url, post)
+                except:
+                    hash_key = self.get_HTML(url, post)
 
-        if is_OK == False and self.Addon.getSetting('SWF_Decode') == 'true' and os.path.isdir(self.path) == True:
-            hash_list = self.Get_SWF_Hash(swf_player)
-            #-- assemble hash key
-            hash_key = hash_list[0]+'\n'+hash_list[1]
-            rez = self.Decode_String(param, hash_key)
+                rez = self.Decode_String(param, hash_key)
 
-            if 'html:' in rez or '.xml' in rez or 'playlist' in rez or '/playls/' in rez:
-                #-- save new hash keys
-                swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
-                swf.write(hash_list[0]+'\n'+hash_list[1])
-                swf.close()
-                #-- exit from search
-                is_OK = True
+                if 'html:' in rez or '.xml' in rez or 'playlist' in rez or '/playls/' in rez:
+                    #-- save new hash keys
+                    swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
+                    swf.write(hash_key)
+                    swf.close()
+                    #-- exit from search
+                    is_OK = True
+
+            elif os.path.isdir(self.path) == True:
+                hash_list = self.Get_SWF_Hash(swf_player)
+                #-- assemble hash key
+                hash_key = hash_list[0]+'\n'+hash_list[1]
+                rez = self.Decode_String(param, hash_key)
+
+                if 'html:' in rez or '.xml' in rez or 'playlist' in rez or '/playls/' in rez:
+                    #-- save new hash keys
+                    swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
+                    swf.write(hash_list[0]+'\n'+hash_list[1])
+                    swf.close()
+                    #-- exit from search
+                    is_OK = True
 
         if is_OK == False:
             rez = ''
