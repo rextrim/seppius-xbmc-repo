@@ -1268,7 +1268,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.torrent.gnu"
        name="torrent.gnu"
-       version="0.2.4"
+       version="0.2.5"
        provider-name="nuismons">
     <requires>
 		<import addon="script.module.torrent.ts"/>
@@ -1543,7 +1543,7 @@ RuTube - отличная стартовая площадка для незав�
 	</extension>
 </addon>
 
-<addon id='script.module.torrent.ts' version='0.2.23' name='TorrentStream Engine Support' provider-name='NuisMons'>
+<addon id='script.module.torrent.ts' version='0.2.24' name='TorrentStream Engine Support' provider-name='NuisMons'>
   <requires>
     <import addon='xbmc.python' version='2.0'/>
   </requires>

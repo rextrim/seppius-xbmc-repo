@@ -130,8 +130,11 @@ class TSengine(object):
 		self.files={}
 		self.dialog.updater(89)
 		if self.file_count>1:
+			#print self.filelist
 			flist=json.loads(self.filelist)
+			#print flist
 			for list in flist['files']:
+				#print list
 				self.files[urllib.unquote_plus(urllib.quote(list[0]))]=list[1]
 		elif self.file_count==1:
 			flist=json.loads(self.filelist)
@@ -279,11 +282,12 @@ class _TSpull(threading.Thread):
 		self.last_com=None			#Последняя команда от ТССервера
 		self.got_url=None			#Будет ссылка на файл после буфферизации
 		self.files=None				#Список файлов в json
-		self.buffer=50000000			#размер буффера для приема нужен большой, если файлов много
+		self.buffer=5000000			#размер буффера для приема нужен большой, если файлов много
 		self.count=None
 		self.state=''
 		self.label=''
 		self.progress=0
+		self.filestemp=None
 	def run(self):
 		while self.active:
 			try:
@@ -293,24 +297,35 @@ class _TSpull(threading.Thread):
 				self.last_com = self._com_received(self.last_received)
 				
 				if self.last_com=='START': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
-				if self.last_com=='PLAY': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
-				if self.last_com=='LOADRESP': 
+				elif self.last_com=='PLAY': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
+				elif self.last_com=='STATUS': pass
+				elif self.last_com=='STATE': pass
+				elif self.last_com=='LOADRESP': 
 					fil = self.last_received
 					ll= fil[fil.find('{'):len(fil)]
-					self.files=ll
+					self.filestemp=ll
 					#!!!!!!!!запихать файлы в {file:ind}
 					#print self.files
+					
+				else: 
+					self.filestemp=self.filestemp+	self.last_received	
+					#print self.files
+				if self.filestemp:
+					#print self.filestemp.split('\n')[0]
 					try:
-						json_files=json.loads(ll)
+						json_files=json.loads(self.filestemp.split('\n')[0])
+						aa=json_files['infohash']
+						#print aa
 						if json_files['status']==2:
 							self.count=len(json_files['files'])
 						if json_files['status']==1:
 							self.count=1
 						if json_files['status']==0:
 							self.count=None
+						self.files=self.filestemp.split('\n')[0]
 					except:
 						self.count=None
-						
+						self.files=None
 			except:
 				pass
 		xbmc.sleep(300)
