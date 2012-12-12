@@ -180,7 +180,7 @@ def tpl(params):
 	for fname in dirList:
 		if re.search('.+.torrent', fname):
 			torrlink='a'
-			print fname.encode('utf-8')
+			#print fname.encode('utf-8')
 			img=None
 			timg=ktv_folder + fname.replace('.torrent','')+'.png'
 			if os.path.isfile(timg): img=timg
@@ -203,7 +203,7 @@ def play_file(params):
 	buf=f.read()
 	f.close
 	torr_link=base64.b64encode(buf)
-	
+	xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
 	TSplayer=tsengine()
 	out=TSplayer.load_torrent(torr_link,'RAW',port=aceport)
 	if out=='Ok':
