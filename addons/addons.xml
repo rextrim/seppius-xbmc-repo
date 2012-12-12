@@ -1268,10 +1268,11 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.torrent.gnu"
        name="torrent.gnu"
-       version="0.2.3"
+       version="0.2.4"
        provider-name="nuismons">
     <requires>
 		<import addon="script.module.torrent.ts"/>
+		<import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>
