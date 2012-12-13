@@ -646,7 +646,7 @@
 
 <addon id="plugin.video.galileo-online.ru"
        name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-online.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
