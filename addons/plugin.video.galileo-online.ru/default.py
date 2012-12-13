@@ -303,6 +303,9 @@ def PLAY(params):
     # -- get VKontakte video url
     video = VKontakte(url)
 
+    if video == '':
+        return False
+
     # -- play video
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
@@ -310,7 +313,7 @@ def PLAY(params):
 #-------------------------------------------------------------------------------
 def VKontakte(url):
     url = url.replace('vkontakte.ru', 'vk.com')
-
+    host = ''
     #-- get VKontakte parameters
     html = get_HTML(url)
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -337,13 +340,21 @@ def VKontakte(url):
             if s.split('=',1)[0] == 'hd_def':
                 hd_def = s.split('=',1)[1]
 
+    if host == '':
+        return ''
+
+    if host[:5] != 'http:':
+        host = 'http://'+host
+    if host[-1:] != '/':
+        host += '/'
+
     #-- build video link
     if int(no_flv) == 0:            #-- FLV link
         rez = "240"
         if int(uid) <= 0:
-            video = 'http://'+host+"/assets/videos/" + vtag + "" + vkid + ".vk.flv"
+            video = host+"assets/video/" + vtag + "" + vkid + ".vk.flv"
         else:
-            video = 'http://'+host+ "/u" + uid + "/video/" + vtag + ".flv";
+            video = host+ "u" + uid + "/videos/" + vtag + ".flv";
     else:                           #-- MP4
         #-- define resolution
         if int(hd) == 1:
@@ -356,7 +367,7 @@ def VKontakte(url):
             rez = "240"
 
         #-- build link
-        video = host+ "/u" + uid + "/video/" + vtag + "." + rez + ".mp4"
+        video = '%s/u%s/videos/%s.%s.mp4'%(host, uid, vtag, rez)
 
     #-- initiate video stream
     url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality='+rez
