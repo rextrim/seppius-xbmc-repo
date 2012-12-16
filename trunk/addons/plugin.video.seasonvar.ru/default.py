@@ -30,7 +30,7 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 Addon = xbmcaddon.Addon(id='plugin.video.seasonvar.ru')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
-fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'cookies.txt'))
+fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'pl_cookies.txt'))
 
 # load XML library
 lib_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib')
@@ -64,12 +64,12 @@ def get_HTML(url, post = None, ref = None):
     request.add_header('Referer',             ref)
 
     try:
-        f = urllib2.urlopen(request)
+        f = urllib2.urlopen(request, timeout=360)
     except IOError, e:
         if hasattr(e, 'reason'):
-           print 'We failed to reach a server.'
+           print 'We failed to reach a server.'+str(e.reason)
         elif hasattr(e, 'code'):
-           print 'The server couldn\'t fulfill the request.'
+           print 'The server couldn\'t fulfill the request.'+str(e.code)
 
     html = f.read()
 
@@ -628,7 +628,7 @@ def Get_PlayList(soup, parent_url):
     swf_player  = plcode.split(',')[1]
     plcode      = plcode.split(',')[0]
 
-    url = Decoder.Decode(plcode, swf_player, parent_url)
+    url = Decoder.Decode(plcode, swf_player, parent_url, cj=cj)
 
     if url == '':
         return False
@@ -667,23 +667,15 @@ def Initialize():
     if Addon.getSetting('External_PhantomJS') == 'true':
         url = 'http://'+Addon.getSetting('PhantomJS_IP')+':'+Addon.getSetting('PhantomJS_Port')
         try:
-            fcookie = get_HTML(url)
+            str = get_HTML(url)
         except:
-            fcookie = get_HTML(url)
-        f = open(os.path.join(Addon.getAddonInfo('path'),'cookie.txt'), 'w')
-        f.write(fcookie)
+            str = get_HTML(url)
+        f = open(os.path.join(Addon.getAddonInfo('path'),'ext_cookie.txt'), 'w')
+        f.write(str)
         f.close()
 
         #-- load cookies
-        group = ''
-        for r in fcookie.split('\n'):
-            if group == '' and r != '':
-                group = r
-            elif r != '':
-                ck = cookielib.Cookie(version=0, name=r.split('=',1)[0], value=r.split('=',1)[1], port=None, port_specified=False, domain=group.replace('[','').replace(']',''), domain_specified=False, domain_initial_dot=False, path='/', path_specified=True, secure=False, expires=None, discard=True, comment=None, comment_url=None, rest={'HttpOnly': None}, rfc2109=False)
-                cj.set_cookie(ck)
-            else:
-                group = ''
+        cj.load(os.path.join(Addon.getAddonInfo('path'),'ext_cookie.txt'), True, True)
         return
 
     #-- local PhantomJS service
@@ -787,9 +779,16 @@ params=get_params(sys.argv[2])
 
 # get cookies from last session
 cj = cookielib.MozillaCookieJar(fcookies)
+try:
+    cj.load(fcookies, True, True)
+except:
+    pass
+
 hr  = urllib2.HTTPCookieProcessor(cj)
 opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
+
+
 
 p  = Param()
 mi = Info()
@@ -821,3 +820,4 @@ elif mode == 'EMPTY':
 elif mode == 'PLAY':
 	PLAY(params)
 
+cj.save(fcookies, True, True)

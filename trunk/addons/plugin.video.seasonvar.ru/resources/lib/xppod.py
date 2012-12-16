@@ -27,12 +27,12 @@ class XPpod():
         request.add_header('Referer',             ref)
 
         try:
-            f = urllib2.urlopen(request)
+            f = urllib2.urlopen(request, timeout=360)
         except IOError, e:
             if hasattr(e, 'reason'):
-               xbmc.log('We failed to reach a server.')
+               xbmc.log('We failed to reach a server.'+str(e.reason))
             elif hasattr(e, 'code'):
-               xbmc.log('The server couldn\'t fulfill the request.')
+               xbmc.log('The server couldn\'t fulfill the request.'+str(e.code))
 
         html = f.read()
 
@@ -41,7 +41,14 @@ class XPpod():
     #-------------------------------------------------------------------------------
     # Юppod decoder (for seasonvar.ru)
     #-------------------------------------------------------------------------------
-    def Decode(self, param, swf_player = None, page_url = None):
+    def Decode(self, param, swf_player = None, page_url = None, cj = None):
+
+        #-- load cookies
+        if cj:
+            hr  = urllib2.HTTPCookieProcessor(cj)
+            opener = urllib2.build_opener(hr)
+            urllib2.install_opener(opener)
+
         is_OK = True
         #-- get hash keys
         f = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'r')
@@ -166,6 +173,8 @@ class XPpod():
                 i = i + 4;
         except:
             loc_2 = ''
+
+        print loc_2.encode('utf-8')
 
         return loc_2
 
