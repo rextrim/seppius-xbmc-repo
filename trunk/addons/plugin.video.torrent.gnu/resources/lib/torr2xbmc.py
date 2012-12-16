@@ -95,16 +95,16 @@ def showMessage(heading, message, times = 3000, pics = addon_icon):
 		except Exception, e:
 			xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
 def rutor(params):
-	#print 'dodododo'
 	http = GET('http://www.rutor.org/browse/0/1/0/2')
-	#print http
-	out=re.findall('http://d.rutor.org/download/[0-9]+',http)
-	for filename in out:
-		#print filename
-		li = xbmcgui.ListItem(filename)
+	beautifulSoup = BeautifulSoup(http)
+	channels=beautifulSoup.findAll('tr', attrs={'class': 'gai'})
+	for it in channels:
+		link=it.find('a')['href']
+		title= it.find(href=re.compile("/torrent/.+")).string.encode('utf-8')
+		li = xbmcgui.ListItem(title)
 		uri = construct_request({
 				'func': 'play_url',
-				'file':filename
+				'file':link
 			})
 		xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmcplugin.endOfDirectory(hos)
