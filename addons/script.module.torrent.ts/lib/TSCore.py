@@ -24,7 +24,25 @@ Addon = xbmcaddon.Addon(id='script.module.torrent.ts')
 language = Addon.getLocalizedString
 addon_icon    = Addon.getAddonInfo('icon')
 import TSEProgress as progress
+prt_file=Addon.getSetting('port_path')
+aceport=62062
+try:
+	if prt_file: 
+		gf = open(prt_file, 'r')
+		aceport=int(gf.read())
+		gf.close()
+except: prt_file=None
 
+if not prt_file:
+	try:
+		fpath= os.path.expanduser("~")
+		pfile= os.path.join(fpath,'AppData\Roaming\TorrentStream\engine' ,'acestream.port')
+		gf = open(pfile, 'r')
+		aceport=int(gf.read())
+		gf.close()
+		Addon.setSetting('port_path',pfile)
+		print aceport
+	except: aceport=62062
 #Надо объедениить с TSengine!!!!!!!!!
 class myPlayer(xbmc.Player):
 	def __init__( self, *args, **kwargs ):
@@ -76,7 +94,7 @@ class TSengine(object):
 		#self.dialog.create(language(1000), "")
 		self.timeout=10
 		self.mode=''
-	def load_torrent(self, torrent, mode, host='127.0.0.1', port=62062 ):
+	def load_torrent(self, torrent, mode, host='127.0.0.1', port=aceport ):
 		self.dialog = progress.dwprogress()
 		self.dialog.updater(0,language(1001))
 		self.dialog.updater(5)
