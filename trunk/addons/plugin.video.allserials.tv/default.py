@@ -77,6 +77,57 @@ def get_HTML(url, post = None, ref = None, get_url = False):
 
     return html
 
+#---------- xppod decoder ------------------------------------------------------
+def Decode(param):
+    try:
+        hk = ("0123456789WGXMHRUZID=NQVBLihbzaclmepsJxdftioYkngryTwuvihv7ec41D6GpBtXx3QJRiN5WwMf=ihngU08IuldVHosTmZz9kYL2bayE").split('ih')
+        hash_key = hk[0]+'\n'+hk[1]
+
+        #-- define variables
+        loc_3 = [0,0,0,0]
+        loc_4 = [0,0,0]
+        loc_2 = ''
+
+        #-- define hash parameters for decoding
+        dec = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+        hash1 = hash_key.split('\n')[0]
+        hash2 = hash_key.split('\n')[1]
+
+        #-- decode
+        for i in range(0, len(hash1)):
+            re1 = hash1[i]
+            re2 = hash2[i]
+
+            param = param.replace(re1, '___')
+            param = param.replace(re2, re1)
+            param = param.replace('___', re2)
+
+        i = 0
+        while i < len(param):
+            j = 0
+            while j < 4 and i+j < len(param):
+                loc_3[j] = dec.find(param[i+j])
+                j = j + 1
+
+            loc_4[0] = (loc_3[0] << 2) + ((loc_3[1] & 48) >> 4);
+            loc_4[1] = ((loc_3[1] & 15) << 4) + ((loc_3[2] & 60) >> 2);
+            loc_4[2] = ((loc_3[2] & 3) << 6) + loc_3[3];
+
+            j = 0
+            while j < 3:
+                if loc_3[j + 1] == 64:
+                    break
+
+                loc_2 += unichr(loc_4[j])
+
+                j = j + 1
+
+            i = i + 4;
+    except:
+        loc_2 = ''
+
+    return loc_2
+
 #---------- parameter/info structure -------------------------------------------
 class Param:
     url             = ''
@@ -225,8 +276,6 @@ def Movie_List(params):
             return False
     else:
         url = 'http://allserials.tv/ajax/serials/get-filter/'+par.genre+'/'+par.country+'/0/name'
-        print url
-    #'http://allserials.tv//index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
 
     #== get movie list =====================================================
     html = get_HTML(url)
@@ -239,7 +288,6 @@ def Movie_List(params):
     if par.search != '':                                #-- parsing search page
         for rec in soup.findAll('li', {'class':'search-result'}):
             surl = get_HTML(rec.find('a')['href'], None, None, True)
-            print surl
             list.append({'url'   :  surl,
                          'title' : rec.find('a').text.encode('utf-8'),
                          'img'   : 'http://allserials.tv/sites/default/files/covers/'+re.compile('serial-(.+?)-', re.MULTILINE|re.DOTALL).findall(surl)[0]+'.jpg'})
@@ -344,7 +392,6 @@ def Serial_Info(params):
 
 #---------- movie detail info --------------------------------------------------
 def Get_Movie_Info(url):
-    print url
     html = get_HTML(url)
     soup = BeautifulSoup(html, fromEncoding="utf-8")
     main_rec = soup.find('div', {'id':'main'})
@@ -379,7 +426,6 @@ def Get_Movie_Info(url):
     except:
         mi.year = '0'
 
-    print mi.year
     # directors
     try:
         mi.director = main_rec.find('div', {'class':"field field-name-field-serial-producer field-type-text field-label-inline"}).find('span', {'class':"field-item even"}).text.encode('utf-8')
@@ -528,6 +574,10 @@ def get_url(url):
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(url):
     plist = []
+
+    #-- check if playlist should be decode
+    if url[:4] != 'http':
+        url = Decode(url)
 
     html = get_HTML(url)
     pl = json.loads(html)
