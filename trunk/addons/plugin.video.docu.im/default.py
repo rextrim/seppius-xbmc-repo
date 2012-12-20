@@ -608,8 +608,10 @@ def PLAY():
 
     # -- assemble RTMP link
     video_url = par.url.split('|')[1]
-    v_quality = re.compile('\[(.+?)\]').findall(video_url)[0].split(',')
 
+    v_host = video_url[:video_url.find('/mp4:')]
+
+    v_quality = re.compile('\[(.+?)\]').findall(video_url)[0].split(',')
     v_audio = re.compile('audioIndex={(.+?)}').findall(video_url)[0]
     if v_audio[0] == ';': v_audio = v_audio[1:]
     v_audio   = v_audio.split(';')
@@ -626,7 +628,7 @@ def PLAY():
     else:
         audio_id = 0
 
-    video = 'rtmp://video.docu.im:1935/docu app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=0 live=0'%(url, v_quality[0], v_audio[0], v_auth)
+    video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=0 live=0'%(v_host, url, v_quality[0], v_audio[0], v_auth)
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
