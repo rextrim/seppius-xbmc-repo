@@ -284,6 +284,7 @@ def Movie_List(params):
             list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'].encode('utf-8'),
                          'title' : rec.find('a').text.encode('utf-8'),
                          'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
+            count = len(list)
 
     #-- add header info
     Get_Header(par, count)
@@ -631,7 +632,8 @@ def Get_PlayList(soup, parent_url):
     url = Decoder.Decode(plcode, swf_player, parent_url, cj=cj)
 
     if url == '':
-        return False
+        xbmc.log('* Failed to decode url')
+        return [],url, swf_player
 
     if url.find('seasonvar.ru') == -1:
         url = 'http://seasonvar.ru' + url
