@@ -318,6 +318,9 @@ class _TSpull(threading.Thread):
 				elif self.last_com=='PLAY': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
 				elif self.last_com=='STATUS': pass
 				elif self.last_com=='STATE': pass
+				elif self.last_com=='EVENT': pass
+				elif self.last_com=='RESUME': pass
+				elif self.last_com=='PAUSE': pass
 				elif self.last_com=='LOADRESP': 
 					fil = self.last_received
 					ll= fil[fil.find('{'):len(fil)]
@@ -325,11 +328,11 @@ class _TSpull(threading.Thread):
 					#!!!!!!!!запихать файлы в {file:ind}
 					#print self.files
 					
-				else: 
+				elif self.filestemp: 
 					self.filestemp=self.filestemp+	self.last_received	
 					#print self.files
 				if self.filestemp:
-					#print self.filestemp.split('\n')[0]
+					print self.filestemp
 					try:
 						json_files=json.loads(self.filestemp.split('\n')[0])
 						aa=json_files['infohash']
@@ -341,6 +344,7 @@ class _TSpull(threading.Thread):
 						if json_files['status']==0:
 							self.count=None
 						self.files=self.filestemp.split('\n')[0]
+						self.filestemp=None
 					except:
 						self.count=None
 						self.files=None
