@@ -34,7 +34,7 @@ addon_author  = __addon__.getAddonInfo('author')
 addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 
-ktv_folder=__addon__.getSetting('download_path')
+ktv_folder=unicode(__addon__.getSetting('download_path'),'utf-8')
 prt_file=__addon__.getSetting('port_path')
 aceport=62062
 try:
@@ -56,7 +56,7 @@ if not prt_file:
 	except: aceport=62062
 	
 while not __addon__.getSetting('download_path'): __addon__.openSettings()
-ktv_folder=__addon__.getSetting('download_path')
+ktv_folder=unicode(__addon__.getSetting('download_path'),'utf-8')
 # JSON понадобится, когда будет несколько файлов в торренте
 try:
 	import json
@@ -174,32 +174,28 @@ def mainScreen(params):
 	xbmcplugin.endOfDirectory(hos)
 from urllib import unquote, quote, quote_plus
 def tpl(params):
-	path=ktv_folder
-	dirList=os.listdir(unicode(path))
-	#print os.listdir(unicode(path, encoding='cp1252'))
+	dirList=os.listdir(ktv_folder)
+	#print os.listdir(ktv_folder)
 	for fname in dirList:
-		if re.search('.+.torrent', fname):
-			torrlink='a'
+		if re.search(u'.+.torrent', fname):
 			#print fname.encode('utf-8')
 			img=None
-			timg=ktv_folder + fname.replace('.torrent','')+'.png'
+			timg=ktv_folder + fname.replace(u'.torrent',u'')+u'.png'
 			if os.path.isfile(timg): img=timg
-			timg=ktv_folder + fname.replace('.torrent','')+'.jpg'
+			timg=ktv_folder + fname.replace(u'.torrent','')+u'.jpg'
 			if os.path.isfile(timg): img=timg
-			if img: li = xbmcgui.ListItem(fname.replace('.torrent',''),img,img)
-			else: li = xbmcgui.ListItem(fname.replace('.torrent',''))
+			if img: li = xbmcgui.ListItem(fname.replace(u'.torrent',u''),img,img)
+			else: li = xbmcgui.ListItem(fname.replace(u'.torrent',u''))
 			uri = construct_request({
 				'func': 'play_file',
-				'file':fname.encode('utf-8')
+				'file': (ktv_folder + fname).encode('utf-8')
 			})
 			xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmcplugin.endOfDirectory(hos)
 
 def play_file(params):
 	#получаем содержимое файла в base64
-	filename=ktv_folder + str(params['file'])
-	#print unicode(filename)
-	f = open((filename.decode('utf-8')), 'rb')
+	f = open(params['file'].decode('utf-8'), 'rb')
 	buf=f.read()
 	f.close
 	torr_link=base64.b64encode(buf)
