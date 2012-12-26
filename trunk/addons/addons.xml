@@ -235,6 +235,26 @@
   </extension>
 </addon>
 
+<addon id="plugin.audio.tracksflow" name="TracksFlow" version="0.1" provider-name="Dmitry Khrysev">
+  <requires>
+    <import addon="xbmc.python" version="2.0"/>
+    <import addon="script.module.xbmcswift2" version="1.1.1"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <platform>all</platform>
+    <summary>TracksFlow.com is a single spot connection to everything that relates to music.</summary>
+    <description>TracksFlow.com is a single spot connection to everything that relates to music.
+Audio sources are
+* Last.fm
+* Discogs
+* Deezer
+* Junodownload.com</description>
+  </extension>
+</addon>
+
 <addon id="plugin.image.demotivators.to" name="demotivators.to" version="0.0.7"
        provider-name="NuisMons">
   <requires>
