@@ -27,12 +27,64 @@ plugin = Plugin()
 
 @plugin.route('/')
 def index():
-    menu = [{
-        'label': '[My Playlists]',
-        'path': plugin.url_for('my_playlists')
-    }]
-    items = top_playlists('0')
-    return menu + items
+    if not plugin.get_setting('Login'):
+        plugin.notify('Enter Login and Password')
+        plugin.addon.openSettings()
+    else:
+        menu = [
+            {
+                'label': '[Search]',
+                'path': plugin.url_for('search_dialog')
+            },
+            {
+                'label': '[My Playlists]',
+                'path': plugin.url_for('my_playlists')
+            }
+        ]
+        items = top_playlists('0')
+        return menu + items
+
+@plugin.route('/search_dialog/')
+def search_dialog():
+    term = plugin.keyboard(heading='Search')
+    data = getApi().search(term, 'all')
+    return [
+        {
+            'label': '[Tracks: %s]' % data['tracksCount'],
+            'path': plugin.url_for('search', term=term, type='tracks', page='0')
+        },
+        {
+            'label': '[Mix\'s: %s]' % data['mixesCount'],
+            'path': plugin.url_for('search', term=term, type='mixes', page='0')
+        },
+        #{
+        #    'label': '[Artists: %s]' % data['artistsCount'],
+        #    'path': plugin.url_for('search', term=term, type='artists', page='0')
+        #},
+        #{
+        #    'label': '[Albums: %s]' % data['albumsCount'],
+        #    'path': plugin.url_for('search', term=term, type='albums', page='0')
+        #},
+        {
+            'label': '[Playlists: %s]' % data['playlistsCount'],
+            'path': plugin.url_for('search', term=term, type='playlists', page='0')
+        },
+    ]
+
+@plugin.route('/search/<type>/<term>/<page>/')
+def search(type, term, page = 0):
+    data = getApi().search(term, type, page, plugin.get_setting('Items per page'))
+    items = []
+    if type == 'tracks' or type == 'mixes':
+        items = processTracksList(data[type])
+    elif type == 'playlists':
+        items = processPlaylists(data[type])
+    item = {
+        'label': '[Next page >]',
+        'path': plugin.url_for('search', term=term, type=type, page = str(int(page) + 1))
+    }
+    items.append(item)
+    return items
 
 @plugin.route('/top_playlists/<page>/')
 def top_playlists(page = 0):
@@ -54,7 +106,10 @@ def processPlaylists(playlists):
     items = []
     for playlist in playlists:
         item = ListItem()
-        item.set_label(playlist['name'])
+        title = playlist['name']
+        if plugin.get_setting('Show owner') == 'true':
+            title += ' @' + playlist['user']['login']
+        item.set_label(title)
         item.set_thumbnail(playlist['images']['large'])
         item.set_path(plugin.url_for('playlist', playlist_id = str(playlist['playlistId'])))
         item.set_info('music', {
@@ -67,11 +122,17 @@ def processPlaylists(playlists):
 @plugin.route('/playlist/<playlist_id>/')
 def playlist(playlist_id):
     playlist = getApi().getPlaylist(playlist_id)
+    return processTracksList(playlist['content'])
+
+def processTracksList(tracks):
     items = []
-    for track in playlist['content']:
+    for track in tracks:
         item = ListItem()
         item.set_label('%s - %s' % (track['artistName'], track['trackName']))
-        item.set_thumbnail(track['imageLarge'])
+        try:
+            item.set_thumbnail(track['imageLarge'])
+        except:
+            pass
         item.set_path(plugin.url_for('play',
             artist = track['artistName'].encode('utf-8'),
             track = track['trackName'].encode('utf-8'))
@@ -88,12 +149,13 @@ def playlist(playlist_id):
             pass
 
         # Support Track Downloading
-        item.add_context_menu_items([(
-            plugin.get_string(30007),
-            'XBMC.RunPlugin(' + plugin.url_for('download',
-                artist = track['artistName'].encode('utf-8'),
-                track = track['trackName'].encode('utf-8')) + ')'
-        )])
+        if plugin.get_setting('Download Path') != '':
+            item.add_context_menu_items([(
+                plugin.get_string(30007),
+                'XBMC.RunPlugin(' + plugin.url_for('download',
+                    artist = track['artistName'].encode('utf-8'),
+                    track = track['trackName'].encode('utf-8')) + ')'
+                )])
 
         items.append(item)
     return items
@@ -101,6 +163,7 @@ def playlist(playlist_id):
 @plugin.route('/play/<artist>/<track>/')
 def play(artist, track):
     data = getTrack(artist, track)
+    print data
     item = ListItem()
     item.set_label('%s - %s' % (artist, track))
     item.set_path(data['url'])
