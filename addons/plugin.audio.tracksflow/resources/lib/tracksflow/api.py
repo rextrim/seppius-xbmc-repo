@@ -28,7 +28,8 @@ class TracksFlow:
         'top_playlists': '/api/common/topplaylists',
         'my_playlists': '/api/common/playlists',
         'playlist': '/api/common/playlist',
-        'search': '/api/search/source',
+        'search_track': '/api/search/source',
+        'search': '/api/search',
         'auth': '/api/common/auth'
     }
     DEVICE_TYPE = 'website'
@@ -55,7 +56,7 @@ class TracksFlow:
         return json.loads(data)
 
     def getTrack(self, artist, track):
-        data = self.GET('search', {
+        data = self.GET('search_track', {
             'artist': artist,
             'title': track
         })
@@ -69,6 +70,16 @@ class TracksFlow:
             'email': username,
             'login': username,
             'password': passHash.hexdigest()
+        })
+        return json.loads(data)
+
+    def search(self, term, type, page = 0, pageSize = 25):
+        data = self.GET('search', {
+            'id': term,
+            'query': term,
+            'section': type,
+            'page': str(page),
+            'pageSize': str(pageSize)
         })
         return json.loads(data)
 
