@@ -120,18 +120,30 @@ def MAIN():
 		dialog.ok( __language__(2004), __language__(2005))
 		return False
 
-	arr = re.compile('{(.+?);(.+?);(.+?)}').findall(content)
+	arr = re.compile('{(.+?);(.+?);(.+?);(.+?);(.+?);(.+?)}').findall(content)
 	if len(arr) > 0:
 
-		for key, name, img in arr:
+		for key, name, img, year, country, about in arr:
 
 			name = strip_html(name).decode('windows-1251')
 
 			img = 'http://teleplus.ru' + img
 
+			url = sys.argv[0] + '?key=' + key
+
 			item = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
 
-			url = sys.argv[0] + '?key=' + key
+			year = strip_html(year).decode('windows-1251')
+
+			country = strip_html(country).decode('windows-1251')
+
+			about = strip_html(about).decode('windows-1251')
+
+			if about != "-":
+
+				item.setInfo(type='video', infoLabels={ 'title': name, 'year': int(year), 'country': country, 'plot': about} )
+
+				item.setProperty('fanart_image', img)
 
 			xbmcplugin.addDirectoryItem(handle, url, item, True)
 
