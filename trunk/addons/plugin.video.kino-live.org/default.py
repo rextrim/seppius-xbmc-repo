@@ -159,12 +159,6 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-    li = xbmcgui.ListItem('[Поиск]')
-    uri = construct_request({
-    'mode': 'runSearch'
-    })
-    xbmcplugin.addDirectoryItem(h, uri, li, True)
-
     readCategory({
     'href': httpSiteUrl + '/lastnews/'
     });
@@ -194,7 +188,12 @@ def readCategory(params, postParams=None):
             if titleContainer == None:
                 titleContainer = data.findPrevious('h1')
             href = titleContainer.find('a')
-            titleText = href.text.encode('utf-8', 'cp1251')
+            if href is None:
+                titleText = titleContainer.text
+                href = data.findNextSibling('div', 'more').find('a')
+            else:
+                titleText = href.text
+            titleText = titleText.encode('utf-8', 'cp1251')
 
             link = data.findNextSibling('div', 'more').find('a')
             href = link['href']
