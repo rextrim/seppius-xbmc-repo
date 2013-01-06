@@ -238,18 +238,23 @@ def OpenPage(plugin, num):
 
 	playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
 	playlist.clear()
+	
+	if num > 0:
+		num = num-1
+	else:
+		num = len(Lgl)-1
 	for i in range(num,len(Lgl)):
 		thumb2 = gettbn(formating(Lgl[i]['name']))
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
-		playlist.add(url=Lgl[i]['url'], listitem=item, index=-1)
-	xbmc.Player(xbmc.PLAYER_CORE_AUTO).play(playlist)#(url, item) 
-
-	for i in range(0,num):
+		playlist.add(url=Lgl[i]['url'], listitem=item)
+	for i in range(num):
 		thumb2 = gettbn(formating(Lgl[i]['name']))
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
-		playlist.add(url=Lgl[i]['url'], listitem=item, index=-1)
+		playlist.add(url=Lgl[i]['url'], listitem=item)
+	myPlayer=xbmc.PLAYER_CORE_AUTO
+	xbmc.Player(myPlayer).play(playlist)#(url, item) 
 		
 def ShowChannelsList(plugin, mode = 'TV'):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
@@ -327,9 +332,9 @@ def ShowChannelsList(plugin, mode = 'TV'):
 			uri2 = sys.argv[0] + '?mode=Favourite&channel=%s' % (channel['id'])
 			
 		item.addContextMenuItems(popup, True)
-		
+		index=channels.index(channel)
 		purl = sys.argv[0] + '?mode=OpenPage'\
-			+ '&num=' + urllib.quote_plus(str(channels.index(channel)-1))
+			+ '&num=' + urllib.quote_plus(str(index))
 			
 		xbmcplugin.addDirectoryItem(handle,purl,item, False, total_items)
 		
