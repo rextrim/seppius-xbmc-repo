@@ -21,3 +21,5 @@ Fast channel switching during Live-Tv via the PageUp/Down button
 [B]0.8.0[/B]
 New channel icons
 AutoUpade from seppius-xbmc-repo added
+[B]0.8.1[/B]
+New channel icons
