@@ -1,0 +1,23 @@
+[B]0.1[/B]
+Initial release
+[B]0.2[/B]
+Icons added
+[B]0.3[/B]
+Current program added (Start time, End time, Played in percent, name of programm)
+Archive added
+More icons added
+[B]0.4[/B]
+Error handling if problems occur during EPG download 
+[B]0.5[/B]
+Performance improvements due to caching current EPG results
+[B]0.6[/B]
+BugFix: If channel changes id
+[B]0.6.1[/B]
+BugFix: If EPG contains unsupported delimeters (backslash)
+[B]0.6.2[/B]
+Xperience1080 skin support
+[B]0.7.0[/B]
+Fast channel switching during Live-Tv via the PageUp/Down button
+[B]0.8.0[/B]
+New channel icons
+AutoUpade from seppius-xbmc-repo added
