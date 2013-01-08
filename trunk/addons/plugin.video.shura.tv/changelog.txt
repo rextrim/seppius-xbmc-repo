@@ -23,3 +23,7 @@ New channel icons
 AutoUpade from seppius-xbmc-repo added
 [B]0.8.1[/B]
 New channel icons
+[B]0.8.2[/B]
+PageDown problem of XBMC Video Mode fixed. Please copy the keyboard.xml from the plugin folder to your ..\xbmc\userdata\keymaps folder.
+Performance improwments when starting a chennel from chennel list
+New channel icons by DiZet

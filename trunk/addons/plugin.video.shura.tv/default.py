@@ -238,6 +238,9 @@ def OpenPage(plugin, num):
 
 	playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
 	playlist.clear()
+	myPlayer=xbmc.PLAYER_CORE_AUTO
+	
+	counter = 0
 	
 	if num > 0:
 		num = num-1
@@ -248,13 +251,23 @@ def OpenPage(plugin, num):
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
 		playlist.add(url=Lgl[i]['url'], listitem=item)
+		
+		counter = counter + 1
+		if counter == 3:
+			xbmc.Player(myPlayer).play(playlist)#(url, item) 
+			
+		
 	for i in range(num):
+		
 		thumb2 = gettbn(formating(Lgl[i]['name']))
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
 		playlist.add(url=Lgl[i]['url'], listitem=item)
-	myPlayer=xbmc.PLAYER_CORE_AUTO
-	xbmc.Player(myPlayer).play(playlist)#(url, item) 
+		counter = counter + 1
+		
+		if counter == 3:
+			xbmc.Player(myPlayer).play(playlist)#(url, item) 
+
 		
 def ShowChannelsList(plugin, mode = 'TV'):
 	refreshAlarmId = '%s_refresh_list' % PLUGIN_ID
