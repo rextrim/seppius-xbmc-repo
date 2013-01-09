@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="WINDOWS-1251"?>
-<scraper date="2012-12-26" framework="1.1">
+<scraper date="2013-01-09" framework="1.1">
 	<NfoUrl dest="3">
 		<RegExp input="$$1" output="&lt;url&gt;\1|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;" dest="3">
 			<expression noclean="1">(http://www\.kinopoisk\.ru/level/1/film/[0-9]*/)</expression>
@@ -159,8 +159,11 @@
 			</RegExp>
 			<!--Рейтинг и голоса -->
 			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
-				<RegExp input="$$1" output="\1:::\2 \3 \4" dest="2">
-					<expression>itemprop=&quot;ratingValue&quot;.+?&lt;span&gt;(.+?)&lt;/span&gt;.+?itemprop=&quot;ratingCount&quot;&gt;(?:&amp;nbsp;|[ ])*([0-9]*)(?:&amp;nbsp;|[ ])*([0-9]*)(?:&amp;nbsp;|[ ])*([0-9]*)(?:&amp;nbsp;|[ ])*&lt;</expression>
+				<RegExp input="$$1" output="\1" dest="2">
+					<expression>&lt;span class=&quot;rating_ball&quot;&gt;([0-9.]+)&lt;</expression>
+				</RegExp>
+				<RegExp input="$$1" output=":::\1" dest="2+">
+					<expression>itemprop=&quot;ratingCount&quot;&gt;([0-9.]+)&lt;</expression>
 				</RegExp>
 				<RegExp input="$$2" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
 					<expression trim="1,2">(.*):::(.*)</expression>
