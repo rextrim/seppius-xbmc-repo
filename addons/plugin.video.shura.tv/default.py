@@ -242,31 +242,20 @@ def OpenPage(plugin, num):
 	
 	counter = 0
 	
-	if num > 0:
-		num = num-1
-	else:
-		num = len(Lgl)-1
 	for i in range(num,len(Lgl)):
 		thumb2 = gettbn(formating(Lgl[i]['name']))
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
 		playlist.add(url=Lgl[i]['url'], listitem=item)
-		
-		counter = counter + 1
-		if counter == 3:
-			xbmc.Player(myPlayer).play(playlist)#(url, item) 
-			
-		
+
 	for i in range(num):
 		
 		thumb2 = gettbn(formating(Lgl[i]['name']))
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
 		playlist.add(url=Lgl[i]['url'], listitem=item)
-		counter = counter + 1
 		
-		if counter == 3:
-			xbmc.Player(myPlayer).play(playlist)#(url, item) 
+	xbmc.Player(myPlayer).play(playlist)#(url, item) 
 
 		
 def ShowChannelsList(plugin, mode = 'TV'):
@@ -329,7 +318,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 		
 		#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
 					
-		item.setProperty('IsPlayable', 'true')
+		item.setProperty('IsPlayable', 'false')
 		
 		popup = []
 		
