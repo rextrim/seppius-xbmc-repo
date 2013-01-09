@@ -29,3 +29,5 @@ Performance improwments when starting a chennel from chennel list
 New channel icons by DiZet
 [B]0.8.3[/B]
 Performance improwments when starting a chennel from chennel list. Reverted
+[B]0.8.4[/B]
+EPG support added
