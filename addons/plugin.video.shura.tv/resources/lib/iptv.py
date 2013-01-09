@@ -261,6 +261,38 @@ class shura:
 			self.getCurrentEPG(HOST, FEED)
 		return self.last_epg[str(int(FEED))]
 
+	def getWeekEPG( self, HOST, FEED):
+		host=HOST
+		feed=FEED
+		url = '%s%s/epg/week.json' % (host.split('~')[0], feed)
+
+		ua = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
+		postparams = None
+		req = urllib2.Request(url, postparams, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'text/html;charset=utf-8'})
+
+		resstream = urllib2.urlopen(req)
+		resp = resstream.read()
+		#xbmc.log('[SHURA.TV] epg resp=' + str(resp))
+		#mindex = resp.index('},{')
+		#epg1 = resp[1:mindex+1]
+		try:
+			resp2 = JSONDECODE(resp)
+		except Exception, e:
+			xbmc.log('[SHURA.TV] Error in decoding json weekEPG' + str(e))
+			resp2=None
+		else:
+			resstream.close();
+
+		#self.last_epg[str(int(FEED))]= resp2
+		#g = open(LASTEPGFILE, 'wb')
+		#try:
+			#jsave2 = JSONENCODE(self.last_epg)
+			#g.write(jsave2)
+		#except Exception, e:
+			#xbmc.log('[SHURA.TV] Error saving last epg file %s' % e)
+		#g.close()	
+		return resp2
+	
 	def getArchive( self, HOST, FEED):
 		host=HOST
 		feed=FEED
@@ -274,7 +306,8 @@ class shura:
 		resp = resstream.read()
 		resp = resp.replace('\n','')
 		resp = resp.replace('\\','')
-		resp = JSONDECODE(resp, encoding='utf8')
+		if len(resp)>0:
+			resp = JSONDECODE(resp, encoding='utf8')
 		resstream.close();
 		return resp
 		

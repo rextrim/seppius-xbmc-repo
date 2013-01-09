@@ -206,7 +206,30 @@ def ProcessSettings(plugin, params):
 
 def Archive(plugin, feed, host):
 	item=xbmcgui.ListItem('', '', '', '')
+	weekepg = PLUGIN_CORE.getWeekEPG(host, feed)
 	arch = PLUGIN_CORE.getArchive(host, feed)
+	for i in range(len(weekepg)-1,-1,-1):
+		#xbmc.log('[SHURA.TV] first archive2=' +weekepg[i]['name'].encode('utf-8'))
+		CurrentEPG = weekepg[i]['name'].encode('utf-8')
+		epg_start = 0
+		epg_end = 0
+		timerange = '-'
+		if "start_time" in weekepg[i]:
+			epg_start = datetime.datetime.fromtimestamp(weekepg[i]['start_time']).strftime('%d.%m %H:%M')
+			if "duration" in weekepg[i]:
+				epg_end = datetime.datetime.fromtimestamp(weekepg[i]['start_time'] + weekepg[i]['duration']).strftime('%H:%M')
+			timerange = '%s - %s ' % (epg_start , epg_end)
+
+		label = '%s[B] %s[/B] %s %s' % ('', '', timerange + '-'+CurrentEPG , '')
+		
+		item.setLabel(label)
+		item.setIconImage(os.path.join(addon.getAddonInfo('path'), 'resources', 'icons', 'play-stop.png'))
+		#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
+					
+		item.setProperty('IsPlayable', 'false')
+		urlArchive = '%s~%s/%s/?archive=%s' % (host.split('~')[0], PLUGIN_CORE.OTT,  feed, weekepg[i]['start_time'])
+		xbmcplugin.addDirectoryItem(handle,'',item, False, 0)	
+		
 	for archItems in arch:
 		#xbmc.log('[SHURA.TV] first archive2=' +archItems['name'].encode('utf-8'))
 		CurrentEPG = archItems['name'].encode('utf-8')
@@ -228,7 +251,6 @@ def Archive(plugin, feed, host):
 		item.setProperty('IsPlayable', 'true')
 		urlArchive = '%s~%s/%s/?archive=%s' % (host.split('~')[0], PLUGIN_CORE.OTT,  feed, archItems['start_time'])
 		xbmcplugin.addDirectoryItem(handle,urlArchive,item, False, 0)
-		
 		
 	xbmcplugin.setContent(handle, 'Movies')
 	xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
@@ -323,15 +345,15 @@ def ShowChannelsList(plugin, mode = 'TV'):
 		popup = []
 		
 		archive_text = __language__(30006)
-		if channel['archive']<>'0':
-			archive_text = __language__(30011)
-				
-			uri2 = sys.argv[0] + '?mode=Archive&channel=%s&host=%s' % (channel['id'], channel['url'])
-			popup.append((archive_text, 'XBMC.Container.Update(%s)'%uri2))
+		
+		archive_text = __language__(30011)
 			
-			popup.append((__language__(30021), 'Container.Refresh',))
-			
-			uri2 = sys.argv[0] + '?mode=Favourite&channel=%s' % (channel['id'])
+		uri2 = sys.argv[0] + '?mode=Archive&channel=%s&host=%s' % (channel['id'], channel['url'])
+		popup.append((archive_text, 'XBMC.Container.Update(%s)'%uri2))
+		
+		popup.append((__language__(30021), 'Container.Refresh',))
+		
+		uri2 = sys.argv[0] + '?mode=Favourite&channel=%s' % (channel['id'])
 			
 		item.addContextMenuItems(popup, True)
 		index=channels.index(channel)
