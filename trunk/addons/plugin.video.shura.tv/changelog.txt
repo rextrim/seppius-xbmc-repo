@@ -27,3 +27,5 @@ New channel icons
 PageDown problem of XBMC Video Mode fixed. Please copy the keyboard.xml from the plugin folder to your ..\xbmc\userdata\keymaps folder.
 Performance improwments when starting a chennel from chennel list
 New channel icons by DiZet
+[B]0.8.3[/B]
+Performance improwments when starting a chennel from chennel list. Reverted
