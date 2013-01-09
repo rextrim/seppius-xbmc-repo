@@ -159,6 +159,12 @@
 			</RegExp>
 			<!--Рейтинг и голоса -->
 			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
+				<RegExp input="$$1" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
+					<expression>IMDb: ([0-9.]+) \(([0-9\s]+)\)&lt;/div&gt;</expression>
+				</RegExp>
+				<expression>IMDB</expression>
+			</RegExp>
+			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
 				<RegExp input="$$1" output="\1" dest="2">
 					<expression>&lt;span class=&quot;rating_ball&quot;&gt;([0-9.]+)&lt;</expression>
 				</RegExp>
@@ -168,13 +174,7 @@
 				<RegExp input="$$2" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
 					<expression trim="1,2">(.*):::(.*)</expression>
 				</RegExp>
-				<expression>.+</expression>
-			</RegExp>
-			<RegExp input="$INFO[RatingSource]" output="$$2" dest="5+">
-				<RegExp input="$$1" output="&lt;rating&gt;\1&lt;/rating&gt;&lt;votes&gt;\2&lt;/votes&gt;" dest="2">
-					<expression>IMDb: ([0-9.]+) \(([0-9\s]+)\)&lt;/div&gt;</expression>
-				</RegExp>
-				<expression>IMDB</expression>
+				<expression>Kinopoisk</expression>
 			</RegExp>
 			<!--GENRE-->
 			<RegExp input="$$1" output="&lt;genre&gt;\1&lt;/genre&gt;" dest="5+">
