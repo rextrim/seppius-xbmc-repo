@@ -156,6 +156,30 @@ def Get_EPG_Date(params):
     url  = urllib.unquote_plus(params['url'])
     img = urllib.unquote_plus(params['img'])
 
+    #-- get online TV link
+    print url
+    html = get_HTML(url)
+    html = re.compile('<body>(.+?)<\/body>', re.MULTILINE|re.DOTALL).findall(html)[0]
+    soup = BeautifulSoup(html)
+
+    print html
+
+    for online in soup.find('div',{'class':'head'}).findAll("a"):
+        prg = 'http://tvisio.tv'+online['href']
+
+    name = '[COLOR FF3BB9FF]Смотреть онлайн[/COLOR]'
+
+    prg_name = '<< Смотреть онлайн >>'
+
+    i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
+    u = sys.argv[0] + '?mode=PLAY'
+    u += '&name=%s'%urllib.quote_plus(name)
+    u += '&url=%s'%urllib.quote_plus(prg)
+    u += '&prg=%s'%urllib.quote_plus(prg_name)
+    u += '&img=%s'%urllib.quote_plus(img)
+    xbmcplugin.addDirectoryItem(h, u, i, False)
+
+
     #-- get MSK time
     MSK = time.mktime(MSK_time())
     #-- fill up ETR data list
@@ -241,9 +265,10 @@ def PLAY(params):
     v_swf = swf[0]
 
     # -- assemble RTMP link ----------------------------------------------------
-    video = 'rtmp://%s/rtmp app=rtmp swfUrl=http://tvisio.tv%s pageUrl=%s playpath=%s?start=%s conn=S:%s' % (v_server, v_swf, url, v_stream, v_start, v_session)
-
-    print video
+    if name <> '<< Смотреть онлайн >>':
+        video = 'rtmp://%s/rtmp app=rtmp swfUrl=http://tvisio.tv%s pageUrl=%s playpath=%s?start=%s conn=S:%s' % (v_server, v_swf, url, v_stream, v_start, v_session)
+    else:
+        video = 'rtmp://%s/rtmp app=rtmp swfUrl=http://tvisio.tv%s pageUrl=%s playpath=%s conn=S:%s' % (v_server, v_swf, url, v_stream, v_session)
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
