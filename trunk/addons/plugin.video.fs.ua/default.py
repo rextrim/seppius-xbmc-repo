@@ -25,6 +25,7 @@ import sys
 import os
 import cookielib
 import simplejson as json
+import SimpleDownloader as downloader
 
 import xbmcplugin
 import xbmcgui
@@ -579,8 +580,6 @@ def readdir(params):
 				uri = None
 				
 				if isFolder:
-					print folderUrl
-					print folder
 					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 					li.setProperty('IsPlayable', 'false')
 
@@ -603,7 +602,8 @@ def readdir(params):
 						(
 							__language__( 40001 ), "XBMC.RunPlugin(%s)" % construct_request({
 								'mode': 'download',
-								'file_url': str(href.encode('utf-8'))
+								'file_url': str(href.encode('utf-8')),
+								'file_name': htmlEntitiesDecode(title)
 							})
 						)
 					])
@@ -627,6 +627,14 @@ def readdir(params):
 				xbmcplugin.addDirectoryItem(h, uri, li, isFolder)
 
 	xbmcplugin.endOfDirectory(h)
+
+def download(params):
+	download_params = {
+		'url': urllib.unquote_plus(params['file_url']),
+		'download_path': __settings__.getSetting('Download Path')
+	}
+	client = downloader.SimpleDownloader()
+	client.download(urllib.unquote_plus(params['file_name']), download_params)
 
 def runsearch(params):
 	skbd = xbmc.Keyboard()
@@ -730,41 +738,6 @@ def play(params):
 
 	i = xbmcgui.ListItem(path = fileUrl)
 	xbmcplugin.setResolvedUrl(h, True, i)
-
-def download(params):
-	file_url = urllib.unquote_plus(params['file_url'])
-	file_name = ''.join(file_url.split('/')[-1:])
-
-	dialog = xbmcgui.Dialog()
-	file_path = dialog.browse(0, __language__( 40002 ), 'myprograms')
-
-	if file_path:
-		try:
-			filename_complete = file_path + file_name
-			filename_incomplete = file_path + file_name + '.part'
-
-			dp = xbmcgui.DialogProgress()
-			dp.create("FS.UA",__language__( 40003 ),file_name)
-			urllib.urlretrieve(file_url,filename_incomplete,lambda nb, bs, fs, url=file_url: _progress_bar_hook(nb,bs,fs,url,dp))
-
-			os.rename(filename_incomplete, filename_complete)
-
-			showMessage(__language__( 40004 ), filename_complete, )
-		except:
-				showMessage(__language__( 40005 ), file_name, 3000)
-				if os.path.isfile(filename_incomplete):
-					os.remove(filename_incomplete)
-
-def _progress_bar_hook(numblocks, blocksize, filesize, url=None, dp=None):
-	try:
-		percent = min((numblocks*blocksize*100)/filesize, 100)
-		total = '%s (%s %s)' %(__language__( 40003 ), str(filesize/1024/1024),  __language__( 40006 ))
-		dp.update(percent,total)
-	except:
-		percent = 100
-		dp.update(percent)
-	if dp.iscanceled():
-		dp.close()
 
 def get_params(paramstring):
 	param=[]

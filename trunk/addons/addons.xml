@@ -638,12 +638,13 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.7.7"
+       version="1.7.8"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
     <import addon="script.module.beautifulsoup"/>
     <import addon="script.module.simplejson"/>
+    <import addon="script.module.simple.downloader" version="0.9.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="audio, video"
