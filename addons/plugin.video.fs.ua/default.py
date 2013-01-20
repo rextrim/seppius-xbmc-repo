@@ -522,17 +522,17 @@ def readdir(params):
 	folder = params['folder']
 
 	http = GET(folderUrl + '?ajax&folder=' + folder, httpSiteUrl)
-	if http == None: return False
+	if http is None: return False
 
 	beautifulSoup = BeautifulSoup(http)
 	mainItems = beautifulSoup.find('ul', 'filelist')
-	if mainItems == None:
+	if mainItems is None:
 		showMessage('ОШИБКА', 'No filelist', 3000)
 		return False
 
 	items = mainItems.findAll('li')
 
-	folderRegexp = re.compile('\?folder=(\d+)#')
+	folderRegexp = re.compile('(\d+)')
 	if len(items) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
 		return False
@@ -547,7 +547,7 @@ def readdir(params):
 				linkItem = item.find('a', 'link-material')
 				playLink = item.find('a', 'b-player-link')
 			
-			if linkItem != None:
+			if linkItem is not None:
 				title = ""
 				if isFolder:
 					titleB = linkItem.find('b')
@@ -563,7 +563,7 @@ def readdir(params):
 
 				useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
 				fallbackHref = linkItem['href']
-				if useFlv and playLink != None:
+				if useFlv and playLink is not None:
 					try:
 						href = httpSiteUrl + str(playLink['href'])
 					except:
@@ -571,7 +571,7 @@ def readdir(params):
 				else:
 					href = fallbackHref
 					try:
-						folder = folderRegexp.findall(href)[0]
+						folder = folderRegexp.findall(linkItem['rel'])[0]
 					except:
 						pass
 
@@ -579,6 +579,8 @@ def readdir(params):
 				uri = None
 				
 				if isFolder:
+					print folderUrl
+					print folder
 					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
 					li.setProperty('IsPlayable', 'false')
 
