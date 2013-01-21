@@ -560,6 +560,10 @@ def PLAY(params):
                     is_found = True
 
             if is_found:
+                #-- temorally fix
+                s_url = s_url.rsplit('/', 1)[0]+'/7'+s_url.rsplit('/', 1)[1]
+                #----------------
+
                 i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
                 i.setProperty('IsPlayable', 'true')
                 pl.add(s_url, i)
