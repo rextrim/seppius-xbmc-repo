@@ -355,7 +355,7 @@ Audio sources are
 
 <addon id="plugin.video.LostFilm"
        name="LostFilm"
-       version="0.0.1"
+       version="0.3.0"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -638,13 +638,13 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.7.8"
+       version="1.7.9"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
     <import addon="script.module.beautifulsoup"/>
     <import addon="script.module.simplejson"/>
-    <import addon="script.module.simple.downloader" version="0.9.1"/>
+    <import addon="script.module.simple.downloader"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="audio, video"
