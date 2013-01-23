@@ -31,3 +31,5 @@ New channel icons by DiZet
 Performance improwments when starting a chennel from chennel list. Reverted
 [B]0.8.4[/B]
 EPG support added
+[B]0.8.5[/B]
+Colored EPG items: green=archive, default=future

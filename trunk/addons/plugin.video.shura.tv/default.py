@@ -242,7 +242,7 @@ def Archive(plugin, feed, host):
 				epg_end = datetime.datetime.fromtimestamp(archItems['start_time'] + archItems['duration']).strftime('%H:%M')
 			timerange = '%s - %s ' % (epg_start , epg_end)
 
-		label = '%s[B] %s[/B] %s %s' % ('', '', timerange + '-'+CurrentEPG , '')
+		label = '[COLOR green]%s[B] %s[/B] %s %s[/COLOR]' % ('', '', timerange + '-'+CurrentEPG , '')
 		
 		item.setLabel(label)
 		item.setIconImage(os.path.join(addon.getAddonInfo('path'), 'resources', 'icons', 'play.png'))
