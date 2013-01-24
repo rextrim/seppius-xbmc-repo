@@ -136,6 +136,7 @@ def ttv (params):
 	
 def play_ch(params):
 	http = GET('http://torrent-tv.ru/'+params['file'])
+	print 'http://torrent-tv.ru/'+params['file']
 	beautifulSoup = BeautifulSoup(http)
 	tget= beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
 	#print tget
@@ -144,6 +145,13 @@ def play_ch(params):
 	#print 'http://torrent-tv.ru/'+params['file']
 	m=re.search('http:(.+)"', str(tget))
 	torr_link= m.group(0).split('"')[0]
+	m=re.search('http://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+', torr_link)
+	pre_link= m.group(0)
+	http = GET(pre_link)
+	beautifulSoup = BeautifulSoup(http)
+	lnk=pre_link+beautifulSoup.find('a')['href']
+	#print lnk
+	torr_link=lnk
 	TSplayer=tsengine()
 	out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
 	if out=='Ok':
