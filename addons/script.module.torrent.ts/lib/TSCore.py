@@ -169,7 +169,7 @@ class TSengine(object):
 		self.dialog2.updater(0,language(1004))
 		comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) +' 0 0 0'
 		self._TSpush(comm)
-		off_timer=180
+		noseeds=off_timer=180
 		while not self.r.got_url:
 			if self.r.last_com=='STATUS':
 				try:
@@ -180,7 +180,11 @@ class TSengine(object):
 				#print "waiting"
 				xbmc.sleep(1000)
 				off_timer=off_timer-1
-				if off_timer<=0: 
+				if int(self.r.speed)==0: noseeds=noseeds-10
+				#print self.r.speed
+				#print off_timer
+				#print noseeds
+				if off_timer<=0 or noseeds<=0 : 
 					
 					break
 		#print 'got url'
@@ -215,7 +219,7 @@ class TSengine(object):
 						#self.dialog.updater(language(1000), "")
 						self.dialog.updater(self.r.progress,self.r.state,self.r.label)
 						visible=True
-					#if visible: self.dialog2.show()
+					else: self.dialog.updater(self.r.progress,self.r.state,self.r.label)
 				elif visible:
 					#print 'delete window'
 					self.dialog.close()
@@ -257,11 +261,12 @@ class _TSpull(threading.Thread):
 				ss=re.compile('main:[a-z]+',re.S)
 				s1=re.findall(ss, text)[0]
 				st=s1.split(':')[1]
-				#print st
+				#print comm
 				if st=='prebuf': 
 					self.state=language(1100)
 					self.progress=int(text.split(';')[1])+0.1
 					self.label=language(1150)%(text.split(';')[8],text.split(';')[5])
+					self.speed=int(text.split(';')[5])
 				if st=='buf': 
 					self.state=language(1101)
 					self.progress=int(text.split(';')[1])+0.1
@@ -306,6 +311,7 @@ class _TSpull(threading.Thread):
 		self.label=''
 		self.progress=0
 		self.filestemp=None
+		self.speed=0
 	def run(self):
 		while self.active:
 			try:
@@ -350,7 +356,7 @@ class _TSpull(threading.Thread):
 						self.files=None
 			except:
 				pass
-		xbmc.sleep(300)
+		#xbmc.sleep(500)
 	def end(self):
 		self.daemon = False
 
