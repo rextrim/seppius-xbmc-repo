@@ -146,12 +146,14 @@ def play_ch(params):
 	m=re.search('http:(.+)"', str(tget))
 	torr_link= m.group(0).split('"')[0]
 	m=re.search('http://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+', torr_link)
-	pre_link= m.group(0)
-	http = GET(pre_link)
-	beautifulSoup = BeautifulSoup(http)
-	lnk=pre_link+beautifulSoup.find('a')['href']
-	#print lnk
-	torr_link=lnk
+	try:
+		pre_link= m.group(0)
+		http = GET(pre_link)
+		beautifulSoup = BeautifulSoup(http)
+		lnk=pre_link+beautifulSoup.find('a')['href']
+		#print lnk
+		torr_link=lnk
+	except: pass
 	TSplayer=tsengine()
 	out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
 	if out=='Ok':
