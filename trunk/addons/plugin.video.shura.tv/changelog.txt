@@ -33,3 +33,7 @@ Performance improwments when starting a chennel from chennel list. Reverted
 EPG support added
 [B]0.8.5[/B]
 Colored EPG items: green=archive, default=future
+[B]0.8.6[/B]
+Current prog and next prog is hsown in the info during playback of channel (by clicking the i key)
+New icons by DiZet
+For channel 604 & 605 (HD 1, HD Rossia) no error is thrown when opening epg/arch popup
