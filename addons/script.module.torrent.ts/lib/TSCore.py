@@ -356,7 +356,7 @@ class _TSpull(threading.Thread):
 						self.files=None
 			except:
 				pass
-		#xbmc.sleep(500)
+		xbmc.sleep(500)
 	def end(self):
 		self.daemon = False
 
