@@ -1201,6 +1201,24 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
+<addon id="plugin.video.serialonline.net"
+       name="SerialOnline.net"
+       version="0.0.6"
+       provider-name="nuismons">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+        <import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Материалы сайта serialonline.net</summary>
+        <description>Самая большая коллекция лучших сериалов мира</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.video.serialu.net"
        name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]serialu.net[/COLOR][COLOR FF00FF00])[/COLOR]"
        version="1.2.2"
