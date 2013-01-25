@@ -1,5 +1,6 @@
 ﻿import re, os, urllib, urllib2, sys, urlparse
-import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs
+import shutil
 import subprocess
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
@@ -10,7 +11,11 @@ class XPpod():
     def __init__(self, Addon):
         self.Addon = Addon
         self.url = []
-        self.path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'swf')
+
+        if Addon.getSetting('SWF_Path') == '':
+            self.path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'swf')
+        else:
+            self.path = Addon.getSetting('SWF_Path')
 
     #---------- get web page -------------------------------------------------------
     def get_HTML(self, url, post = None, ref = None):
@@ -24,7 +29,7 @@ class XPpod():
         request.add_header('Host',   host)
         request.add_header('Accept', '*/*')
         request.add_header('Accept-Language', 'ru-RU')
-        request.add_header('Referer',             ref)
+        request.add_header('Referer', ref)
 
         try:
             f = urllib2.urlopen(request, timeout=360)
@@ -57,39 +62,6 @@ class XPpod():
         rez = self.Decode_String(param, hash_key)
 
         if not 'html://' in rez and not '/list.xml' in rez and not 'playlist' in rez and not '/playls/' in rez:
-            is_OK = False
-        '''
-            #-- hash servers
-            url = 'http://justpaste.it/xbmc_list'
-            html = self.get_HTML(url)
-            code = re.compile('<div id="articleContent">(.+?)<div class="noteFotter">', re.MULTILINE|re.DOTALL).findall(html)[0]
-
-            for rec in re.compile('<p>(.+?)<\/p>', re.MULTILINE|re.DOTALL).findall(code):
-                self.url.append(rec)
-
-            #---- get new hash keys
-            for url in self.url:
-                html = self.get_HTML(url)
-                code = re.compile('<div id="articleContent">(.+?)<div class="noteFotter">', re.MULTILINE|re.DOTALL).findall(html)[0]
-
-                hash_list = []
-                for rec in re.compile('<p>(.+?)<\/p>', re.MULTILINE|re.DOTALL).findall(code):
-                    hash_list.append(rec.replace(' ', ''))
-
-                #-- assemble hash key
-                hash_key = hash_list[0]+'\n'+hash_list[1]
-                rez = self.Decode_String(param, hash_key)
-
-                if 'html:' in rez or '.xml' in rez or 'playlist' in rez or '/playls/' in rez:
-                    #-- save new hash keys
-                    swf = open(xbmc.translatePath(os.path.join(self.Addon.getAddonInfo('path'), r'resources', r'lib', r'hash.key')), 'w')
-                    swf.write(hash_list[0]+'\n'+hash_list[1])
-                    swf.close()
-                    #-- exit from search
-                    is_OK = True
-                    break
-        '''
-        if is_OK == False and self.Addon.getSetting('SWF_Decode') == 'true':
             if self.Addon.getSetting('External_PhantomJS') == 'true':
                 url = 'http://'+self.Addon.getSetting('PhantomJS_IP')+':'+self.Addon.getSetting('PhantomJS_Port')
                 values = {'swf_url' :	page_url}
@@ -110,6 +82,7 @@ class XPpod():
                     is_OK = True
 
             elif os.path.isdir(self.path) == True:
+                print '** Decompile SWF to get hash'
                 hash_list = self.Get_SWF_Hash(swf_player)
                 #-- assemble hash key
                 hash_key = hash_list[0]+'\n'+hash_list[1]
@@ -140,6 +113,10 @@ class XPpod():
             dec = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
             hash1 = hash_key.split('\n')[0]
             hash2 = hash_key.split('\n')[1]
+
+            print '** Try to decode'
+            print '**     HASH1: '+hash1
+            print '**     HASH2: '+hash2
 
             #-- decode
             for i in range(0, len(hash1)):
@@ -174,13 +151,21 @@ class XPpod():
         except:
             loc_2 = ''
 
-        print loc_2.encode('utf-8')
-
         return loc_2
 
     #---------------------------------------------------------------------------
     def Get_SWF_Hash(self, swf_player):
-        #---- get SWF ------------------------------------------------------------------
+        #---- clean up SWF folder ----------------------------------------------
+        try:
+            print '** Clean up SWF folder'
+            shutil.rmtree(os.path.join(self.path,'player-0'))
+            xbmcvfs.delete(os.path.join(self.path,'player-0.abc'))
+            xbmcvfs.delete(os.path.join(self.path,'player.swf'))
+        except:
+            print '** Failed to clean up SWF folder'
+            pass
+
+        #---- get SWF ----------------------------------------------------------
         url = swf_player
         swf = open(os.path.join(self.path, 'player.swf'), 'wb')
         post = None
@@ -190,7 +175,7 @@ class XPpod():
 
         zcode = code[0:3] #-- type of SWF compression
 
-        #---- decode SWF ---------------------------------------------------------------
+        #---- decode SWF -------------------------------------------------------
         startupinfo = None
 
         if zcode == 'CWS':

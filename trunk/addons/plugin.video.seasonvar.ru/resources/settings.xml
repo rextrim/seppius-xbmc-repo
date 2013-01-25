@@ -9,5 +9,5 @@
 	<setting label="30651" type="lsep"/> 
 	<setting id="continue_play" type="bool"  label="Играть все серии"    default="true"/>   	
 	<setting label="30651" type="lsep"/> 
-	<setting id="SWF_Decode" type="bool"  label="Декодировать SWF"    default="false"/>   	  
+	<setting id="SWF_Path" type="text"  label="Путь к SWF декомпилеру"    default=""/>   	  
 </settings> 
