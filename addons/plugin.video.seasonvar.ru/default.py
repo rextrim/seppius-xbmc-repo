@@ -25,7 +25,7 @@ from time import gmtime, strftime
 import urlparse
 import demjson3 as json
 import subprocess, ConfigParser
-import xbmc, xbmcgui, xbmcplugin, xbmcaddon
+import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs
 
 Addon = xbmcaddon.Addon(id='plugin.video.seasonvar.ru')
 xbmcplugin.setContent(int(sys.argv[1]), 'movies')
@@ -50,7 +50,7 @@ def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
 #---------- HTPP interface -----------------------------------------------------
-def get_HTML(url, post = None, ref = None):
+def get_HTML(url, post = None, ref = None, is_pl = False):
     request = urllib2.Request(url, post)
 
     host = urlparse.urlsplit(url).hostname
@@ -62,6 +62,10 @@ def get_HTML(url, post = None, ref = None):
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
     request.add_header('Referer',             ref)
+    if is_pl:
+        for c in cj:
+            if c.name == 'sva' and c.domain == 'www.seasonvar.ru':
+                request.add_header('Cookie', 'sva='+c.value)
 
     try:
         f = urllib2.urlopen(request, timeout=360)
@@ -244,24 +248,7 @@ def Movie_List(params):
         url = 'http://seasonvar.ru/index.php?onlyjanrnew='+par.genre+'&&sortto=name&country='+par.country+'&nocache='+str(random.random())
 
     #== get movie list =====================================================
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'seasonvar.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://seasonvar.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page --------------------------------------------------
     count = 1
@@ -309,28 +296,15 @@ def Movie_List(params):
 
 #---------- serial info ---------------------------------------------------------
 def Serial_Info(params):
+    #-- checkif SWD decompiler set up properly
+    if not Check_SWF():
+        return False
+
     #-- get filter parameters
     par = Get_Parameters(params)
     #== get serial details =================================================
     url = par.url
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.5; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'seasonvar.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://seasonvar.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
@@ -427,25 +401,7 @@ def Genre_List(params):
 
     #-- get generes
     url = 'http://seasonvar.ru'
-
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'seasonvar.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://seasonvar.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -472,25 +428,7 @@ def Country_List(params):
 
     #-- get generes
     url = 'http://seasonvar.ru'
-
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'seasonvar.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://seasonvar.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -522,24 +460,7 @@ def PLAY(params):
         pl=xbmc.PlayList(1)
         pl.clear()
         # -- get play list
-        post = None
-        request = urllib2.Request(par.playlist, post)
-
-        request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        request.add_header('Host',	'seasonvar.ru')
-        request.add_header('Accept', '*/*')
-        request.add_header('Accept-Language', 'ru-RU')
-        request.add_header('Referer',	'http://seasonvar.ru')
-
-        try:
-            f = urllib2.urlopen(request)
-        except IOError, e:
-            if hasattr(e, 'reason'):
-                xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-            elif hasattr(e, 'code'):
-                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-        html = f.read()
+        html = get_HTML(par.playlist, is_pl = True)
         html = Decoder.Decode(html)
 
         if html == '':
@@ -560,10 +481,6 @@ def PLAY(params):
                     is_found = True
 
             if is_found:
-                #-- temorally fix
-                s_url = s_url.rsplit('/', 1)[0]+'/7'+s_url.rsplit('/', 1)[1]
-                #----------------
-
                 i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
                 i.setProperty('IsPlayable', 'true')
                 pl.add(s_url, i)
@@ -645,24 +562,7 @@ def Get_PlayList(soup, parent_url):
         url = 'http:' + url
 
     # -- get play list
-    post = None
-    request = urllib2.Request(url, post)
-
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'seasonvar.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://seasonvar.ru')
-
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
-        elif hasattr(e, 'code'):
-            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
-
-    html = f.read()
+    html = get_HTML(url, None, swf_player, True)
     html = Decoder.Decode(html)
 
     return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url, swf_player
@@ -780,6 +680,23 @@ def Test(params):
 
     xbmcplugin.endOfDirectory(h)
 
+def Check_SWF():
+    if Addon.getSetting('SWF_Path') == '':
+        swf_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'swf')
+    else:
+        swf_path = Addon.getSetting('SWF_Path')
+
+    if os.name == 'nt':
+            swf_path = os.path.join(swf_path, 'rabcdasm.exe')
+    else:
+            swf_path = os.path.join(swf_path,'rabcdasm')
+
+    if not xbmcvfs.exists(swf_path):
+        xbmcgui.Dialog().ok('SEASONVAR.RU', 'SWF decompiler not found at '+swf_path+'.')
+        return False
+    else:
+        return True
+
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
@@ -793,8 +710,6 @@ except:
 hr  = urllib2.HTTPCookieProcessor(cj)
 opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
-
-
 
 p  = Param()
 mi = Info()
