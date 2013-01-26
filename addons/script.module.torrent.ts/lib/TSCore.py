@@ -279,6 +279,7 @@ class _TSpull(threading.Thread):
 					self.state=language(1103)
 					self.progress=int(text.split(';')[1])
 					self.label=None
+					self.speed=1
 				if st=='idle': 
 					self.statelanguage(1104)
 					self.progress=0
