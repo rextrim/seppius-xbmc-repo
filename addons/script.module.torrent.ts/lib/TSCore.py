@@ -262,6 +262,7 @@ class _TSpull(threading.Thread):
 				s1=re.findall(ss, text)[0]
 				st=s1.split(':')[1]
 				#print comm
+				self.speed=1
 				if st=='prebuf': 
 					self.state=language(1100)
 					self.progress=int(text.split(';')[1])+0.1
