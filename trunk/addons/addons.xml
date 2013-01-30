@@ -1622,7 +1622,7 @@ provider-name="Roman_V_M">
 </extension>
 </addon>
 
-<addon id='script.module.torrent.ts' version='0.2.30' name='TorrentStream Engine Support' provider-name='NuisMons'>
+<addon id='script.module.torrent.ts' version='0.2.31' name='TorrentStream Engine Support' provider-name='NuisMons'>
   <requires>
     <import addon='xbmc.python' version='2.0'/>
   </requires>
@@ -1630,6 +1630,7 @@ provider-name="Roman_V_M">
     <platform>all</platform>
     <summary>TorrentStream Engine Playing</summary>
   </extension>
+  <extension library="default.py" point="xbmc.service" />
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
