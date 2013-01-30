@@ -374,7 +374,7 @@ Audio sources are
 
 <addon id="plugin.video.RuTor"
        name="RuTor"
-       version="0.9.1"
+       version="2.3.3"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -1622,7 +1622,7 @@ provider-name="Roman_V_M">
 </extension>
 </addon>
 
-<addon id='script.module.torrent.ts' version='0.2.28' name='TorrentStream Engine Support' provider-name='NuisMons'>
+<addon id='script.module.torrent.ts' version='0.2.30' name='TorrentStream Engine Support' provider-name='NuisMons'>
   <requires>
     <import addon='xbmc.python' version='2.0'/>
   </requires>

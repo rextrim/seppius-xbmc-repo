@@ -131,7 +131,10 @@ class TSengine(object):
 		self.ready=True
 		self.dialog.updater(100,language(1003))
 		self.url=torrent
-		comm='LOADASYNC '+ str(random.randint(0, 0x7fffffff)) +' '+mode+' ' + torrent+ ' 0 0 0'
+		if (mode == 'PID'):
+			comm='LOADASYNC '+ str(random.randint(0, 0x7fffffff)) +' '+mode+' ' + torrent
+		else:
+			comm='LOADASYNC '+ str(random.randint(0, 0x7fffffff)) +' '+mode+' ' + torrent+ ' 0 0 0'
 		self._TSpush(comm)
 		timeout=self.timeout
 		while not self.r.files:
@@ -167,7 +170,10 @@ class TSengine(object):
 	def play_url_ind(self, index=0, title='', icon=None, thumb=None):
 		self.dialog2 = progress.dwprogress()
 		self.dialog2.updater(0,language(1004))
-		comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) +' 0 0 0'
+		if (self.mode == 'PID'):
+			comm='START '+self.mode+ ' ' + self.url + ' '+ str(index)
+		else:
+			comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) +' 0 0 0'
 		self._TSpush(comm)
 		noseeds=off_timer=180
 		while not self.r.got_url:
@@ -193,9 +199,8 @@ class TSengine(object):
 			#print self.r.got_url
 			plr=myPlayer()
 			lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
-			self.dialog2.updater(100,language(1005))
+			#self.dialog2.updater(100,language(1005))
 			plr.play(self.r.got_url, lit)
-			
 			#self.dialog2.hide()
 			#while not plr.duration:
 			#	self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
@@ -335,7 +340,9 @@ class _TSpull(threading.Thread):
 					self.filestemp=ll
 					#!!!!!!!!запихать файлы в {file:ind}
 					#print self.files
-					
+					#output = open("c:/temp/log.txt", "a")
+					#output.write(comm);
+					#output.close();
 				elif self.filestemp: 
 					self.filestemp=self.filestemp+	self.last_received	
 					#print self.files
