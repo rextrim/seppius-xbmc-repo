@@ -37,3 +37,5 @@ Colored EPG items: green=archive, default=future
 Current prog and next prog is hsown in the info during playback of channel (by clicking the i key)
 New icons by DiZet
 For channel 604 & 605 (HD 1, HD Rossia) no error is thrown when opening epg/arch popup
+[B]0.8.7[/B]
+New addon icon

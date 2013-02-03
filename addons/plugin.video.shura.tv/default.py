@@ -39,7 +39,7 @@ handle = int(sys.argv[1])
 PLUGIN_NAME = 'SHURA.TV'
 PLUGIN_CORE = None
 TRANSSID = ''
-thumb = os.path.join( addon.getAddonInfo('path'), "icon.png" )
+thumb = os.path.join( addon.getAddonInfo('path'), "icon2.png" )
 
 def ru(x):return x
 def xt(x):return xbmc.translatePath(x)
