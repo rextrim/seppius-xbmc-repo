@@ -363,7 +363,11 @@ def Serial_Info(params):
             xbmcplugin.addDirectoryItem(h, u, i, True)
     else:
         # -- mane of season
-        i = xbmcgui.ListItem('[COLOR FFFFF000]'+mi.title+'[/COLOR] [COLOR FF00FFF0]( '+par.name + ' )[/COLOR]', path='', thumbnailImage=icon)
+        name = '[COLOR FFFFF000]'+mi.title+'[/COLOR]'
+        if len(season_list) > 0:
+            name += ' [COLOR FF00FFF0]( '+par.name + ' )[/COLOR]'
+
+        i = xbmcgui.ListItem(name, path='', thumbnailImage=icon)
         u = sys.argv[0] + '?mode=EMPTY'
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
@@ -372,7 +376,13 @@ def Serial_Info(params):
         s_num = 0
 
         #---------------------------
-        playlist = Get_PlayList(par.playlist, season = par.name, mode = 'e')
+        if len(season_list) == 0:
+            sname = '-'
+        else:
+            sname  = par.name
+            pl_url = par.playlist
+
+        playlist = Get_PlayList(pl_url, season = sname, mode = 'e')
 
         for rec in playlist:
             name    = rec['comment']
@@ -385,7 +395,7 @@ def Serial_Info(params):
             u += '&name=%s'%urllib.quote_plus(name)
             u += '&img=%s'%urllib.quote_plus(mi.img)
             u += '&playlist=%s'%urllib.quote_plus(pl_url)
-            u += '&is_season=%s'%urllib.quote_plus(par.name)
+            u += '&is_season=%s'%urllib.quote_plus(sname)
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
                                                     'cast' :       mi.actors,
                             						'year':        int(mi.year),
@@ -550,7 +560,6 @@ def get_url(url):
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(pl_url, season = '', start_item = '', mode = 's'): #-- mode: s - seasons, e - episodes
     plist = []
-
     #-- get playlist items
     post = None
     html = get_HTML(pl_url, post)
@@ -560,14 +569,26 @@ def Get_PlayList(pl_url, season = '', start_item = '', mode = 's'): #-- mode: s 
 
     for r in json.loads(pl)['playlist']:
         if mode == 's':
+            try:
+                x = r['playlist']
+            except:
+                pl = []
+                return pl
             plist.append({'comment':r['comment'].lstrip().encode('utf-8'), 'file':pl_url})
         else:
-            if r['comment'].lstrip().encode('utf-8') == season or season == '':
-                for rec in r['playlist']:
-                    if rec['comment'].lstrip().encode('utf-8') == start_item or start_item == '':
+            if r['comment'].lstrip().encode('utf-8') == season or season == '' or season == '-':
+                if season == '-':
+                    if r['comment'].lstrip().encode('utf-8') == start_item or start_item == '':
                         is_found = True
                     if is_found:
-                        plist.append({'comment':rec['comment'].lstrip().encode('utf-8'), 'file':rec['file']})
+                        plist.append({'comment':r['comment'].lstrip().encode('utf-8'), 'file':r['file']})
+                else:
+                    for rec in r['playlist']:
+                        if rec['comment'].lstrip().encode('utf-8') == start_item or start_item == '':
+                            is_found = True
+                        if is_found:
+                            plist.append({'comment':rec['comment'].lstrip().encode('utf-8'), 'file':rec['file']})
+
 
     return plist
 
