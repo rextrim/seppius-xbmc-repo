@@ -66,26 +66,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.asbook.ru"
-       name="[COLOR FF00FF00]Аудиокниги ([/COLOR][COLOR FFFFF000]asbook.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="audio"
-             library="default.py">
-    <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>[COLOR FFFFF000]ASBOOK.RU[/COLOR] - слушайте аудиокниги онлайн совершенно бесплатно.
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.audio.guzei.radio"
        name="GUZEI.RADIO"
        version="1.0.6"
@@ -216,25 +196,6 @@
   </extension>
 </addon>
 
-<addon id="plugin.audio.teleplus.ru"
-       name="[COLOR FF00FF00]Музыка ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.0"
-       provider-name="TelePlus.ru">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="audio"
-             library="default.py">
-    <provides>audio</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>TelePlus.ru</summary>
-    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 4000 фильмов и полмиллиона аудиотрэков по символической цене - 700 руб в месяц.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.audio.tracksflow" name="TracksFlow" version="0.4" provider-name="Dmitry Khrysev">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
@@ -294,44 +255,6 @@ Audio sources are
 		На нашем сайте вы сможете читать мангу на русском, которая выходила или выходит в настоящее время. Мы часто обновляемся, поэтому заходите к нам почаще, у нас всегда есть, что почитать! :)
     </description>
     <license>GPL 2.0</license>
-  </extension>
-</addon>
-
-<addon id="plugin.video.5-tv.ru"
-       name="Пятый канал"
-       version="1.0.2"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Сериалы (serialu.net)</summary>
-    <description>Пятый канал, Видеоархив программ (5-tv.ru).</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.720hd.ru"
-       name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]720hd.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.8"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>HD (720p) фильмы онлайн (ВКонтакте + RuVideo).</description>
-    <platform>all</platform>
   </extension>
 </addon>
 
@@ -410,27 +333,6 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.allserials.tv"
-       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]allserials.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.4"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>allserials.tv</summary>
-    <description>ALLSERIALS.TV - Смотреть бесплатно сериалы онлайн!
-Только на нашем ресурсе Вы с легкостью сможете отыскать интересующий вас сериал онлайн, все материалы можно смотреть бесплатно. Многие сериалы, представленные на нашем сайте, являются признанными русскими и зарубежными хитами.
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.arjlover.net"
        name="arjlover.net"
        version="0.0.2"
@@ -488,44 +390,6 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.cinema.mosfilm.ru"
-       name="[COLOR FF00FF00]Мосфильм ([/COLOR][COLOR FFFFF000]cinema.mosfilm.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Мосфильм (cinema.mosfilm.ru)</summary>
-    <description>Иинтернет-кинотеатр ФГУП «Киноконцерн «Мосфильм» (cinema.mosfilm.ru).</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.cn.ru.tv"
-       name="[COLOR FF00FF00]Электронный город: ТВ ([/COLOR][COLOR FFFFF000]cn.ru/tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Электронный город: ТВ.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.cnews.tv"
        name="CNEWS.TV"
        version="1.0.5"
@@ -561,48 +425,6 @@ Audio sources are
   <extension point="xbmc.addon.metadata">
     <summary>Live TV and Archives from http://debilizator.tv/</summary>
     <description>Live TV and Archives from http://debilizator.tv/</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.diafilms"
-       name="[COLOR FF00FF00]Диафильмы ([/COLOR][COLOR FFFFF000]diafilmy.su[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.4"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Диафильмы</summary>
-    <description>Диафильмы – возвращение в детство
-Окунитесь в Мир Детства, вспомните магию темной комнаты, горячего диапроектора и скрипа прокручивания пленки на следующий кадр,
-ваш восторг в ту секунду, когда на стене появляется первый кадр, и начинается сказка…
-
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.docu.im"
-       name="[COLOR FF00FF00]Документальные фильмы ([/COLOR][COLOR FFFFF000]docu.im[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Документальные фильмы онлайн.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -666,52 +488,6 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.galileo-online.ru"
-       name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-online.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Галилео - телевизионная развлекательно-познавательная программа канала СТС.
-Ведущий — Александр Пушной.
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.galileo-tv.ru"
-       name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-tv.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Галилео - телевизионная развлекательно-познавательная программа канала СТС.
-Выходит с понедельника по пятницу в 17:30.
-Дайджест «Галилео» можно увидеть по воскресеньям в 11:00.
-Ведущий — Александр Пушной.
-Производит программу ООО «ГалилеоМедиа» по лицензии и при содействии «Victoria Production» и «SevenOne International».
-Наш проект является русским вариантом немецкой программы «Galileo» канала ProSieben.
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.guzei.tv"
        name="GUZEI.TV"
        version="1.0.8"
@@ -731,63 +507,12 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.hdkinoklub.ru"
-       name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]hdkinoklub.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Приветствуем Вас на сайте HDkinoKlub.ru - здесь можно совершенно бесплатно и без регистрации смотреть фильмы, сериалы и мультфильмы онлайн в HD качестве..</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.igru.net.ua"
-       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]fepcom.net[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.1.4"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Фильмы (igru.net.ua)</summary>
-    <description>Русские и зарубежные фильмы предоставляемые сайтом fepcom.net.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.inetcom.tv" name="[COLOR FF86BA0D]Inetcom.tv[/COLOR]" version="0.2.1" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Online TV from inetcom.tv</summary>
     <description>Online TV from inetcom.tv</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.5.1" provider-name="ivi.ru (NuisMons)">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-	<language>ru</language>
-    <summary>ivi.ru - cмотри любимые фильмы, сериалы, программы, мультфильмы бесплатно и легально.</summary>
-    <description>Приложение интернет-кинотеатра ivi.ru предоставляет доступ к самой большой бесплатной коллекции лицензионного видео российского интернета.
-С помощью приложения ivi.ru вы можете смотреть фильмы, сериалы, ТВ-программы, мультфильмы в отличном качестве бесплатно и легально.
-Обращаем ваше внимание, что воспроизведение видео возможно только на территории Российской Федерации</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -909,46 +634,6 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.music.ivi.ru" name="music.ivi.ru" version="0.1.0" provider-name="ivi.ru">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-	<language>ru</language>
-    <summary>Клипы: смотреть видео клипы онлайн, слушать музыку онлайн, видеоклипы бесплатно и без регистрации — music.ivi.ru</summary>
-    <description>Клипы: смотреть видео клипы онлайн, слушать музыку онлайн, видеоклипы бесплатно и без регистрации — music.ivi.ru</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.muzunga.tv" name="Muzunga.TV" version="1.0.3" provider-name="Muzunga.TV">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Фильмы, сериалы и телевидение в HD качестве онлайн</summary>
-    <description>Ресурс Muzunga.TV является общедоступным для всех зарегистрированных пользователей и осуществляет свою деятельность с соблюдением действующего законодательства Украины и на основании договора и лицензии на право вещания ДП "УААСП" КТ-3554 от 01.02.2011, обеспечивающим выплаты вознаграждений по авторским и смежным правам.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.my-hit.ru"
-       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]my-hit.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Фильмы онлайн, наш кино портал.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.1" provider-name="Myvi">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
@@ -967,45 +652,6 @@ Audio sources are
   <extension point="xbmc.addon.metadata">
     <summary>new-kino.net - фильмы, мультфильмы, сериалы</summary>
     <description>new-kino.net - фильмы, мультфильмы, сериалы - круглосуточно на нашем сайте, смотрите, наслаждайтесь и отдыхайте</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.nowfilms.ru"
-       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FF00FFFF]Now[/COLOR][COLOR FFFF0040]Films.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.5"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>Медиапортал [COLOR FF00FFFF]Now[/COLOR][COLOR FFFF0040]Films.ru[/COLOR] - фильмы, сериалы.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.online.anidub.com"
-       name="Online.anidub.com"
-       version="0.1.3"
-       provider-name="NuisMons">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-	<import addon="script.module.beautifulsoup"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Просмотр аниме онлайн online.anidub.com</summary>
-    <description>Просмотр аниме онлайн online.anidub.com</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -1180,84 +826,6 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.seasonvar.ru"
-       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]seasonvar.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="2.1.9b"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="2.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
-    <description>SEASONVAR.RU - Наш сайт создан для вас!
-Вы любите смотреть сериалы, но не можете себе этого позволить, так как их показывают по телевизору в неудобное для вас время? Вам нравится следить за судьбой героев, но вы часто пропускаете очередную серию? Теперь эти проблемы легко решить! На сайте Seasonvar.ru представлены отечественные и зарубежные сериалы, которые вы можете смотреть онлайн совершенно бесплатно.
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.serialonline.net"
-       name="SerialOnline.net"
-       version="0.0.6"
-       provider-name="nuismons">
-    <requires>
-        <import addon="xbmc.python" version="1.0"/>
-        <import addon="script.module.beautifulsoup"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Материалы сайта serialonline.net</summary>
-        <description>Самая большая коллекция лучших сериалов мира</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
-<addon id="plugin.video.serialu.net"
-       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]serialu.net[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.2.2"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Сериалы (serialu.net)</summary>
-    <description>Русские и зарубежные сериалы предоставляемые сайтом serialu.net.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.showday.tv"
-       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]showday.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>showday.tv</summary>
-    <description>SHOWDAY.TV - сериал на каждый день!
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.shura.tv"
        name="Shura.TV"
        version="0.8.8"
@@ -1285,123 +853,6 @@ RuTube - отличная стартовая площадка для незав�
     <description>Технология IPTV позволяет Вам, находясь в любой точке мира, смотреть любимое русское тв. При этом вам не нужно иметь спутниковых антенн. Телевизионный сигнал передается поверх IP сети оператора Интернет. На нашем сайте вы можете смотреть любимые русские тв каналы абсолютно бесплатно. Если у вас есть интернет со скоростью не менее 4 мбитс, то вы вы можете стать участником нашего клуба любителей русского тв прямо сейчас.</description>
     <platform>all</platform>
   </extension>
-</addon>
-
-<addon id="plugin.video.stepashka.com"
-       name="stepashka.com"
-       version="0.1.34"
-       provider-name="akgdrg,nuismons">
-    <requires>
-        <import addon="xbmc.python" version="1.0"/>
-        <import addon="script.module.beautifulsoup"/>
-
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-        <provides>video</provides>
-    </extension>
-
-    <extension point="xbmc.addon.metadata">
-        <summary>Видеоархивы stepashka.com</summary>
-        <description>Видеоархивы stepashka.com</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
-<addon id="plugin.video.teleplus.ru"
-       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="TelPlus.ru">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>TelePlus.ru</summary>
-    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 4000 фильмов и полмиллиона аудиотрэков по символической цене - 700 руб в месяц.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.telepoisk.com"
-       name="[COLOR FF00FF00]Онлайн ТВ + Архив ([/COLOR][COLOR FFFFF000]telepoisk.com[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Онлайн ТВ + Архив (telepoisk.com)</summary>
-    <description>Русское телевидение онлайн.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.torrent.gnu"
-       name="torrent.gnu"
-       version="0.2.9"
-       provider-name="nuismons">
-    <requires>
-		<import addon="script.module.torrent.ts"/>
-		<import addon="script.module.beautifulsoup"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Просмотр Торрент файлов</summary>
-        <description>Тестирование TorrentStream</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
-<addon id="plugin.video.torrent.tv"
-       name="Torrent.TV"
-       version="0.2.2"
-       provider-name="Const86">
-    <requires>
-		<import addon="script.module.torrent.ts"/>
-		<import addon="script.module.beautifulsoup"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Torrent TV</summary>
-        <description>Просмотр ТВ Torrent Stream</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
-<addon id="plugin.video.torrenter" name="Torrenter" version="1.0.5.4" provider-name="vadim.skorba@gmail.com">
-    <requires>
-        <import addon="xbmc.python" version="2.0"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.repository" name="Torrenter Repository">
-        <info compressed="false">http://torrenter.googlecode.com/hg/addons.xml</info>
-        <checksum>http://torrenter.googlecode.com/hg/addons.xml.md5</checksum>
-        <datadir zip="false">http://torrenter.googlecode.com/hg/</datadir>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <platform>all</platform>
-        <summary lang='en'>Plugin helps you to watch videos from p2p torrent-networks, without full predownload.</summary>
-		<description lang='en'>Plugin helps you to watch videos from p2p torrent-networks, without full predownload. Requires installed 'python-libtorrent' library (read README.TXT)</description>
-        <disclaimer lang='en'>GNU GPLv3 http://www.gnu.org/licenses/</disclaimer>
-        <summary lang='ru'>Плагин позволяет просматривать видео из пиринговых торрент-сетей, не дожидаясь полного скачивания.</summary>
-		<description lang='ru'>Плагин позволяет просматривать видео из пиринговых торрент-сетей, не дожидаясь полного скачивания. Требует установленной библиотеки 'python-libtorrent' (см. README.TXT)</description>
-        <disclaimer lang='ru'>GNU GPLv3 http://www.gnu.org/licenses/</disclaimer>
-    </extension>
 </addon>
 
 <addon id="plugin.video.ts-tv.ru"
@@ -1477,25 +928,6 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.tvisio.tv"
-       name="[COLOR FF00FF00]Онлайн ТВ + Архив ([/COLOR][COLOR FFFFF000]tvisio.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Онлайн ТВ + Архив (tvisio.tv)</summary>
-    <description>Русское телевидение онлайн.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.tvjam.ru"
        name="TVJAM.RU"
        version="1.0.5"
@@ -1548,26 +980,6 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.ultimatv.net"
-       name="[COLOR FF00FF00]Онлайн ТВ ([/COLOR][COLOR FFFFF000]ultimatv.net[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>allserials.tv</summary>
-    <description>ULTIMATV.NET - На нашем сайте вы можете смотреть ТВ в режиме онлайн.
-</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.vesti.ru"
        name="VESTI.RU"
        version="1.0.6nu"
@@ -1583,25 +995,6 @@ RuTube - отличная стартовая площадка для незав�
   <extension point="xbmc.addon.metadata">
     <summary>Смотрите видео с сайта http://www.vesti.ru</summary>
     <description>Видеосюжеты с актуальными новостями из RSS-ленты http://www.vesti.ru/vesti.rss</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.weewza.com"
-       name="Weewza.com"
-       version="1.0.4"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>Weewza.com</summary>
-    <description>Русское телевидение онлайн.</description>
     <platform>all</platform>
   </extension>
 </addon>

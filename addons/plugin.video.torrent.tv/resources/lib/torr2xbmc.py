@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import httplib
@@ -8,7 +8,6 @@ import re
 import sys
 import os
 import socket
-
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
@@ -16,16 +15,12 @@ import xbmc
 import xbmcaddon
 import datetime
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-
 from TSCore import TSengine as tsengine
 import base64
-
 hos = int(sys.argv[1])
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
 __language__ = __addon__.getLocalizedString
-
 addon_icon    = __addon__.getAddonInfo('icon')
 addon_fanart  = __addon__.getAddonInfo('fanart')
 addon_path    = __addon__.getAddonInfo('path')
@@ -34,25 +29,20 @@ addon_id      = __addon__.getAddonInfo('id')
 addon_author  = __addon__.getAddonInfo('author')
 addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
-
 ktv_folder=unicode(__addon__.getSetting('download_path'),'utf-8')
 prt_file=__addon__.getSetting('port_path')
 aceport=62062
-
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
 	PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
-
 PROGRAM_SOURCE_PATH = os.path.join( PLUGIN_DATA_PATH , "%s_inter-tv.zip"  % datetime.date.today().strftime("%W") )
-
 try:
 	if prt_file: 
 		gf = open(prt_file, 'r')
 		aceport=int(gf.read())
 		gf.close()
 except: prt_file=None
-
 if not prt_file:
 	try:
 		fpath= os.path.expanduser("~")
@@ -63,15 +53,13 @@ if not prt_file:
 		__addon__.setSetting('port_path',pfile)
 		print aceport
 	except: aceport=62062
-	
+
 while not __addon__.getSetting('download_path'): __addon__.openSettings()
 ktv_folder=unicode(__addon__.getSetting('download_path'),'utf-8')
-
 def construct_request(params):
 	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 	
 def GET(target, post=None):
-	#print target
 	try:
 		req = urllib2.Request(url = target, data = post)
 		req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
@@ -103,26 +91,22 @@ def Log(str):
 	output = open(PLUGIN_DATA_PATH + '/log.txt', 'a')
 	output.write('%s: %s\r\n' % (datetime.datetime.now(), str))
 	output.close()
-
+	
 def GetScript(params):
 	try:
 		xbmc.executebuiltin( "ActivateWindow(%d)" % ( 10147 ) ) 
 		window = xbmcgui.Window( 10147 )
-		
 		if not os.path.exists(PROGRAM_SOURCE_PATH):
 			gzip = GET('http://www.teleguide.info/download/new3/inter-tv.zip')
 			output = open(PROGRAM_SOURCE_PATH, 'wb')
 			output.write(gzip)
 			output.close()
 		import zipfile
-		
 		gzipFile = zipfile.ZipFile(PROGRAM_SOURCE_PATH)
 		PROGRAM_FILE = gzipFile.read('inter-tv.txt').decode('windows-1251', 'strict')
-		
 		import datetime
 		today = datetime.date.today()
 		strToDay = ''
-
 		if (today.weekday() == 0):
 			strToDay = strToDay + 'ПОНЕДЕЛЬНИК. '
 		elif (today.weekday() == 1):
@@ -137,9 +121,8 @@ def GetScript(params):
 			strToDay = strToDay + 'СУББОТА. '
 		elif (today.weekday() == 6):
 			strToDay = strToDay + 'ВОСКРЕСЕНЬЕ. '
-		
+
 		strToDay = strToDay + '%.2d ' % today.day
-		
 		if today.month == 1:
 			strToDay = strToDay + 'Январь. '
 		elif today.month == 2:
@@ -164,11 +147,10 @@ def GetScript(params):
 			strToDay = strToDay + 'Ноябрь. '
 		elif today.month == 12:
 			strToDay = strToDay + 'Декабрь. '
-	
+		
 		txtProgram = ''
 		i = 0
 		j = 0
-
 		isProgram = -1
 		header = ''
 		selTime = False
@@ -177,16 +159,15 @@ def GetScript(params):
 		locTime = time.localtime()
 		curTime = time.strptime('%.2d:%.2d' % (locTime.tm_hour, locTime.tm_min), '%H:%M')
 		strs = []
-
 		lines = PROGRAM_FILE.expandtabs().splitlines()
 		txtProgram = ''
 		isProgram = -1
 		for line in lines[2:]:
-			if line.encode('utf-8').find(strToDay + params['title'][1:len(params['title'])-1]) == 0:
+			if line.encode('utf-8').find(strToDay + params['title']) == 0:
 				isProgram = 1
 				header = line
 				continue
-			
+		
 			if len(line) < 3 and isProgram > 0:
 				isProgram -= 1
 				continue
@@ -203,12 +184,12 @@ def GetScript(params):
 						if (stime <> ''):
 							ptime = time.strptime(stime, '%H:%M')
 							j = 0
-
 							if ptime <= curTime:
 								lastTime = i
 							else:
 								selTime = True
 								j = bufj
+							
 					except Exception, e:
 						xbmc.log( 'Error [GetScript] %s : %s' % (e, stime))
 						showMessage('Error', 'Ошибка конвертации времени')
@@ -224,17 +205,16 @@ def GetScript(params):
 	except Exception, e:
 		xbmc.log( 'Error [GetScript] %s' % (e))
 		showMessage('Error', e, 6000)
-
+		
 def GetChanels (params):
-	a = 1
 	http = GET('http://torrent-tv.ru/' + params['file'])
 	beautifulSoup = BeautifulSoup(http)
 	channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
 	for ch in channels:
 		link =ch.find('a')['href']
-		title= ch.find('strong').string.encode('utf-8')
+		title= ch.find('strong').string.encode('utf-8').replace('\n', '')
 		img='http://torrent-tv.ru/'+ch.find('img')['src']
-		li = xbmcgui.ListItem(title,img,img)
+		li = li = xbmcgui.ListItem(title,title,img,img)
 		uri = construct_request({
 				'func': 'play_ch',
 				'img':img,
@@ -242,16 +222,15 @@ def GetChanels (params):
 				'file':link
 			})
 		try:
-			a = 1
 			li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], title),)])
-			#li.setInfo('video', {'Title': title})
 		except Exception, e:
 			xbmc.log( 'Error [GetChanels] %s' % (e))
 			showMessage('Erorr', e)
 			break
+			
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	xbmcplugin.endOfDirectory(hos)
-
+	
 def play_ch(params):
 	http = GET('http://torrent-tv.ru/'+params['file'])
 	print 'http://torrent-tv.ru/'+params['file']
@@ -268,10 +247,8 @@ def play_ch(params):
 			http = GET(pre_link)
 			beautifulSoup = BeautifulSoup(http)
 			lnk=pre_link+beautifulSoup.find('a')['href']
-			#print lnk
 			torr_link=lnk
 		except: pass
-		
 		TSplayer=tsengine()
 		out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
 		if out=='Ok':
@@ -281,14 +258,16 @@ def play_ch(params):
 	else:
 		m = re.search('load.*', str(tget))
 		ID = m.group(0).split('"')[1]
-		TSplayer=tsengine()
-		out=TSplayer.load_torrent(ID,'PID',port=aceport)
-		
-		if out=='Ok':
-			TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-		TSplayer.end()
+		try:
+			TSplayer=tsengine()
+			out=TSplayer.load_torrent(ID,'PID',port=aceport)
+			if out=='Ok':
+				TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
+			TSplayer.end()
+		except Exception, e:
+			showMessage('Torrent', e)
 		showMessage('Torrent', 'Stop', 2000)
-
+	
 def GetParts() :
 	http = GET('http://torrent-tv.ru/channels.php')
 	beautifulSoup = BeautifulSoup(http)
@@ -299,12 +278,12 @@ def GetParts() :
 		if link > -1:
 			li = xbmcgui.ListItem(ch.string)
 			uri = construct_request({
-				'func' : 'GetChanels',
-				'title' : ch.string,
-				'file' : ch['href']
+			'func' : 'GetChanels',
+			'title' : ch.string,
+			'file' : ch['href']
 			})
 			xbmcplugin.addDirectoryItem(hos, uri, li, True)
-		
+			
 def mainScreen(params):
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Все каналы[/COLOR]')
 	uri = construct_request({
@@ -338,7 +317,6 @@ def mainScreen(params):
 	xbmcplugin.endOfDirectory(hos)
 	
 from urllib import unquote, quote, quote_plus
-
 def get_params(paramstring):
 	param=[]
 	if len(paramstring)>=2:
@@ -360,10 +338,9 @@ def get_params(paramstring):
 
 login = __addon__.getSetting("login")
 passw = __addon__.getSetting("password")
-
 data = urllib.urlencode({
-	'email' : '07pov23@gmail.com',
-	'password' : 'maildie',
+	'email' : login,
+	'password' : passw,
 	'remember' : 1,
 	'enter' : 'enter'
 })
