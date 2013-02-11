@@ -15,16 +15,16 @@
     <minversion>20000</minversion>
     <summary lang="en">KinoPoisk Movie Scraper</summary>
     <summary lang="hu">KinoPoisk Film scraper</summary>
-    <summary lang="kr">KinoPoisk 영화 스크래퍼</summary>
-    <summary lang="pl">Scraper filmów KinoPoisk</summary>
+    <summary lang="kr">KinoPoisk ìí ì¤í¬ëí¼</summary>
+    <summary lang="pl">Scraper filmÃ³w KinoPoisk</summary>
     <summary lang="pt">Scraper de filmes KinoPoisk</summary>
-    <summary lang="ru">Инфо-ресурс для фильмов с КиноПоиска</summary>
+    <summary lang="ru">ÐÐ½ÑÐ¾-ÑÐµÑÑÑÑ Ð´Ð»Ñ ÑÐ¸Ð»ÑÐ¼Ð¾Ð² Ñ ÐÐ¸Ð½Ð¾ÐÐ¾Ð¸ÑÐºÐ°</summary>
     <description lang="en">Download Movie information from www.kinopoisk.ru[CR][CR][B]ATTENTION:[/B][CR]For proper working you must set value of[CR]System->Appearance->International->Character set[CR]to Cyrillic (Windows)</description>
-    <description lang="hu">Film információk letöltése a www.kinopoisk.ru webhelyről</description>
-    <description lang="kr">www.kinopoisk.ru 에서 영화 정보 다운로드</description>
+    <description lang="hu">Film informÃ¡ciÃ³k letÃ¶ltÃ©se a www.kinopoisk.ru webhelyrÅl</description>
+    <description lang="kr">www.kinopoisk.ru ìì ìí ì ë³´ ë¤ì´ë¡ë</description>
     <description lang="pl">Pobieraj informacje o filmach z www.kinopoisk.ru</description>
-    <description lang="pt">Descarregar informação de filmes de www.kinopoisk.ru</description>
-    <description lang="ru">Скачивает информацию о фильмах с сайта www.kinopoisk.ru[CR][CR][B]ВНИМАНИЕ:[/B][CR]Для нормальной работы дополнения значение параметра[CR]Система->Внешний вид->Международные->Кодировка[CR]должно быть Cyrillic (Windows)</description>
+    <description lang="pt">Descarregar informaÃ§Ã£o de filmes de www.kinopoisk.ru</description>
+    <description lang="ru">Ð¡ÐºÐ°ÑÐ¸Ð²Ð°ÐµÑ Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸Ñ Ð¾ ÑÐ¸Ð»ÑÐ¼Ð°Ñ Ñ ÑÐ°Ð¹ÑÐ° www.kinopoisk.ru[CR][CR][B]ÐÐÐÐÐÐÐÐ:[/B][CR]ÐÐ»Ñ Ð½Ð¾ÑÐ¼Ð°Ð»ÑÐ½Ð¾Ð¹ ÑÐ°Ð±Ð¾ÑÑ Ð´Ð¾Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ñ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÐ°[CR]Ð¡Ð¸ÑÑÐµÐ¼Ð°->ÐÐ½ÐµÑÐ½Ð¸Ð¹ Ð²Ð¸Ð´->ÐÐµÐ¶Ð´ÑÐ½Ð°ÑÐ¾Ð´Ð½ÑÐµ->ÐÐ¾Ð´Ð¸ÑÐ¾Ð²ÐºÐ°[CR]Ð´Ð¾Ð»Ð¶Ð½Ð¾ Ð±ÑÑÑ Cyrillic (Windows)</description>
   </extension>
 </addon>
 
@@ -42,9 +42,9 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary lang="en">Internet radio station 101.RU</summary>
-    <summary lang="ru">Интернет-радиостанция 101.RU</summary>
+    <summary lang="ru">ÐÐ½ÑÐµÑÐ½ÐµÑ-ÑÐ°Ð´Ð¸Ð¾ÑÑÐ°Ð½ÑÐ¸Ñ 101.RU</summary>
     <description lang="en">Listen to radio with only the best site http://www.101.ru</description>
-    <description lang="ru">Слушайте только лучшие радиоканалы с сайта http://www.101.ru</description>
+    <description lang="ru">Ð¡Ð»ÑÑÐ°Ð¹ÑÐµ ÑÐ¾Ð»ÑÐºÐ¾ Ð»ÑÑÑÐ¸Ðµ ÑÐ°Ð´Ð¸Ð¾ÐºÐ°Ð½Ð°Ð»Ñ Ñ ÑÐ°Ð¹ÑÐ° http://www.101.ru</description>
   </extension>
 </addon>
 
@@ -61,8 +61,28 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>АКАДО.Радио</summary>
-    <description>АКАДО.Радио</description>
+    <summary>ÐÐÐÐÐ.Ð Ð°Ð´Ð¸Ð¾</summary>
+    <description>ÐÐÐÐÐ.Ð Ð°Ð´Ð¸Ð¾</description>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.asbook.ru"
+       name="[COLOR FF00FF00]Аудиокниги ([/COLOR][COLOR FFFFF000]asbook.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.3"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="audio"
+             library="default.py">
+    <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>[COLOR FFFFF000]ASBOOK.RU[/COLOR] - слушайте аудиокниги онлайн совершенно бесплатно.
+</description>
+    <platform>all</platform>
   </extension>
 </addon>
 
@@ -80,9 +100,9 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary lang="en">Listen to the site http://guzei.com/online_radio/</summary>
-    <summary lang="ru">Прослушивание сайта http://guzei.com/online_radio/</summary>
+    <summary lang="ru">ÐÑÐ¾ÑÐ»ÑÑÐ¸Ð²Ð°Ð½Ð¸Ðµ ÑÐ°Ð¹ÑÐ° http://guzei.com/online_radio/</summary>
     <description lang="en">Listen to the site http://guzei.com/online_radio/</description>
-    <description lang="ru">Прослушивание сайта http://guzei.com/online_radio/</description>
+    <description lang="ru">ÐÑÐ¾ÑÐ»ÑÑÐ¸Ð²Ð°Ð½Ð¸Ðµ ÑÐ°Ð¹ÑÐ° http://guzei.com/online_radio/</description>
   </extension>
 </addon>
 
@@ -99,24 +119,24 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>MOSKVA.FM - песни на радио Москвы</summary>
-    <description>Не просто слушать радио Москвы, а выбирать композиции в соответствии с вашим вкусом или настроением. На сегодня в активе проекта MOSKVA.FM 57 радиостанций Москвы!</description>
+    <summary>MOSKVA.FM - Ð¿ÐµÑÐ½Ð¸ Ð½Ð° ÑÐ°Ð´Ð¸Ð¾ ÐÐ¾ÑÐºÐ²Ñ</summary>
+    <description>ÐÐµ Ð¿ÑÐ¾ÑÑÐ¾ ÑÐ»ÑÑÐ°ÑÑ ÑÐ°Ð´Ð¸Ð¾ ÐÐ¾ÑÐºÐ²Ñ, Ð° Ð²ÑÐ±Ð¸ÑÐ°ÑÑ ÐºÐ¾Ð¼Ð¿Ð¾Ð·Ð¸ÑÐ¸Ð¸ Ð² ÑÐ¾Ð¾ÑÐ²ÐµÑÑÑÐ²Ð¸Ð¸ Ñ Ð²Ð°ÑÐ¸Ð¼ Ð²ÐºÑÑÐ¾Ð¼ Ð¸Ð»Ð¸ Ð½Ð°ÑÑÑÐ¾ÐµÐ½Ð¸ÐµÐ¼. ÐÐ° ÑÐµÐ³Ð¾Ð´Ð½Ñ Ð² Ð°ÐºÑÐ¸Ð²Ðµ Ð¿ÑÐ¾ÐµÐºÑÐ° MOSKVA.FM 57 ÑÐ°Ð´Ð¸Ð¾ÑÑÐ°Ð½ÑÐ¸Ð¹ ÐÐ¾ÑÐºÐ²Ñ!</description>
   </extension>
 </addon>
 
-<addon id="plugin.audio.mp3tales.ru" name="Аудиосказки" version="1.0.1" provider-name="HD-Lab Team">
+<addon id="plugin.audio.mp3tales.ru" name="ÐÑÐ´Ð¸Ð¾ÑÐºÐ°Ð·ÐºÐ¸" version="1.0.1" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>audio</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>Аудиосказки из вашего детства</summary>
-    <description>Многие помнят пластинки, вырезанные из журналов и купленные в магазине фирмы "Мелодия", проигрыватель с трескучей иголкой. И этот особенный звук. Звук детства. Каждая сказка - целое музыкальное театрализованное представление с актерам, но без кукол. Если пластинки и могли остаться в пыльном шкафу, то проигрыватель - уже редкость. Но теперь сказки доступны для всех. Для взрослых, чтобы вспомнить детство, и сказки для детей.
-На этом сайте вы можете бесплатно послушать аудиосказки онлайн. На сайте собрана коллекция аудиосказок советских времен и не только. Все они оцифрованы с советских детских грампластинок и кассет.
-Для вашего удобства коллекция детских сказок на сайте представлена в виде каталога с названием и описанием сказки, отсортированного в алфавитном порядке. Вы также можете использовать поиск по каталогу аудиосказок. Ко многим сказкам прилагаются обложки от пластинок.
-Для всех аудиосказок доступна возможность онлайн прослушивания прямо на сайте!
-Все размещенные на этом сайте аудиозаписи предназначены исключительно для ознакомительного прослушивания; после прослушивания рекомендуется купить лицензионный продукт во избежание нарушения авторских прав производителя и смежных прав.</description>
+    <summary>ÐÑÐ´Ð¸Ð¾ÑÐºÐ°Ð·ÐºÐ¸ Ð¸Ð· Ð²Ð°ÑÐµÐ³Ð¾ Ð´ÐµÑÑÑÐ²Ð°</summary>
+    <description>ÐÐ½Ð¾Ð³Ð¸Ðµ Ð¿Ð¾Ð¼Ð½ÑÑ Ð¿Ð»Ð°ÑÑÐ¸Ð½ÐºÐ¸, Ð²ÑÑÐµÐ·Ð°Ð½Ð½ÑÐµ Ð¸Ð· Ð¶ÑÑÐ½Ð°Ð»Ð¾Ð² Ð¸ ÐºÑÐ¿Ð»ÐµÐ½Ð½ÑÐµ Ð² Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½Ðµ ÑÐ¸ÑÐ¼Ñ "ÐÐµÐ»Ð¾Ð´Ð¸Ñ", Ð¿ÑÐ¾Ð¸Ð³ÑÑÐ²Ð°ÑÐµÐ»Ñ Ñ ÑÑÐµÑÐºÑÑÐµÐ¹ Ð¸Ð³Ð¾Ð»ÐºÐ¾Ð¹. Ð ÑÑÐ¾Ñ Ð¾ÑÐ¾Ð±ÐµÐ½Ð½ÑÐ¹ Ð·Ð²ÑÐº. ÐÐ²ÑÐº Ð´ÐµÑÑÑÐ²Ð°. ÐÐ°Ð¶Ð´Ð°Ñ ÑÐºÐ°Ð·ÐºÐ° - ÑÐµÐ»Ð¾Ðµ Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½Ð¾Ðµ ÑÐµÐ°ÑÑÐ°Ð»Ð¸Ð·Ð¾Ð²Ð°Ð½Ð½Ð¾Ðµ Ð¿ÑÐµÐ´ÑÑÐ°Ð²Ð»ÐµÐ½Ð¸Ðµ Ñ Ð°ÐºÑÐµÑÐ°Ð¼, Ð½Ð¾ Ð±ÐµÐ· ÐºÑÐºÐ¾Ð». ÐÑÐ»Ð¸ Ð¿Ð»Ð°ÑÑÐ¸Ð½ÐºÐ¸ Ð¸ Ð¼Ð¾Ð³Ð»Ð¸ Ð¾ÑÑÐ°ÑÑÑÑ Ð² Ð¿ÑÐ»ÑÐ½Ð¾Ð¼ ÑÐºÐ°ÑÑ, ÑÐ¾ Ð¿ÑÐ¾Ð¸Ð³ÑÑÐ²Ð°ÑÐµÐ»Ñ - ÑÐ¶Ðµ ÑÐµÐ´ÐºÐ¾ÑÑÑ. ÐÐ¾ ÑÐµÐ¿ÐµÑÑ ÑÐºÐ°Ð·ÐºÐ¸ Ð´Ð¾ÑÑÑÐ¿Ð½Ñ Ð´Ð»Ñ Ð²ÑÐµÑ. ÐÐ»Ñ Ð²Ð·ÑÐ¾ÑÐ»ÑÑ, ÑÑÐ¾Ð±Ñ Ð²ÑÐ¿Ð¾Ð¼Ð½Ð¸ÑÑ Ð´ÐµÑÑÑÐ²Ð¾, Ð¸ ÑÐºÐ°Ð·ÐºÐ¸ Ð´Ð»Ñ Ð´ÐµÑÐµÐ¹.
+ÐÐ° ÑÑÐ¾Ð¼ ÑÐ°Ð¹ÑÐµ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾ Ð¿Ð¾ÑÐ»ÑÑÐ°ÑÑ Ð°ÑÐ´Ð¸Ð¾ÑÐºÐ°Ð·ÐºÐ¸ Ð¾Ð½Ð»Ð°Ð¹Ð½. ÐÐ° ÑÐ°Ð¹ÑÐµ ÑÐ¾Ð±ÑÐ°Ð½Ð° ÐºÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ Ð°ÑÐ´Ð¸Ð¾ÑÐºÐ°Ð·Ð¾Ðº ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ñ Ð²ÑÐµÐ¼ÐµÐ½ Ð¸ Ð½Ðµ ÑÐ¾Ð»ÑÐºÐ¾. ÐÑÐµ Ð¾Ð½Ð¸ Ð¾ÑÐ¸ÑÑÐ¾Ð²Ð°Ð½Ñ Ñ ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ñ Ð´ÐµÑÑÐºÐ¸Ñ Ð³ÑÐ°Ð¼Ð¿Ð»Ð°ÑÑÐ¸Ð½Ð¾Ðº Ð¸ ÐºÐ°ÑÑÐµÑ.
+ÐÐ»Ñ Ð²Ð°ÑÐµÐ³Ð¾ ÑÐ´Ð¾Ð±ÑÑÐ²Ð° ÐºÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ Ð´ÐµÑÑÐºÐ¸Ñ ÑÐºÐ°Ð·Ð¾Ðº Ð½Ð° ÑÐ°Ð¹ÑÐµ Ð¿ÑÐµÐ´ÑÑÐ°Ð²Ð»ÐµÐ½Ð° Ð² Ð²Ð¸Ð´Ðµ ÐºÐ°ÑÐ°Ð»Ð¾Ð³Ð° Ñ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸ÐµÐ¼ Ð¸ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸ÐµÐ¼ ÑÐºÐ°Ð·ÐºÐ¸, Ð¾ÑÑÐ¾ÑÑÐ¸ÑÐ¾Ð²Ð°Ð½Ð½Ð¾Ð³Ð¾ Ð² Ð°Ð»ÑÐ°Ð²Ð¸ÑÐ½Ð¾Ð¼ Ð¿Ð¾ÑÑÐ´ÐºÐµ. ÐÑ ÑÐ°ÐºÐ¶Ðµ Ð¼Ð¾Ð¶ÐµÑÐµ Ð¸ÑÐ¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÑ Ð¿Ð¾Ð¸ÑÐº Ð¿Ð¾ ÐºÐ°ÑÐ°Ð»Ð¾Ð³Ñ Ð°ÑÐ´Ð¸Ð¾ÑÐºÐ°Ð·Ð¾Ðº. ÐÐ¾ Ð¼Ð½Ð¾Ð³Ð¸Ð¼ ÑÐºÐ°Ð·ÐºÐ°Ð¼ Ð¿ÑÐ¸Ð»Ð°Ð³Ð°ÑÑÑÑ Ð¾Ð±Ð»Ð¾Ð¶ÐºÐ¸ Ð¾Ñ Ð¿Ð»Ð°ÑÑÐ¸Ð½Ð¾Ðº.
+ÐÐ»Ñ Ð²ÑÐµÑ Ð°ÑÐ´Ð¸Ð¾ÑÐºÐ°Ð·Ð¾Ðº Ð´Ð¾ÑÑÑÐ¿Ð½Ð° Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑÑ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð¿ÑÐ¾ÑÐ»ÑÑÐ¸Ð²Ð°Ð½Ð¸Ñ Ð¿ÑÑÐ¼Ð¾ Ð½Ð° ÑÐ°Ð¹ÑÐµ!
+ÐÑÐµ ÑÐ°Ð·Ð¼ÐµÑÐµÐ½Ð½ÑÐµ Ð½Ð° ÑÑÐ¾Ð¼ ÑÐ°Ð¹ÑÐµ Ð°ÑÐ´Ð¸Ð¾Ð·Ð°Ð¿Ð¸ÑÐ¸ Ð¿ÑÐµÐ´Ð½Ð°Ð·Ð½Ð°ÑÐµÐ½Ñ Ð¸ÑÐºÐ»ÑÑÐ¸ÑÐµÐ»ÑÐ½Ð¾ Ð´Ð»Ñ Ð¾Ð·Ð½Ð°ÐºÐ¾Ð¼Ð¸ÑÐµÐ»ÑÐ½Ð¾Ð³Ð¾ Ð¿ÑÐ¾ÑÐ»ÑÑÐ¸Ð²Ð°Ð½Ð¸Ñ; Ð¿Ð¾ÑÐ»Ðµ Ð¿ÑÐ¾ÑÐ»ÑÑÐ¸Ð²Ð°Ð½Ð¸Ñ ÑÐµÐºÐ¾Ð¼ÐµÐ½Ð´ÑÐµÑÑÑ ÐºÑÐ¿Ð¸ÑÑ Ð»Ð¸ÑÐµÐ½Ð·Ð¸Ð¾Ð½Ð½ÑÐ¹ Ð¿ÑÐ¾Ð´ÑÐºÑ Ð²Ð¾ Ð¸Ð·Ð±ÐµÐ¶Ð°Ð½Ð¸Ðµ Ð½Ð°ÑÑÑÐµÐ½Ð¸Ñ Ð°Ð²ÑÐ¾ÑÑÐºÐ¸Ñ Ð¿ÑÐ°Ð² Ð¿ÑÐ¾Ð¸Ð·Ð²Ð¾Ð´Ð¸ÑÐµÐ»Ñ Ð¸ ÑÐ¼ÐµÐ¶Ð½ÑÑ Ð¿ÑÐ°Ð².</description>
   </extension>
 </addon>
 
@@ -133,8 +153,8 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>Слушай радио Online.FM: rock, jazz, house music, rnb, relax music, шансон, trance. FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио - online.fm</summary>
-    <description>Online.FM - слушай радио онлайн. Русский рок, Украинский поп и рок, Trance, Party, Disco, RnB, Latino, Classic rock, House, Relax, Jazz, Шансон, музыка фестиваля Sziget и еще 40 радио каналов. Слушай FM радио: ХитФМ, Kiss fm, Radio Rocks, NRJ радио</description>
+    <summary>Ð¡Ð»ÑÑÐ°Ð¹ ÑÐ°Ð´Ð¸Ð¾ Online.FM: rock, jazz, house music, rnb, relax music, ÑÐ°Ð½ÑÐ¾Ð½, trance. FM ÑÐ°Ð´Ð¸Ð¾: Ð¥Ð¸ÑÐ¤Ð, Kiss fm, Radio Rocks, NRJ ÑÐ°Ð´Ð¸Ð¾ - online.fm</summary>
+    <description>Online.FM - ÑÐ»ÑÑÐ°Ð¹ ÑÐ°Ð´Ð¸Ð¾ Ð¾Ð½Ð»Ð°Ð¹Ð½. Ð ÑÑÑÐºÐ¸Ð¹ ÑÐ¾Ðº, Ð£ÐºÑÐ°Ð¸Ð½ÑÐºÐ¸Ð¹ Ð¿Ð¾Ð¿ Ð¸ ÑÐ¾Ðº, Trance, Party, Disco, RnB, Latino, Classic rock, House, Relax, Jazz, Ð¨Ð°Ð½ÑÐ¾Ð½, Ð¼ÑÐ·ÑÐºÐ° ÑÐµÑÑÐ¸Ð²Ð°Ð»Ñ Sziget Ð¸ ÐµÑÐµ 40 ÑÐ°Ð´Ð¸Ð¾ ÐºÐ°Ð½Ð°Ð»Ð¾Ð². Ð¡Ð»ÑÑÐ°Ð¹ FM ÑÐ°Ð´Ð¸Ð¾: Ð¥Ð¸ÑÐ¤Ð, Kiss fm, Radio Rocks, NRJ ÑÐ°Ð´Ð¸Ð¾</description>
   </extension>
 </addon>
 
@@ -151,11 +171,11 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>Интернет-радиостанция http://www.radiostyle.ru/</summary>
-    <description>RadioStyle.ru предлагает Вам услуги по созданию собственной Интернет-радиостанции, либо ретрансляции FM станции в сети Интернет. Для использования нашего сервиса Вам не потребуются особые знания, поскольку мы имеем удобную панель управления, подробные инструкции, и мы предоставляем поддержку всем нашим клиентам.
-Пользователям уже надоел обычный статический контент сайтов, посетителя больше не удивишь хорошим текстом и красивыми картинками. Медиа-контент сайта - аудио и видеоинформация, в особенности живое вещание - вот что привлекает посетителя. Аудио и видео трансляция в сети Интернет - это будущее, которое уже сейчас доступно всем желающим благодаря нашему сервису!
-Музыканты при помощи нашего сервиса могут вещать в Интернет своё творчество. Возможны живые концерты в прямом эфире! Фан-клубы музыкальных групп просто обязаны иметь собственную радиостанцию, в эфире которой будет звучать их любимая группа.
-Мы можем часами объяснять все преимущества нашего сервиса - проще один раз попробовать. После регистрации Вы можете в течении 24 часов абсолютно БЕСПЛАТНО пользоваться нашим сервисом!</description>
+    <summary>ÐÐ½ÑÐµÑÐ½ÐµÑ-ÑÐ°Ð´Ð¸Ð¾ÑÑÐ°Ð½ÑÐ¸Ñ http://www.radiostyle.ru/</summary>
+    <description>RadioStyle.ru Ð¿ÑÐµÐ´Ð»Ð°Ð³Ð°ÐµÑ ÐÐ°Ð¼ ÑÑÐ»ÑÐ³Ð¸ Ð¿Ð¾ ÑÐ¾Ð·Ð´Ð°Ð½Ð¸Ñ ÑÐ¾Ð±ÑÑÐ²ÐµÐ½Ð½Ð¾Ð¹ ÐÐ½ÑÐµÑÐ½ÐµÑ-ÑÐ°Ð´Ð¸Ð¾ÑÑÐ°Ð½ÑÐ¸Ð¸, Ð»Ð¸Ð±Ð¾ ÑÐµÑÑÐ°Ð½ÑÐ»ÑÑÐ¸Ð¸ FM ÑÑÐ°Ð½ÑÐ¸Ð¸ Ð² ÑÐµÑÐ¸ ÐÐ½ÑÐµÑÐ½ÐµÑ. ÐÐ»Ñ Ð¸ÑÐ¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°Ð½Ð¸Ñ Ð½Ð°ÑÐµÐ³Ð¾ ÑÐµÑÐ²Ð¸ÑÐ° ÐÐ°Ð¼ Ð½Ðµ Ð¿Ð¾ÑÑÐµÐ±ÑÑÑÑÑ Ð¾ÑÐ¾Ð±ÑÐµ Ð·Ð½Ð°Ð½Ð¸Ñ, Ð¿Ð¾ÑÐºÐ¾Ð»ÑÐºÑ Ð¼Ñ Ð¸Ð¼ÐµÐµÐ¼ ÑÐ´Ð¾Ð±Ð½ÑÑ Ð¿Ð°Ð½ÐµÐ»Ñ ÑÐ¿ÑÐ°Ð²Ð»ÐµÐ½Ð¸Ñ, Ð¿Ð¾Ð´ÑÐ¾Ð±Ð½ÑÐµ Ð¸Ð½ÑÑÑÑÐºÑÐ¸Ð¸, Ð¸ Ð¼Ñ Ð¿ÑÐµÐ´Ð¾ÑÑÐ°Ð²Ð»ÑÐµÐ¼ Ð¿Ð¾Ð´Ð´ÐµÑÐ¶ÐºÑ Ð²ÑÐµÐ¼ Ð½Ð°ÑÐ¸Ð¼ ÐºÐ»Ð¸ÐµÐ½ÑÐ°Ð¼.
+ÐÐ¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»ÑÐ¼ ÑÐ¶Ðµ Ð½Ð°Ð´Ð¾ÐµÐ» Ð¾Ð±ÑÑÐ½ÑÐ¹ ÑÑÐ°ÑÐ¸ÑÐµÑÐºÐ¸Ð¹ ÐºÐ¾Ð½ÑÐµÐ½Ñ ÑÐ°Ð¹ÑÐ¾Ð², Ð¿Ð¾ÑÐµÑÐ¸ÑÐµÐ»Ñ Ð±Ð¾Ð»ÑÑÐµ Ð½Ðµ ÑÐ´Ð¸Ð²Ð¸ÑÑ ÑÐ¾ÑÐ¾ÑÐ¸Ð¼ ÑÐµÐºÑÑÐ¾Ð¼ Ð¸ ÐºÑÐ°ÑÐ¸Ð²ÑÐ¼Ð¸ ÐºÐ°ÑÑÐ¸Ð½ÐºÐ°Ð¼Ð¸. ÐÐµÐ´Ð¸Ð°-ÐºÐ¾Ð½ÑÐµÐ½Ñ ÑÐ°Ð¹ÑÐ° - Ð°ÑÐ´Ð¸Ð¾ Ð¸ Ð²Ð¸Ð´ÐµÐ¾Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸Ñ, Ð² Ð¾ÑÐ¾Ð±ÐµÐ½Ð½Ð¾ÑÑÐ¸ Ð¶Ð¸Ð²Ð¾Ðµ Ð²ÐµÑÐ°Ð½Ð¸Ðµ - Ð²Ð¾Ñ ÑÑÐ¾ Ð¿ÑÐ¸Ð²Ð»ÐµÐºÐ°ÐµÑ Ð¿Ð¾ÑÐµÑÐ¸ÑÐµÐ»Ñ. ÐÑÐ´Ð¸Ð¾ Ð¸ Ð²Ð¸Ð´ÐµÐ¾ ÑÑÐ°Ð½ÑÐ»ÑÑÐ¸Ñ Ð² ÑÐµÑÐ¸ ÐÐ½ÑÐµÑÐ½ÐµÑ - ÑÑÐ¾ Ð±ÑÐ´ÑÑÐµÐµ, ÐºÐ¾ÑÐ¾ÑÐ¾Ðµ ÑÐ¶Ðµ ÑÐµÐ¹ÑÐ°Ñ Ð´Ð¾ÑÑÑÐ¿Ð½Ð¾ Ð²ÑÐµÐ¼ Ð¶ÐµÐ»Ð°ÑÑÐ¸Ð¼ Ð±Ð»Ð°Ð³Ð¾Ð´Ð°ÑÑ Ð½Ð°ÑÐµÐ¼Ñ ÑÐµÑÐ²Ð¸ÑÑ!
+ÐÑÐ·ÑÐºÐ°Ð½ÑÑ Ð¿ÑÐ¸ Ð¿Ð¾Ð¼Ð¾ÑÐ¸ Ð½Ð°ÑÐµÐ³Ð¾ ÑÐµÑÐ²Ð¸ÑÐ° Ð¼Ð¾Ð³ÑÑ Ð²ÐµÑÐ°ÑÑ Ð² ÐÐ½ÑÐµÑÐ½ÐµÑ ÑÐ²Ð¾Ñ ÑÐ²Ð¾ÑÑÐµÑÑÐ²Ð¾. ÐÐ¾Ð·Ð¼Ð¾Ð¶Ð½Ñ Ð¶Ð¸Ð²ÑÐµ ÐºÐ¾Ð½ÑÐµÑÑÑ Ð² Ð¿ÑÑÐ¼Ð¾Ð¼ ÑÑÐ¸ÑÐµ! Ð¤Ð°Ð½-ÐºÐ»ÑÐ±Ñ Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÑ Ð³ÑÑÐ¿Ð¿ Ð¿ÑÐ¾ÑÑÐ¾ Ð¾Ð±ÑÐ·Ð°Ð½Ñ Ð¸Ð¼ÐµÑÑ ÑÐ¾Ð±ÑÑÐ²ÐµÐ½Ð½ÑÑ ÑÐ°Ð´Ð¸Ð¾ÑÑÐ°Ð½ÑÐ¸Ñ, Ð² ÑÑÐ¸ÑÐµ ÐºÐ¾ÑÐ¾ÑÐ¾Ð¹ Ð±ÑÐ´ÐµÑ Ð·Ð²ÑÑÐ°ÑÑ Ð¸Ñ Ð»ÑÐ±Ð¸Ð¼Ð°Ñ Ð³ÑÑÐ¿Ð¿Ð°.
+ÐÑ Ð¼Ð¾Ð¶ÐµÐ¼ ÑÐ°ÑÐ°Ð¼Ð¸ Ð¾Ð±ÑÑÑÐ½ÑÑÑ Ð²ÑÐµ Ð¿ÑÐµÐ¸Ð¼ÑÑÐµÑÑÐ²Ð° Ð½Ð°ÑÐµÐ³Ð¾ ÑÐµÑÐ²Ð¸ÑÐ° - Ð¿ÑÐ¾ÑÐµ Ð¾Ð´Ð¸Ð½ ÑÐ°Ð· Ð¿Ð¾Ð¿ÑÐ¾Ð±Ð¾Ð²Ð°ÑÑ. ÐÐ¾ÑÐ»Ðµ ÑÐµÐ³Ð¸ÑÑÑÐ°ÑÐ¸Ð¸ ÐÑ Ð¼Ð¾Ð¶ÐµÑÐµ Ð² ÑÐµÑÐµÐ½Ð¸Ð¸ 24 ÑÐ°ÑÐ¾Ð² Ð°Ð±ÑÐ¾Ð»ÑÑÐ½Ð¾ ÐÐÐ¡ÐÐÐÐ¢ÐÐ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÑÑÑ Ð½Ð°ÑÐ¸Ð¼ ÑÐµÑÐ²Ð¸ÑÐ¾Ð¼!</description>
   </extension>
 </addon>
 
@@ -172,8 +192,8 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary>SRADIO.RU: слушайте FM и интернет радио со всего мира</summary>
-    <description>SRADIO.RU: слушайте FM и интернет радио со всего мира</description>
+    <summary>SRADIO.RU: ÑÐ»ÑÑÐ°Ð¹ÑÐµ FM Ð¸ Ð¸Ð½ÑÐµÑÐ½ÐµÑ ÑÐ°Ð´Ð¸Ð¾ ÑÐ¾ Ð²ÑÐµÐ³Ð¾ Ð¼Ð¸ÑÐ°</summary>
+    <description>SRADIO.RU: ÑÐ»ÑÑÐ°Ð¹ÑÐµ FM Ð¸ Ð¸Ð½ÑÐµÑÐ½ÐµÑ ÑÐ°Ð´Ð¸Ð¾ ÑÐ¾ Ð²ÑÐµÐ³Ð¾ Ð¼Ð¸ÑÐ°</description>
   </extension>
 </addon>
 
@@ -189,9 +209,28 @@
         <provides>audio</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary lang="ru">Радио Свободная Европа/Радио Свобода</summary>
-    <description lang="ru">Радио Свободная Европа/Радио Свобода - это частная некоммерческая информационная служба, финансируемая Конгрессом США, осуществляющая вещание на страны Восточной и Юго-Восточной Европы, Кавказа, Центральной Азии и Ближнего Востока и на Россию.
-Более 35 миллионов слушателей привыкли ежедневно полагаться на передаваемые РСЕ/РС сводки новостей, аналитические обзоры и тематические программы, посвященные последним событиям в их регионе и мире.</description>
+    <summary lang="ru">Ð Ð°Ð´Ð¸Ð¾ Ð¡Ð²Ð¾Ð±Ð¾Ð´Ð½Ð°Ñ ÐÐ²ÑÐ¾Ð¿Ð°/Ð Ð°Ð´Ð¸Ð¾ Ð¡Ð²Ð¾Ð±Ð¾Ð´Ð°</summary>
+    <description lang="ru">Ð Ð°Ð´Ð¸Ð¾ Ð¡Ð²Ð¾Ð±Ð¾Ð´Ð½Ð°Ñ ÐÐ²ÑÐ¾Ð¿Ð°/Ð Ð°Ð´Ð¸Ð¾ Ð¡Ð²Ð¾Ð±Ð¾Ð´Ð° - ÑÑÐ¾ ÑÐ°ÑÑÐ½Ð°Ñ Ð½ÐµÐºÐ¾Ð¼Ð¼ÐµÑÑÐµÑÐºÐ°Ñ Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸Ð¾Ð½Ð½Ð°Ñ ÑÐ»ÑÐ¶Ð±Ð°, ÑÐ¸Ð½Ð°Ð½ÑÐ¸ÑÑÐµÐ¼Ð°Ñ ÐÐ¾Ð½Ð³ÑÐµÑÑÐ¾Ð¼ Ð¡Ð¨Ð, Ð¾ÑÑÑÐµÑÑÐ²Ð»ÑÑÑÐ°Ñ Ð²ÐµÑÐ°Ð½Ð¸Ðµ Ð½Ð° ÑÑÑÐ°Ð½Ñ ÐÐ¾ÑÑÐ¾ÑÐ½Ð¾Ð¹ Ð¸ Ð®Ð³Ð¾-ÐÐ¾ÑÑÐ¾ÑÐ½Ð¾Ð¹ ÐÐ²ÑÐ¾Ð¿Ñ, ÐÐ°Ð²ÐºÐ°Ð·Ð°, Ð¦ÐµÐ½ÑÑÐ°Ð»ÑÐ½Ð¾Ð¹ ÐÐ·Ð¸Ð¸ Ð¸ ÐÐ»Ð¸Ð¶Ð½ÐµÐ³Ð¾ ÐÐ¾ÑÑÐ¾ÐºÐ° Ð¸ Ð½Ð° Ð Ð¾ÑÑÐ¸Ñ.
+ÐÐ¾Ð»ÐµÐµ 35 Ð¼Ð¸Ð»Ð»Ð¸Ð¾Ð½Ð¾Ð² ÑÐ»ÑÑÐ°ÑÐµÐ»ÐµÐ¹ Ð¿ÑÐ¸Ð²ÑÐºÐ»Ð¸ ÐµÐ¶ÐµÐ´Ð½ÐµÐ²Ð½Ð¾ Ð¿Ð¾Ð»Ð°Ð³Ð°ÑÑÑÑ Ð½Ð° Ð¿ÐµÑÐµÐ´Ð°Ð²Ð°ÐµÐ¼ÑÐµ Ð Ð¡Ð/Ð Ð¡ ÑÐ²Ð¾Ð´ÐºÐ¸ Ð½Ð¾Ð²Ð¾ÑÑÐµÐ¹, Ð°Ð½Ð°Ð»Ð¸ÑÐ¸ÑÐµÑÐºÐ¸Ðµ Ð¾Ð±Ð·Ð¾ÑÑ Ð¸ ÑÐµÐ¼Ð°ÑÐ¸ÑÐµÑÐºÐ¸Ðµ Ð¿ÑÐ¾Ð³ÑÐ°Ð¼Ð¼Ñ, Ð¿Ð¾ÑÐ²ÑÑÐµÐ½Ð½ÑÐµ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¼ ÑÐ¾Ð±ÑÑÐ¸ÑÐ¼ Ð² Ð¸Ñ ÑÐµÐ³Ð¸Ð¾Ð½Ðµ Ð¸ Ð¼Ð¸ÑÐµ.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.audio.teleplus.ru"
+       name="[COLOR FF00FF00]Музыка ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.0"
+       provider-name="TelePlus.ru">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="audio"
+             library="default.py">
+    <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>TelePlus.ru</summary>
+    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 4000 фильмов и полмиллиона аудиотрэков по символической цене - 700 руб в месяц.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -249,12 +288,50 @@ Audio sources are
     <platform>all</platform>
     <summary lang="en">View manga</summary>
     <description>
-		Добро пожаловать на Manga24!
-		На нашем сайте вы сможете читать мангу онлайн!
-		Манга - это японские комиксы, чрезвычайно модные, красивые и интересные.
-		На нашем сайте вы сможете читать мангу на русском, которая выходила или выходит в настоящее время. Мы часто обновляемся, поэтому заходите к нам почаще, у нас всегда есть, что почитать! :)
+		ÐÐ¾Ð±ÑÐ¾ Ð¿Ð¾Ð¶Ð°Ð»Ð¾Ð²Ð°ÑÑ Ð½Ð° Manga24!
+		ÐÐ° Ð½Ð°ÑÐµÐ¼ ÑÐ°Ð¹ÑÐµ Ð²Ñ ÑÐ¼Ð¾Ð¶ÐµÑÐµ ÑÐ¸ÑÐ°ÑÑ Ð¼Ð°Ð½Ð³Ñ Ð¾Ð½Ð»Ð°Ð¹Ð½!
+		ÐÐ°Ð½Ð³Ð° - ÑÑÐ¾ ÑÐ¿Ð¾Ð½ÑÐºÐ¸Ðµ ÐºÐ¾Ð¼Ð¸ÐºÑÑ, ÑÑÐµÐ·Ð²ÑÑÐ°Ð¹Ð½Ð¾ Ð¼Ð¾Ð´Ð½ÑÐµ, ÐºÑÐ°ÑÐ¸Ð²ÑÐµ Ð¸ Ð¸Ð½ÑÐµÑÐµÑÐ½ÑÐµ.
+		ÐÐ° Ð½Ð°ÑÐµÐ¼ ÑÐ°Ð¹ÑÐµ Ð²Ñ ÑÐ¼Ð¾Ð¶ÐµÑÐµ ÑÐ¸ÑÐ°ÑÑ Ð¼Ð°Ð½Ð³Ñ Ð½Ð° ÑÑÑÑÐºÐ¾Ð¼, ÐºÐ¾ÑÐ¾ÑÐ°Ñ Ð²ÑÑÐ¾Ð´Ð¸Ð»Ð° Ð¸Ð»Ð¸ Ð²ÑÑÐ¾Ð´Ð¸Ñ Ð² Ð½Ð°ÑÑÐ¾ÑÑÐµÐµ Ð²ÑÐµÐ¼Ñ. ÐÑ ÑÐ°ÑÑÐ¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ÑÑ, Ð¿Ð¾ÑÑÐ¾Ð¼Ñ Ð·Ð°ÑÐ¾Ð´Ð¸ÑÐµ Ðº Ð½Ð°Ð¼ Ð¿Ð¾ÑÐ°ÑÐµ, Ñ Ð½Ð°Ñ Ð²ÑÐµÐ³Ð´Ð° ÐµÑÑÑ, ÑÑÐ¾ Ð¿Ð¾ÑÐ¸ÑÐ°ÑÑ! :)
     </description>
     <license>GPL 2.0</license>
+  </extension>
+</addon>
+
+<addon id="plugin.video.5-tv.ru"
+       name="Пятый канал"
+       version="1.0.2"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Сериалы (serialu.net)</summary>
+    <description>Пятый канал, Видеоархив программ (5-tv.ru).</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.720hd.ru"
+       name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]720hd.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.8"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>HD (720p) фильмы онлайн (ВКонтакте + RuVideo).</description>
+    <platform>all</platform>
   </extension>
 </addon>
 
@@ -271,7 +348,7 @@ Audio sources are
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>IPTV</summary>
-    <description>Просмотр Internet TV из плейлиста без проверки на доступность. Плейлисты добавлять в подкаталог Playlists</description>
+    <description>ÐÑÐ¾ÑÐ¼Ð¾ÑÑ Internet TV Ð¸Ð· Ð¿Ð»ÐµÐ¹Ð»Ð¸ÑÑÐ° Ð±ÐµÐ· Ð¿ÑÐ¾Ð²ÐµÑÐºÐ¸ Ð½Ð° Ð´Ð¾ÑÑÑÐ¿Ð½Ð¾ÑÑÑ. ÐÐ»ÐµÐ¹Ð»Ð¸ÑÑÑ Ð´Ð¾Ð±Ð°Ð²Ð»ÑÑÑ Ð² Ð¿Ð¾Ð´ÐºÐ°ÑÐ°Ð»Ð¾Ð³ Playlists</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -333,6 +410,27 @@ Audio sources are
   </extension>
 </addon>
 
+<addon id="plugin.video.allserials.tv"
+       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]allserials.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.4"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>allserials.tv</summary>
+    <description>ALLSERIALS.TV - Смотреть бесплатно сериалы онлайн!
+Только на нашем ресурсе Вы с легкостью сможете отыскать интересующий вас сериал онлайн, все материалы можно смотреть бесплатно. Многие сериалы, представленные на нашем сайте, являются признанными русскими и зарубежными хитами.
+</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.arjlover.net"
        name="arjlover.net"
        version="0.0.2"
@@ -345,8 +443,8 @@ Audio sources are
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>На этом сервере собраны советские и пост-советские мультфильмы, аудио-сказки, фильмы и детские фильмы на которых выросли многие поколения моих соотечественников.</summary>
-        <description>На этом сервере собраны советские и пост-советские мультфильмы, аудио-сказки, фильмы и детские фильмы на которых выросли многие поколения моих соотечественников.</description>
+        <summary>ÐÐ° ÑÑÐ¾Ð¼ ÑÐµÑÐ²ÐµÑÐµ ÑÐ¾Ð±ÑÐ°Ð½Ñ ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ðµ Ð¸ Ð¿Ð¾ÑÑ-ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ðµ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ, Ð°ÑÐ´Ð¸Ð¾-ÑÐºÐ°Ð·ÐºÐ¸, ÑÐ¸Ð»ÑÐ¼Ñ Ð¸ Ð´ÐµÑÑÐºÐ¸Ðµ ÑÐ¸Ð»ÑÐ¼Ñ Ð½Ð° ÐºÐ¾ÑÐ¾ÑÑÑ Ð²ÑÑÐ¾ÑÐ»Ð¸ Ð¼Ð½Ð¾Ð³Ð¸Ðµ Ð¿Ð¾ÐºÐ¾Ð»ÐµÐ½Ð¸Ñ Ð¼Ð¾Ð¸Ñ ÑÐ¾Ð¾ÑÐµÑÐµÑÑÐ²ÐµÐ½Ð½Ð¸ÐºÐ¾Ð².</summary>
+        <description>ÐÐ° ÑÑÐ¾Ð¼ ÑÐµÑÐ²ÐµÑÐµ ÑÐ¾Ð±ÑÐ°Ð½Ñ ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ðµ Ð¸ Ð¿Ð¾ÑÑ-ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ðµ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ, Ð°ÑÐ´Ð¸Ð¾-ÑÐºÐ°Ð·ÐºÐ¸, ÑÐ¸Ð»ÑÐ¼Ñ Ð¸ Ð´ÐµÑÑÐºÐ¸Ðµ ÑÐ¸Ð»ÑÐ¼Ñ Ð½Ð° ÐºÐ¾ÑÐ¾ÑÑÑ Ð²ÑÑÐ¾ÑÐ»Ð¸ Ð¼Ð½Ð¾Ð³Ð¸Ðµ Ð¿Ð¾ÐºÐ¾Ð»ÐµÐ½Ð¸Ñ Ð¼Ð¾Ð¸Ñ ÑÐ¾Ð¾ÑÐµÑÐµÑÑÐ²ÐµÐ½Ð½Ð¸ÐºÐ¾Ð².</description>
         <platform>all</platform>
     </extension>
 </addon>
@@ -365,8 +463,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите сериалы и фильмы в высоком качестве на ARRR.tv</summary>
-    <description>Смотрите сериалы и фильмы в высоком качестве на ARRR.tv</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ ÑÐµÑÐ¸Ð°Ð»Ñ Ð¸ ÑÐ¸Ð»ÑÐ¼Ñ Ð² Ð²ÑÑÐ¾ÐºÐ¾Ð¼ ÐºÐ°ÑÐµÑÑÐ²Ðµ Ð½Ð° ARRR.tv</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ ÑÐµÑÐ¸Ð°Ð»Ñ Ð¸ ÑÐ¸Ð»ÑÐ¼Ñ Ð² Ð²ÑÑÐ¾ÐºÐ¾Ð¼ ÐºÐ°ÑÐµÑÑÐ²Ðµ Ð½Ð° ARRR.tv</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -384,8 +482,46 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Советское ТВ</summary>
-    <description>Советское ТВ</description>
+    <summary>Ð¡Ð¾Ð²ÐµÑÑÐºÐ¾Ðµ Ð¢Ð</summary>
+    <description>Ð¡Ð¾Ð²ÐµÑÑÐºÐ¾Ðµ Ð¢Ð</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.cinema.mosfilm.ru"
+       name="[COLOR FF00FF00]Мосфильм ([/COLOR][COLOR FFFFF000]cinema.mosfilm.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.2"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Мосфильм (cinema.mosfilm.ru)</summary>
+    <description>Иинтернет-кинотеатр ФГУП «Киноконцерн «Мосфильм» (cinema.mosfilm.ru).</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.cn.ru.tv"
+       name="[COLOR FF00FF00]Электронный город: ТВ ([/COLOR][COLOR FFFFF000]cn.ru/tv[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.2"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Электронный город: ТВ.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -403,8 +539,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с CNEWS.TV</summary>
-    <description>Смотрите свежее видео с сайта http://tv.cnews.ru</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ CNEWS.TV</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ ÑÐ²ÐµÐ¶ÐµÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://tv.cnews.ru</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -429,12 +565,54 @@ Audio sources are
   </extension>
 </addon>
 
+<addon id="plugin.video.diafilms"
+       name="[COLOR FF00FF00]Диафильмы ([/COLOR][COLOR FFFFF000]diafilmy.su[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.4"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Диафильмы</summary>
+    <description>Диафильмы – возвращение в детство
+Окунитесь в Мир Детства, вспомните магию темной комнаты, горячего диапроектора и скрипа прокручивания пленки на следующий кадр,
+ваш восторг в ту секунду, когда на стене появляется первый кадр, и начинается сказка…
+
+</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.docu.im"
+       name="[COLOR FF00FF00]Документальные фильмы ([/COLOR][COLOR FFFFF000]docu.im[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.1"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Документальные фильмы онлайн.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.e1.ru" name="E1" version="0.0.1" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</summary>
-    <description>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</description>
+    <summary>ÐÐ¸Ð´ÐµÐ¾ÑÑÐ¶ÐµÑÑ: ÐÐ¾Ð²Ð¾ÑÑÐ¸ ÐÐºÐ°ÑÐµÑÐ¸Ð½Ð±ÑÑÐ³Ð°: ÐÐºÐ°ÑÐµÑÐ¸Ð½Ð±ÑÑÐ³ ÐÐ½-ÐÐ°Ð¹Ð½</summary>
+    <description>ÐÐ¸Ð´ÐµÐ¾ÑÑÐ¶ÐµÑÑ: ÐÐ¾Ð²Ð¾ÑÑÐ¸ ÐÐºÐ°ÑÐµÑÐ¸Ð½Ð±ÑÑÐ³Ð°: ÐÐºÐ°ÑÐµÑÐ¸Ð½Ð±ÑÑÐ³ ÐÐ½-ÐÐ°Ð¹Ð½</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -452,8 +630,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Фильмы в UA-IX - это огромная коллекция фильмов</summary>
-    <description>Фильмы в UA-IX - это огромная коллекция фильмов в высоком качестве, бесплатное скачивание по прямым ссылкам, высокая скорость загрузки, скриншоты к фильмам, постоянные обновления, биографии актеров, фото.</description>
+    <summary>Ð¤Ð¸Ð»ÑÐ¼Ñ Ð² UA-IX - ÑÑÐ¾ Ð¾Ð³ÑÐ¾Ð¼Ð½Ð°Ñ ÐºÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ ÑÐ¸Ð»ÑÐ¼Ð¾Ð²</summary>
+    <description>Ð¤Ð¸Ð»ÑÐ¼Ñ Ð² UA-IX - ÑÑÐ¾ Ð¾Ð³ÑÐ¾Ð¼Ð½Ð°Ñ ÐºÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ ÑÐ¸Ð»ÑÐ¼Ð¾Ð² Ð² Ð²ÑÑÐ¾ÐºÐ¾Ð¼ ÐºÐ°ÑÐµÑÑÐ²Ðµ, Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾Ðµ ÑÐºÐ°ÑÐ¸Ð²Ð°Ð½Ð¸Ðµ Ð¿Ð¾ Ð¿ÑÑÐ¼ÑÐ¼ ÑÑÑÐ»ÐºÐ°Ð¼, Ð²ÑÑÐ¾ÐºÐ°Ñ ÑÐºÐ¾ÑÐ¾ÑÑÑ Ð·Ð°Ð³ÑÑÐ·ÐºÐ¸, ÑÐºÑÐ¸Ð½ÑÐ¾ÑÑ Ðº ÑÐ¸Ð»ÑÐ¼Ð°Ð¼, Ð¿Ð¾ÑÑÐ¾ÑÐ½Ð½ÑÐµ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ, Ð±Ð¸Ð¾Ð³ÑÐ°ÑÐ¸Ð¸ Ð°ÐºÑÐµÑÐ¾Ð², ÑÐ¾ÑÐ¾.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -475,15 +653,61 @@ Audio sources are
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>
-РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+Ð ÐÐÐÐ¢ÐÐÐ¢ Ð¢ÐÐÐ¬ÐÐ Ð Ð£ÐÐ ÐÐÐÐ!!!
 
-На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
+ÐÐ° ÑÑÐ¾Ð¼ Ð¿Ð¾ÑÑÐ°Ð»Ðµ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ Ð½Ð°Ð¹ÑÐ¸ Ð¸, ÑÑÐ¾ ÑÐ°Ð¼Ð¾Ðµ Ð³Ð»Ð°Ð²Ð½Ð¾Ðµ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾ ÑÐºÐ°ÑÐ°ÑÑ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ Ð½Ð¾Ð²Ð¸Ð½ÐºÐ¸ ÐºÐ¸Ð½Ð¾, Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÐµ ÑÐ°Ð¹Ð»Ñ, Ð»ÑÐ±Ð¸Ð¼ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ÐºÐ»Ð¸Ð¿Ñ Ð¸ ÑÐµÑÐ¸Ð°Ð»Ñ.
     </summary>
     <description>
-РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+Ð ÐÐÐÐ¢ÐÐÐ¢ Ð¢ÐÐÐ¬ÐÐ Ð Ð£ÐÐ ÐÐÐÐ!!!
 
-На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
+ÐÐ° ÑÑÐ¾Ð¼ Ð¿Ð¾ÑÑÐ°Ð»Ðµ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ Ð½Ð°Ð¹ÑÐ¸ Ð¸, ÑÑÐ¾ ÑÐ°Ð¼Ð¾Ðµ Ð³Ð»Ð°Ð²Ð½Ð¾Ðµ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾ ÑÐºÐ°ÑÐ°ÑÑ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ Ð½Ð¾Ð²Ð¸Ð½ÐºÐ¸ ÐºÐ¸Ð½Ð¾, Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÐµ ÑÐ°Ð¹Ð»Ñ, Ð»ÑÐ±Ð¸Ð¼ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ÐºÐ»Ð¸Ð¿Ñ Ð¸ ÑÐµÑÐ¸Ð°Ð»Ñ.
     </description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.galileo-online.ru"
+       name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-online.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.1"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Галилео - телевизионная развлекательно-познавательная программа канала СТС.
+Ведущий — Александр Пушной.
+</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.galileo-tv.ru"
+       name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-tv.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.1"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Галилео - телевизионная развлекательно-познавательная программа канала СТС.
+Выходит с понедельника по пятницу в 17:30.
+Дайджест «Галилео» можно увидеть по воскресеньям в 11:00.
+Ведущий — Александр Пушной.
+Производит программу ООО «ГалилеоМедиа» по лицензии и при содействии «Victoria Production» и «SevenOne International».
+Наш проект является русским вариантом немецкой программы «Galileo» канала ProSieben.
+</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -501,8 +725,46 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите online-видео с сайта http://guzei.com/live/tv/</summary>
-    <description>Смотрите online-видео с сайта http://guzei.com/live/tv/</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ online-Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://guzei.com/live/tv/</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ online-Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://guzei.com/live/tv/</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.hdkinoklub.ru"
+       name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]hdkinoklub.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.3"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Приветствуем Вас на сайте HDkinoKlub.ru - здесь можно совершенно бесплатно и без регистрации смотреть фильмы, сериалы и мультфильмы онлайн в HD качестве..</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.igru.net.ua"
+       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]fepcom.net[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.1.4"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Фильмы (igru.net.ua)</summary>
+    <description>Русские и зарубежные фильмы предоставляемые сайтом fepcom.net.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -513,6 +775,19 @@ Audio sources are
   <extension point="xbmc.addon.metadata">
     <summary>Online TV from inetcom.tv</summary>
     <description>Online TV from inetcom.tv</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.5.1" provider-name="ivi.ru (NuisMons)">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+	<language>ru</language>
+    <summary>ivi.ru - cмотри любимые фильмы, сериалы, программы, мультфильмы бесплатно и легально.</summary>
+    <description>Приложение интернет-кинотеатра ivi.ru предоставляет доступ к самой большой бесплатной коллекции лицензионного видео российского интернета.
+С помощью приложения ivi.ru вы можете смотреть фильмы, сериалы, ТВ-программы, мультфильмы в отличном качестве бесплатно и легально.
+Обращаем ваше внимание, что воспроизведение видео возможно только на территории Российской Федерации</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -540,8 +815,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Онлайн-телевидение Kartina.TV</summary>
-    <description>Онлайн-телевидение Kartina.TV: более 110 русскоязычных каналов и видеотека от 15 евро в месяц</description>
+    <summary>ÐÐ½Ð»Ð°Ð¹Ð½-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ Kartina.TV</summary>
+    <description>ÐÐ½Ð»Ð°Ð¹Ð½-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ Kartina.TV: Ð±Ð¾Ð»ÐµÐµ 110 ÑÑÑÑÐºÐ¾ÑÐ·ÑÑÐ½ÑÑ ÐºÐ°Ð½Ð°Ð»Ð¾Ð² Ð¸ Ð²Ð¸Ð´ÐµÐ¾ÑÐµÐºÐ° Ð¾Ñ 15 ÐµÐ²ÑÐ¾ Ð² Ð¼ÐµÑÑÑ</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -558,20 +833,20 @@ Audio sources are
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>Фильмы, сериалы с ресурса kino-live.org</summary>
-        <description>Фильмы, сериалы с ресурса kino-live.org</description>
+        <summary>Ð¤Ð¸Ð»ÑÐ¼Ñ, ÑÐµÑÐ¸Ð°Ð»Ñ Ñ ÑÐµÑÑÑÑÐ° kino-live.org</summary>
+        <description>Ð¤Ð¸Ð»ÑÐ¼Ñ, ÑÐµÑÐ¸Ð°Ð»Ñ Ñ ÑÐµÑÑÑÑÐ° kino-live.org</description>
         <platform>all</platform>
     </extension>
 </addon>
 
-<addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.6" provider-name="HD-Lab Team">
+<addon id="plugin.video.kinobaza.tv" name="ÐÐ¸Ð½Ð¾Ð±Ð°Ð·Ð°" version="1.0.6" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Кинобаза: Что смотреть? Где скачать?</summary>
-    <description>У нас на сайте вы можете найти новинки фильмов в хорошем качестве или HD быстро и без регистрации. Фильмы в HD качестве и DVDRip. Каждый день новые добавления. У нас можно найти что посмотреть сегодня вечером и получить уведомления о появлении новых серий и фильмов в Сети. больше не нужно ждать когда появится фильм онлайн, можно пордписаться на уведомление о выходе</description>
+    <summary>ÐÐ¸Ð½Ð¾Ð±Ð°Ð·Ð°: Ð§ÑÐ¾ ÑÐ¼Ð¾ÑÑÐµÑÑ? ÐÐ´Ðµ ÑÐºÐ°ÑÐ°ÑÑ?</summary>
+    <description>Ð£ Ð½Ð°Ñ Ð½Ð° ÑÐ°Ð¹ÑÐµ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ Ð½Ð°Ð¹ÑÐ¸ Ð½Ð¾Ð²Ð¸Ð½ÐºÐ¸ ÑÐ¸Ð»ÑÐ¼Ð¾Ð² Ð² ÑÐ¾ÑÐ¾ÑÐµÐ¼ ÐºÐ°ÑÐµÑÑÐ²Ðµ Ð¸Ð»Ð¸ HD Ð±ÑÑÑÑÐ¾ Ð¸ Ð±ÐµÐ· ÑÐµÐ³Ð¸ÑÑÑÐ°ÑÐ¸Ð¸. Ð¤Ð¸Ð»ÑÐ¼Ñ Ð² HD ÐºÐ°ÑÐµÑÑÐ²Ðµ Ð¸ DVDRip. ÐÐ°Ð¶Ð´ÑÐ¹ Ð´ÐµÐ½Ñ Ð½Ð¾Ð²ÑÐµ Ð´Ð¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ñ. Ð£ Ð½Ð°Ñ Ð¼Ð¾Ð¶Ð½Ð¾ Ð½Ð°Ð¹ÑÐ¸ ÑÑÐ¾ Ð¿Ð¾ÑÐ¼Ð¾ÑÑÐµÑÑ ÑÐµÐ³Ð¾Ð´Ð½Ñ Ð²ÐµÑÐµÑÐ¾Ð¼ Ð¸ Ð¿Ð¾Ð»ÑÑÐ¸ÑÑ ÑÐ²ÐµÐ´Ð¾Ð¼Ð»ÐµÐ½Ð¸Ñ Ð¾ Ð¿Ð¾ÑÐ²Ð»ÐµÐ½Ð¸Ð¸ Ð½Ð¾Ð²ÑÑ ÑÐµÑÐ¸Ð¹ Ð¸ ÑÐ¸Ð»ÑÐ¼Ð¾Ð² Ð² Ð¡ÐµÑÐ¸. Ð±Ð¾Ð»ÑÑÐµ Ð½Ðµ Ð½ÑÐ¶Ð½Ð¾ Ð¶Ð´Ð°ÑÑ ÐºÐ¾Ð³Ð´Ð° Ð¿Ð¾ÑÐ²Ð¸ÑÑÑ ÑÐ¸Ð»ÑÐ¼ Ð¾Ð½Ð»Ð°Ð¹Ð½, Ð¼Ð¾Ð¶Ð½Ð¾ Ð¿Ð¾ÑÐ´Ð¿Ð¸ÑÐ°ÑÑÑÑ Ð½Ð° ÑÐ²ÐµÐ´Ð¾Ð¼Ð»ÐµÐ½Ð¸Ðµ Ð¾ Ð²ÑÑÐ¾Ð´Ðµ</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -580,8 +855,8 @@ Audio sources are
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>KINOCHI.ORG - Проект бесплатного онлайн видео</summary>
-    <description>КИНОЧИ - сайт, позволяющий в реальном времени просмотривать качественный видеоконтент пользуясь удобным функционалом и навигацией, настраивать обновления ваших любимых жанров и сериалов используя систему профилей</description>
+    <summary>KINOCHI.ORG - ÐÑÐ¾ÐµÐºÑ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾Ð³Ð¾ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð²Ð¸Ð´ÐµÐ¾</summary>
+    <description>ÐÐÐÐÐ§Ð - ÑÐ°Ð¹Ñ, Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÑÑÐ¸Ð¹ Ð² ÑÐµÐ°Ð»ÑÐ½Ð¾Ð¼ Ð²ÑÐµÐ¼ÐµÐ½Ð¸ Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ¸Ð²Ð°ÑÑ ÐºÐ°ÑÐµÑÑÐ²ÐµÐ½Ð½ÑÐ¹ Ð²Ð¸Ð´ÐµÐ¾ÐºÐ¾Ð½ÑÐµÐ½Ñ Ð¿Ð¾Ð»ÑÐ·ÑÑÑÑ ÑÐ´Ð¾Ð±Ð½ÑÐ¼ ÑÑÐ½ÐºÑÐ¸Ð¾Ð½Ð°Ð»Ð¾Ð¼ Ð¸ Ð½Ð°Ð²Ð¸Ð³Ð°ÑÐ¸ÐµÐ¹, Ð½Ð°ÑÑÑÐ°Ð¸Ð²Ð°ÑÑ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ Ð²Ð°ÑÐ¸Ñ Ð»ÑÐ±Ð¸Ð¼ÑÑ Ð¶Ð°Ð½ÑÐ¾Ð² Ð¸ ÑÐµÑÐ¸Ð°Ð»Ð¾Ð² Ð¸ÑÐ¿Ð¾Ð»ÑÐ·ÑÑ ÑÐ¸ÑÑÐµÐ¼Ñ Ð¿ÑÐ¾ÑÐ¸Ð»ÐµÐ¹</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -609,14 +884,14 @@ Audio sources are
 		<provides>video audio</provides>
 	</extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Kiwi.kz - видео в Казахстане</summary>
-	<description>Kiwi.kz - видео-сервис в Казахстане. Видео-портал, позволяющий вам бесплатно просматривать самое новое, популярное и интересное видео в различных категориях. Загружайте свое видео, просматривайте видео, транслируйте и смотрите видео онлайн.</description>
+    <summary>Kiwi.kz - Ð²Ð¸Ð´ÐµÐ¾ Ð² ÐÐ°Ð·Ð°ÑÑÑÐ°Ð½Ðµ</summary>
+	<description>Kiwi.kz - Ð²Ð¸Ð´ÐµÐ¾-ÑÐµÑÐ²Ð¸Ñ Ð² ÐÐ°Ð·Ð°ÑÑÑÐ°Ð½Ðµ. ÐÐ¸Ð´ÐµÐ¾-Ð¿Ð¾ÑÑÐ°Ð», Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÑÑÐ¸Ð¹ Ð²Ð°Ð¼ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾ Ð¿ÑÐ¾ÑÐ¼Ð°ÑÑÐ¸Ð²Ð°ÑÑ ÑÐ°Ð¼Ð¾Ðµ Ð½Ð¾Ð²Ð¾Ðµ, Ð¿Ð¾Ð¿ÑÐ»ÑÑÐ½Ð¾Ðµ Ð¸ Ð¸Ð½ÑÐµÑÐµÑÐ½Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð² ÑÐ°Ð·Ð»Ð¸ÑÐ½ÑÑ ÐºÐ°ÑÐµÐ³Ð¾ÑÐ¸ÑÑ. ÐÐ°Ð³ÑÑÐ¶Ð°Ð¹ÑÐµ ÑÐ²Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾, Ð¿ÑÐ¾ÑÐ¼Ð°ÑÑÐ¸Ð²Ð°Ð¹ÑÐµ Ð²Ð¸Ð´ÐµÐ¾, ÑÑÐ°Ð½ÑÐ»Ð¸ÑÑÐ¹ÑÐµ Ð¸ ÑÐ¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ð¾Ð½Ð»Ð°Ð¹Ð½.</description>
     <platform>all</platform>
   </extension>
 </addon>
 
 <addon id="plugin.video.mults.spb.ru"
-       name="Каталог мультфильмов"
+       name="ÐÐ°ÑÐ°Ð»Ð¾Ð³ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ð¾Ð²"
        version="1.0.2"
        provider-name="HD-Lab Team">
   <requires>
@@ -628,20 +903,60 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Лучшие мультфильмы из вашего детства</summary>
-    <description>На сайте http://mults.spb.ru/ вы можете бесплатно посмотреть мультфильмы онлайн, а также скачать мультики для просмотра на компьютере или телевизоре. На сайте собрана коллекция мультфильмов советских времен и не только. Самые лучшие мультики из вашего детства! Коллекция мультфильмов постоянно пополняется новыми и старыми мультиками.</description>
+    <summary>ÐÑÑÑÐ¸Ðµ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ Ð¸Ð· Ð²Ð°ÑÐµÐ³Ð¾ Ð´ÐµÑÑÑÐ²Ð°</summary>
+    <description>ÐÐ° ÑÐ°Ð¹ÑÐµ http://mults.spb.ru/ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾ Ð¿Ð¾ÑÐ¼Ð¾ÑÑÐµÑÑ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ Ð¾Ð½Ð»Ð°Ð¹Ð½, Ð° ÑÐ°ÐºÐ¶Ðµ ÑÐºÐ°ÑÐ°ÑÑ Ð¼ÑÐ»ÑÑÐ¸ÐºÐ¸ Ð´Ð»Ñ Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ° Ð½Ð° ÐºÐ¾Ð¼Ð¿ÑÑÑÐµÑÐµ Ð¸Ð»Ð¸ ÑÐµÐ»ÐµÐ²Ð¸Ð·Ð¾ÑÐµ. ÐÐ° ÑÐ°Ð¹ÑÐµ ÑÐ¾Ð±ÑÐ°Ð½Ð° ÐºÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ð¾Ð² ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ñ Ð²ÑÐµÐ¼ÐµÐ½ Ð¸ Ð½Ðµ ÑÐ¾Ð»ÑÐºÐ¾. Ð¡Ð°Ð¼ÑÐµ Ð»ÑÑÑÐ¸Ðµ Ð¼ÑÐ»ÑÑÐ¸ÐºÐ¸ Ð¸Ð· Ð²Ð°ÑÐµÐ³Ð¾ Ð´ÐµÑÑÑÐ²Ð°! ÐÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ð¾Ð² Ð¿Ð¾ÑÑÐ¾ÑÐ½Ð½Ð¾ Ð¿Ð¾Ð¿Ð¾Ð»Ð½ÑÐµÑÑÑ Ð½Ð¾Ð²ÑÐ¼Ð¸ Ð¸ ÑÑÐ°ÑÑÐ¼Ð¸ Ð¼ÑÐ»ÑÑÐ¸ÐºÐ°Ð¼Ð¸.</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.1" provider-name="Myvi">
+<addon id="plugin.video.music.ivi.ru" name="music.ivi.ru" version="0.1.0" provider-name="ivi.ru">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Муви.ру - Только лучшие ролики сети!</summary>
-    <description>Это бесплатный сервис для размещения, хранения и просмотра видеофайлов.
-Активное пользовательское сообщество поддерживается социальной сетью сайта с такими функциями, как оценка видео других авторов, участие в обсуждениях, объединение в сообщества по интересам.
-Автоматическая система учета пользовательских интересов (мы называем ее ласково «Моя прелесть») учитывает интересы посетителей, позволяя таргетировать контент под каждого пользователя. Фильтрация контента «Муви» осуществляется самими пользователями, что позволяет в автоматическом режиме отображать на сайте только самые интересные для аудитории ролики.</description>
+	<language>ru</language>
+    <summary>Клипы: смотреть видео клипы онлайн, слушать музыку онлайн, видеоклипы бесплатно и без регистрации — music.ivi.ru</summary>
+    <description>Клипы: смотреть видео клипы онлайн, слушать музыку онлайн, видеоклипы бесплатно и без регистрации — music.ivi.ru</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.muzunga.tv" name="Muzunga.TV" version="1.0.3" provider-name="Muzunga.TV">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Фильмы, сериалы и телевидение в HD качестве онлайн</summary>
+    <description>Ресурс Muzunga.TV является общедоступным для всех зарегистрированных пользователей и осуществляет свою деятельность с соблюдением действующего законодательства Украины и на основании договора и лицензии на право вещания ДП "УААСП" КТ-3554 от 01.02.2011, обеспечивающим выплаты вознаграждений по авторским и смежным правам.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.my-hit.ru"
+       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]my-hit.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.3"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Фильмы онлайн, наш кино портал.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.myvi.ru" name="ÐÐ£ÐÐ" version="1.0.1" provider-name="Myvi">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>ÐÑÐ²Ð¸.ÑÑ - Ð¢Ð¾Ð»ÑÐºÐ¾ Ð»ÑÑÑÐ¸Ðµ ÑÐ¾Ð»Ð¸ÐºÐ¸ ÑÐµÑÐ¸!</summary>
+    <description>Ð­ÑÐ¾ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½ÑÐ¹ ÑÐµÑÐ²Ð¸Ñ Ð´Ð»Ñ ÑÐ°Ð·Ð¼ÐµÑÐµÐ½Ð¸Ñ, ÑÑÐ°Ð½ÐµÐ½Ð¸Ñ Ð¸ Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ° Ð²Ð¸Ð´ÐµÐ¾ÑÐ°Ð¹Ð»Ð¾Ð².
+ÐÐºÑÐ¸Ð²Ð½Ð¾Ðµ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»ÑÑÐºÐ¾Ðµ ÑÐ¾Ð¾Ð±ÑÐµÑÑÐ²Ð¾ Ð¿Ð¾Ð´Ð´ÐµÑÐ¶Ð¸Ð²Ð°ÐµÑÑÑ ÑÐ¾ÑÐ¸Ð°Ð»ÑÐ½Ð¾Ð¹ ÑÐµÑÑÑ ÑÐ°Ð¹ÑÐ° Ñ ÑÐ°ÐºÐ¸Ð¼Ð¸ ÑÑÐ½ÐºÑÐ¸ÑÐ¼Ð¸, ÐºÐ°Ðº Ð¾ÑÐµÐ½ÐºÐ° Ð²Ð¸Ð´ÐµÐ¾ Ð´ÑÑÐ³Ð¸Ñ Ð°Ð²ÑÐ¾ÑÐ¾Ð², ÑÑÐ°ÑÑÐ¸Ðµ Ð² Ð¾Ð±ÑÑÐ¶Ð´ÐµÐ½Ð¸ÑÑ, Ð¾Ð±ÑÐµÐ´Ð¸Ð½ÐµÐ½Ð¸Ðµ Ð² ÑÐ¾Ð¾Ð±ÑÐµÑÑÐ²Ð° Ð¿Ð¾ Ð¸Ð½ÑÐµÑÐµÑÐ°Ð¼.
+ÐÐ²ÑÐ¾Ð¼Ð°ÑÐ¸ÑÐµÑÐºÐ°Ñ ÑÐ¸ÑÑÐµÐ¼Ð° ÑÑÐµÑÐ° Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»ÑÑÐºÐ¸Ñ Ð¸Ð½ÑÐµÑÐµÑÐ¾Ð² (Ð¼Ñ Ð½Ð°Ð·ÑÐ²Ð°ÐµÐ¼ ÐµÐµ Ð»Ð°ÑÐºÐ¾Ð²Ð¾ Â«ÐÐ¾Ñ Ð¿ÑÐµÐ»ÐµÑÑÑÂ») ÑÑÐ¸ÑÑÐ²Ð°ÐµÑ Ð¸Ð½ÑÐµÑÐµÑÑ Ð¿Ð¾ÑÐµÑÐ¸ÑÐµÐ»ÐµÐ¹, Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÑ ÑÐ°ÑÐ³ÐµÑÐ¸ÑÐ¾Ð²Ð°ÑÑ ÐºÐ¾Ð½ÑÐµÐ½Ñ Ð¿Ð¾Ð´ ÐºÐ°Ð¶Ð´Ð¾Ð³Ð¾ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ñ. Ð¤Ð¸Ð»ÑÑÑÐ°ÑÐ¸Ñ ÐºÐ¾Ð½ÑÐµÐ½ÑÐ° Â«ÐÑÐ²Ð¸Â» Ð¾ÑÑÑÐµÑÑÐ²Ð»ÑÐµÑÑÑ ÑÐ°Ð¼Ð¸Ð¼Ð¸ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»ÑÐ¼Ð¸, ÑÑÐ¾ Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÐµÑ Ð² Ð°Ð²ÑÐ¾Ð¼Ð°ÑÐ¸ÑÐµÑÐºÐ¾Ð¼ ÑÐµÐ¶Ð¸Ð¼Ðµ Ð¾ÑÐ¾Ð±ÑÐ°Ð¶Ð°ÑÑ Ð½Ð° ÑÐ°Ð¹ÑÐµ ÑÐ¾Ð»ÑÐºÐ¾ ÑÐ°Ð¼ÑÐµ Ð¸Ð½ÑÐµÑÐµÑÐ½ÑÐµ Ð´Ð»Ñ Ð°ÑÐ´Ð¸ÑÐ¾ÑÐ¸Ð¸ ÑÐ¾Ð»Ð¸ÐºÐ¸.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -650,8 +965,47 @@ Audio sources are
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>new-kino.net - фильмы, мультфильмы, сериалы</summary>
-    <description>new-kino.net - фильмы, мультфильмы, сериалы - круглосуточно на нашем сайте, смотрите, наслаждайтесь и отдыхайте</description>
+    <summary>new-kino.net - ÑÐ¸Ð»ÑÐ¼Ñ, Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ, ÑÐµÑÐ¸Ð°Ð»Ñ</summary>
+    <description>new-kino.net - ÑÐ¸Ð»ÑÐ¼Ñ, Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ, ÑÐµÑÐ¸Ð°Ð»Ñ - ÐºÑÑÐ³Ð»Ð¾ÑÑÑÐ¾ÑÐ½Ð¾ Ð½Ð° Ð½Ð°ÑÐµÐ¼ ÑÐ°Ð¹ÑÐµ, ÑÐ¼Ð¾ÑÑÐ¸ÑÐµ, Ð½Ð°ÑÐ»Ð°Ð¶Ð´Ð°Ð¹ÑÐµÑÑ Ð¸ Ð¾ÑÐ´ÑÑÐ°Ð¹ÑÐµ</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.nowfilms.ru"
+       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FF00FFFF]Now[/COLOR][COLOR FFFF0040]Films.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.5"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>Медиапортал [COLOR FF00FFFF]Now[/COLOR][COLOR FFFF0040]Films.ru[/COLOR] - фильмы, сериалы.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.online.anidub.com"
+       name="Online.anidub.com"
+       version="0.1.3"
+       provider-name="NuisMons">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+	<import addon="script.module.beautifulsoup"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Просмотр аниме онлайн online.anidub.com</summary>
+    <description>Просмотр аниме онлайн online.anidub.com</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -679,8 +1033,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Онлайн-телевидение Rodnoe.TV</summary>
-    <description>Онлайн-телевидение Rodnoe.TV: более 100 русскоязычных каналов от 10 евро в месяц.</description>
+    <summary>ÐÐ½Ð»Ð°Ð¹Ð½-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ Rodnoe.TV</summary>
+    <description>ÐÐ½Ð»Ð°Ð¹Ð½-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ Rodnoe.TV: Ð±Ð¾Ð»ÐµÐµ 100 ÑÑÑÑÐºÐ¾ÑÐ·ÑÑÐ½ÑÑ ÐºÐ°Ð½Ð°Ð»Ð¾Ð² Ð¾Ñ 10 ÐµÐ²ÑÐ¾ Ð² Ð¼ÐµÑÑÑ.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -699,7 +1053,7 @@ Audio sources are
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>Russian Podcasting</summary>
-    <description>Russian Podcasting - первый и единственный свободный подкаст-терминал в Российском интернете. RPOD не делит подкасты на хорошие и плохие, не навязывает выбор странной группы лиц, не требует передавать исключительные права, а просто даёт возможность опубликовать свои подкасты любому, кто этого пожелает.</description>
+    <description>Russian Podcasting - Ð¿ÐµÑÐ²ÑÐ¹ Ð¸ ÐµÐ´Ð¸Ð½ÑÑÐ²ÐµÐ½Ð½ÑÐ¹ ÑÐ²Ð¾Ð±Ð¾Ð´Ð½ÑÐ¹ Ð¿Ð¾Ð´ÐºÐ°ÑÑ-ÑÐµÑÐ¼Ð¸Ð½Ð°Ð» Ð² Ð Ð¾ÑÑÐ¸Ð¹ÑÐºÐ¾Ð¼ Ð¸Ð½ÑÐµÑÐ½ÐµÑÐµ. RPOD Ð½Ðµ Ð´ÐµÐ»Ð¸Ñ Ð¿Ð¾Ð´ÐºÐ°ÑÑÑ Ð½Ð° ÑÐ¾ÑÐ¾ÑÐ¸Ðµ Ð¸ Ð¿Ð»Ð¾ÑÐ¸Ðµ, Ð½Ðµ Ð½Ð°Ð²ÑÐ·ÑÐ²Ð°ÐµÑ Ð²ÑÐ±Ð¾Ñ ÑÑÑÐ°Ð½Ð½Ð¾Ð¹ Ð³ÑÑÐ¿Ð¿Ñ Ð»Ð¸Ñ, Ð½Ðµ ÑÑÐµÐ±ÑÐµÑ Ð¿ÐµÑÐµÐ´Ð°Ð²Ð°ÑÑ Ð¸ÑÐºÐ»ÑÑÐ¸ÑÐµÐ»ÑÐ½ÑÐµ Ð¿ÑÐ°Ð²Ð°, Ð° Ð¿ÑÐ¾ÑÑÐ¾ Ð´Ð°ÑÑ Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑÑ Ð¾Ð¿ÑÐ±Ð»Ð¸ÐºÐ¾Ð²Ð°ÑÑ ÑÐ²Ð¾Ð¸ Ð¿Ð¾Ð´ÐºÐ°ÑÑÑ Ð»ÑÐ±Ð¾Ð¼Ñ, ÐºÑÐ¾ ÑÑÐ¾Ð³Ð¾ Ð¿Ð¾Ð¶ÐµÐ»Ð°ÐµÑ.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -716,8 +1070,8 @@ Audio sources are
         <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>RUHD.ru - Видео Высокого качества №1 в России!</summary>
-    <description>Цель нашего сайта, создать сообщество, которое позволит людям загружать или посматривать видео высокого качества, например, fullHD, прямо с нашего сайта - онлайн</description>
+    <summary>RUHD.ru - ÐÐ¸Ð´ÐµÐ¾ ÐÑÑÐ¾ÐºÐ¾Ð³Ð¾ ÐºÐ°ÑÐµÑÑÐ²Ð° â1 Ð² Ð Ð¾ÑÑÐ¸Ð¸!</summary>
+    <description>Ð¦ÐµÐ»Ñ Ð½Ð°ÑÐµÐ³Ð¾ ÑÐ°Ð¹ÑÐ°, ÑÐ¾Ð·Ð´Ð°ÑÑ ÑÐ¾Ð¾Ð±ÑÐµÑÑÐ²Ð¾, ÐºÐ¾ÑÐ¾ÑÐ¾Ðµ Ð¿Ð¾Ð·Ð²Ð¾Ð»Ð¸Ñ Ð»ÑÐ´ÑÐ¼ Ð·Ð°Ð³ÑÑÐ¶Ð°ÑÑ Ð¸Ð»Ð¸ Ð¿Ð¾ÑÐ¼Ð°ÑÑÐ¸Ð²Ð°ÑÑ Ð²Ð¸Ð´ÐµÐ¾ Ð²ÑÑÐ¾ÐºÐ¾Ð³Ð¾ ÐºÐ°ÑÐµÑÑÐ²Ð°, Ð½Ð°Ð¿ÑÐ¸Ð¼ÐµÑ, fullHD, Ð¿ÑÑÐ¼Ð¾ Ñ Ð½Ð°ÑÐµÐ³Ð¾ ÑÐ°Ð¹ÑÐ° - Ð¾Ð½Ð»Ð°Ð¹Ð½</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -735,8 +1089,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта RuHD.TV</summary>
-    <description>Смотрите видео с сайта RuHD.TV</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° RuHD.TV</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° RuHD.TV</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -754,9 +1108,9 @@ Audio sources are
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary lang="en">Rurem.TV plugin</summary>
-		<summary lang="ru">Rurem.TV плагин для XBMC</summary>
+		<summary lang="ru">Rurem.TV Ð¿Ð»Ð°Ð³Ð¸Ð½ Ð´Ð»Ñ XBMC</summary>
         <description lang="en">Over 100 TV channels from Russia, Ukraine and other CIS countries, 40,000+ movies, huge selection of archived programs.</description>
-		<description lang="ru">Более 100 каналов ТВ из России, Украины и стран СНГ, архив, огромная видеотека.</description>
+		<description lang="ru">ÐÐ¾Ð»ÐµÐµ 100 ÐºÐ°Ð½Ð°Ð»Ð¾Ð² Ð¢Ð Ð¸Ð· Ð Ð¾ÑÑÐ¸Ð¸, Ð£ÐºÑÐ°Ð¸Ð½Ñ Ð¸ ÑÑÑÐ°Ð½ Ð¡ÐÐ, Ð°ÑÑÐ¸Ð², Ð¾Ð³ÑÐ¾Ð¼Ð½Ð°Ñ Ð²Ð¸Ð´ÐµÐ¾ÑÐµÐºÐ°.</description>
         <platform>all</platform>
     </extension>
 </addon>
@@ -774,8 +1128,8 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта RuSD.TV</summary>
-    <description>Смотрите видео с сайта RuSD.TV</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° RuSD.TV</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° RuSD.TV</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -786,10 +1140,10 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://russia.ru/</summary>
-    <description>Russia.ru - первый российский телеканал, созданный для пользователей интернета. Открывшись в октябре 2007 года как арт-проект, он стал лидером российского интернет-телевидения и твердо занял первое место среди сетевых телепроектов. Ежемесячный охват аудитории Russia.ru - более 2 400 000 зрителей (исследования Gallup). Подавляющее их большинство – люди с быстрым подключением к сети и мощными компьютерами.
-Russia.ru делает передачи для самой разной аудитории, освещает темы, которые игнорирует традиционное телевидение. Нелинейный формат вещания позволяет зрителю самому выбирать интересные для себя сюжеты. Контент Russia.ru не устаревает и доступен в любое время в любом месте.
-Особое значение мы придаем сюжетам, посвященным жизни современной России. Во время войны в Южной Осетии телеканал каждый день размещал информацию о ходе военных действий, прогнозы специалистов и репортажи, которые делала съемочная группа в зоне конфликта. Фильм «Война 08.08.08» имел широкий общественный резонанс - его посмотрело более 1.8 млн. человек. В 2009 году на экраны Russia.ru вышел уникальный фильм, посвященный Калмыкии, фильм «Путешествие по Дону», ряд сюжетов из Нижнего Новгорода.</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://russia.ru/</summary>
+    <description>Russia.ru - Ð¿ÐµÑÐ²ÑÐ¹ ÑÐ¾ÑÑÐ¸Ð¹ÑÐºÐ¸Ð¹ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð», ÑÐ¾Ð·Ð´Ð°Ð½Ð½ÑÐ¹ Ð´Ð»Ñ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»ÐµÐ¹ Ð¸Ð½ÑÐµÑÐ½ÐµÑÐ°. ÐÑÐºÑÑÐ²ÑÐ¸ÑÑ Ð² Ð¾ÐºÑÑÐ±ÑÐµ 2007 Ð³Ð¾Ð´Ð° ÐºÐ°Ðº Ð°ÑÑ-Ð¿ÑÐ¾ÐµÐºÑ, Ð¾Ð½ ÑÑÐ°Ð» Ð»Ð¸Ð´ÐµÑÐ¾Ð¼ ÑÐ¾ÑÑÐ¸Ð¹ÑÐºÐ¾Ð³Ð¾ Ð¸Ð½ÑÐµÑÐ½ÐµÑ-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ñ Ð¸ ÑÐ²ÐµÑÐ´Ð¾ Ð·Ð°Ð½ÑÐ» Ð¿ÐµÑÐ²Ð¾Ðµ Ð¼ÐµÑÑÐ¾ ÑÑÐµÐ´Ð¸ ÑÐµÑÐµÐ²ÑÑ ÑÐµÐ»ÐµÐ¿ÑÐ¾ÐµÐºÑÐ¾Ð². ÐÐ¶ÐµÐ¼ÐµÑÑÑÐ½ÑÐ¹ Ð¾ÑÐ²Ð°Ñ Ð°ÑÐ´Ð¸ÑÐ¾ÑÐ¸Ð¸ Russia.ru - Ð±Ð¾Ð»ÐµÐµ 2 400 000 Ð·ÑÐ¸ÑÐµÐ»ÐµÐ¹ (Ð¸ÑÑÐ»ÐµÐ´Ð¾Ð²Ð°Ð½Ð¸Ñ Gallup). ÐÐ¾Ð´Ð°Ð²Ð»ÑÑÑÐµÐµ Ð¸Ñ Ð±Ð¾Ð»ÑÑÐ¸Ð½ÑÑÐ²Ð¾ â Ð»ÑÐ´Ð¸ Ñ Ð±ÑÑÑÑÑÐ¼ Ð¿Ð¾Ð´ÐºÐ»ÑÑÐµÐ½Ð¸ÐµÐ¼ Ðº ÑÐµÑÐ¸ Ð¸ Ð¼Ð¾ÑÐ½ÑÐ¼Ð¸ ÐºÐ¾Ð¼Ð¿ÑÑÑÐµÑÐ°Ð¼Ð¸.
+Russia.ru Ð´ÐµÐ»Ð°ÐµÑ Ð¿ÐµÑÐµÐ´Ð°ÑÐ¸ Ð´Ð»Ñ ÑÐ°Ð¼Ð¾Ð¹ ÑÐ°Ð·Ð½Ð¾Ð¹ Ð°ÑÐ´Ð¸ÑÐ¾ÑÐ¸Ð¸, Ð¾ÑÐ²ÐµÑÐ°ÐµÑ ÑÐµÐ¼Ñ, ÐºÐ¾ÑÐ¾ÑÑÐµ Ð¸Ð³Ð½Ð¾ÑÐ¸ÑÑÐµÑ ÑÑÐ°Ð´Ð¸ÑÐ¸Ð¾Ð½Ð½Ð¾Ðµ ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ. ÐÐµÐ»Ð¸Ð½ÐµÐ¹Ð½ÑÐ¹ ÑÐ¾ÑÐ¼Ð°Ñ Ð²ÐµÑÐ°Ð½Ð¸Ñ Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÐµÑ Ð·ÑÐ¸ÑÐµÐ»Ñ ÑÐ°Ð¼Ð¾Ð¼Ñ Ð²ÑÐ±Ð¸ÑÐ°ÑÑ Ð¸Ð½ÑÐµÑÐµÑÐ½ÑÐµ Ð´Ð»Ñ ÑÐµÐ±Ñ ÑÑÐ¶ÐµÑÑ. ÐÐ¾Ð½ÑÐµÐ½Ñ Russia.ru Ð½Ðµ ÑÑÑÐ°ÑÐµÐ²Ð°ÐµÑ Ð¸ Ð´Ð¾ÑÑÑÐ¿ÐµÐ½ Ð² Ð»ÑÐ±Ð¾Ðµ Ð²ÑÐµÐ¼Ñ Ð² Ð»ÑÐ±Ð¾Ð¼ Ð¼ÐµÑÑÐµ.
+ÐÑÐ¾Ð±Ð¾Ðµ Ð·Ð½Ð°ÑÐµÐ½Ð¸Ðµ Ð¼Ñ Ð¿ÑÐ¸Ð´Ð°ÐµÐ¼ ÑÑÐ¶ÐµÑÐ°Ð¼, Ð¿Ð¾ÑÐ²ÑÑÐµÐ½Ð½ÑÐ¼ Ð¶Ð¸Ð·Ð½Ð¸ ÑÐ¾Ð²ÑÐµÐ¼ÐµÐ½Ð½Ð¾Ð¹ Ð Ð¾ÑÑÐ¸Ð¸. ÐÐ¾ Ð²ÑÐµÐ¼Ñ Ð²Ð¾Ð¹Ð½Ñ Ð² Ð®Ð¶Ð½Ð¾Ð¹ ÐÑÐµÑÐ¸Ð¸ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð» ÐºÐ°Ð¶Ð´ÑÐ¹ Ð´ÐµÐ½Ñ ÑÐ°Ð·Ð¼ÐµÑÐ°Ð» Ð¸Ð½ÑÐ¾ÑÐ¼Ð°ÑÐ¸Ñ Ð¾ ÑÐ¾Ð´Ðµ Ð²Ð¾ÐµÐ½Ð½ÑÑ Ð´ÐµÐ¹ÑÑÐ²Ð¸Ð¹, Ð¿ÑÐ¾Ð³Ð½Ð¾Ð·Ñ ÑÐ¿ÐµÑÐ¸Ð°Ð»Ð¸ÑÑÐ¾Ð² Ð¸ ÑÐµÐ¿Ð¾ÑÑÐ°Ð¶Ð¸, ÐºÐ¾ÑÐ¾ÑÑÐµ Ð´ÐµÐ»Ð°Ð»Ð° ÑÑÐµÐ¼Ð¾ÑÐ½Ð°Ñ Ð³ÑÑÐ¿Ð¿Ð° Ð² Ð·Ð¾Ð½Ðµ ÐºÐ¾Ð½ÑÐ»Ð¸ÐºÑÐ°. Ð¤Ð¸Ð»ÑÐ¼ Â«ÐÐ¾Ð¹Ð½Ð° 08.08.08Â» Ð¸Ð¼ÐµÐ» ÑÐ¸ÑÐ¾ÐºÐ¸Ð¹ Ð¾Ð±ÑÐµÑÑÐ²ÐµÐ½Ð½ÑÐ¹ ÑÐµÐ·Ð¾Ð½Ð°Ð½Ñ - ÐµÐ³Ð¾ Ð¿Ð¾ÑÐ¼Ð¾ÑÑÐµÐ»Ð¾ Ð±Ð¾Ð»ÐµÐµ 1.8 Ð¼Ð»Ð½. ÑÐµÐ»Ð¾Ð²ÐµÐº. Ð 2009 Ð³Ð¾Ð´Ñ Ð½Ð° ÑÐºÑÐ°Ð½Ñ Russia.ru Ð²ÑÑÐµÐ» ÑÐ½Ð¸ÐºÐ°Ð»ÑÐ½ÑÐ¹ ÑÐ¸Ð»ÑÐ¼, Ð¿Ð¾ÑÐ²ÑÑÐµÐ½Ð½ÑÐ¹ ÐÐ°Ð»Ð¼ÑÐºÐ¸Ð¸, ÑÐ¸Ð»ÑÐ¼ Â«ÐÑÑÐµÑÐµÑÑÐ²Ð¸Ðµ Ð¿Ð¾ ÐÐ¾Ð½ÑÂ», ÑÑÐ´ ÑÑÐ¶ÐµÑÐ¾Ð² Ð¸Ð· ÐÐ¸Ð¶Ð½ÐµÐ³Ð¾ ÐÐ¾Ð²Ð³Ð¾ÑÐ¾Ð´Ð°.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -798,8 +1152,8 @@ Russia.ru делает передачи для самой разной ауди�
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Фильмы и передачи телеканалов Россия-1, Россия-2,ТВ Культура</summary>
-    <description>Фильмы и передачи телеканалов Россия-1, Россия-2,ТВ Культура</description>
+    <summary>Ð¤Ð¸Ð»ÑÐ¼Ñ Ð¸ Ð¿ÐµÑÐµÐ´Ð°ÑÐ¸ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ð¾Ð² Ð Ð¾ÑÑÐ¸Ñ-1, Ð Ð¾ÑÑÐ¸Ñ-2,Ð¢Ð ÐÑÐ»ÑÑÑÑÐ°</summary>
+    <description>Ð¤Ð¸Ð»ÑÐ¼Ñ Ð¸ Ð¿ÐµÑÐµÐ´Ð°ÑÐ¸ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ð¾Ð² Ð Ð¾ÑÑÐ¸Ñ-1, Ð Ð¾ÑÑÐ¸Ñ-2,Ð¢Ð ÐÑÐ»ÑÑÑÑÐ°</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -817,11 +1171,89 @@ Russia.ru делает передачи для самой разной ауди�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Лучшие онлайн видео ролики, приколы, аниме и клипы.</summary>
-    <description>На RuTube Вы всегда сможете найти интересные ролики, новые клипы, anime и другое интересное видео. Каждый день наши пользователи загружают на сайт более 3500 новых роликов, лучшие из которых редакция сайта отбирает на главную страницу.
-Особой популярностью пользуются авторские видеоприколы. Если Вы снимаете действительно смешное видео и не боитесь выставить себя или друзей в нелепом свете - то быстро станете звездой RuTube. При загрузке видео желательно указать категорию, к которой он относится (например, "Юмор, развлечения"), чтобы пользователи, интересующиеся этой темой, могли быстро найти ваш видеоролик.
-RuTube - отличная стартовая площадка для независимых студий, начинающих кинорежиссеров и музыкальных групп. Концертное видео всегда привлекает внимание меломанов, которые любят слушать музыку онлайн и смотреть на выступление своей любимой команды. Помимо видео с концертов на RuTube есть музыкальные клипы, а также видео блоги популярных исполнителей, которые всегда рады непосредственному общению со своими фанатами. Один из самых популярных разделов RuTube - раздел кинотрейлеров. Раздел обновляется каждую неделю, в нем вы всегда можете посмотреть свежие трейлеры самых актуальных фильмов. Не обделены вниманием и мультики. Есть все: anime, современные интернет мульты, а также классические советские мультфильмы
-Видео хостинг RuTube занимает лидирующие позиции среди российских видео сайтов и входит в десятку самых посещаемых сайтов рунета. Здесь можно посмотреть видео ролики на любой вкус: от интервью с деятелями культуры и серьезных политических передач до видео приколов, записей автокатастроф и аварий. Смотрите в онлайн аниме, передачу "Наша Раша" и самое смешное видео из репертуара Comedy Club.</description>
+    <summary>ÐÑÑÑÐ¸Ðµ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð²Ð¸Ð´ÐµÐ¾ ÑÐ¾Ð»Ð¸ÐºÐ¸, Ð¿ÑÐ¸ÐºÐ¾Ð»Ñ, Ð°Ð½Ð¸Ð¼Ðµ Ð¸ ÐºÐ»Ð¸Ð¿Ñ.</summary>
+    <description>ÐÐ° RuTube ÐÑ Ð²ÑÐµÐ³Ð´Ð° ÑÐ¼Ð¾Ð¶ÐµÑÐµ Ð½Ð°Ð¹ÑÐ¸ Ð¸Ð½ÑÐµÑÐµÑÐ½ÑÐµ ÑÐ¾Ð»Ð¸ÐºÐ¸, Ð½Ð¾Ð²ÑÐµ ÐºÐ»Ð¸Ð¿Ñ, anime Ð¸ Ð´ÑÑÐ³Ð¾Ðµ Ð¸Ð½ÑÐµÑÐµÑÐ½Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾. ÐÐ°Ð¶Ð´ÑÐ¹ Ð´ÐµÐ½Ñ Ð½Ð°ÑÐ¸ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ð¸ Ð·Ð°Ð³ÑÑÐ¶Ð°ÑÑ Ð½Ð° ÑÐ°Ð¹Ñ Ð±Ð¾Ð»ÐµÐµ 3500 Ð½Ð¾Ð²ÑÑ ÑÐ¾Ð»Ð¸ÐºÐ¾Ð², Ð»ÑÑÑÐ¸Ðµ Ð¸Ð· ÐºÐ¾ÑÐ¾ÑÑÑ ÑÐµÐ´Ð°ÐºÑÐ¸Ñ ÑÐ°Ð¹ÑÐ° Ð¾ÑÐ±Ð¸ÑÐ°ÐµÑ Ð½Ð° Ð³Ð»Ð°Ð²Ð½ÑÑ ÑÑÑÐ°Ð½Ð¸ÑÑ.
+ÐÑÐ¾Ð±Ð¾Ð¹ Ð¿Ð¾Ð¿ÑÐ»ÑÑÐ½Ð¾ÑÑÑÑ Ð¿Ð¾Ð»ÑÐ·ÑÑÑÑÑ Ð°Ð²ÑÐ¾ÑÑÐºÐ¸Ðµ Ð²Ð¸Ð´ÐµÐ¾Ð¿ÑÐ¸ÐºÐ¾Ð»Ñ. ÐÑÐ»Ð¸ ÐÑ ÑÐ½Ð¸Ð¼Ð°ÐµÑÐµ Ð´ÐµÐ¹ÑÑÐ²Ð¸ÑÐµÐ»ÑÐ½Ð¾ ÑÐ¼ÐµÑÐ½Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð¸ Ð½Ðµ Ð±Ð¾Ð¸ÑÐµÑÑ Ð²ÑÑÑÐ°Ð²Ð¸ÑÑ ÑÐµÐ±Ñ Ð¸Ð»Ð¸ Ð´ÑÑÐ·ÐµÐ¹ Ð² Ð½ÐµÐ»ÐµÐ¿Ð¾Ð¼ ÑÐ²ÐµÑÐµ - ÑÐ¾ Ð±ÑÑÑÑÐ¾ ÑÑÐ°Ð½ÐµÑÐµ Ð·Ð²ÐµÐ·Ð´Ð¾Ð¹ RuTube. ÐÑÐ¸ Ð·Ð°Ð³ÑÑÐ·ÐºÐµ Ð²Ð¸Ð´ÐµÐ¾ Ð¶ÐµÐ»Ð°ÑÐµÐ»ÑÐ½Ð¾ ÑÐºÐ°Ð·Ð°ÑÑ ÐºÐ°ÑÐµÐ³Ð¾ÑÐ¸Ñ, Ðº ÐºÐ¾ÑÐ¾ÑÐ¾Ð¹ Ð¾Ð½ Ð¾ÑÐ½Ð¾ÑÐ¸ÑÑÑ (Ð½Ð°Ð¿ÑÐ¸Ð¼ÐµÑ, "Ð®Ð¼Ð¾Ñ, ÑÐ°Ð·Ð²Ð»ÐµÑÐµÐ½Ð¸Ñ"), ÑÑÐ¾Ð±Ñ Ð¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°ÑÐµÐ»Ð¸, Ð¸Ð½ÑÐµÑÐµÑÑÑÑÐ¸ÐµÑÑ ÑÑÐ¾Ð¹ ÑÐµÐ¼Ð¾Ð¹, Ð¼Ð¾Ð³Ð»Ð¸ Ð±ÑÑÑÑÐ¾ Ð½Ð°Ð¹ÑÐ¸ Ð²Ð°Ñ Ð²Ð¸Ð´ÐµÐ¾ÑÐ¾Ð»Ð¸Ðº.
+RuTube - Ð¾ÑÐ»Ð¸ÑÐ½Ð°Ñ ÑÑÐ°ÑÑÐ¾Ð²Ð°Ñ Ð¿Ð»Ð¾ÑÐ°Ð´ÐºÐ° Ð´Ð»Ñ Ð½ÐµÐ·Ð°Ð²Ð¸ÑÐ¸Ð¼ÑÑ ÑÑÑÐ´Ð¸Ð¹, Ð½Ð°ÑÐ¸Ð½Ð°ÑÑÐ¸Ñ ÐºÐ¸Ð½Ð¾ÑÐµÐ¶Ð¸ÑÑÐµÑÐ¾Ð² Ð¸ Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÑ Ð³ÑÑÐ¿Ð¿. ÐÐ¾Ð½ÑÐµÑÑÐ½Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð²ÑÐµÐ³Ð´Ð° Ð¿ÑÐ¸Ð²Ð»ÐµÐºÐ°ÐµÑ Ð²Ð½Ð¸Ð¼Ð°Ð½Ð¸Ðµ Ð¼ÐµÐ»Ð¾Ð¼Ð°Ð½Ð¾Ð², ÐºÐ¾ÑÐ¾ÑÑÐµ Ð»ÑÐ±ÑÑ ÑÐ»ÑÑÐ°ÑÑ Ð¼ÑÐ·ÑÐºÑ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð¸ ÑÐ¼Ð¾ÑÑÐµÑÑ Ð½Ð° Ð²ÑÑÑÑÐ¿Ð»ÐµÐ½Ð¸Ðµ ÑÐ²Ð¾ÐµÐ¹ Ð»ÑÐ±Ð¸Ð¼Ð¾Ð¹ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ. ÐÐ¾Ð¼Ð¸Ð¼Ð¾ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÐºÐ¾Ð½ÑÐµÑÑÐ¾Ð² Ð½Ð° RuTube ÐµÑÑÑ Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÐµ ÐºÐ»Ð¸Ð¿Ñ, Ð° ÑÐ°ÐºÐ¶Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð±Ð»Ð¾Ð³Ð¸ Ð¿Ð¾Ð¿ÑÐ»ÑÑÐ½ÑÑ Ð¸ÑÐ¿Ð¾Ð»Ð½Ð¸ÑÐµÐ»ÐµÐ¹, ÐºÐ¾ÑÐ¾ÑÑÐµ Ð²ÑÐµÐ³Ð´Ð° ÑÐ°Ð´Ñ Ð½ÐµÐ¿Ð¾ÑÑÐµÐ´ÑÑÐ²ÐµÐ½Ð½Ð¾Ð¼Ñ Ð¾Ð±ÑÐµÐ½Ð¸Ñ ÑÐ¾ ÑÐ²Ð¾Ð¸Ð¼Ð¸ ÑÐ°Ð½Ð°ÑÐ°Ð¼Ð¸. ÐÐ´Ð¸Ð½ Ð¸Ð· ÑÐ°Ð¼ÑÑ Ð¿Ð¾Ð¿ÑÐ»ÑÑÐ½ÑÑ ÑÐ°Ð·Ð´ÐµÐ»Ð¾Ð² RuTube - ÑÐ°Ð·Ð´ÐµÐ» ÐºÐ¸Ð½Ð¾ÑÑÐµÐ¹Ð»ÐµÑÐ¾Ð². Ð Ð°Ð·Ð´ÐµÐ» Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÑÑÑ ÐºÐ°Ð¶Ð´ÑÑ Ð½ÐµÐ´ÐµÐ»Ñ, Ð² Ð½ÐµÐ¼ Ð²Ñ Ð²ÑÐµÐ³Ð´Ð° Ð¼Ð¾Ð¶ÐµÑÐµ Ð¿Ð¾ÑÐ¼Ð¾ÑÑÐµÑÑ ÑÐ²ÐµÐ¶Ð¸Ðµ ÑÑÐµÐ¹Ð»ÐµÑÑ ÑÐ°Ð¼ÑÑ Ð°ÐºÑÑÐ°Ð»ÑÐ½ÑÑ ÑÐ¸Ð»ÑÐ¼Ð¾Ð². ÐÐµ Ð¾Ð±Ð´ÐµÐ»ÐµÐ½Ñ Ð²Ð½Ð¸Ð¼Ð°Ð½Ð¸ÐµÐ¼ Ð¸ Ð¼ÑÐ»ÑÑÐ¸ÐºÐ¸. ÐÑÑÑ Ð²ÑÐµ: anime, ÑÐ¾Ð²ÑÐµÐ¼ÐµÐ½Ð½ÑÐµ Ð¸Ð½ÑÐµÑÐ½ÐµÑ Ð¼ÑÐ»ÑÑÑ, Ð° ÑÐ°ÐºÐ¶Ðµ ÐºÐ»Ð°ÑÑÐ¸ÑÐµÑÐºÐ¸Ðµ ÑÐ¾Ð²ÐµÑÑÐºÐ¸Ðµ Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ
+ÐÐ¸Ð´ÐµÐ¾ ÑÐ¾ÑÑÐ¸Ð½Ð³ RuTube Ð·Ð°Ð½Ð¸Ð¼Ð°ÐµÑ Ð»Ð¸Ð´Ð¸ÑÑÑÑÐ¸Ðµ Ð¿Ð¾Ð·Ð¸ÑÐ¸Ð¸ ÑÑÐµÐ´Ð¸ ÑÐ¾ÑÑÐ¸Ð¹ÑÐºÐ¸Ñ Ð²Ð¸Ð´ÐµÐ¾ ÑÐ°Ð¹ÑÐ¾Ð² Ð¸ Ð²ÑÐ¾Ð´Ð¸Ñ Ð² Ð´ÐµÑÑÑÐºÑ ÑÐ°Ð¼ÑÑ Ð¿Ð¾ÑÐµÑÐ°ÐµÐ¼ÑÑ ÑÐ°Ð¹ÑÐ¾Ð² ÑÑÐ½ÐµÑÐ°. ÐÐ´ÐµÑÑ Ð¼Ð¾Ð¶Ð½Ð¾ Ð¿Ð¾ÑÐ¼Ð¾ÑÑÐµÑÑ Ð²Ð¸Ð´ÐµÐ¾ ÑÐ¾Ð»Ð¸ÐºÐ¸ Ð½Ð° Ð»ÑÐ±Ð¾Ð¹ Ð²ÐºÑÑ: Ð¾Ñ Ð¸Ð½ÑÐµÑÐ²ÑÑ Ñ Ð´ÐµÑÑÐµÐ»ÑÐ¼Ð¸ ÐºÑÐ»ÑÑÑÑÑ Ð¸ ÑÐµÑÑÐµÐ·Ð½ÑÑ Ð¿Ð¾Ð»Ð¸ÑÐ¸ÑÐµÑÐºÐ¸Ñ Ð¿ÐµÑÐµÐ´Ð°Ñ Ð´Ð¾ Ð²Ð¸Ð´ÐµÐ¾ Ð¿ÑÐ¸ÐºÐ¾Ð»Ð¾Ð², Ð·Ð°Ð¿Ð¸ÑÐµÐ¹ Ð°Ð²ÑÐ¾ÐºÐ°ÑÐ°ÑÑÑÐ¾Ñ Ð¸ Ð°Ð²Ð°ÑÐ¸Ð¹. Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð² Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð°Ð½Ð¸Ð¼Ðµ, Ð¿ÐµÑÐµÐ´Ð°ÑÑ "ÐÐ°ÑÐ° Ð Ð°ÑÐ°" Ð¸ ÑÐ°Ð¼Ð¾Ðµ ÑÐ¼ÐµÑÐ½Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð¸Ð· ÑÐµÐ¿ÐµÑÑÑÐ°ÑÐ° Comedy Club.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.seasonvar.ru"
+       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]seasonvar.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="2.1.9b"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="2.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>my-hit.ru</summary>
+    <description>SEASONVAR.RU - Наш сайт создан для вас!
+Вы любите смотреть сериалы, но не можете себе этого позволить, так как их показывают по телевизору в неудобное для вас время? Вам нравится следить за судьбой героев, но вы часто пропускаете очередную серию? Теперь эти проблемы легко решить! На сайте Seasonvar.ru представлены отечественные и зарубежные сериалы, которые вы можете смотреть онлайн совершенно бесплатно.
+</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.serialonline.net"
+       name="SerialOnline.net"
+       version="0.0.6"
+       provider-name="nuismons">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+        <import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Материалы сайта serialonline.net</summary>
+        <description>Самая большая коллекция лучших сериалов мира</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="plugin.video.serialu.net"
+       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]serialu.net[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.2.2"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Сериалы (serialu.net)</summary>
+    <description>Русские и зарубежные сериалы предоставляемые сайтом serialu.net.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.showday.tv"
+       name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]showday.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.1"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>showday.tv</summary>
+    <description>SHOWDAY.TV - сериал на каждый день!
+</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -839,20 +1271,137 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Онлайн-телевидение SHURA.TV</summary>
-    <description>Онлайн-телевидение SHURA.TV: 100 русскоязычных каналов от 0 евро в месяц. EPG + Aрхив</description>
+    <summary>ÐÐ½Ð»Ð°Ð¹Ð½-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ SHURA.TV</summary>
+    <description>ÐÐ½Ð»Ð°Ð¹Ð½-ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ SHURA.TV: 100 ÑÑÑÑÐºÐ¾ÑÐ·ÑÑÐ½ÑÑ ÐºÐ°Ð½Ð°Ð»Ð¾Ð² Ð¾Ñ 0 ÐµÐ²ÑÐ¾ Ð² Ð¼ÐµÑÑÑ. EPG + AÑÑÐ¸Ð²</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.sovok.tv" name="Совок ТВ" version="0.0.2" provider-name="HD-Lab Team">
+<addon id="plugin.video.sovok.tv" name="Ð¡Ð¾Ð²Ð¾Ðº Ð¢Ð" version="0.0.2" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Отечественный проект "Совок ТВ" представляет!</summary>
-    <description>Технология IPTV позволяет Вам, находясь в любой точке мира, смотреть любимое русское тв. При этом вам не нужно иметь спутниковых антенн. Телевизионный сигнал передается поверх IP сети оператора Интернет. На нашем сайте вы можете смотреть любимые русские тв каналы абсолютно бесплатно. Если у вас есть интернет со скоростью не менее 4 мбитс, то вы вы можете стать участником нашего клуба любителей русского тв прямо сейчас.</description>
+    <summary>ÐÑÐµÑÐµÑÑÐ²ÐµÐ½Ð½ÑÐ¹ Ð¿ÑÐ¾ÐµÐºÑ "Ð¡Ð¾Ð²Ð¾Ðº Ð¢Ð" Ð¿ÑÐµÐ´ÑÑÐ°Ð²Ð»ÑÐµÑ!</summary>
+    <description>Ð¢ÐµÑÐ½Ð¾Ð»Ð¾Ð³Ð¸Ñ IPTV Ð¿Ð¾Ð·Ð²Ð¾Ð»ÑÐµÑ ÐÐ°Ð¼, Ð½Ð°ÑÐ¾Ð´ÑÑÑ Ð² Ð»ÑÐ±Ð¾Ð¹ ÑÐ¾ÑÐºÐµ Ð¼Ð¸ÑÐ°, ÑÐ¼Ð¾ÑÑÐµÑÑ Ð»ÑÐ±Ð¸Ð¼Ð¾Ðµ ÑÑÑÑÐºÐ¾Ðµ ÑÐ². ÐÑÐ¸ ÑÑÐ¾Ð¼ Ð²Ð°Ð¼ Ð½Ðµ Ð½ÑÐ¶Ð½Ð¾ Ð¸Ð¼ÐµÑÑ ÑÐ¿ÑÑÐ½Ð¸ÐºÐ¾Ð²ÑÑ Ð°Ð½ÑÐµÐ½Ð½. Ð¢ÐµÐ»ÐµÐ²Ð¸Ð·Ð¸Ð¾Ð½Ð½ÑÐ¹ ÑÐ¸Ð³Ð½Ð°Ð» Ð¿ÐµÑÐµÐ´Ð°ÐµÑÑÑ Ð¿Ð¾Ð²ÐµÑÑ IP ÑÐµÑÐ¸ Ð¾Ð¿ÐµÑÐ°ÑÐ¾ÑÐ° ÐÐ½ÑÐµÑÐ½ÐµÑ. ÐÐ° Ð½Ð°ÑÐµÐ¼ ÑÐ°Ð¹ÑÐµ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ ÑÐ¼Ð¾ÑÑÐµÑÑ Ð»ÑÐ±Ð¸Ð¼ÑÐµ ÑÑÑÑÐºÐ¸Ðµ ÑÐ² ÐºÐ°Ð½Ð°Ð»Ñ Ð°Ð±ÑÐ¾Ð»ÑÑÐ½Ð¾ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾. ÐÑÐ»Ð¸ Ñ Ð²Ð°Ñ ÐµÑÑÑ Ð¸Ð½ÑÐµÑÐ½ÐµÑ ÑÐ¾ ÑÐºÐ¾ÑÐ¾ÑÑÑÑ Ð½Ðµ Ð¼ÐµÐ½ÐµÐµ 4 Ð¼Ð±Ð¸ÑÑ, ÑÐ¾ Ð²Ñ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ ÑÑÐ°ÑÑ ÑÑÐ°ÑÑÐ½Ð¸ÐºÐ¾Ð¼ Ð½Ð°ÑÐµÐ³Ð¾ ÐºÐ»ÑÐ±Ð° Ð»ÑÐ±Ð¸ÑÐµÐ»ÐµÐ¹ ÑÑÑÑÐºÐ¾Ð³Ð¾ ÑÐ² Ð¿ÑÑÐ¼Ð¾ ÑÐµÐ¹ÑÐ°Ñ.</description>
     <platform>all</platform>
   </extension>
+</addon>
+
+<addon id="plugin.video.stepashka.com"
+       name="stepashka.com"
+       version="0.1.34"
+       provider-name="akgdrg,nuismons">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+        <import addon="script.module.beautifulsoup"/>
+
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+
+    <extension point="xbmc.addon.metadata">
+        <summary>Видеоархивы stepashka.com</summary>
+        <description>Видеоархивы stepashka.com</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="plugin.video.teleplus.ru"
+       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.1"
+       provider-name="TelPlus.ru">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>TelePlus.ru</summary>
+    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 4000 фильмов и полмиллиона аудиотрэков по символической цене - 700 руб в месяц.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.telepoisk.com"
+       name="[COLOR FF00FF00]Онлайн ТВ + Архив ([/COLOR][COLOR FFFFF000]telepoisk.com[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.1"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Онлайн ТВ + Архив (telepoisk.com)</summary>
+    <description>Русское телевидение онлайн.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.torrent.gnu"
+       name="torrent.gnu"
+       version="0.2.9"
+       provider-name="nuismons">
+    <requires>
+		<import addon="script.module.torrent.ts"/>
+		<import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Просмотр Торрент файлов</summary>
+        <description>Тестирование TorrentStream</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="plugin.video.torrent.tv"
+       name="Torrent.TV"
+       version="0.2.3"
+       provider-name="Const86">
+    <requires>
+		<import addon="script.module.torrent.ts"/>
+		<import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Torrent TV</summary>
+        <description>Просмотр ТВ Torrent Stream</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
+<addon id="plugin.video.torrenter" name="Torrenter" version="1.0.5.4" provider-name="vadim.skorba@gmail.com">
+    <requires>
+        <import addon="xbmc.python" version="2.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.repository" name="Torrenter Repository">
+        <info compressed="false">http://torrenter.googlecode.com/hg/addons.xml</info>
+        <checksum>http://torrenter.googlecode.com/hg/addons.xml.md5</checksum>
+        <datadir zip="false">http://torrenter.googlecode.com/hg/</datadir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang='en'>Plugin helps you to watch videos from p2p torrent-networks, without full predownload.</summary>
+		<description lang='en'>Plugin helps you to watch videos from p2p torrent-networks, without full predownload. Requires installed 'python-libtorrent' library (read README.TXT)</description>
+        <disclaimer lang='en'>GNU GPLv3 http://www.gnu.org/licenses/</disclaimer>
+        <summary lang='ru'>Плагин позволяет просматривать видео из пиринговых торрент-сетей, не дожидаясь полного скачивания.</summary>
+		<description lang='ru'>Плагин позволяет просматривать видео из пиринговых торрент-сетей, не дожидаясь полного скачивания. Требует установленной библиотеки 'python-libtorrent' (см. README.TXT)</description>
+        <disclaimer lang='ru'>GNU GPLv3 http://www.gnu.org/licenses/</disclaimer>
+    </extension>
 </addon>
 
 <addon id="plugin.video.ts-tv.ru"
@@ -868,8 +1417,8 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Телеканалы сайта http://ts-tv.ru/</summary>
-    <description>Первое Альтернативное Концептуальное Телевидение "ТВОЙ СТРОЙ ТВ", Многоканальное, Круглосуточное.</description>
+    <summary>Ð¢ÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ñ ÑÐ°Ð¹ÑÐ° http://ts-tv.ru/</summary>
+    <description>ÐÐµÑÐ²Ð¾Ðµ ÐÐ»ÑÑÐµÑÐ½Ð°ÑÐ¸Ð²Ð½Ð¾Ðµ ÐÐ¾Ð½ÑÐµÐ¿ÑÑÐ°Ð»ÑÐ½Ð¾Ðµ Ð¢ÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ "Ð¢ÐÐÐ Ð¡Ð¢Ð ÐÐ Ð¢Ð", ÐÐ½Ð¾Ð³Ð¾ÐºÐ°Ð½Ð°Ð»ÑÐ½Ð¾Ðµ, ÐÑÑÐ³Ð»Ð¾ÑÑÑÐ¾ÑÐ½Ð¾Ðµ.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -882,8 +1431,8 @@ RuTube - отличная стартовая площадка для незав�
 		<provides>video</provides>
 	</extension>
 	<extension point="xbmc.addon.metadata">
-		<summary>Смотрите видео с сайта http://turbofilm.tv/</summary>
-		<description>Смотрите видео с сайта http://turbofilm.tv/</description>
+		<summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://turbofilm.tv/</summary>
+		<description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://turbofilm.tv/</description>
 		<platform>all</platform>
 	</extension>
 </addon>
@@ -901,8 +1450,8 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите телеканалы с сайта http://tv-here.ru</summary>
-    <description>Смотрите телеканалы с сайта http://tv-here.ru</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ñ Ñ ÑÐ°Ð¹ÑÐ° http://tv-here.ru</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ñ Ñ ÑÐ°Ð¹ÑÐ° http://tv-here.ru</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -920,10 +1469,29 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Клипы, музыка, комедии, фильмы, мультфильмы. Бесплатное развлекательное видео на tvigle.ru</summary>
-    <description>Tvigle.ru — это развлекательный портал с качественным видео. Социальная сеть Tvigle объединяет профессионалов и любителей короткометражного видео.
-На нашем сайте вы можете увидеть видео различных жанров: начиная от сериалов, серьезных форматов, заканчивая музыкальными клипами и арт-хаусом. Именно здесь всем творческим людям предоставляется возможность продемонстрировать свои таланты. Ведь неважно кто ты — важны твои идеи и работы.
-Сегодня Tvigle.ru — это десятки тысяч посетителей в день, сотни тысяч просмотров видео и множество талантливых авторских работ.</description>
+    <summary>ÐÐ»Ð¸Ð¿Ñ, Ð¼ÑÐ·ÑÐºÐ°, ÐºÐ¾Ð¼ÐµÐ´Ð¸Ð¸, ÑÐ¸Ð»ÑÐ¼Ñ, Ð¼ÑÐ»ÑÑÑÐ¸Ð»ÑÐ¼Ñ. ÐÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾Ðµ ÑÐ°Ð·Ð²Ð»ÐµÐºÐ°ÑÐµÐ»ÑÐ½Ð¾Ðµ Ð²Ð¸Ð´ÐµÐ¾ Ð½Ð° tvigle.ru</summary>
+    <description>Tvigle.ru â ÑÑÐ¾ ÑÐ°Ð·Ð²Ð»ÐµÐºÐ°ÑÐµÐ»ÑÐ½ÑÐ¹ Ð¿Ð¾ÑÑÐ°Ð» Ñ ÐºÐ°ÑÐµÑÑÐ²ÐµÐ½Ð½ÑÐ¼ Ð²Ð¸Ð´ÐµÐ¾. Ð¡Ð¾ÑÐ¸Ð°Ð»ÑÐ½Ð°Ñ ÑÐµÑÑ Tvigle Ð¾Ð±ÑÐµÐ´Ð¸Ð½ÑÐµÑ Ð¿ÑÐ¾ÑÐµÑÑÐ¸Ð¾Ð½Ð°Ð»Ð¾Ð² Ð¸ Ð»ÑÐ±Ð¸ÑÐµÐ»ÐµÐ¹ ÐºÐ¾ÑÐ¾ÑÐºÐ¾Ð¼ÐµÑÑÐ°Ð¶Ð½Ð¾Ð³Ð¾ Ð²Ð¸Ð´ÐµÐ¾.
+ÐÐ° Ð½Ð°ÑÐµÐ¼ ÑÐ°Ð¹ÑÐµ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ ÑÐ²Ð¸Ð´ÐµÑÑ Ð²Ð¸Ð´ÐµÐ¾ ÑÐ°Ð·Ð»Ð¸ÑÐ½ÑÑ Ð¶Ð°Ð½ÑÐ¾Ð²: Ð½Ð°ÑÐ¸Ð½Ð°Ñ Ð¾Ñ ÑÐµÑÐ¸Ð°Ð»Ð¾Ð², ÑÐµÑÑÐµÐ·Ð½ÑÑ ÑÐ¾ÑÐ¼Ð°ÑÐ¾Ð², Ð·Ð°ÐºÐ°Ð½ÑÐ¸Ð²Ð°Ñ Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÐ¼Ð¸ ÐºÐ»Ð¸Ð¿Ð°Ð¼Ð¸ Ð¸ Ð°ÑÑ-ÑÐ°ÑÑÐ¾Ð¼. ÐÐ¼ÐµÐ½Ð½Ð¾ Ð·Ð´ÐµÑÑ Ð²ÑÐµÐ¼ ÑÐ²Ð¾ÑÑÐµÑÐºÐ¸Ð¼ Ð»ÑÐ´ÑÐ¼ Ð¿ÑÐµÐ´Ð¾ÑÑÐ°Ð²Ð»ÑÐµÑÑÑ Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑÑ Ð¿ÑÐ¾Ð´ÐµÐ¼Ð¾Ð½ÑÑÑÐ¸ÑÐ¾Ð²Ð°ÑÑ ÑÐ²Ð¾Ð¸ ÑÐ°Ð»Ð°Ð½ÑÑ. ÐÐµÐ´Ñ Ð½ÐµÐ²Ð°Ð¶Ð½Ð¾ ÐºÑÐ¾ ÑÑ â Ð²Ð°Ð¶Ð½Ñ ÑÐ²Ð¾Ð¸ Ð¸Ð´ÐµÐ¸ Ð¸ ÑÐ°Ð±Ð¾ÑÑ.
+Ð¡ÐµÐ³Ð¾Ð´Ð½Ñ Tvigle.ru â ÑÑÐ¾ Ð´ÐµÑÑÑÐºÐ¸ ÑÑÑÑÑ Ð¿Ð¾ÑÐµÑÐ¸ÑÐµÐ»ÐµÐ¹ Ð² Ð´ÐµÐ½Ñ, ÑÐ¾ÑÐ½Ð¸ ÑÑÑÑÑ Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ¾Ð² Ð²Ð¸Ð´ÐµÐ¾ Ð¸ Ð¼Ð½Ð¾Ð¶ÐµÑÑÐ²Ð¾ ÑÐ°Ð»Ð°Ð½ÑÐ»Ð¸Ð²ÑÑ Ð°Ð²ÑÐ¾ÑÑÐºÐ¸Ñ ÑÐ°Ð±Ð¾Ñ.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.tvisio.tv"
+       name="[COLOR FF00FF00]Онлайн ТВ + Архив ([/COLOR][COLOR FFFFF000]tvisio.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.2"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Онлайн ТВ + Архив (tvisio.tv)</summary>
+    <description>Русское телевидение онлайн.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -941,41 +1509,61 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://tvjam.ru/</summary>
-    <description>Смотрите видео с сайта http://tvjam.ru/</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://tvjam.ru/</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://tvjam.ru/</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.tvrain.ru" name="Телеканал ДОЖДЬ" version="1.0.2" provider-name="HD-Lab Team">
+<addon id="plugin.video.tvrain.ru" name="Ð¢ÐµÐ»ÐµÐºÐ°Ð½Ð°Ð» ÐÐÐÐÐ¬" version="1.0.2" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>ДОЖДЬ — настоящий живой телеканал</summary>
-    <description>Наш девиз «Дайте телевидению еще один шанс!».
-Мы — телеканал для неравнодушных людей с активной гражданской позицией и острым чувством сопричастности, не утративших вкус к жизни, успешных, добившихся многого и не очерствевших. Мы для профессионалов в разных областях.
-Вещание 24 часа в сутки, более 50% времени — прямой эфир.
-ДОЖДЬ это
-новости о том, что происходит на самом деле;
-аналитика живым человеческим языком;
-дискуссии и круглые столы с теми, кто нам интересен, о том, что нам важно;
-авторские программы, концерты, художественные чтения и эксперименты;
-документальные фильмы на остросоциальные темы;
-видео-арт;
-социальные проекты;
-истории о людях и событиях, изменивших мир и повлиявших на нас.</description>
+    <summary>ÐÐÐÐÐ¬ â Ð½Ð°ÑÑÐ¾ÑÑÐ¸Ð¹ Ð¶Ð¸Ð²Ð¾Ð¹ ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»</summary>
+    <description>ÐÐ°Ñ Ð´ÐµÐ²Ð¸Ð· Â«ÐÐ°Ð¹ÑÐµ ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ñ ÐµÑÐµ Ð¾Ð´Ð¸Ð½ ÑÐ°Ð½Ñ!Â».
+ÐÑ â ÑÐµÐ»ÐµÐºÐ°Ð½Ð°Ð» Ð´Ð»Ñ Ð½ÐµÑÐ°Ð²Ð½Ð¾Ð´ÑÑÐ½ÑÑ Ð»ÑÐ´ÐµÐ¹ Ñ Ð°ÐºÑÐ¸Ð²Ð½Ð¾Ð¹ Ð³ÑÐ°Ð¶Ð´Ð°Ð½ÑÐºÐ¾Ð¹ Ð¿Ð¾Ð·Ð¸ÑÐ¸ÐµÐ¹ Ð¸ Ð¾ÑÑÑÑÐ¼ ÑÑÐ²ÑÑÐ²Ð¾Ð¼ ÑÐ¾Ð¿ÑÐ¸ÑÐ°ÑÑÐ½Ð¾ÑÑÐ¸, Ð½Ðµ ÑÑÑÐ°ÑÐ¸Ð²ÑÐ¸Ñ Ð²ÐºÑÑ Ðº Ð¶Ð¸Ð·Ð½Ð¸, ÑÑÐ¿ÐµÑÐ½ÑÑ, Ð´Ð¾Ð±Ð¸Ð²ÑÐ¸ÑÑÑ Ð¼Ð½Ð¾Ð³Ð¾Ð³Ð¾ Ð¸ Ð½Ðµ Ð¾ÑÐµÑÑÑÐ²ÐµÐ²ÑÐ¸Ñ. ÐÑ Ð´Ð»Ñ Ð¿ÑÐ¾ÑÐµÑÑÐ¸Ð¾Ð½Ð°Ð»Ð¾Ð² Ð² ÑÐ°Ð·Ð½ÑÑ Ð¾Ð±Ð»Ð°ÑÑÑÑ.
+ÐÐµÑÐ°Ð½Ð¸Ðµ 24 ÑÐ°ÑÐ° Ð² ÑÑÑÐºÐ¸, Ð±Ð¾Ð»ÐµÐµ 50% Ð²ÑÐµÐ¼ÐµÐ½Ð¸ â Ð¿ÑÑÐ¼Ð¾Ð¹ ÑÑÐ¸Ñ.
+ÐÐÐÐÐ¬ ÑÑÐ¾
+Ð½Ð¾Ð²Ð¾ÑÑÐ¸ Ð¾ ÑÐ¾Ð¼, ÑÑÐ¾ Ð¿ÑÐ¾Ð¸ÑÑÐ¾Ð´Ð¸Ñ Ð½Ð° ÑÐ°Ð¼Ð¾Ð¼ Ð´ÐµÐ»Ðµ;
+Ð°Ð½Ð°Ð»Ð¸ÑÐ¸ÐºÐ° Ð¶Ð¸Ð²ÑÐ¼ ÑÐµÐ»Ð¾Ð²ÐµÑÐµÑÐºÐ¸Ð¼ ÑÐ·ÑÐºÐ¾Ð¼;
+Ð´Ð¸ÑÐºÑÑÑÐ¸Ð¸ Ð¸ ÐºÑÑÐ³Ð»ÑÐµ ÑÑÐ¾Ð»Ñ Ñ ÑÐµÐ¼Ð¸, ÐºÑÐ¾ Ð½Ð°Ð¼ Ð¸Ð½ÑÐµÑÐµÑÐµÐ½, Ð¾ ÑÐ¾Ð¼, ÑÑÐ¾ Ð½Ð°Ð¼ Ð²Ð°Ð¶Ð½Ð¾;
+Ð°Ð²ÑÐ¾ÑÑÐºÐ¸Ðµ Ð¿ÑÐ¾Ð³ÑÐ°Ð¼Ð¼Ñ, ÐºÐ¾Ð½ÑÐµÑÑÑ, ÑÑÐ´Ð¾Ð¶ÐµÑÑÐ²ÐµÐ½Ð½ÑÐµ ÑÑÐµÐ½Ð¸Ñ Ð¸ ÑÐºÑÐ¿ÐµÑÐ¸Ð¼ÐµÐ½ÑÑ;
+Ð´Ð¾ÐºÑÐ¼ÐµÐ½ÑÐ°Ð»ÑÐ½ÑÐµ ÑÐ¸Ð»ÑÐ¼Ñ Ð½Ð° Ð¾ÑÑÑÐ¾ÑÐ¾ÑÐ¸Ð°Ð»ÑÐ½ÑÐµ ÑÐµÐ¼Ñ;
+Ð²Ð¸Ð´ÐµÐ¾-Ð°ÑÑ;
+ÑÐ¾ÑÐ¸Ð°Ð»ÑÐ½ÑÐµ Ð¿ÑÐ¾ÐµÐºÑÑ;
+Ð¸ÑÑÐ¾ÑÐ¸Ð¸ Ð¾ Ð»ÑÐ´ÑÑ Ð¸ ÑÐ¾Ð±ÑÑÐ¸ÑÑ, Ð¸Ð·Ð¼ÐµÐ½Ð¸Ð²ÑÐ¸Ñ Ð¼Ð¸Ñ Ð¸ Ð¿Ð¾Ð²Ð»Ð¸ÑÐ²ÑÐ¸Ñ Ð½Ð° Ð½Ð°Ñ.</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.ulitka.tv" name="Сериалы онлайн на Улитке" version="2.0.2" provider-name="Admin Ulitka.TV [admin@ulitka.tv]">
+<addon id="plugin.video.ulitka.tv" name="Ð¡ÐµÑÐ¸Ð°Ð»Ñ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð½Ð° Ð£Ð»Ð¸ÑÐºÐµ" version="2.0.2" provider-name="Admin Ulitka.TV [admin@ulitka.tv]">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Мы наполнили сайт Ulitka.TV самыми популярными сериалами.</summary>
-    <description>Смотреть сериалы по телевизору неудобно, время показа не подстроить под каждого, а тут еще эта реклама каждые пять минут... Тогда многие стали скачивать сериалы. Это избавило от некоторых минусов, но принесло свои неудобства. А почему бы не объединить все плюсы этих способов, отбросив минусы?
-Представляем вам сайт Ulitka.TV! Здесь вы можете смотреть сериалы онлайн в любое для вас удобное время!
-Ни у всех и ни везде быстрый интернет, поэтому мы долго подбирали качество кодирования видео. И теперь вам не нужна очень большая скорость интернета для онлайн просмотра сериалов. Трафик расходуется очень рационально. При этом качество изображения и звука остается отличным!</description>
+    <summary>ÐÑ Ð½Ð°Ð¿Ð¾Ð»Ð½Ð¸Ð»Ð¸ ÑÐ°Ð¹Ñ Ulitka.TV ÑÐ°Ð¼ÑÐ¼Ð¸ Ð¿Ð¾Ð¿ÑÐ»ÑÑÐ½ÑÐ¼Ð¸ ÑÐµÑÐ¸Ð°Ð»Ð°Ð¼Ð¸.</summary>
+    <description>Ð¡Ð¼Ð¾ÑÑÐµÑÑ ÑÐµÑÐ¸Ð°Ð»Ñ Ð¿Ð¾ ÑÐµÐ»ÐµÐ²Ð¸Ð·Ð¾ÑÑ Ð½ÐµÑÐ´Ð¾Ð±Ð½Ð¾, Ð²ÑÐµÐ¼Ñ Ð¿Ð¾ÐºÐ°Ð·Ð° Ð½Ðµ Ð¿Ð¾Ð´ÑÑÑÐ¾Ð¸ÑÑ Ð¿Ð¾Ð´ ÐºÐ°Ð¶Ð´Ð¾Ð³Ð¾, Ð° ÑÑÑ ÐµÑÐµ ÑÑÐ° ÑÐµÐºÐ»Ð°Ð¼Ð° ÐºÐ°Ð¶Ð´ÑÐµ Ð¿ÑÑÑ Ð¼Ð¸Ð½ÑÑ... Ð¢Ð¾Ð³Ð´Ð° Ð¼Ð½Ð¾Ð³Ð¸Ðµ ÑÑÐ°Ð»Ð¸ ÑÐºÐ°ÑÐ¸Ð²Ð°ÑÑ ÑÐµÑÐ¸Ð°Ð»Ñ. Ð­ÑÐ¾ Ð¸Ð·Ð±Ð°Ð²Ð¸Ð»Ð¾ Ð¾Ñ Ð½ÐµÐºÐ¾ÑÐ¾ÑÑÑ Ð¼Ð¸Ð½ÑÑÐ¾Ð², Ð½Ð¾ Ð¿ÑÐ¸Ð½ÐµÑÐ»Ð¾ ÑÐ²Ð¾Ð¸ Ð½ÐµÑÐ´Ð¾Ð±ÑÑÐ²Ð°. Ð Ð¿Ð¾ÑÐµÐ¼Ñ Ð±Ñ Ð½Ðµ Ð¾Ð±ÑÐµÐ´Ð¸Ð½Ð¸ÑÑ Ð²ÑÐµ Ð¿Ð»ÑÑÑ ÑÑÐ¸Ñ ÑÐ¿Ð¾ÑÐ¾Ð±Ð¾Ð², Ð¾ÑÐ±ÑÐ¾ÑÐ¸Ð² Ð¼Ð¸Ð½ÑÑÑ?
+ÐÑÐµÐ´ÑÑÐ°Ð²Ð»ÑÐµÐ¼ Ð²Ð°Ð¼ ÑÐ°Ð¹Ñ Ulitka.TV! ÐÐ´ÐµÑÑ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ ÑÐ¼Ð¾ÑÑÐµÑÑ ÑÐµÑÐ¸Ð°Ð»Ñ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð² Ð»ÑÐ±Ð¾Ðµ Ð´Ð»Ñ Ð²Ð°Ñ ÑÐ´Ð¾Ð±Ð½Ð¾Ðµ Ð²ÑÐµÐ¼Ñ!
+ÐÐ¸ Ñ Ð²ÑÐµÑ Ð¸ Ð½Ð¸ Ð²ÐµÐ·Ð´Ðµ Ð±ÑÑÑÑÑÐ¹ Ð¸Ð½ÑÐµÑÐ½ÐµÑ, Ð¿Ð¾ÑÑÐ¾Ð¼Ñ Ð¼Ñ Ð´Ð¾Ð»Ð³Ð¾ Ð¿Ð¾Ð´Ð±Ð¸ÑÐ°Ð»Ð¸ ÐºÐ°ÑÐµÑÑÐ²Ð¾ ÐºÐ¾Ð´Ð¸ÑÐ¾Ð²Ð°Ð½Ð¸Ñ Ð²Ð¸Ð´ÐµÐ¾. Ð ÑÐµÐ¿ÐµÑÑ Ð²Ð°Ð¼ Ð½Ðµ Ð½ÑÐ¶Ð½Ð° Ð¾ÑÐµÐ½Ñ Ð±Ð¾Ð»ÑÑÐ°Ñ ÑÐºÐ¾ÑÐ¾ÑÑÑ Ð¸Ð½ÑÐµÑÐ½ÐµÑÐ° Ð´Ð»Ñ Ð¾Ð½Ð»Ð°Ð¹Ð½ Ð¿ÑÐ¾ÑÐ¼Ð¾ÑÑÐ° ÑÐµÑÐ¸Ð°Ð»Ð¾Ð². Ð¢ÑÐ°ÑÐ¸Ðº ÑÐ°ÑÑÐ¾Ð´ÑÐµÑÑÑ Ð¾ÑÐµÐ½Ñ ÑÐ°ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½Ð¾. ÐÑÐ¸ ÑÑÐ¾Ð¼ ÐºÐ°ÑÐµÑÑÐ²Ð¾ Ð¸Ð·Ð¾Ð±ÑÐ°Ð¶ÐµÐ½Ð¸Ñ Ð¸ Ð·Ð²ÑÐºÐ° Ð¾ÑÑÐ°ÐµÑÑÑ Ð¾ÑÐ»Ð¸ÑÐ½ÑÐ¼!</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.ultimatv.net"
+       name="[COLOR FF00FF00]Онлайн ТВ ([/COLOR][COLOR FFFFF000]ultimatv.net[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.2"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>allserials.tv</summary>
+    <description>ULTIMATV.NET - На нашем сайте вы можете смотреть ТВ в режиме онлайн.
+</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -993,8 +1581,27 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Смотрите видео с сайта http://www.vesti.ru</summary>
-    <description>Видеосюжеты с актуальными новостями из RSS-ленты http://www.vesti.ru/vesti.rss</description>
+    <summary>Ð¡Ð¼Ð¾ÑÑÐ¸ÑÐµ Ð²Ð¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://www.vesti.ru</summary>
+    <description>ÐÐ¸Ð´ÐµÐ¾ÑÑÐ¶ÐµÑÑ Ñ Ð°ÐºÑÑÐ°Ð»ÑÐ½ÑÐ¼Ð¸ Ð½Ð¾Ð²Ð¾ÑÑÑÐ¼Ð¸ Ð¸Ð· RSS-Ð»ÐµÐ½ÑÑ http://www.vesti.ru/vesti.rss</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.weewza.com"
+       name="Weewza.com"
+       version="1.0.4"
+       provider-name="Silen">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Weewza.com</summary>
+    <description>Русское телевидение онлайн.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -1003,18 +1610,18 @@ RuTube - отличная стартовая площадка для незав�
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="audio, video" library="default.py"><provides>audio video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Национальный агрегатор онлайн-контента</summary>
-    <description>Здесь есть все, что может заинтересовать отечественного зрителя и даже более того :)</description>
+    <summary>ÐÐ°ÑÐ¸Ð¾Ð½Ð°Ð»ÑÐ½ÑÐ¹ Ð°Ð³ÑÐµÐ³Ð°ÑÐ¾Ñ Ð¾Ð½Ð»Ð°Ð¹Ð½-ÐºÐ¾Ð½ÑÐµÐ½ÑÐ°</summary>
+    <description>ÐÐ´ÐµÑÑ ÐµÑÑÑ Ð²ÑÐµ, ÑÑÐ¾ Ð¼Ð¾Ð¶ÐµÑ Ð·Ð°Ð¸Ð½ÑÐµÑÐµÑÐ¾Ð²Ð°ÑÑ Ð¾ÑÐµÑÐµÑÑÐ²ÐµÐ½Ð½Ð¾Ð³Ð¾ Ð·ÑÐ¸ÑÐµÐ»Ñ Ð¸ Ð´Ð°Ð¶Ðµ Ð±Ð¾Ð»ÐµÐµ ÑÐ¾Ð³Ð¾ :)</description>
     <platform>all</platform>
   </extension>
 </addon>
 
-<addon id="plugin.video.zoomby.ru" name="ZOOMBY" version="2.0.2" provider-name="ОАО «ВебТВ»">
+<addon id="plugin.video.zoomby.ru" name="ZOOMBY" version="2.0.2" provider-name="ÐÐÐ Â«ÐÐµÐ±Ð¢ÐÂ»">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Zoomby - пересмотри свой взгляд на телевидение</summary>
-    <description>Приветствуем вас на сайте Zoomby.ru - одном из крупнейших развлекательных порталов российского интернета. Здесь вы можете онлайн, легально и бесплатно смотреть любимые фильмы, сериалы, новости, музыкальные клипы, шоу и другие телевизионные передачи.</description>
+    <summary>Zoomby - Ð¿ÐµÑÐµÑÐ¼Ð¾ÑÑÐ¸ ÑÐ²Ð¾Ð¹ Ð²Ð·Ð³Ð»ÑÐ´ Ð½Ð° ÑÐµÐ»ÐµÐ²Ð¸Ð´ÐµÐ½Ð¸Ðµ</summary>
+    <description>ÐÑÐ¸Ð²ÐµÑÑÑÐ²ÑÐµÐ¼ Ð²Ð°Ñ Ð½Ð° ÑÐ°Ð¹ÑÐµ Zoomby.ru - Ð¾Ð´Ð½Ð¾Ð¼ Ð¸Ð· ÐºÑÑÐ¿Ð½ÐµÐ¹ÑÐ¸Ñ ÑÐ°Ð·Ð²Ð»ÐµÐºÐ°ÑÐµÐ»ÑÐ½ÑÑ Ð¿Ð¾ÑÑÐ°Ð»Ð¾Ð² ÑÐ¾ÑÑÐ¸Ð¹ÑÐºÐ¾Ð³Ð¾ Ð¸Ð½ÑÐµÑÐ½ÐµÑÐ°. ÐÐ´ÐµÑÑ Ð²Ñ Ð¼Ð¾Ð¶ÐµÑÐµ Ð¾Ð½Ð»Ð°Ð¹Ð½, Ð»ÐµÐ³Ð°Ð»ÑÐ½Ð¾ Ð¸ Ð±ÐµÑÐ¿Ð»Ð°ÑÐ½Ð¾ ÑÐ¼Ð¾ÑÑÐµÑÑ Ð»ÑÐ±Ð¸Ð¼ÑÐµ ÑÐ¸Ð»ÑÐ¼Ñ, ÑÐµÑÐ¸Ð°Ð»Ñ, Ð½Ð¾Ð²Ð¾ÑÑÐ¸, Ð¼ÑÐ·ÑÐºÐ°Ð»ÑÐ½ÑÐµ ÐºÐ»Ð¸Ð¿Ñ, ÑÐ¾Ñ Ð¸ Ð´ÑÑÐ³Ð¸Ðµ ÑÐµÐ»ÐµÐ²Ð¸Ð·Ð¸Ð¾Ð½Ð½ÑÐµ Ð¿ÐµÑÐµÐ´Ð°ÑÐ¸.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -1046,9 +1653,9 @@ provider-name="Roman_V_M">
 </extension>
 <extension point="xbmc.addon.metadata">
   <summary lang="en">M3U Playlist Convertor</summary>
-  <summary lang="ru">Конвертор плейлистов m3u</summary>
+  <summary lang="ru">ÐÐ¾Ð½Ð²ÐµÑÑÐ¾Ñ Ð¿Ð»ÐµÐ¹Ð»Ð¸ÑÑÐ¾Ð² m3u</summary>
   <description lang="en">IPTV M3U playlist convertor for XBMC pvr.demo add-on. Before launching the script open its settings and select the location or URL of a playlist to convert and a channel icons folder (optional).</description>
-  <description lang="ru">Конвертор плейлистов IPTV в формате m3u для дополнения XBMC pvr.demo. Перед запуском укажите в настройках дополнения путь к плейлисту, который нужно сконвертировать, или его URL, а также папку со значками каналов (необязательно).</description>
+  <description lang="ru">ÐÐ¾Ð½Ð²ÐµÑÑÐ¾Ñ Ð¿Ð»ÐµÐ¹Ð»Ð¸ÑÑÐ¾Ð² IPTV Ð² ÑÐ¾ÑÐ¼Ð°ÑÐµ m3u Ð´Ð»Ñ Ð´Ð¾Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ñ XBMC pvr.demo. ÐÐµÑÐµÐ´ Ð·Ð°Ð¿ÑÑÐºÐ¾Ð¼ ÑÐºÐ°Ð¶Ð¸ÑÐµ Ð² Ð½Ð°ÑÑÑÐ¾Ð¹ÐºÐ°Ñ Ð´Ð¾Ð¿Ð¾Ð»Ð½ÐµÐ½Ð¸Ñ Ð¿ÑÑÑ Ðº Ð¿Ð»ÐµÐ¹Ð»Ð¸ÑÑÑ, ÐºÐ¾ÑÐ¾ÑÑÐ¹ Ð½ÑÐ¶Ð½Ð¾ ÑÐºÐ¾Ð½Ð²ÐµÑÑÐ¸ÑÐ¾Ð²Ð°ÑÑ, Ð¸Ð»Ð¸ ÐµÐ³Ð¾ URL, Ð° ÑÐ°ÐºÐ¶Ðµ Ð¿Ð°Ð¿ÐºÑ ÑÐ¾ Ð·Ð½Ð°ÑÐºÐ°Ð¼Ð¸ ÐºÐ°Ð½Ð°Ð»Ð¾Ð² (Ð½ÐµÐ¾Ð±ÑÐ·Ð°ÑÐµÐ»ÑÐ½Ð¾).</description>
 <platform>all</platform>
 </extension>
 </addon>
@@ -1065,7 +1672,7 @@ provider-name="Roman_V_M">
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="script.yandex.tvguide" name="Яндекс телепрограмма" version="0.0.3" provider-name="HD-Lab Team">
+<addon id="script.yandex.tvguide" name="Ð¯Ð½Ð´ÐµÐºÑ ÑÐµÐ»ÐµÐ¿ÑÐ¾Ð³ÑÐ°Ð¼Ð¼Ð°" version="0.0.3" provider-name="HD-Lab Team">
 	<requires>
 		<import addon="xbmc.python" version="1.0"/>
 		<!--<import addon="script.module.simplejson" version="2.0.10"/>
@@ -1073,8 +1680,8 @@ provider-name="Roman_V_M">
 	</requires>
 	<extension point="xbmc.python.script" library="addon.py"/>
 	<extension point="xbmc.addon.metadata">
-		<summary>Программа передач</summary>
-		<description>Программа передач от Yandex</description>
+		<summary>ÐÑÐ¾Ð³ÑÐ°Ð¼Ð¼Ð° Ð¿ÐµÑÐµÐ´Ð°Ñ</summary>
+		<description>ÐÑÐ¾Ð³ÑÐ°Ð¼Ð¼Ð° Ð¿ÐµÑÐµÐ´Ð°Ñ Ð¾Ñ Yandex</description>
 		<platform>all</platform>
 	</extension>
 </addon>
@@ -1100,10 +1707,10 @@ provider-name="Roman_V_M">
 		<description lang="en">Video from VKontakte social network http://vkontakte.ru/
 homepage - http://code.svoka.com/vk-xbmc-plugin
 Author - Vlad Svoka aka Shchvova</description>
-		<summary lang="ru">Видео с сайта http://vkontakte.ru/</summary>
-		<description lang="ru">Видео, аудио и фотографии с сайта http://vkontakte.ru/
-Домашняя страница проекта - http://code.svoka.com/vk-xbmc-plugin
-Автор - Влад Свока aka Shchvova</description>
+		<summary lang="ru">ÐÐ¸Ð´ÐµÐ¾ Ñ ÑÐ°Ð¹ÑÐ° http://vkontakte.ru/</summary>
+		<description lang="ru">ÐÐ¸Ð´ÐµÐ¾, Ð°ÑÐ´Ð¸Ð¾ Ð¸ ÑÐ¾ÑÐ¾Ð³ÑÐ°ÑÐ¸Ð¸ Ñ ÑÐ°Ð¹ÑÐ° http://vkontakte.ru/
+ÐÐ¾Ð¼Ð°ÑÐ½ÑÑ ÑÑÑÐ°Ð½Ð¸ÑÐ° Ð¿ÑÐ¾ÐµÐºÑÐ° - http://code.svoka.com/vk-xbmc-plugin
+ÐÐ²ÑÐ¾Ñ - ÐÐ»Ð°Ð´ Ð¡Ð²Ð¾ÐºÐ° aka Shchvova</description>
 		<platform>all</platform>
 	</extension>
 </addon>
