@@ -318,7 +318,7 @@ Audio sources are
 
 <addon id="plugin.video.720hd.ru"
        name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]720hd.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.8"
+       version="1.0.9"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -733,7 +733,7 @@ Audio sources are
 
 <addon id="plugin.video.hdkinoklub.ru"
        name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]hdkinoklub.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

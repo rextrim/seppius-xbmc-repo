@@ -76,7 +76,7 @@ class Info:
     rating      = ''
 
 #---------- get web page -------------------------------------------------------
-def get_HTML(url, post = None, ref = None):
+def get_HTML(url, post = None, ref = None, l = None):
     request = urllib2.Request(url, post)
 
     host = urlparse.urlsplit(url).hostname
@@ -97,7 +97,10 @@ def get_HTML(url, post = None, ref = None):
         elif hasattr(e, 'code'):
            xbmc.log('The server couldn\'t fulfill the request.')
 
-    html = f.read()
+    if l == None:
+        html = f.read()
+    else:
+        html = f.read(l)
 
     return html
 
@@ -635,7 +638,6 @@ def PLAY(params):
         img   = urllib.unquote_plus(params['img'])
         name  = urllib.unquote_plus(params['name'])
         vtype = urllib.unquote_plus(params['vtype'])
-        ref   = urllib.unquote_plus(params['par_url'])
 
         if url == '*':
             return False
@@ -644,7 +646,7 @@ def PLAY(params):
         # -- get VKontakte video url
         if vtype == 'VK':
             url = url.replace('vkontakte.ru', 'vk.com')
-            html = get_HTML(url, None, ref)
+            html = get_HTML(url)
 
             soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
@@ -652,12 +654,14 @@ def PLAY(params):
                 if 'video_host' in rec.text:
                     for r in re.compile('var (.+?) = \'(.+?)\';').findall(html):
                         if r[0] == 'video_host':
-                            video_host = r[1].replace('userapi', 'vk')
+                            video_host = r[1]#.replace('userapi', 'vk')
                         if r[0] == 'video_uid':
                             video_uid = r[1]
                         if r[0] == 'video_vtag':
                             video_vtag = r[1]
-            video = '%s/u%s/videos/%s.720.mp4'%(video_host, video_uid, video_vtag)
+            video = '%su%s/videos/%s.720.mp4'%(video_host, video_uid, video_vtag)
+            html = get_HTML(video, None, None, 1000)
+
 
             for rec in soup.findAll('param', {'name':'flashvars'}):
                 for s in rec['value'].split('&'):
@@ -673,11 +677,13 @@ def PLAY(params):
                         oid = s.split('=',1)[1]
 
             url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
-            ref = soup.find('param',{'name':'movie'})['value']
+            print url
+            ref = 'http://vk.com'+soup.find('param',{'name':'movie'})['value']
+            print ref
             html = get_HTML(url, None, ref)
 
         # -- play video
-        i = xbmcgui.ListItem(name, video, thumbnailImage=img) #path = urllib.unquote(video)
+        i = xbmcgui.ListItem(name, video, thumbnailImage=img)
         xbmc.Player().play(video, i)
     except:
         pass
