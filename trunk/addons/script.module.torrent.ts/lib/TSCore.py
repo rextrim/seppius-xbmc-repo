@@ -104,9 +104,10 @@ class TSengine(object):
 		except:
 			self.dialog.updater(100,language(1010))
 			xbmc.sleep(2000)
+			self.dialog.close()
 			#self.dialog.close()
 			print "FAIL CONNECT"
-			self.dialog.updater(59)
+			#self.dialog.updater(59)
 			return False
 			exit
 		
@@ -340,9 +341,9 @@ class _TSpull(threading.Thread):
 					self.filestemp=ll
 					#!!!!!!!!запихать файлы в {file:ind}
 					#print self.files
-					#output = open("c:/temp/log.txt", "a")
-					#output.write(comm);
-					#output.close();
+					output = open("c:/temp/log.txt", "a")
+					output.write(comm);
+					output.close();
 				elif self.filestemp: 
 					self.filestemp=self.filestemp+	self.last_received	
 					#print self.files
