@@ -1,4 +1,4 @@
-﻿#!/usr/bin/python
+#!/usr/bin/python
 """ addons.xml generator """
 
 import os, md5
