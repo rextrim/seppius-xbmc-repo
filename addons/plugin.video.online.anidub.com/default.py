@@ -374,7 +374,9 @@ def mainScreen(params):
 						title = str( m.group(0)[:-4])
 						#print '/alst'
 				except: url=''
-			img= links.find('img')['src']
+			img= links.find('img')['data-original']
+			#print img
+			
 			if not title: title=links.find('img')['alt']
 			#print 'url %s'%url
 			listitem=xbmcgui.ListItem(title,img,img)
@@ -443,6 +445,7 @@ from urllib import unquote, quote, quote_plus
 	
 def custom(params):
 	track_page_view('custom')
+	
 	link='http://online.anidub.com/'
 	http = GET(link)
 	if http == None: return False
@@ -486,6 +489,7 @@ def top20(params):
 		#print str( m.group())
 	xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 def get_anime(params):
+	xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
 	track_page_view('get')
 	try: img=params['img']
 	except: img=addon_icon
@@ -503,7 +507,7 @@ def get_anime(params):
 				lnk=list['value'].split('|')[0]
 			except: lnk=list['value']
 			links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
-			img= links.find('img')['src']
+			img= links.find('img')['data-original']
 			listitem=xbmcgui.ListItem(list.string,img,img)
 			listitem.setProperty('IsPlayable', 'true')
 			uri = construct_request({
@@ -514,7 +518,7 @@ def get_anime(params):
 			xbmcplugin.addDirectoryItem(hos, uri, listitem)
 	else: 
 		links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
-		img= links.find('img')['src']
+		img= links.find('img')['data-original']
 		listitem=xbmcgui.ListItem(beautifulSoup.find('h1', attrs={'class': 'titlfull'}).string,img,img)
 		listitem.setProperty('IsPlayable', 'true')
 		uri = construct_request({
