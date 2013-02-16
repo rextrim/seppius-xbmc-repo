@@ -507,7 +507,7 @@ def get_anime(params):
 				lnk=list['value'].split('|')[0]
 			except: lnk=list['value']
 			links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
-			img= links.find('img')['data-original']
+			img= links.find('img')['src']
 			listitem=xbmcgui.ListItem(list.string,img,img)
 			listitem.setProperty('IsPlayable', 'true')
 			uri = construct_request({
