@@ -341,9 +341,9 @@ class _TSpull(threading.Thread):
 					self.filestemp=ll
 					#!!!!!!!!запихать файлы в {file:ind}
 					#print self.files
-					output = open("c:/temp/log.txt", "a")
-					output.write(comm);
-					output.close();
+					#output = open("c:/temp/log.txt", "a")
+					#output.write(comm);
+					#output.close();
 				elif self.filestemp: 
 					self.filestemp=self.filestemp+	self.last_received	
 					#print self.files
