@@ -340,7 +340,7 @@ class _TSpull(threading.Thread):
 		while self.active:
 			try:
 				self.last_received=_sock.recv(self.buffer)
-				print self.last_received
+				#print self.last_received
 				#self.received.append(self.last_received)
 				self.last_com = self._com_received(self.last_received)
 				
