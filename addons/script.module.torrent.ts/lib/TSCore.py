@@ -218,9 +218,9 @@ class TSengine(object):
 					self._TSpush(comm)
 					plr.duration=None
 			while plr.active:
-				try: delay=plr.getTotalTime()-plr.getTime()
-				except: delay=1
-				if self.r.mode==2 and not plr.paused and delay<8: 
+				#try: delay=plr.getTotalTime()-plr.getTime()
+				#except: delay=1
+				if self.r.mode==2 and not plr.paused: 
 					plr.pause()
 					self.r.mode=0
 					#print 'запаузил'
@@ -239,7 +239,7 @@ class TSengine(object):
 						self.dialog.updater(self.r.progress,self.r.state,self.r.label)
 						visible=True
 					else: self.dialog.updater(self.r.progress,self.r.state,self.r.label)
-					
+					delay=plr.getTotalTime()-plr.getTime()
 					if delay>5: plr.pause()
 				elif visible:
 					#print 'delete window'
