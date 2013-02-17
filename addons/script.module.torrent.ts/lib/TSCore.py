@@ -209,16 +209,29 @@ class TSengine(object):
 			#self.dialog2.hide()
 			visible=False
 			#print 'strat it'
+			#while not plr.duration:
+			#	xbmc.sleep(300)
+			#print plr.duration
 			if plr.duration!=0: 
 					comm='DUR '+self.r.got_url.replace('\r','').replace('\n','')+' '+str(plr.duration)
 					comm='PLAYBACK '+self.r.got_url.replace('\r','').replace('\n','')+' 0'
 					self._TSpush(comm)
 					plr.duration=None
 			while plr.active:
-				#print 'active'
-				
+				try: delay=plr.getTotalTime()-plr.getTime()
+				except: delay=1
+				if self.r.mode==2 and not plr.paused and delay<8: 
+					plr.pause()
+					self.r.mode=0
+					#print 'запаузил'
+				if self.r.mode==1 and plr.paused: 
+					plr.pause()
+					self.r.mode=0
+					#print 'отжал'
+
 				if plr.paused: 
-					#print 'paused'
+					#print "%s-%s=%s"%(plr.getTotalTime(),plr.getTime(),plr.getTotalTime()-plr.getTime())
+					
 					if not visible: 
 						#print 'make window'
 						self.dialog = progress.dwprogress()
@@ -226,6 +239,8 @@ class TSengine(object):
 						self.dialog.updater(self.r.progress,self.r.state,self.r.label)
 						visible=True
 					else: self.dialog.updater(self.r.progress,self.r.state,self.r.label)
+					
+					if delay>5: plr.pause()
 				elif visible:
 					#print 'delete window'
 					self.dialog.close()
@@ -277,7 +292,7 @@ class _TSpull(threading.Thread):
 				if st=='buf': 
 					self.state=language(1101)
 					self.progress=int(text.split(';')[1])+0.1
-					self.label=language(1150)%(text.split(';')[6],text.split(';')[3])
+					self.label=language(1150)%(text.split(';')[8],text.split(';')[5])
 				if st=='dl': 
 					self.state=language(1102)
 					self.progress=int(text.split(';')[1])+0.1
@@ -320,11 +335,12 @@ class _TSpull(threading.Thread):
 		self.progress=0
 		self.filestemp=None
 		self.speed=0
+		self.mode=0
 	def run(self):
 		while self.active:
 			try:
 				self.last_received=_sock.recv(self.buffer)
-				#print self.last_received
+				print self.last_received
 				#self.received.append(self.last_received)
 				self.last_com = self._com_received(self.last_received)
 				
@@ -333,8 +349,12 @@ class _TSpull(threading.Thread):
 				elif self.last_com=='STATUS': pass
 				elif self.last_com=='STATE': pass
 				elif self.last_com=='EVENT': pass
-				elif self.last_com=='RESUME': pass
-				elif self.last_com=='PAUSE': pass
+				elif self.last_received=='RESUME\r\n':
+					self.mode=1
+					
+				elif self.last_received=='PAUSE\r\n': 
+					self.mode=2
+				
 				elif self.last_com=='LOADRESP': 
 					fil = self.last_received
 					ll= fil[fil.find('{'):len(fil)]
