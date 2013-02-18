@@ -374,7 +374,11 @@ def mainScreen(params):
 						title = str( m.group(0)[:-4])
 						#print '/alst'
 				except: url=''
-			img= links.find('img')['data-original']
+			#print links
+			try:
+				img= links.find('img')['data-original']
+			except:
+				img= ""
 			#print img
 			
 			if not title: title=links.find('img')['alt']
