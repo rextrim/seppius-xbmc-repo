@@ -1022,7 +1022,7 @@ Audio sources are
 
 <addon id="plugin.video.raketa.tv"
        name="Raketa-TV"
-       version="0.2.2"
+       version="0.2.3"
        provider-name="Const86">
     <requires>
 		<import addon="script.module.torrent.ts"/>
