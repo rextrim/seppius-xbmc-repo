@@ -36,7 +36,7 @@ cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.raketa.tv') )
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
 	PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
-
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
 try:
 	if prt_file: 
 		gf = open(prt_file, 'r')
@@ -150,10 +150,12 @@ def GetProgram(param):
 		return
 	curDay = datetime.date.today().strftime("%d");
 	if not os.path.exists(PLUGIN_DATA_PATH + '/%s_program_list.json' % curDay):
-		import glob
-		filelist = glob.glob(PLUGIN_DATA_PATH + "/*_program_list.json")
-		for f in filelist:
-			os.remove(f)
+		try:
+			import glob
+			filelist = glob.glob(PLUGIN_DATA_PATH + "/*_program_list.json")
+			for f in filelist:
+				os.remove(f)
+		except : pass
 		output = open(PLUGIN_DATA_PATH + '/%s_program_list.json' % curDay, 'w')
 		output.write(GET('http://raketa-tv.com/player/JSON/program_list.json'))
 		output.close()
@@ -162,7 +164,7 @@ def GetProgram(param):
 		import time
 		xbmc.executebuiltin( "ActivateWindow(%d)" % ( 10147 ) ) 
 		window = xbmcgui.Window( 10147 )
-		input = open(PLUGIN_DATA_PATH + '/program_list.json', 'r')
+		input = open(PLUGIN_DATA_PATH + '/%s_program_list.json' % curDay, 'r')
 		data = input.read().encode('utf-8')
 		data = json.loads(data)
 		txtProgram = ''
