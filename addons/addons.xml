@@ -1020,6 +1020,24 @@ Audio sources are
 	</extension>
 </addon>
 
+<addon id="plugin.video.raketa.tv"
+       name="Raketa-TV"
+       version="0.2.2"
+       provider-name="Const86">
+    <requires>
+		<import addon="script.module.torrent.ts"/>
+		<import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Raketa TV</summary>
+        <description>Просмотр каналов Raketa-TV через Torrent Stream</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.video.rodnoe.tv"
        name="Rodnoe.TV"
        version="1.2.0"
