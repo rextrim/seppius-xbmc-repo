@@ -337,6 +337,14 @@ def mainScreen(params):
 		li.setProperty('fanart_image', addon_fanart)
 		xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	
+		li = xbmcgui.ListItem("Избранное", iconImage = addon_icon, thumbnailImage = addon_icon)
+		uri = construct_request({
+			'func': 'mainScreen',
+			'url': 'https://online.anidub.com/favorites/'
+		})
+		li.setProperty('fanart_image', addon_fanart)
+		xbmcplugin.addDirectoryItem(hos, uri, li, True)
+		
 	#link='http://online.anidub.com/'
 	#print newlink
 	http = GET(newlink.replace(' ','%20'))
