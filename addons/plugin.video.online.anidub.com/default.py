@@ -374,7 +374,7 @@ def mainScreen(params):
 						title = str( m.group(0)[:-4])
 						#print '/alst'
 				except: url=''
-			#print links
+			print links
 			try:
 				img= links.find('img')['data-original']
 			except:
@@ -522,7 +522,10 @@ def get_anime(params):
 			xbmcplugin.addDirectoryItem(hos, uri, listitem)
 	else: 
 		links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
-		img= links.find('img')['data-original']
+		try:
+			img= links.find('img')['data-original']
+		except:
+			img= ""
 		listitem=xbmcgui.ListItem(beautifulSoup.find('h1', attrs={'class': 'titlfull'}).string,img,img)
 		listitem.setProperty('IsPlayable', 'true')
 		uri = construct_request({
