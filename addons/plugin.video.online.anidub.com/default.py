@@ -527,7 +527,9 @@ def get_anime(params):
 					'img':img,
 					'm_path':lnk
 					})
-			xbmcplugin.addDirectoryItem(hos, uri, listitem)
+			if lnk.find('http://vk.com'):
+				xbmcplugin.addDirectoryItem(hos, uri, listitem)
+			#print lnk
 	else: 
 		links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
 		try:
@@ -570,12 +572,14 @@ def play_anime(params):
 				oid = s.split('=',1)[1]
 			if s.split('=',1)[0] == 'hd':
 				hd = s.split('=',1)[1]
-		video = host+'u'+uid+'/videos/'+vtag+'.360.mp4'
-		if int(hd)==3:
+		video = host+'u'+uid+'/videos/'+vtag+'.240.mp4'
+		qual=Addon.getSetting('qual')
+		print qual
+		if int(hd)==3 and qual==3:
 			video = host+'u'+uid+'/videos/'+vtag+'.720.mp4'
-		if int(hd)==2:
+		if int(hd)==2 and qual<3:
 			video = host+'u'+uid+'/videos/'+vtag+'.480.mp4'
-		if int(hd)==1:
+		if int(hd)==1 and qual<2:
 			video = host+'u'+uid+'/videos/'+vtag+'.360.mp4'
 		#print video
 		item = xbmcgui.ListItem(path=video)
