@@ -165,7 +165,7 @@ class shura:
 	def getChannelsList(self):
 		
 		url = 'http://pl.tvshka.net/?uid='+self.OTT +'&type=xml'
-		#xbmc.log('requested url='+url)
+		xbmc.log('requested url='+url)
 		
 		req = urllib2.Request(url, data = None)
 		req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
@@ -220,11 +220,14 @@ class shura:
 
 		ua = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
 		postparams = None
-		req = urllib2.Request(url, postparams, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'text/html;charset=utf-8'})
-
-		resstream = urllib2.urlopen(req)
-		resp = resstream.read()
-		#xbmc.log('[SHURA.TV] epg resp=' + str(resp))
+		try:
+			req = urllib2.Request(url, postparams, {'User-agent': ua, 'Connection': 'Close', 'Accept': 'application/json, text/javascript, */*', 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'text/html;charset=utf-8'})
+			#xbmc.log('[SHURA.TV] get current epg url=' + str(url))
+			resstream = urllib2.urlopen(req)
+			resp = resstream.read()
+			#xbmc.log('[SHURA.TV] epg resp=' + str(resp))
+		except Exception, e:
+			xbmc.log('[SHURA.TV] Error in get response' + str(e))
 		#mindex = resp.index('},{')
 		#epg1 = resp[1:mindex+1]
 		try:
@@ -247,13 +250,13 @@ class shura:
 	
 	def getLastEPG(self, HOST, FEED):
 		if len(self.last_epg)==0:
-			#xbmc.log('[SHURA.TV] last epg empty')
+			xbmc.log('[SHURA.TV] last epg empty')
 			if os.path.isfile(LASTEPGFILE):
 				f2 = open(LASTEPGFILE, 'rb')
 				try:
 					self.last_epg = JSONDECODE(f2.read, encoding='utf8')
 				except Exception, e:
-					#xbmc.log('[SHURA.TV] Error loading last epg %s' % e)
+					xbmc.log('[SHURA.TV] Error loading last epg %s' % e)
 					self.getCurrentEPG(HOST, FEED)
 				f2.close()
 		if not str(int(FEED)) in self.last_epg:
@@ -272,6 +275,7 @@ class shura:
 
 		resstream = urllib2.urlopen(req)
 		resp = resstream.read()
+		xbmc.log('[SHURA.TV] get week epg url=' + str(req))
 		#xbmc.log('[SHURA.TV] epg resp=' + str(resp))
 		#mindex = resp.index('},{')
 		#epg1 = resp[1:mindex+1]
