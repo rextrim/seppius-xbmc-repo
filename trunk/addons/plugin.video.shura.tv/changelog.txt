@@ -39,3 +39,7 @@ New icons by DiZet
 For channel 604 & 605 (HD 1, HD Rossia) no error is thrown when opening epg/arch popup
 [B]0.8.7[/B]
 New addon icon
+[B]0.8.8[/B]
+New addon icon
+[B]0.8.9[/B]
+Missing epg fix
