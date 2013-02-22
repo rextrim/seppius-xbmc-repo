@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #/*
-# *      Copyright (C) 2011 Silen
+# *     
 # *
 # *
 # *  This Program is free software; you can redistribute it and/or modify
@@ -527,7 +527,7 @@ def get_anime(params):
 					'img':img,
 					'm_path':lnk
 					})
-			if lnk.find('http://vk.com'):
+			if lnk.find('vk.com'):
 				xbmcplugin.addDirectoryItem(hos, uri, listitem)
 			#print lnk
 	else: 
@@ -543,7 +543,8 @@ def get_anime(params):
 				'img':img,
 				'm_path':beautifulSoup.find('iframe', attrs={'name': 'film_main'})['src']
 				})
-		xbmcplugin.addDirectoryItem(hos, uri, listitem)
+		if beautifulSoup.find('iframe', attrs={'name': 'film_main'})['src'].find('vk.com'):
+			xbmcplugin.addDirectoryItem(hos, uri, listitem)
 	xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 	#m=re.search('http://vk.com/video_ext.php?oid=[^/]+',str(content))
 	#desc = str( m.group())
@@ -575,11 +576,13 @@ def play_anime(params):
 		video = host+'u'+uid+'/videos/'+vtag+'.240.mp4'
 		qual=Addon.getSetting('qual')
 		print qual
-		if int(hd)==3 and qual==3:
+		print hd
+		if int(hd)>=3 and int(qual)==3:
+			#print 'aaa'
 			video = host+'u'+uid+'/videos/'+vtag+'.720.mp4'
-		if int(hd)==2 and qual<3:
+		if int(hd)==2 and int(qual)>1:
 			video = host+'u'+uid+'/videos/'+vtag+'.480.mp4'
-		if int(hd)==1 and qual<2:
+		if int(hd)==1 and int(qual)>0:
 			video = host+'u'+uid+'/videos/'+vtag+'.360.mp4'
 		#print video
 		item = xbmcgui.ListItem(path=video)
