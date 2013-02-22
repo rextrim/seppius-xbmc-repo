@@ -580,9 +580,9 @@ def play_anime(params):
 		if int(hd)>=3 and int(qual)==3:
 			#print 'aaa'
 			video = host+'u'+uid+'/videos/'+vtag+'.720.mp4'
-		if int(hd)==2 and int(qual)>1:
+		if int(hd)>=2 and int(qual)==2:
 			video = host+'u'+uid+'/videos/'+vtag+'.480.mp4'
-		if int(hd)==1 and int(qual)>0:
+		if int(hd)>=1 and int(qual)==1:
 			video = host+'u'+uid+'/videos/'+vtag+'.360.mp4'
 		#print video
 		item = xbmcgui.ListItem(path=video)
