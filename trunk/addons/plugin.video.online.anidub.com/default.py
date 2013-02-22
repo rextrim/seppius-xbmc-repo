@@ -527,7 +527,7 @@ def get_anime(params):
 					'img':img,
 					'm_path':lnk
 					})
-			if lnk.find('vk.com'):
+			if 'vk.com' in lnk:
 				xbmcplugin.addDirectoryItem(hos, uri, listitem)
 			#print lnk
 	else: 
@@ -543,7 +543,7 @@ def get_anime(params):
 				'img':img,
 				'm_path':beautifulSoup.find('iframe', attrs={'name': 'film_main'})['src']
 				})
-		if beautifulSoup.find('iframe', attrs={'name': 'film_main'})['src'].find('vk.com'):
+		if 'vk.com' in beautifulSoup.find('iframe', attrs={'name': 'film_main'})['src']:
 			xbmcplugin.addDirectoryItem(hos, uri, listitem)
 	xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 	#m=re.search('http://vk.com/video_ext.php?oid=[^/]+',str(content))
