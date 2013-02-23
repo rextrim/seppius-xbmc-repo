@@ -53,6 +53,8 @@ class myPlayer(xbmc.Player):
 		self.paused=None
 		self.resume=None
 		self.duration=None
+		self.jump=None
+		self.state=0
 	def playlist_add( self, url, it):
 		self.playl.add(url=url, listitem= it)
 		
@@ -62,15 +64,21 @@ class myPlayer(xbmc.Player):
 	def onPlayBackStarted( self ):
 		try: self.duration= int(xbmc.Player().getTotalTime()*1000)
 		except: self.duration=0
+		self.state=1
 	def onPlayBackResumed( self ):
 		self.paused = False
 	def onPlayBackEnded( self ):
 		self.active = False
+		self.state=3
 	def onPlayBackStopped( self ):
 		self.active = False
+		self.state=2
 	def onPlayBackPaused( self ):
 		self.paused=True
-	
+	def onPlayBackSeek(self, time, seekOffset):
+		self.jump=seekOffset
+		print "time=%s"%time
+		print "seek=%s"%seekOffset
 class TSengine(object):
 	
 	def _TSpush(self,command):
@@ -202,6 +210,7 @@ class TSengine(object):
 			lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
 			#self.dialog2.updater(100,language(1005))
 			plr.play(self.r.got_url, lit)
+			#print self.r.got_url
 			#self.dialog2.hide()
 			#while not plr.duration:
 			#	self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
@@ -209,16 +218,37 @@ class TSengine(object):
 			#self.dialog2.hide()
 			visible=False
 			#print 'strat it'
+			#while not plr.duration:
+			#	xbmc.sleep(300)
+			#print plr.duration
+			while plr.state<1:
+				#print plr.state
+				xbmc.sleep(300)
+			#print plr.state
 			if plr.duration!=0: 
 					comm='DUR '+self.r.got_url.replace('\r','').replace('\n','')+' '+str(plr.duration)
-					comm='PLAYBACK '+self.r.got_url.replace('\r','').replace('\n','')+' 0'
 					self._TSpush(comm)
 					plr.duration=None
+					
+			comm='PLAYBACK '+self.r.got_url.replace('\r','').replace('\n','')+' 0'
+			self._TSpush(comm)
+			self.r.got_url=None
 			while plr.active:
-				#print 'active'
+				#try: delay=plr.getTotalTime()-plr.getTime()
+				#except: delay=1
 				
+				if self.r.mode==2 and not plr.paused: 
+					plr.pause()
+					self.r.mode=0
+					#print 'запаузил'
+				if self.r.mode==1 and plr.paused: 
+					plr.pause()
+					self.r.mode=0
+					#print 'отжал'
+
 				if plr.paused: 
-					#print 'paused'
+					#print "%s-%s=%s"%(plr.getTotalTime(),plr.getTime(),plr.getTotalTime()-plr.getTime())
+					
 					if not visible: 
 						#print 'make window'
 						self.dialog = progress.dwprogress()
@@ -226,11 +256,19 @@ class TSengine(object):
 						self.dialog.updater(self.r.progress,self.r.state,self.r.label)
 						visible=True
 					else: self.dialog.updater(self.r.progress,self.r.state,self.r.label)
+					delay=plr.getTotalTime()-plr.getTime()
+					if delay>5: plr.pause()
 				elif visible:
 					#print 'delete window'
 					self.dialog.close()
 					visible=False
+				if self.r.got_url:
+					plr.play(self.r.got_url, lit)
 				#print self.r.state'''
+				if plr.jump:
+					comm='EVENT seek position=%s'%plr.jump
+					self._TSpush(comm)
+					plr.jump=None
 				xbmc.sleep(1000)
 			#self.end()
 		#else: 
@@ -277,7 +315,7 @@ class _TSpull(threading.Thread):
 				if st=='buf': 
 					self.state=language(1101)
 					self.progress=int(text.split(';')[1])+0.1
-					self.label=language(1150)%(text.split(';')[6],text.split(';')[3])
+					self.label=language(1150)%(text.split(';')[8],text.split(';')[5])
 				if st=='dl': 
 					self.state=language(1102)
 					self.progress=int(text.split(';')[1])+0.1
@@ -320,6 +358,7 @@ class _TSpull(threading.Thread):
 		self.progress=0
 		self.filestemp=None
 		self.speed=0
+		self.mode=0
 	def run(self):
 		while self.active:
 			try:
@@ -333,17 +372,21 @@ class _TSpull(threading.Thread):
 				elif self.last_com=='STATUS': pass
 				elif self.last_com=='STATE': pass
 				elif self.last_com=='EVENT': pass
-				elif self.last_com=='RESUME': pass
-				elif self.last_com=='PAUSE': pass
+				elif self.last_received=='RESUME\r\n':
+					self.mode=1
+					
+				elif self.last_received=='PAUSE\r\n': 
+					self.mode=2
+				
 				elif self.last_com=='LOADRESP': 
 					fil = self.last_received
 					ll= fil[fil.find('{'):len(fil)]
 					self.filestemp=ll
 					#!!!!!!!!запихать файлы в {file:ind}
 					#print self.files
-					#output = open("c:/temp/log.txt", "a")
-					#output.write(comm);
-					#output.close();
+					output = open("c:/temp/log.txt", "a")
+					output.write(comm);
+					output.close();
 				elif self.filestemp: 
 					self.filestemp=self.filestemp+	self.last_received	
 					#print self.files
