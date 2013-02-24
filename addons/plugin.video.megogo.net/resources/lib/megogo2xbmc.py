@@ -556,10 +556,11 @@ def getInfo(video):
 	try: fav=str(video['isFavorite'])
 	except: fav='0'
 	genre=[]
-	if genres:
-		for gnre in genres: genre.append(gnre['title'])
-	if len(genre): genre = ', '.join(genre)
-	
+	try:
+		if genres:
+			for gnre in genres: genre.append(gnre['title'])
+		if len(genre): genre = ', '.join(genre)
+	except: genre=''
 	try:
 		minutes = int(duration) // 60
 		hours = minutes // 60
