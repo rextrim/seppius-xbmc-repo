@@ -315,7 +315,6 @@ def Serial_Info(params):
         s_num = 0
 
         #---------------------------
-        print (mi.pl_url)
         playlist = Get_PlayList(mi.pl_url)
 
         for rec in playlist:
@@ -399,10 +398,13 @@ def Get_Movie_Info(url):
         mi.img = ''
     #playlist_url
     try:
-        for rec in main_rec.findAll('script', {'type':"text/javascript"}):
-            if 'swfobject.embedSWF' in rec.text:
-                flashvar = '{"uid":'+re.compile('{"uid":(.+?)};', re.MULTILINE|re.DOTALL).findall(rec.text)[0]+'}'
-        mi.pl_url = json.loads(flashvar)['pl']
+        for rec in urllib.unquote_plus(main_rec.find('object', {'id':'videoplayer'}).find('param', {'name':'flashvars'})['value'].encode('utf-8')).split('&'):
+            if rec.split('=')[0] == 'pl':
+                mi.pl_url = rec.split('=')[1]
+
+                #-- check if playlist should be decode
+                if mi.pl_url[:4] != 'http':
+                    mi.pl_url = xppod.Decode(mi.pl_url)
     except:
         mi.pl_url = ''
 
@@ -534,10 +536,13 @@ def Get_PlayList(url):
         return []
 
     html = get_HTML(url)
-    pl = json.loads(html)
+    try:
+        pl = json.loads(html)
+    except:
+        pl = json.loads(xppod.Decode(html))
 
     for rec in pl['playlist']:
-        plist.append({'comment':rec['comment'], 'file':rec['file']})
+        plist.append({'comment':rec['comment'].encode('iso-8859-1').decode('utf-8'), 'file':rec['file']})
 
     return plist
 
