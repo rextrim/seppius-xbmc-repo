@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+///Settings
+        <string id="30001">Логин MyShows.ru</string>
+        <string id="30002">Пароль MyShows.ru</string>
+        <string id="30003">Использовать Русские названия</string>
+        <string id="30004">Измененять статус эпизода по клику</string>
+        <string id="30005">Время устаревания кэша (ч)</string>
+        <string id="30006">Отключить кэш</string>
+
+///ListItems
+        <string id="30100">Все Мои сериалы</string>
+        <string id="30101">Поиск MyShows.ru</string>
+        <string id="30102">Смотрю сериалы</string>
+        <string id="30103">Буду смотреть</string>
+        <string id="30104">Полностью посмотрел</string>
+        <string id="30105">Перестал смотреть</string>
+        <string id="30106">Прошедшие эпизоды</string>
+        <string id="30107">Будущие эпизоды</string>
+        <string id="30108">Топ сериалов</string>
+        <string id="30109">Мужской топ</string>
+        <string id="30110">Женский топ</string>
+        <string id="30111">Мой профиль</string>
+        <string id="30112">Новости Друзей</string>
+        <string id="30113">S%sE%s [%s дн.] %s (%s)</string>
+        <string id="30114">Группировать по сериалу</string>
+        <string id="30115">[%s] %s (%s эп.)</string>
+        <string id="30116">[%s-%s] %s (%s эп.)</string>
+        <string id="30117">отметил</string>
+        <string id="30118">отметила</string>
+        <string id="30119">%s %s [%s] серию %s</string>
+        <string id="30120">%s %s %s серий %s</string>
+        <string id="30121">потратил</string>
+        <string id="30122">потратила</string>
+        <string id="30123">%s %s %s дн. (%s ч)</string>
+        <string id="30124">Мои Друзья</string>
+        <string id="30125">Мои Подписчики</string>
+        <string id="30126">Подписчики %s|:|%s</string>
+        <string id="30127">Друзья %s|:|%s</string>
+        <string id="30128">Потратил %s дней</string>
+        <string id="30129">Посмотрел %s эпизодов</string>
+        <string id="30130">Потратил %s часов</string>
+        <string id="30131">Не посмотрел %s эпизодов</string>
+        <string id="30132">Потратила %s дней</string>
+        <string id="30133">Посмотрела %s эпизодов</string>
+        <string id="30134">Потратила %s часов</string>
+        <string id="30135">Не посмотрела %s эпизодов</string>
+        <string id="30136">Мои Источники</string>
+        <string id="30137">Очистить Кэш</string>
+	    <string id="30138">Сезон</string>
+        <string id="30139">Сериалы</string>
+        <string id="30140">Сканлист</string>
+        <string id="30141">Просканировать все источники Сканлиста</string>
+        <string id="30142">Всего источников: %s</string>
+        <string id="30143">xbmc-vk.svoka.com: %s</string>
+        <string id="30144">plugin.video.serialu.net: %s</string>
+        <string id="30145">Об авторе</string>
+        <string id="30146">Статус Плагина</string>
+///Dialogs, Notifications
+        <string id="30200">Ошибка авторизации</string>
+        <string id="30201">Неверный логин или пароль!</string>
+        <string id="30202">Измените в Настройках дополнения</string>
+        <string id="30203">Я ищу:</string>
+        <string id="30204">Искать ВКонтакте</string>
+        <string id="30205">Отмена</string>
+        <string id="30206">Ошибка</string>
+        <string id="30207">Включите "По Нажатию" в Настройках дополнения</string>
+        <string id="30208">Выполнено</string>
+        <string id="30209">MyShows.ru</string>
+        <string id="30210">Действительно удалить из Моих сериалов?</string>
+        <string id="30211">Не прерывайте</string>
+        <string id="30212">Это отменит команду. Дождитесь сообщения.</string>
+        <string id="30213">Сериал</string>
+        <string id="30214">Эпизод</string>
+        <string id="30215">Оценить %s</string>
+        <string id="30216">В избранное %s</string>
+        <string id="30217">Добавить в Избранное</string>
+        <string id="30218">Удалить из Избранного</string>
+        <string id="30219">Добавить в Игнорируемое</string>
+        <string id="30220">Удалить из Игнорируемых</string>
+        <string id="30221">Нет Друзей</string>
+        <string id="30222">Нет Подписчиков</string>
+        <string id="30223">Файлы в торренте:</string>
+        <string id="30224">Результаты поиска:</string>
+        <string id="30225">Неправильный BTChat passkey</string>
+        <string id="30226">Файл отсутствует!</string>
+        <string id="30227">Проиграть Источник</string>
+        <string id="30228">Удалить Источник</string>
+        <string id="30229">Выберите файл или .torrent-файл:</string>
+        <string id="30230">Добавлен в БД: %s</string>
+        <string id="30231">Занят: %s</string>
+        <string id="30232">Добавить Источник</string>
+        <string id="30233">Список файлов в папке:</string>
+        <string id="30234">Удалено из БД: %s</string>
+        <string id="30235">Список источников:</string>
+        <string id="30236">Очистка кэша завершена успешно!</string>
+        <string id="30237">Невозможно добавить в БД: %s</string>
+        <string id="30238">Выберите папку с файлами:</string>
+        <string id="30239">Добавить файл</string>
+        <string id="30240">Поиск ВКонтакте (требует патч xbmc.vk-svoka)</string>
+        <string id="30241">Поиск BTchat.com</string>
+        <string id="30242">Добавить .torrent</string>
+        <string id="30243">Назад</string>
+        <string id="30244">Добавить папку</string>
+        <string id="30245">Добавить несколько файлов</string>
+        <string id="30246">Добавить несколько файлов из .torrent</string>
+        <string id="30247">Выберите .torrent для добавления нескольких файлов:</string>
+        <string id="30248">Выберите папку:</string>
+        <string id="30249">Добавлено %s новых источников!</string>
+        <string id="30250">Невозможно проиграть: %s</string>
+        <string id="30251">Удалено: %s источников</string>
+        <string id="30252">Хотите воспроизвести добавленый источник?</string>
+        <string id="30253">Поиск BTchat.com:</string>
+        <string id="30254">Корневая папка "./"</string>
+        <string id="30255">Поиск Serialu.net (требует патч plugin.video.serialu.net)</string>
+        <string id="30256">Введите правильное название сериала Serialu.net:</string>
+        <string id="30257">ПАТЧ УСТАНОВЛЕН</string>
+        <string id="30258">ПАТЧ НЕ УСТАНОВЛЕН</string>
+        <string id="30259">ПЛАГИН НЕ УСТАНОВЛЕН</string>
+        <string id="30260">DiMartino на xbmc.ru и bitbucket.org</string>
+        <string id="30261">Подробнее в changelog.txt</string>
+        <string id="30262">Статус:</string>
+        <string id="30263">Сканирование:</string>
+
+///Context menus
+        <string id="30300">Пометить "Смотрю"</string>
+        <string id="30301">Пометить "Буду смотреть"</string>
+        <string id="30302">Пометить "Перестал смотреть"</string>
+        <string id="30303">Оценить сериал</string>
+        <string id="30304">Удалить из Моих сериалов</string>
+        <string id="30305">Пометить "Просмотрено"</string>
+        <string id="30306">Пометить "Не просмотрено"</string>
+        <string id="30307">Искать ВКонтакте</string>
+        <string id="30308">Избранное/Игнорируемое</string>
+        <string id="30309">Искать BTChat</string>
+        <string id="30310">Открыть в ОС</string>
+        <string id="30311">Сканировать</string>
+        <string id="30312">Удалить из Сканлиста</string>
+        <string id="30313">Добавить в Сканлист</string>
+
+
+///Other plugins
+        <string id="30400">Назад</string>
+        <string id="30401">Результаты поиска:</string>
+        <string id="30402">Нет результатов!</string>
+        <string id="30403">Ничего не было найдено.</string>
+        <string id="30404">Попробуйте другую комбинацию.</string>
+        <string id="30405">Добавить лучший источник</string>
+        <string id="30406">Отмена</string>
+        <string id="30407">Возможно названия не совпадают</string>
+        <string id="30408">или вам нужно обновить базу Serialu.net</string>
+
+
+</strings>
