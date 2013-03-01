@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<setting id="username" type="text" label="30001" default=""  />
+	<setting id="password" type="text" label="30002" default=""   option="hidden" />
+	<setting id="cookie_auth" type="hidden" default="" />
+        <setting id="btchat_auth" type="hidden" default="passkey=adea1a2f0cd329bc287f95846a612fc3" />
+    	<setting id="ruName"   type="bool" label="30003" default="true"/>
+	<setting id="change_onclick"   type="bool" label="30004" default="false"/>
+	<setting id="forced_refresh_data" type="hidden" default="false" />
+	<setting id="refresh_period"  type="enum" label="30005" default="1" values="1|4|12|24"/>
+	<setting id="refresh_always"   type="bool" label="30006" default="false"/>
+
+</settings>
