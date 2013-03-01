@@ -412,7 +412,7 @@ Audio sources are
 
 <addon id="plugin.video.allserials.tv"
        name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]allserials.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.4"
+       version="1.0.5"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -613,6 +613,25 @@ Audio sources are
   <extension point="xbmc.addon.metadata">
     <summary>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</summary>
     <description>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.fasttorrent.org"
+       name="fast-torrent.org"
+       version="0.6.0"
+       provider-name="TDW">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.module.torrent.ts"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+            library="default.py">
+        <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>fast-torrent.org</summary>
+    <description>fast-torrent.org for TorrentStreem</description>
     <platform>all</platform>
   </extension>
 </addon>
