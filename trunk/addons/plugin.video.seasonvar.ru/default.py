@@ -312,7 +312,7 @@ def Serial_Info(params):
     if par.is_season == '' and len(soup.findAll('div', {'class':'full-news-2-content'})) > 0:
         #-- generate list of seasons
         for rec in soup.find('div', {'class':'full-news-2-content'}).findAll('a'):
-            s_url   = 'http://seasonvar.ru'+rec['href']
+            s_url   = ('http://seasonvar.ru'+rec['href']).encode('utf-8')
             s_name  = rec.text.replace('>>>', '').replace(u'Сериал ', '')
             if s_name.find(u'сезон(') > -1:
                 s_name = s_name.split(u'сезон(')[0]+u'сезон'
@@ -549,6 +549,8 @@ def Get_PlayList(soup, parent_url):
     #---
     swf_player  = plcode.split(',')[1]
     plcode      = plcode.split(',')[0]
+
+    get_HTML(swf_player)
 
     url = Decoder.Decode(plcode, swf_player, parent_url, cj=cj)
 
