@@ -50,6 +50,18 @@
 				<height>8</height>
 				<visible>true</visible>
 			</control>
+			<control type="button" id="2005">
+					<description>from</description>
+					<posx>470</posx>
+					<posy>10</posy>
+					<width>110</width>
+					<height>40</height>
+					<font>font18</font>
+					<textcolor>FF99D8FF</textcolor>
+					<align>center</align>
+					<aligny>center</aligny>
+					<label>Отмена</label>
+			</control>
 		</control>
 	</controls>
 </window>
