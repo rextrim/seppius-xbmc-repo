@@ -121,6 +121,10 @@ class TSengine(object):
 		while not self.r.last_com:
 			timeout=timeout-1
 			if timeout==0: break
+			if self.dialog.ui.isCanceled: 
+				timeout=0
+				break
+				return 'Canceled'
 			time.sleep(1)
 		if timeout==0: 
 			self.dialog.updater(100,language(1011))
@@ -176,8 +180,9 @@ class TSengine(object):
 		else:
 			comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) +' 0 0 0'
 		self._TSpush(comm)
-		noseeds=off_timer=180
+		noseeds=off_timer=999999
 		while not self.r.got_url:
+			if self.dialog2.ui.isCanceled: break
 			if self.r.last_com=='STATUS':
 				try:
 					if self.r.state: self.dialog2.updater(self.r.progress,self.r.state,self.r.label)
@@ -196,7 +201,7 @@ class TSengine(object):
 					break
 		#print 'got url'
 		self.dialog2.close()
-		if self.r.got_url:
+		if self.r.got_url and not self.dialog2.ui.isCanceled:
 			#print self.r.got_url
 			plr=myPlayer()
 			lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)

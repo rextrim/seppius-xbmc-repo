@@ -27,7 +27,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 		#xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
 		#self.doModal()
 		self.progress=0
-		
+		self.isCanceled=False
 		pass
 	def onInit(self):
 		self.controls = {}
@@ -35,6 +35,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 			self.getControls()
 		except:
 			print_exc()
+		self.setFocus(self.getControl(2005))
 		#self.close()
 	def updater(self,progress,text1,text2):
 		self.label = self.getControl(2004)
@@ -43,6 +44,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 		self.label.setLabel(text1)
 		self.label = self.getControl(2003)
 		self.label.setLabel(text2)
+		self.setFocus(self.getControl(2005))
 	def getControls(self):
 		pass
 
@@ -50,7 +52,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 		pass
 
 	def onClick(self, controlID):
-		print self.getControl(controlID).getLabel()
+		if controlID==2005: self.isCanceled=True
 		pass
 	def show1(self):
 		self.label = self.getControl(2000)
@@ -64,6 +66,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 class dwprogress():
 	def __init__(self, *args, **kwargs):
 		self.ui = WTSEngine("DialogDownloadProgress.xml",addonDir,'default')
+		#self.ui.doModal()
 		self.ui.show()
 	def onInit(self):
 		#self.ui = WTSEngine("DialogDownloadProgress.xml",addonDir)
