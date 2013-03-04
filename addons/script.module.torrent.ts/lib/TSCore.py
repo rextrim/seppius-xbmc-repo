@@ -25,6 +25,8 @@ language = Addon.getLocalizedString
 addon_icon    = Addon.getAddonInfo('icon')
 import TSEProgress as progress
 prt_file=Addon.getSetting('port_path')
+server_ip=Addon.getSetting('ip_addr')
+#print server_ip
 aceport=62062
 try:
 	if prt_file: 
@@ -94,7 +96,7 @@ class TSengine(object):
 		#self.dialog.create(language(1000), "")
 		self.timeout=10
 		self.mode=''
-	def load_torrent(self, torrent, mode, host='127.0.0.1', port=aceport ):
+	def load_torrent(self, torrent, mode, host=server_ip, port=aceport ):
 		self.dialog = progress.dwprogress()
 		self.dialog.updater(0,language(1001))
 		self.dialog.updater(5)
@@ -333,8 +335,8 @@ class _TSpull(threading.Thread):
 				#self.received.append(self.last_received)
 				self.last_com = self._com_received(self.last_received)
 				
-				if self.last_com=='START': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
-				elif self.last_com=='PLAY': self.got_url=self.last_received.split(' ')[1] # если пришло PLAY URL, то забираем себе ссылку
+				if self.last_com=='START': self.got_url=self.last_received.split(' ')[1].replace('127.0.0.1',server_ip) # если пришло PLAY URL, то забираем себе ссылку
+				elif self.last_com=='PLAY': self.got_url=self.last_received.split(' ')[1].replace('127.0.0.1',server_ip) # если пришло PLAY URL, то забираем себе ссылку
 				elif self.last_com=='STATUS': pass
 				elif self.last_com=='STATE': pass
 				elif self.last_com=='EVENT': pass
