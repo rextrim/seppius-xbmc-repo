@@ -151,7 +151,7 @@ def Get_EPG_Date(params):
     for day_off in range(0, 16):    #-- tvisio.tv keeps 2 weeks of TV data
         ETR_date = time.localtime(MSK-day_off*24*60*60)
         name = '[COLOR FF00FF00]'+unescape(strftime("%Y-%m-%d", ETR_date)).encode('utf-8')+'[/COLOR] ([COLOR FF3BB9FF]'+unescape(strftime("%A", ETR_date)).encode('utf-8')+'[/COLOR])'
-        id   = strftime("%d-%m-%Y", ETR_date)
+        id   = str(ETR_date.tm_mday)+'-'+str(ETR_date.tm_mon)+'-'+str(ETR_date.tm_year) #strftime("%d-%m-%Y", ETR_date)
         i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=EPG'
         u += '&date=%s'%urllib.quote_plus(id)
@@ -169,7 +169,6 @@ def Get_EPG(params):
     prg_name     = urllib.unquote_plus(params['name'])
 
     url = 'http://telepoisk.com/arhiv-tv/'+ epg_date
-
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
