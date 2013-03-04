@@ -2,8 +2,7 @@
 <settings>
 <category label="Настройки">
 
-    <setting id="sort_v" type="enum" label="30001" values="Новое|Популярное" default="new" />
-	<setting id="cnt_v" type="enum" label="30002" values="10|25|50|75|100" default="50" />
-    <setting type="sep" />
+    <setting id="ip_addr" type="text" label="Адрес сервера" default="127.0.0.1" />
+
   </category>
 </settings>
