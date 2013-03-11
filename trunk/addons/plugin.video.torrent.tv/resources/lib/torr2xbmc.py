@@ -17,6 +17,7 @@ import datetime
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from TSCore import TSengine as tsengine
 import base64
+
 hos = int(sys.argv[1])
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
@@ -29,14 +30,16 @@ addon_id      = __addon__.getAddonInfo('id')
 addon_author  = __addon__.getAddonInfo('author')
 addon_name    = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
-ktv_folder=unicode(__addon__.getSetting('download_path'),'utf-8')
 prt_file=__addon__.getSetting('port_path')
 aceport=62062
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
+
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
 	PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
+	
 PROGRAM_SOURCE_PATH = os.path.join( PLUGIN_DATA_PATH , "%s_inter-tv.zip"  % datetime.date.today().strftime("%W") )
+	
 try:
 	if prt_file: 
 		gf = open(prt_file, 'r')
@@ -54,8 +57,6 @@ if not prt_file:
 		print aceport
 	except: aceport=62062
 
-while not __addon__.getSetting('download_path'): __addon__.openSettings()
-ktv_folder=unicode(__addon__.getSetting('download_path'),'utf-8')
 def construct_request(params):
 	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 	
@@ -78,13 +79,16 @@ def GET(target, post=None):
 		xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
 		showMessage('HTTP ERROR', e, 5000)
 		
-def showMessage(heading, message, times = 3000, pics = addon_icon):
+def showMessage(heading='Torrent-TV.RU', message = '', times = 3000, pics = addon_icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
 	except Exception, e:
 		xbmc.log( '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
 		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
 		except Exception, e:
 			xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
+
+db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase.db')
+
 
 def Log(str):
 	import datetime
@@ -102,8 +106,12 @@ def GetScript(params):
 			output.write(gzip)
 			output.close()
 		import zipfile
-		gzipFile = zipfile.ZipFile(PROGRAM_SOURCE_PATH)
-		PROGRAM_FILE = gzipFile.read('inter-tv.txt').decode('windows-1251', 'strict')
+		try:
+			gzipFile = zipfile.ZipFile(PROGRAM_SOURCE_PATH)
+			PROGRAM_FILE = gzipFile.read('inter-tv.txt').decode('windows-1251', 'strict')
+		except Exception, e:
+			Log('Error (Line 107): not decode from windows-1251')
+			return
 		import datetime
 		today = datetime.date.today()
 		strToDay = ''
@@ -163,11 +171,15 @@ def GetScript(params):
 		txtProgram = ''
 		isProgram = -1
 		for line in lines[2:]:
-			if line.encode('utf-8').find(strToDay + params['title']) == 0:
-				isProgram = 1
-				header = line
-				continue
-		
+			try:
+				if line.encode('utf-8').find(strToDay + params['title']) == 0:
+					isProgram = 1
+					header = line
+					continue
+			except Exception, e:
+				Log('Error (Line 171): not encode to utf-8')
+				return
+				
 			if len(line) < 3 and isProgram > 0:
 				isProgram -= 1
 				continue
@@ -195,9 +207,13 @@ def GetScript(params):
 						showMessage('Error', 'Ошибка конвертации времени')
 		for line in strs[i-j-1:]:
 			txtProgram = txtProgram + line + '\r\n'
-		if txtProgram == '':
-			header = params['title']
-			txtProgram = '[COLOR FFFF0000]Нет программы[/COLOR]'.decode('utf-8')
+		try:
+			if txtProgram == '':
+				header = params['title']
+				txtProgram = '[COLOR FFFF0000]Нет программы[/COLOR]'.decode('utf-8')
+		except Exception, e:
+			Log('Error (Line 209): Not decode from utf-8')
+			return
 		window.getControl(1).setLabel(header)
 		text = '%s' % txtProgram
 		window.getControl(5).setText(text)
@@ -206,7 +222,37 @@ def GetScript(params):
 		xbmc.log( 'Error [GetScript] %s' % (e))
 		showMessage('Error', e, 6000)
 		
-def GetChanels (params):
+def GetChannelsDB (params):
+	db = DataBase(db_name, cookie)
+	channels = None
+	if not params.has_key('group'):
+		showMessage(message = 'Группа не найдена')
+		return
+	elif params['group'] == '0':
+		channels = db.GetChannels()
+	elif params['group'] == 'hd':
+		channels = db.GetChannelsHD()
+	else:
+		channels = db.GetChannels(params['group'])
+	if channels.__len__() == 0:
+		db.FillDB()
+		GetChannels(params)
+		return
+	else:
+		for ch in channels:
+			li = xbmcgui.ListItem(ch['name'], ch['name'], ch['imgurl'], ch['imgurl'])
+			uri = construct_request({
+				'func': 'play_ch_db',
+				'img': ch['imgurl'],
+				'title': ch['name'],
+				'file': ch['urlstream'],
+				'id': ch['id']
+			})
+			li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
+			xbmcplugin.addDirectoryItem(hos, uri, li)
+		xbmcplugin.endOfDirectory(hos)
+	
+def GetChannelsWeb(params):
 	http = GET('http://torrent-tv.ru/' + params['file'])
 	beautifulSoup = BeautifulSoup(http)
 	channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
@@ -216,7 +262,7 @@ def GetChanels (params):
 		img='http://torrent-tv.ru/'+ch.find('img')['src']
 		li = li = xbmcgui.ListItem(title,title,img,img)
 		uri = construct_request({
-				'func': 'play_ch',
+				'func': 'play_ch_web',
 				'img':img,
 				'title':title,
 				'file':link
@@ -225,13 +271,36 @@ def GetChanels (params):
 			li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], title),)])
 		except Exception, e:
 			xbmc.log( 'Error [GetChanels] %s' % (e))
-			showMessage('Erorr', e)
+			showMessage(message = e)
 			break
 			
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	xbmcplugin.endOfDirectory(hos)
 	
-def play_ch(params):
+def play_ch_db(params):
+	url = ''
+	if params['file'] == '':
+		db = DataBase(db_name, cookie)
+		url = db.UpdateUrlsStream([params['id']])
+		if url.__len__() == 0:
+			showMessage('Torrent TV', 'Канал не найден, обновите базу данных')
+			return
+		url = url[0]['urlstream']
+	else:
+		url = params['file']
+	if url != '':
+		TSPlayer = tsengine()
+		out = None
+		if url.find('http://') == -1:
+			out = TSPlayer.load_torrent(url,'PID',port=aceport)
+		else:
+			out = TSPlayer.load_torrent(url,'TORRENT',port=aceport)
+		if out == 'Ok':
+			TSPlayer.play_url_ind(0,params['title'],addon_icon,params['img'])
+		TSPlayer.end()
+		showMessage('Torrent', 'Stop')
+	
+def play_ch_web(params):
 	http = GET('http://torrent-tv.ru/'+params['file'])
 	print 'http://torrent-tv.ru/'+params['file']
 	beautifulSoup = BeautifulSoup(http)
@@ -242,19 +311,12 @@ def play_ch(params):
 	if m:
 		torr_link= m.group(0).split('"')[0]
 		m=re.search('http://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+', torr_link)
-		try:
-			pre_link= m.group(0)
-			http = GET(pre_link)
-			beautifulSoup = BeautifulSoup(http)
-			lnk=pre_link+beautifulSoup.find('a')['href']
-			torr_link=lnk
-		except: pass
 		TSplayer=tsengine()
 		out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
 		if out=='Ok':
 			TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
 		TSplayer.end()
-		showMessage('Torrent', 'Stop', 2000)
+		showMessage(message = 'Stop')
 	else:
 		m = re.search('load.*', str(tget))
 		ID = m.group(0).split('"')[1]
@@ -265,52 +327,48 @@ def play_ch(params):
 				TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
 			TSplayer.end()
 		except Exception, e:
-			showMessage('Torrent', e)
-		showMessage('Torrent', 'Stop', 2000)
-	
-def GetParts() :
-	http = GET('http://torrent-tv.ru/channels.php')
-	beautifulSoup = BeautifulSoup(http)
-	parts = beautifulSoup.findAll('a', attrs={'class': 'simple-link'})
-	i = 0
-	for ch in parts:
-		link = ch['href'].find('category')
-		if link > -1:
-			li = xbmcgui.ListItem(ch.string)
-			uri = construct_request({
-			'func' : 'GetChanels',
-			'title' : ch.string,
-			'file' : ch['href']
-			})
-			xbmcplugin.addDirectoryItem(hos, uri, li, True)
+			showMessage(message = e)
+		showMessage(message = 'Stop')
+
+def GetParts():
+	db = DataBase(db_name, cookie)
+	parts = db.GetParts()
+		
+	for part in parts:
+		li = xbmcgui.ListItem(part['name'])
+		uri = construct_request({
+			'func': 'GetChannelsDB',
+			'group': part['id'],
+		})
+		xbmcplugin.addDirectoryItem(hos, uri, li, True)
 			
 def mainScreen(params):
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Все каналы[/COLOR]')
 	uri = construct_request({
-		'func': 'GetChanels',
+		'func': 'GetChannelsDB',
 		'title': 'Все каналы',
-		'file': 'channels.php'
+		'group': '0'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]На модерации[/COLOR]')
 	uri = construct_request({
-		'func': 'GetChanels',
+		'func': 'GetChannelsWeb',
 		'title': 'На модерации',
 		'file': 'on_moderation.php'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Трансляции[/COLOR]')
 	uri = construct_request({
-		'func': 'GetChanels',
+		'func': 'GetChannelsWeb',
 		'title': 'Трансляции',
 		'file': 'translations.php'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]HD Каналы[/COLOR]')
 	uri = construct_request({
-		'func': 'GetChanels',
+		'func': 'GetChannelsDB',
 		'title': 'HD Каналы',
-		'file': 'hd_channels.php'
+		'group': 'hd'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	GetParts()
@@ -335,25 +393,48 @@ def get_params(paramstring):
 		for cur in param:
 			param[cur] = urllib.unquote_plus(param[cur])
 	return param
+	
+from database import DataBase
 
-login = __addon__.getSetting("login")
-passw = __addon__.getSetting("password")
-data = urllib.urlencode({
-	'email' : login,
-	'password' : passw,
-	'remember' : 1,
-	'enter' : 'enter'
-})
+cookiefile = os.path.join(PLUGIN_DATA_PATH, 'cookie.txt')
+if os.path.exists(cookiefile):
+	fgetcook = open(cookiefile, 'r')
+	cookie = fgetcook.read()
 
 def addon_main():
-	page = GET('http://torrent-tv.ru/auth.php', data)
 	params = get_params(sys.argv[2])
 	try:
 		func = params['func']
 		del params['func']
 	except:
+		login = __addon__.getSetting("login")
+		passw = __addon__.getSetting("password")
+		data = urllib.urlencode({
+			'email' : login,
+			'password' : passw,
+			'remember' : 1,
+			'enter' : 'enter'
+		})
+
+		out = open(cookiefile, 'w')
+		GET('http://torrent-tv.ru/auth.php', data)
+		out.write(cookie)
+		out.close()
+					
+		db = DataBase(db_name, cookie)
+		lupd = db.GetLastUpdate()
+		if lupd == None:
+			showMessage('Torrent TV', 'Производится обновление плэйлиста')
+			db.UpdateDB()
+		else:
+			nupd = lupd + datetime.timedelta(hours = 8)
+			if nupd < datetime.datetime.now():
+				showMessage('Torrent TV', 'Производится обновление плэйлиста')
+				db.UpdateDB()
+		
 		func = None
 		xbmc.log( '[%s]: Primary input' % addon_id, 1 )
+
 		mainScreen(params)
 	if func != None:
 		try: pfunc = globals()[func]
