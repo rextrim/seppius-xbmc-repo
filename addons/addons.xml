@@ -1431,19 +1431,20 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.torrent.tv"
-       name="Torrent.TV"
-       version="0.2.3"
+       name="Torrent-TV.RU"
+       version="0.4.0"
        provider-name="Const86">
     <requires>
 		<import addon="script.module.torrent.ts"/>
 		<import addon="script.module.beautifulsoup"/>
+		<import addon="xbmc.python" version="2.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>Torrent TV</summary>
-        <description>Просмотр ТВ Torrent Stream</description>
+        <summary>Torrent-TV.RU</summary>
+        <description>Просмотр ТВ через Torrent Stream</description>
         <platform>all</platform>
     </extension>
 </addon>
