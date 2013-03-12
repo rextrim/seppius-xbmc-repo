@@ -276,6 +276,24 @@ def GetChannelsWeb(params):
 			
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	xbmcplugin.endOfDirectory(hos)
+
+def GetNewChannels(params):
+	db = DataBase(db_name, cookie)
+	channels = db.GetNewChannels()
+	for ch in channels:
+		title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], ch['name'])
+		uri = construct_request({
+				'func': 'play_ch_db',
+				'img': ch['imgurl'],
+				'title': ch['name'],
+				'file': ch['urlstream'],
+				'id': ch['id']
+			})
+		li = xbmcgui.ListItem(title, title, ch['imgurl'], ch['imgurl'])
+		li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
+		xbmcplugin.addDirectoryItem(hos, uri, li)
+	
+	xbmcplugin.endOfDirectory(hos)
 	
 def play_ch_db(params):
 	url = ''
@@ -350,25 +368,31 @@ def mainScreen(params):
 		'group': '0'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR FF00FF00]На модерации[/COLOR]')
+	li = xbmcgui.ListItem('[COLOR FF00FF00]HD Каналы[/COLOR]')
+	uri = construct_request({
+		'func': 'GetChannelsDB',
+		'title': 'HD Каналы',
+		'group': 'hd'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[COLOR FF00FF00]Новые каналы[/COLOR]')
+	uri = construct_request({
+		'func': 'GetNewChannels',
+		'title': 'Новые Каналы'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[COLOR FF0099FF]На модерации[/COLOR]')
 	uri = construct_request({
 		'func': 'GetChannelsWeb',
 		'title': 'На модерации',
 		'file': 'on_moderation.php'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR FF00FF00]Трансляции[/COLOR]')
+	li = xbmcgui.ListItem('[COLOR FF0099FF]Трансляции[/COLOR]')
 	uri = construct_request({
 		'func': 'GetChannelsWeb',
 		'title': 'Трансляции',
 		'file': 'translations.php'
-	})
-	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR FF00FF00]HD Каналы[/COLOR]')
-	uri = construct_request({
-		'func': 'GetChannelsDB',
-		'title': 'HD Каналы',
-		'group': 'hd'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	GetParts()
