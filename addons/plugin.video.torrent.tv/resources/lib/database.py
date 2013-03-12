@@ -164,16 +164,34 @@ class DataBase:
 		
 	def GetChannelsHD(self):
 		return self.GetChannels(where = 'hd = 1')
+		
 	def GetLastUpdate(self):
 		self.Connect()
 		self.cursor.execute('SELECT lastupdate FROM settings WHERE id = 1')
 		res = self.cursor.fetchone()
 		if res[0] == None:
+			self.Disconnect()
 			return None
 		else:
 			dt = datetime.datetime.fromtimestamp(time.mktime(time.strptime(res[0], '%Y-%m-%d %H:%M:%S.%f')))
+			self.Disconnect()
 			return dt
 		return None
+	
+	def GetNewChannels(self, group = True):
+		self.Connect()
+		self.cursor.execute('SELECT ch.addsdate FROM channels as ch GROUP BY ch.addsdate ORDER BY ch.addsdate DESC')
+		res = self.cursor.fetchone()
+		self.cursor.execute('SELECT id, name, url, urlstream, imgurl, (SELECT gro.name FROM groups AS gro WHERE ch.group_id = gro.id) AS grname ' +
+			'FROM channels as ch WHERE addsdate = "%s" ORDER BY group_id ASC' % res[0])
+		res = self.cursor.fetchall()
+		ret = []
+		for line in res:
+			ret.append(
+				{'id': line[0], 'name': line[1].encode('utf-8'), 'url': line[2].encode('utf-8'), 'urlstream': line[3].encode('utf-8'), 'imgurl': line[4].encode('utf-8'), 'group_name': line[5].encode('utf-8')}
+			)
+		self.Disconnect()
+		return ret
 	
 	def UpdateDB(self):
 		try:
