@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
 ///Settings
         <string id="30001">Login MyShows.ru</string>
@@ -7,6 +7,8 @@
         <string id="30004">Change episode status onClick</string>
         <string id="30005">Cache Refresh Time (h)</string>
         <string id="30006">Cache off</string>
+        <string id="30007">Autoscan on start</string>
+        <string id="30008">Default Torrent Player</string>
 
 ///ListItems
         <string id="30100">All My Shows</string>
@@ -129,11 +131,39 @@
         <string id="30261">Read the rest in changelog.txt</string>
         <string id="30262">Status:</string>
         <string id="30263">Scanning:</string>
+        <string id="30264">Show status:</string>
+        <string id="30265">You watched %s of %s</string>
+        <string id="30266">You rated it</string>
+        <string id="30267">INSTALLED</string>
+        <string id="30268">RuTracker.Org Distribution (need patch plugin.video.torrenter)</string>
 
-    __language__(30263)
-        <string id="30264">Root path "./"</string>
-        <string id="30265">Search Serialu.net (need patch plugin.video.serialu.net)</string>
-        <string id="30266">Input Serialu.net correct show title:</string>
+    __language__(30267)
+
+        <string id="30269">Add File</string>
+        <string id="30270">Search VK (need patched xbmc.vk-svoka)</string>
+        <string id="30271">Search BTchat.com</string>
+        <string id="30272">Add .torrent</string>
+        <string id="30273">Back</string>
+        <string id="30274">Add Directory</string>
+        <string id="30275">Add Multiple Files</string>
+        <string id="30276">Add Multiple Files from .torrent</string>
+        <string id="30277">Choose .torrent for multifile add:</string>
+        <string id="30278">Choose directory:</string>
+        <string id="30279">Added %s new sources!</string>
+        <string id="30280">Can't play: %s</string>
+        <string id="30281">Deleted: %s sources</string>
+        <string id="30282">Would you like to play it?</string>
+        <string id="30283">BTchat search:</string>
+        <string id="30284">Root path "./"</string>
+        <string id="30285">Search Serialu.net (need patch plugin.video.serialu.net)</string>
+        <string id="30286">Input Serialu.net correct show title:</string>
+        <string id="30287">PATCHED</string>
+        <string id="30288">NOT PATCHED</string>
+        <string id="30289">NOT INSTALLED</string>
+        <string id="30290">DiMartino on xbmc.ru and bitbucket.org</string>
+        <string id="30291">Read the rest in changelog.txt</string>
+        <string id="30292">Status:</string>
+        <string id="30293">Scanning:</string>
 
 
 ///Context menus
@@ -151,8 +181,8 @@
         <string id="30311">Scan</string>
         <string id="30312">Delete from scanlist</string>
         <string id="30313">Add to scanlist</string>
+        <string id="30314">Delete Sourses</string>
 
-        <string id="30314">Season %d - %d episode(s)</string>
         <string id="30315">Episode %s</string>
         <string id="30316">Hyped artists</string>
         <string id="30317">Only HD videos</string>

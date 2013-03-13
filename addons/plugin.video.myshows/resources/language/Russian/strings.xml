@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
 ///Settings
         <string id="30001">Логин MyShows.ru</string>
@@ -7,6 +7,8 @@
         <string id="30004">Измененять статус эпизода по клику</string>
         <string id="30005">Время устаревания кэша (ч)</string>
         <string id="30006">Отключить кэш</string>
+        <string id="30007">Автоматическое сканирование</string>
+        <string id="30008">Плеер торрентов</string>
 
 ///ListItems
         <string id="30100">Все Мои сериалы</string>
@@ -121,6 +123,12 @@
         <string id="30261">Подробнее в changelog.txt</string>
         <string id="30262">Статус:</string>
         <string id="30263">Сканирование:</string>
+        <string id="30264">Статус сериала:</string>
+        <string id="30265">Вы посмотрели %s эпизодов из %s</string>
+        <string id="30266">Вы оценили сериал на </string>
+        <string id="30267">УСТАНОВЛЕН</string>
+        <string id="30268">Раздача RuTracker.Org (требует патч plugin.video.torrenter)</string>
+        <string id="30269">Искать на RuTracker.Org</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
@@ -137,6 +145,7 @@
         <string id="30311">Сканировать</string>
         <string id="30312">Удалить из Сканлиста</string>
         <string id="30313">Добавить в Сканлист</string>
+        <string id="30314">Удалить Источники</string>
 
 
 ///Other plugins

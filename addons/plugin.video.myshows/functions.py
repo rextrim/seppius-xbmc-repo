@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import urllib, urllib2, re, sys, socket, datetime, time, os, json
 import xbmcplugin, xbmcgui, xbmc, xbmcaddon, xbmcvfs
@@ -16,7 +16,8 @@ except:
     from pysqlite2 import dbapi2 as sqlite
 
 
-__version__ = "1.4.1"
+
+__version__ = "1.4.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -237,6 +238,17 @@ class CacheDB:
         self.cur.close()
         self.db.close()
 
+def auto_scan():
+    from torrents import ScanAll
+    scan=CacheDB('autoscan')
+    if int(scan.get())>0 \
+        and int(time.time())-scan.get()>refresh_period*3600:
+        showMessage('Auto-scan','Scanning multiple sources from scanlist!')
+        scan.delete()
+        ScanAll()
+        scan.add()
+
+
 class Data():
     def __init__(self, cookie_auth, url, refresh_url=None):
         self.cookie=cookie_auth
@@ -336,8 +348,11 @@ def cutFileNames(l):
     print start
     print end
     for fl in newl:
-        fl=fl[len(start):len(fl)-len(end)]
+        if fl[0:len(start)]==start: fl=fl[len(start):]
+        if fl[len(fl)-len(end):]==end: fl=fl[0:len(fl)-len(end)]
+        #fl=fl[len(start):len(fl)-len(end)] только это вместо 2 сверху
         l.append(fl)
+    print 'cutnames: '+str(l)
     return l
 
 def FileNamesPrepare(filename):
@@ -369,6 +384,7 @@ def FileNamesPrepare(filename):
                         try:
                             my_episode=int(match[0][0])
                         except: break
+            #print str([my_season, my_episode, filename])
             return [my_season, my_episode, filename]
 
 def TextBB(string, action=None, color=None):
@@ -381,31 +397,38 @@ def jstr(s):
     elif not unicode(s).isnumeric(): s='"%s"'%(s)
     return str(s)
 
-def PluginStatus():
-    from torrents import TorrentDB
+def check_status(id,patchpath,filelist):
+    plugstatus=None
     try:
-        vkpath=xbmcaddon.Addon(id='xbmc-vk.svoka.com').getAddonInfo('path')
-        try: os.path.getsize(os.path.join(vkpath, 'xbmcvkui.py'))
-        except: vkpath=xbmcaddon.Addon(id='xbmc-vk.svoka.com').getAddonInfo('path').decode('utf-8').encode('cp1251')
-        try: os.path.getsize(os.path.join(__addonpath__, 'patch for xbmc-vk.svoka.com ver 2013-01-08', 'xbmcvkui.py'))
+        plugpath=xbmcaddon.Addon(id).getAddonInfo('path')
+        try: os.path.getsize(os.path.join(plugpath, filelist[0]))
+        except: plugpath=xbmcaddon.Addon(id).getAddonInfo('path').decode('utf-8').encode('cp1251')
+        try: os.path.getsize(os.path.join(__addonpath__, patchpath, filelist[0]))
         except: __addonpath__=xbmcaddon.Addon(id='plugin.video.myshows').getAddonInfo('path').decode('utf-8').encode('cp1251')
-        if os.path.getsize(os.path.join(vkpath, 'xbmcvkui.py'))==os.path.getsize(os.path.join(__addonpath__, 'patch for xbmc-vk.svoka.com ver 2013-01-08', 'xbmcvkui.py')) \
-            and os.path.getsize(os.path.join(vkpath, 'xvvideo.py'))==os.path.getsize(os.path.join(__addonpath__, 'patch for xbmc-vk.svoka.com ver 2013-01-08', 'xvvideo.py')):
-            vkstatus=unicode(__language__(30257))
-        else: vkstatus=unicode(__language__(30258))
-    except: vkstatus=unicode(__language__(30259))
+        for f in filelist:
+            if os.path.getsize(os.path.join(plugpath, f))!=os.path.getsize(os.path.join(__addonpath__, patchpath, f)):
+                plugstatus=unicode(__language__(30258))
+        if not plugstatus: plugstatus=unicode(__language__(30257))
+    except: plugstatus=unicode(__language__(30259))
+    return plugstatus
+
+def PluginStatus():
+    serialustatus=check_status('plugin.video.serialu.net','patch for plugin.video.serialu.net ver 1.2.2',['default.py','update.py'])
+    vkstatus=check_status('xbmc-vk.svoka.com','patch for xbmc-vk.svoka.com ver 2013-01-08',['xbmcvkui.py','xvvideo.py'])
+    torrenterstatus=check_status('plugin.video.torrenter','patch for plugin.video.torrenter ver 1.1.4.3',['Core.py','resources/searchers/RuTrackerOrg.py'])
 
     try:
-        serialupath=xbmcaddon.Addon(id='plugin.video.serialu.net').getAddonInfo('path')
-        try: os.path.getsize(os.path.join(serialupath, 'xbmcvkui.py'))
-        except: serialupath=xbmcaddon.Addon(id='plugin.video.serialu.net').getAddonInfo('path').decode('utf-8').encode('cp1251')
-        try: os.path.getsize(os.path.join(__addonpath__, 'patch for plugin.video.serialu.net ver 1.2.2', 'xbmcvkui.py'))
-        except: __addonpath__=xbmcaddon.Addon(id='plugin.video.myshows').getAddonInfo('path').decode('utf-8').encode('cp1251')
-        if os.path.getsize(os.path.join(serialupath, 'default.py'))==os.path.getsize(os.path.join(__addonpath__, 'patch for plugin.video.serialu.net ver 1.2.2', 'default.py')) \
-            and os.path.getsize(os.path.join(serialupath, 'update.py'))==os.path.getsize(os.path.join(__addonpath__, 'patch for plugin.video.serialu.net ver 1.2.2', 'update.py')):
-            serialustatus=unicode(__language__(30257))
-        else: serialustatus=unicode(__language__(30258))
-    except: serialustatus=unicode(__language__(30259))
+        from TSCore import TSengine as tsengine
+        TSstatus=unicode(__language__(30267))
+    except: TSstatus=unicode(__language__(30259))
+
+    try:
+        import libtorrent
+    except:
+        torrenterstatus='LibTorrent '+unicode(__language__(30259))
+
+
+    from torrents import TorrentDB
 
     try: apps=get_apps()
     except: pass
@@ -414,22 +437,30 @@ def PluginStatus():
     if action:
         if action=='vkcheck':
             text=vkstatus
-        if action=='serialucheck':
+        elif action=='serialucheck':
             text=serialustatus
-        if action=='about':
+        elif action=='torrenterstatus':
+            text=torrenterstatus
+            text2='LibTorrent and Torrenter at http://xbmc.ru/'
+        elif action=='tscheck':
+            text=TSstatus
+            text2='Download at http://torrentstream.org/'
+        elif action=='about':
             text=unicode(__language__(30260))
-        if text!=unicode(__language__(30257)):
-            text2=unicode(__language__(30261))
-        else:
-            text2=''
+        if action not in ['tscheck', 'torrenterstatus']:
+            if text!=unicode(__language__(30257)):
+                text2=unicode(__language__(30261))
+            else:
+                text2=''
         dialog = xbmcgui.Dialog()
-        dialog.ok(unicode(__language__(30262)), text, text2)
+        dialog.ok(unicode(__language__(30146)), text, text2)
         xbmc.executebuiltin("Action(back)")
-
 
     menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
           {"title":__language__(30143) % vkstatus       ,"mode":"61",    "argv":{'action':'vkcheck'}},
           {"title":__language__(30144) % serialustatus  ,"mode":"61",   "argv":{'action':'serialucheck'}},
+          {"title":'Torrent Stream (ACE): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
+          {"title":'plugin.video.torrenter: %s' % torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
           {"title":__language__(30145)                  ,"mode":"61",   "argv":{'action':'about'}}]
     for i in menu:
         link=Link(i['mode'], i['argv'])
