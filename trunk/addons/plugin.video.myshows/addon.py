@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 import urllib, re, sys, socket, json, os
 import xbmcplugin, xbmcgui, xbmc, xbmcaddon, xbmcvfs
@@ -10,9 +10,9 @@ except ImportError:
 
 from functions import *
 from torrents import *
-from app import *
+from app import Handler, Link
 
-__version__ = "1.4.1"
+__version__ = "1.4.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -44,8 +44,10 @@ class Main(Handler):
                    {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                    {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                    {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                   {"title":__language__(30146),"mode":"61"}]
+                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}]
         self.handle()
+        if __settings__.getSetting("autoscan")=='true':
+            auto_scan()
 
     def handle(self):
         for self.i in self.menu:
@@ -98,7 +100,10 @@ def Shows(mode):
             rating=float(jdata[showId]['rating'])
         pre=prefix(showId=int(showId))
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
-        item.setInfo( type='Video', infoLabels={'Title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating} )
+        item.setInfo( type='Video', infoLabels={'Title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating,
+                                                'plot':    __language__(30264)+jdata[showId]['showStatus']+ \
+                                                       '\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']),str(jdata[showId]['totalEpisodes']))+ \
+                                                       '\r\n'+__language__(30266)+str(jdata[showId]['rating'])} )
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
@@ -193,7 +198,7 @@ def MyTorrents():
                 showlist.append(str_showId)
                 item = xbmcgui.ListItem(title+' (%s)'%(str(myt.countshowId(str_showId))), iconImage='DefaultFolder.png', thumbnailImage='')
                 item.setInfo( type='Video', infoLabels={'Title': title } )
-                stringdata={"showId":x['showId']}
+                stringdata={"showId":x['showId'], "seasonId":None, "episodeId":None, "id":None}
                 sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&sort=&showId='+str_showId+'&mode=50'
                 item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
                 xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
@@ -277,7 +282,7 @@ def TopShows(action):
                                                 'votes': jdata['voted'],
                                                 'rating': float(jdata['rating'])} )
 
-        stringdata={"showId":int(jdata['id'])}
+        stringdata={"showId":int(jdata['id']), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str(jdata['id']) + '&mode=20'
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
@@ -347,7 +352,7 @@ def ShowList(action):
 
         item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage=str(images[str_showId]) )
         item.setInfo( type='Video', infoLabels={'Title': shows[str_showId], 'date': str(last_date[str_showId]) } )
-        stringdata={"showId":int(str_showId)}
+        stringdata={"showId":int(str_showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus(str(show_data.url))
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str_showId + '&mode=20'
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
@@ -516,8 +521,11 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url]
     elif mode==20:
         menu=[__language__(30227)+'|:|'+sys_url+'4',
+              __language__(30311)+'|:|'+sys_url+'9',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
-              __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url]
+              __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
+              __language__(30228)+'|:|'+sys_url+'7',
+              __language__(30314)+'|:|'+sys_url+'8']
     elif mode==25 or not sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
@@ -667,6 +675,9 @@ elif mode == 3001 or mode == 2501:
 elif mode == 3010:
     Source().addsource()
     if not sort:AskPlay()
+    elif sort=='activate':
+        xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (get_apps(stringdata)['showId']))
+        ScanSource().scanone()
 elif mode == 3011:
     Source().addjson()
 elif mode == 3012:
@@ -679,19 +690,19 @@ elif mode == 301 or mode == 252:
     Favorite(id, refresh_url)
 elif mode == 50:
     MyTorrents()
-elif mode == 500:
-    DeleteSShow()
+elif mode in (500,258):
+    DeleteSourses()
 elif mode == 51:
     MyScanList()
 elif mode == 510:
     ScanAll()
-elif mode == 30202:
+elif mode in (30202,259):
     ScanSource().scanone()
 elif mode == 302001:
     ScanSource().add()
 elif mode == 302002:
     ScanSource().delete()
-elif mode == 30200:
+elif mode in (30200,257):
     DeleteSource()
 elif mode == 30201:
     Source(stringdata).downloadsource()
