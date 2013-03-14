@@ -13,7 +13,8 @@ CREATE TABLE channels (
   sheduleurl   nvarchar(255) DEFAULT "",
   addsdate     date,
   imgurl       nvarchar(255) DEFAULT "",
-  hd           bit DEFAULT 0
+  hd           bit DEFAULT 0,
+  count        integer DEFAULT 0
 );
 ----
 --Table: settings
@@ -50,4 +51,4 @@ CREATE TABLE groups (
   adult  bit DEFAULT 0
 );
 ----
-INSERT INTO settings (id, dbver) VALUES ("1", "1")
+INSERT INTO settings (id, dbver) VALUES ("1", "2")

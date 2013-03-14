@@ -46,22 +46,33 @@ class DataBase:
 		self.connection = 0
 		self.cursor = 0
 		self.last_error = 0
+		self.CreateDB()
+	
+	def GetDBVer(self):
+		xbmc.log('Connect to database')
+		self.Connect()
+		xbmc.log('Get DataBase version')
+		self.cursor.execute('SELECT dbver FROM settings WHERE id = 1')
+		return self.cursor.fetchone()[0]
+	
+	def CreateDB(self):
 		__addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
 		_ADDON_PATH =   xbmc.translatePath(__addon__.getAddonInfo('path'))
 		if (sys.platform == 'win32') or (sys.platform == 'win64'):
 			_ADDON_PATH = _ADDON_PATH.decode('utf-8')
-		if not os.path.exists(db_name):
+		if not os.path.exists(self.db_name):
+			xbmc.log('Create DataBase')
 			fsql = open(os.path.join(_ADDON_PATH, 'resources/tvbase.sql'), 'r')
 			ssql = fsql.read()
 			ssql = ssql.split('----')
 			fsql.close()
-			con = db.connect(database=db_name)
+			con = db.connect(database=self.db_name)
 			cur = con.cursor()
 			for st in ssql:
 				cur.execute(st)
 			con.commit()
 			cur.close()
-				
+			
 	def Connect(self):
 		pass
 		self.connection = db.connect(database=self.db_name)
@@ -73,26 +84,8 @@ class DataBase:
 			xbmc.log('Error [DataBase]: %s' % s)
 	
 	def Disconnect(self):
-		pass
 		self.cursor.close()
 			
-	def CheckDB(self):
-		pass
-		self.Connect()
-		self.cursor.execute('SELECT COUNT(*) as c FROM groups')
-		self.connection.commit()
-		g = self.cursor.fetchone()
-		self.cursor.execute('SELECT COUNT(*) as c FROM channels')
-		self.connection.commit()
-		c = self.cursor.fetchone()
-		self.cursor.execute('SELECT COUNT(*) as c FROM shedules')
-		self.connection.commit()
-		s = self.cursor.fetchone()
-		if (g[0] == 0) or (c[0] == 0) or (s[0] == 0):
-			return False
-		else:
-			return True
-	
 	def UpdateUrlsStream(self, updlist = None, thread = False):
 		pass
 		if thread:
@@ -149,11 +142,11 @@ class DataBase:
 		self.Connect()
 		if where == None:
 			if group == None:
-				self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels')
+				self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels ORDER BY count DESC')
 			else:
-				self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels WHERE group_id = "%s"' % group)
+				self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels WHERE group_id = "%s" ORDER BY count DESC' % group)
 		else:
-			self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels WHERE %s' % where)
+			self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels WHERE %s ORDER BY count DESC' % where)
 			
 		res = self.cursor.fetchall()
 		ret = []
@@ -192,6 +185,25 @@ class DataBase:
 			)
 		self.Disconnect()
 		return ret
+	
+	def GetLatestChannels(self):
+		self.Connect()
+		self.cursor.execute('SELECT id, name, url, urlstream, imgurl, (SELECT gro.name FROM groups AS gro WHERE ch.group_id = gro.id) AS grname ' +
+			'FROM channels as ch WHERE count > 0 ORDER BY count DESC')
+		res = self.cursor.fetchall()
+		ret = []
+		for line in res:
+			ret.append(
+				{'id': line[0], 'name': line[1].encode('utf-8'), 'url': line[2].encode('utf-8'), 'urlstream': line[3].encode('utf-8'), 'imgurl': line[4].encode('utf-8'), 'group_name': line[5].encode('utf-8')}
+			)
+		self.Disconnect()
+		return ret
+	
+	def IncChannel(self, id):
+		self.Connect()
+		self.cursor.execute('UPDATE channels SET count = count + 1 WHERE id = "%s"' % id)
+		self.connection.commit()
+		self.Disconnect()
 	
 	def UpdateDB(self):
 		try:
@@ -276,3 +288,4 @@ class DataBase:
 		except Exception, e:
 			self.last_error = e
 			xbmc.log('ERROR [DataBase]: %s' % e)
+
