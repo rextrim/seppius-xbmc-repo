@@ -241,7 +241,7 @@ class CacheDB:
 def auto_scan():
     from torrents import ScanAll
     scan=CacheDB('autoscan')
-    if int(scan.get())>0 \
+    if scan.get() \
         and int(time.time())-scan.get()>refresh_period*3600:
         showMessage('Auto-scan','Scanning multiple sources from scanlist!')
         scan.delete()
