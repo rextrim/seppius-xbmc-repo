@@ -89,13 +89,6 @@ def showMessage(heading='Torrent-TV.RU', message = '', times = 3000, pics = addo
 
 db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase.db')
 
-
-def Log(str):
-	import datetime
-	output = open(PLUGIN_DATA_PATH + '/log.txt', 'a')
-	output.write('%s: %s\r\n' % (datetime.datetime.now(), str))
-	output.close()
-	
 def GetScript(params):
 	try:
 		xbmc.executebuiltin( "ActivateWindow(%d)" % ( 10147 ) ) 
@@ -240,10 +233,17 @@ def GetChannelsDB (params):
 		return
 	else:
 		for ch in channels:
-			li = xbmcgui.ListItem(ch['name'], ch['name'], ch['imgurl'], ch['imgurl'])
+			img = ch['imgurl']
+			if __addon__.getSetting('logopack'):
+				logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
+				logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
+				if os.path.exists(logo_src):
+					img = logo_src
+			
+			li = xbmcgui.ListItem(ch['name'], ch['name'], img, img)
 			uri = construct_request({
 				'func': 'play_ch_db',
-				'img': ch['imgurl'],
+				'img': img.encode('utf-8'),
 				'title': ch['name'],
 				'file': ch['urlstream'],
 				'id': ch['id']
@@ -260,6 +260,13 @@ def GetChannelsWeb(params):
 		link =ch.find('a')['href']
 		title= ch.find('strong').string.encode('utf-8').replace('\n', '')
 		img='http://torrent-tv.ru/'+ch.find('img')['src']
+		
+		if __addon__.getSetting('logopack'):
+			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
+			logo_src = os.path.join(logo_path, ch.find('strong').string.replace('\n', '').replace('  ', '') + '.png')
+			if os.path.exists(logo_src):
+				img = logo_src.encode('utf-8')
+				
 		li = li = xbmcgui.ListItem(title,title,img,img)
 		uri = construct_request({
 				'func': 'play_ch_web',
@@ -282,14 +289,45 @@ def GetNewChannels(params):
 	channels = db.GetNewChannels()
 	for ch in channels:
 		title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], ch['name'])
+		img = ch['imgurl']
+		if __addon__.getSetting('logopack'):
+			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
+			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
+			if os.path.exists(logo_src):
+				img = logo_src
 		uri = construct_request({
 				'func': 'play_ch_db',
-				'img': ch['imgurl'],
+				'img': img.encode('utf-8'),
 				'title': ch['name'],
 				'file': ch['urlstream'],
 				'id': ch['id']
 			})
-		li = xbmcgui.ListItem(title, title, ch['imgurl'], ch['imgurl'])
+		li = xbmcgui.ListItem(title, title, img, img)
+		li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
+		xbmcplugin.addDirectoryItem(hos, uri, li)
+	
+	xbmcplugin.endOfDirectory(hos)
+	
+	
+def GetLatestChannels(params):
+	db = DataBase(db_name, cookie)
+	channels = db.GetLatestChannels()
+	for ch in channels:
+		title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], ch['name'])
+		img = ch['imgurl']
+		if __addon__.getSetting('logopack'):
+			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
+			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
+			if os.path.exists(logo_src):
+				img = logo_src
+		uri = construct_request({
+				'func': 'play_ch_db',
+				'img': img.encode('utf-8'),
+				'title': ch['name'],
+				'file': ch['urlstream'],
+				'id': ch['id']
+			})
+		li = xbmcgui.ListItem(title, title, img, img)
 		li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	
@@ -315,6 +353,8 @@ def play_ch_db(params):
 			out = TSPlayer.load_torrent(url,'TORRENT',port=aceport)
 		if out == 'Ok':
 			TSPlayer.play_url_ind(0,params['title'],addon_icon,params['img'])
+			db = DataBase(db_name, cookie)
+			db.IncChannel(params['id'])
 		TSPlayer.end()
 		showMessage('Torrent', 'Stop')
 	
@@ -366,6 +406,12 @@ def mainScreen(params):
 		'func': 'GetChannelsDB',
 		'title': 'Все каналы',
 		'group': '0'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[COLOR FF00FF00]Последние просмотренные[/COLOR]')
+	uri = construct_request({
+		'func': 'GetLatestChannels',
+		'title': 'Последние просмотренные'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]HD Каналы[/COLOR]')
@@ -440,11 +486,19 @@ def addon_main():
 			'enter' : 'enter'
 		})
 
+		if not os.path.exists(PLUGIN_DATA_PATH):
+			os.makedirs(PLUGIN_DATA_PATH)
+			
 		out = open(cookiefile, 'w')
 		GET('http://torrent-tv.ru/auth.php', data)
 		out.write(cookie)
 		out.close()
-					
+		db = DataBase(db_name, cookie)		
+		dbver = db.GetDBVer()
+		if db.GetDBVer() <> 2:
+			del db
+			os.remove(db_name)
+		
 		db = DataBase(db_name, cookie)
 		lupd = db.GetLastUpdate()
 		if lupd == None:
