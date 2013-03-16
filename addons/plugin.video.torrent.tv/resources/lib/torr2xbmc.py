@@ -225,6 +225,10 @@ def GetChannelsDB (params):
 		channels = db.GetChannels()
 	elif params['group'] == 'hd':
 		channels = db.GetChannelsHD()
+	elif params['group'] == 'latest':
+		channels = db.GetLatestChannels()
+	elif params['group'] == 'new':
+		channels = db.GetNewChannels()
 	else:
 		channels = db.GetChannels(params['group'])
 	if channels.__len__() == 0:
@@ -239,8 +243,10 @@ def GetChannelsDB (params):
 				logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
 				if os.path.exists(logo_src):
 					img = logo_src
-			
-			li = xbmcgui.ListItem(ch['name'], ch['name'], img, img)
+			title = ch['name']
+			if params['group'] == '0' or params['group'] == 'hd' or params['group'] == 'latest' or params['group'] == 'new':
+				title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], title)
+			li = xbmcgui.ListItem(title, title, img, img)
 			uri = construct_request({
 				'func': 'play_ch_db',
 				'img': img.encode('utf-8'),
@@ -248,9 +254,20 @@ def GetChannelsDB (params):
 				'file': ch['urlstream'],
 				'id': ch['id']
 			})
+			deluri = construct_request({
+				'func': 'DelChannel',
+				'id': ch['id']
+			})
 			li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
+			li.addContextMenuItems([('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),)])
 			xbmcplugin.addDirectoryItem(hos, uri, li)
 		xbmcplugin.endOfDirectory(hos)
+	
+def DelChannel(params):
+	db = DataBase(db_name, cookie)
+	db.DelChannel(params['id'])
+	showMessage(message = 'Канал удален')
+	xbmc.executebuiltin("Container.Refresh")
 	
 def GetChannelsWeb(params):
 	http = GET('http://torrent-tv.ru/' + params['file'])
@@ -284,55 +301,6 @@ def GetChannelsWeb(params):
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	xbmcplugin.endOfDirectory(hos)
 
-def GetNewChannels(params):
-	db = DataBase(db_name, cookie)
-	channels = db.GetNewChannels()
-	for ch in channels:
-		title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], ch['name'])
-		img = ch['imgurl']
-		if __addon__.getSetting('logopack'):
-			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
-			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
-			if os.path.exists(logo_src):
-				img = logo_src
-		uri = construct_request({
-				'func': 'play_ch_db',
-				'img': img.encode('utf-8'),
-				'title': ch['name'],
-				'file': ch['urlstream'],
-				'id': ch['id']
-			})
-		li = xbmcgui.ListItem(title, title, img, img)
-		li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
-		xbmcplugin.addDirectoryItem(hos, uri, li)
-	
-	xbmcplugin.endOfDirectory(hos)
-	
-	
-def GetLatestChannels(params):
-	db = DataBase(db_name, cookie)
-	channels = db.GetLatestChannels()
-	for ch in channels:
-		title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], ch['name'])
-		img = ch['imgurl']
-		if __addon__.getSetting('logopack'):
-			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
-			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
-			if os.path.exists(logo_src):
-				img = logo_src
-		uri = construct_request({
-				'func': 'play_ch_db',
-				'img': img.encode('utf-8'),
-				'title': ch['name'],
-				'file': ch['urlstream'],
-				'id': ch['id']
-			})
-		li = xbmcgui.ListItem(title, title, img, img)
-		li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
-		xbmcplugin.addDirectoryItem(hos, uri, li)
-	
-	xbmcplugin.endOfDirectory(hos)
-	
 def play_ch_db(params):
 	url = ''
 	if params['file'] == '':
@@ -410,8 +378,9 @@ def mainScreen(params):
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Последние просмотренные[/COLOR]')
 	uri = construct_request({
-		'func': 'GetLatestChannels',
-		'title': 'Последние просмотренные'
+		'func': 'GetChannelsDB',
+		'title': 'Последние просмотренные',
+		'group': 'latest'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]HD Каналы[/COLOR]')
@@ -423,8 +392,9 @@ def mainScreen(params):
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Новые каналы[/COLOR]')
 	uri = construct_request({
-		'func': 'GetNewChannels',
-		'title': 'Новые Каналы'
+		'func': 'GetChannelsDB',
+		'title': 'Новые Каналы',
+		'group': 'new'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	li = xbmcgui.ListItem('[COLOR FF0099FF]На модерации[/COLOR]')
@@ -471,6 +441,23 @@ if os.path.exists(cookiefile):
 	fgetcook = open(cookiefile, 'r')
 	cookie = fgetcook.read()
 
+db = DataBase(db_name, cookie)		
+dbver = db.GetDBVer()
+if db.GetDBVer() <> 2:
+	del db
+	os.remove(db_name)
+
+db = DataBase(db_name, cookie)
+lupd = db.GetLastUpdate()
+if lupd == None:
+	showMessage('Torrent TV', 'Производится обновление плэйлиста')
+	db.UpdateDB()
+else:
+	nupd = lupd + datetime.timedelta(hours = 8)
+	if nupd < datetime.datetime.now():
+		showMessage('Torrent TV', 'Производится обновление плэйлиста')
+		db.UpdateDB()
+
 def addon_main():
 	params = get_params(sys.argv[2])
 	try:
@@ -493,22 +480,6 @@ def addon_main():
 		GET('http://torrent-tv.ru/auth.php', data)
 		out.write(cookie)
 		out.close()
-		db = DataBase(db_name, cookie)		
-		dbver = db.GetDBVer()
-		if db.GetDBVer() <> 2:
-			del db
-			os.remove(db_name)
-		
-		db = DataBase(db_name, cookie)
-		lupd = db.GetLastUpdate()
-		if lupd == None:
-			showMessage('Torrent TV', 'Производится обновление плэйлиста')
-			db.UpdateDB()
-		else:
-			nupd = lupd + datetime.timedelta(hours = 8)
-			if nupd < datetime.datetime.now():
-				showMessage('Torrent TV', 'Производится обновление плэйлиста')
-				db.UpdateDB()
 		
 		func = None
 		xbmc.log( '[%s]: Primary input' % addon_id, 1 )
