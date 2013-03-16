@@ -9,6 +9,18 @@
         <string id="30006">Отключить кэш</string>
         <string id="30007">Автоматическое сканирование</string>
         <string id="30008">Плеер торрентов</string>
+        <string id="30009">Общие</string>
+        <string id="30010">Торренты</string>
+        <string id="50301">Директория для сохранения файлов</string>
+        <string id="50302">Вызывать диалог</string>
+        <string id="50303">Задать по умолчанию</string>
+        <string id="50304">Путь к директории</string>
+        <string id="50305">Создавать поддиректорию для скрапера</string>
+        <string id="50312">Хост µTorrent</string>
+        <string id="50313">Порт µTorrent</string>
+        <string id="50314">URL</string>
+        <string id="50315">Логин µTorrent</string>
+        <string id="50316">Пароль µTorrent</string>
 
 ///ListItems
         <string id="30100">Все Мои сериалы</string>
@@ -120,7 +132,7 @@
         <string id="30258">ПАТЧ НЕ УСТАНОВЛЕН</string>
         <string id="30259">ПЛАГИН НЕ УСТАНОВЛЕН</string>
         <string id="30260">DiMartino на xbmc.ru и bitbucket.org</string>
-        <string id="30261">Подробнее в changelog.txt</string>
+        <string id="30261">Установите патч из контекстного меню</string>
         <string id="30262">Статус:</string>
         <string id="30263">Сканирование:</string>
         <string id="30264">Статус сериала:</string>
@@ -128,7 +140,25 @@
         <string id="30266">Вы оценили сериал на </string>
         <string id="30267">УСТАНОВЛЕН</string>
         <string id="30268">Раздача RuTracker.Org (требует патч plugin.video.torrenter)</string>
-        <string id="30269">Искать на RuTracker.Org</string>
+        <string id="30269">Получение списка файлов Magnet-ссылки</string>
+        <string id="30270">Нажмите OK когда µTorrent скачает метаданные</string>
+        <string id="30271">Что-то пошло не так</string>
+        <string id="30272">µTorrent Файлы:</string>
+        <string id="30273">Поиск The Pirate Bay (требует патч plugin.video.torrenter)</string>
+        <string id="30274">Добавить из µTorrent (требует WebUI)</string>
+        <string id="30275">Загрузка началась. Уже скачано:</string>
+        <string id="30276">%s Поиск:</string>
+        <string id="30277">Процесс автосканирования!</string>
+        <string id="30278">Сканирую все источники Сканлиста!</string>
+        <string id="30279">Предупреждение!</string>
+        <string id="30280">Папка пуста или еще не создана!</string>
+        <string id="30281">Пуск</string>
+        <string id="30282">Стоп</string>
+        <string id="30283">Удалить</string>
+        <string id="30284">Удалить с файлами</string>
+        <string id="30285">Функция не встроена в µTorrent!</string>
+        <string id="30286">Установка патча</string>
+        <string id="30287">µTorrent Браузер</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
@@ -141,7 +171,7 @@
         <string id="30307">Искать ВКонтакте</string>
         <string id="30308">Избранное/Игнорируемое</string>
         <string id="30309">Искать BTChat</string>
-        <string id="30310">Открыть в ОС</string>
+        <string id="30310">Скачать</string>
         <string id="30311">Сканировать</string>
         <string id="30312">Удалить из Сканлиста</string>
         <string id="30313">Добавить в Сканлист</string>
@@ -158,6 +188,6 @@
         <string id="30406">Отмена</string>
         <string id="30407">Возможно названия не совпадают</string>
         <string id="30408">или вам нужно обновить базу Serialu.net</string>
-
+        <string id="30409">Добавить в MyShows.ru</string>
 
 </strings>

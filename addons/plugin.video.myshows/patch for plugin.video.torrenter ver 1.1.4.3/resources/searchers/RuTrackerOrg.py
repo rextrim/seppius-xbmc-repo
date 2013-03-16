@@ -25,6 +25,7 @@ import sys
 import tempfile
 import os
 import Localization
+import time
 
 class RuTrackerOrg(SearcherABC.SearcherABC):
     
@@ -105,9 +106,12 @@ class RuTrackerOrg(SearcherABC.SearcherABC):
         return filesList
 
     def getTorrentFile(self, url):
-        cookie = self.login()
-        if cookie:
-            sys.modules[ "__main__" ].__settings__.setSetting("rutracker-auth", cookie)
+        cookie=None
+        try:do_login=int(time.time())-int(sys.modules[ "__main__" ].__settings__.getSetting("rutracker-auth-time"))
+        except: do_login=10001
+        if do_login>10000: cookie = self.login()
+        if cookie: sys.modules[ "__main__" ].__settings__.setSetting("rutracker-auth", cookie)
+
         referer = 'http://rutracker.org/forum/viewtopic.php?t=' + re.search('(\d+)$', url).group(1)
         cookie = sys.modules[ "__main__" ].__settings__.getSetting("rutracker-auth") + '; bb_dl=' + re.search('(\d+)$', url).group(1)
         localFileName = tempfile.gettempdir() + os.path.sep + self.md5(url)
@@ -121,6 +125,7 @@ class RuTrackerOrg(SearcherABC.SearcherABC):
         return 'file:///' + localFileName
 
     def login(self):
+        sys.modules[ "__main__" ].__settings__.setSetting("rutracker-auth-time", str(int(time.time())))
         pageContent = self.makeRequest('http://login.rutracker.org/forum/login.php')
         captchaMatch = re.compile('(http://static\.rutracker\.org/captcha/\d+/\d+/[0-9a-f]+\.jpg\?\d+).+?name="cap_sid" value="(.+?)".+?name="(cap_code_[0-9a-f]+)"', re.DOTALL).search(pageContent)
         data = {
