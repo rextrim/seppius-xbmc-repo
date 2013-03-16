@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.4.6"
+__version__ = "1.5.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -187,11 +187,15 @@ def creat_db(dbfilename):
     cur.close()
     db.close()
 
-def ClearCache(dbfilename):
+def ClearCache():
+    dirname = xbmc.translatePath('special://temp')
+    for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
+        dirname = os.path.join(dirname, subdir)
+        if not xbmcvfs.exists(dirname):
+            xbmcvfs.mkdir(dirname)
+    dbfilename = os.path.join(dirname, 'data.db3')
     db = sqlite.connect(dbfilename)
     cur = db.cursor()
-    #cur.execute('drop table cache')
-    #cur.execute('create table cache(addtime integer, url varchar(32))')
     cur.execute('delete from cache')
     db.commit()
     cur.close()
@@ -206,7 +210,12 @@ def invert_bool(var):
 
 class CacheDB:
     def __init__(self, url):
-        self.dbfilename = os.path.join(__addonpath__, 'data.db3')
+        dirname = xbmc.translatePath('special://temp')
+        for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
+            dirname = os.path.join(dirname, subdir)
+            if not xbmcvfs.exists(dirname):
+                xbmcvfs.mkdir(dirname)
+        self.dbfilename = os.path.join(dirname, 'data.db3')
         self.url=url
         if not xbmcvfs.exists(self.dbfilename):
             creat_db(self.dbfilename)
@@ -241,13 +250,14 @@ class CacheDB:
 def auto_scan():
     from torrents import ScanAll
     scan=CacheDB('autoscan')
-    if scan.get() \
-        and int(time.time())-scan.get()>refresh_period*3600:
-        showMessage('Auto-scan','Scanning multiple sources from scanlist!')
-        scan.delete()
-        ScanAll()
-        scan.add()
-
+    try:
+        if scan.get() \
+            and int(time.time())-scan.get()>refresh_period*3600:
+            showMessage(__language__(30277),__language__(30278))
+            scan.delete()
+            ScanAll()
+            scan.add()
+    except: showMessage(__language__(30279), __language__(30277))
 
 class Data():
     def __init__(self, cookie_auth, url, refresh_url=None):
@@ -305,7 +315,14 @@ class Data():
 
 def getDirList(path, newl=None):
     l=[]
-    if not newl: newl=os.listdir(path)
+    try:
+        if not newl: newl=os.listdir(path)
+    except:
+        try:
+            if not newl: newl=os.listdir(path.decode('utf-8').encode('cp1251'))
+        except:
+            showMessage(__language__(30206), __language__(30280))
+            return l
     for fl in newl:
         match=re.match('.avi|.mp4|.mkV|.flv|.mov|.vob|.wmv|.ogm|.asx|.mpg|mpeg|.avc|.vp3|.fli|.flc|.m4v', fl[int(len(fl))-4:len(fl)], re.I)
         if match:
@@ -397,72 +414,165 @@ def jstr(s):
     elif not unicode(s).isnumeric(): s='"%s"'%(s)
     return str(s)
 
-def check_status(id,patchpath,filelist):
-    plugstatus=None
-    try:
+def uTorrentBrowser():
+    from net import Download
+    try: apps=get_apps()
+    except: pass
+    try: action=urllib.unquote_plus(apps['argv']['action'])
+    except: action=None
+    try: hash=urllib.unquote_plus(apps['argv']['hash'])
+    except: hash=None
+    try: ind=urllib.unquote_plus(apps['argv']['ind'])
+    except: ind=None
+
+    if action:
+        if ind or ind==0:Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
+        else: Download().action('action=%s&hash=%s' % (action, hash))
+        xbmc.executebuiltin('Container.Refresh')
+        return
+
+    menu=[]
+    if not hash:
+        for data in Download().list():
+            menu.append({"title":'['+str(data['progress'])+'%] '+data['name'], "mode":"52", "argv":{'hash':str(data['id'])}})
+    else:
+        dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
+        for s in dllist:
+            menu.append({"title":'['+str(s[1])+'%] '+s[0], "mode":"52", "argv":{'hash':hash,'ind':str(s[2])}})
+
+    for i in menu:
+        link=Link(i['mode'], i['argv'])
+        h=Handler(int(sys.argv[1]), link)
+        popup=[]
+        if not hash:actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),]
+        else:actions=[('3', __language__(30281)),('0', __language__(30282))]
+        for a,title in actions:
+            i['argv']['action']=a
+            popup.append((Link(i['mode'], i['argv']),title))
+        h.item(link, title=unicode(i['title']), popup=popup, popup_replace=True)
+
+class PluginStatus():
+    def __init__(self):
+
+        self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch for plugin.video.serialu.net ver 1.2.2',['default.py','update.py']),
+                ('vkstatus','xbmc-vk.svoka.com','patch for xbmc-vk.svoka.com ver 2013-01-08',['xbmcvkui.py','xvvideo.py']),
+                ('torrenterstatus','plugin.video.torrenter','patch for plugin.video.torrenter ver 1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py','resources/searchers/icons/bt-chat.com.png'])]
+        self.status={}
+        for plug in self.patchfiles:
+            self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])
+
+        self.serialustatus=self.status['serialustatus']
+        self.vkstatus=self.status['vkstatus']
+        self.torrenterstatus=self.status['torrenterstatus']
+
+    def menu(self):
+        try:
+            from TSCore import TSengine as tsengine
+            TSstatus=unicode(__language__(30267))
+        except: TSstatus=unicode(__language__(30259))
+
+        try:
+            import libtorrent
+        except:
+            self.torrenterstatus='LibTorrent '+unicode(__language__(30259))
+
+        from torrents import TorrentDB
+        from net import Download
+
+        if Download().action('action=getsettings'):
+            utorrentstatus='ACCESSABLE'
+        else:
+            utorrentstatus='NOT ACCESSABLE'
+
+
+        try: apps=get_apps()
+        except: pass
+        try: action=urllib.unquote_plus(apps['argv']['action'])
+        except: action=None
+        if action:
+            if action=='vkstatus':
+                text=self.vkstatus
+            elif action=='serialustatus':
+                text=self.serialustatus
+            elif action=='torrenterstatus':
+                text=self.torrenterstatus
+                text2='Python-LibTorrent and Torrenter at http://xbmc.ru/'
+            elif action=='utorrentstatus':
+                text=utorrentstatus
+                text2=unicode(__language__(30285))
+            elif action=='tscheck':
+                text=TSstatus
+                text2='Download at http://torrentstream.org/'
+            elif action=='about':
+                text=unicode(__language__(30260))
+            if action not in ['tscheck', 'torrenterstatus', 'utorrentstatus']:
+                if text!=unicode(__language__(30257)):
+                    text2=unicode(__language__(30261))
+            try:
+                if not text2:
+                    text2=''
+            except: text2=''
+
+            dialog = xbmcgui.Dialog()
+            dialog.ok(unicode(__language__(30146)), text, text2)
+            xbmc.executebuiltin("Action(back)")
+            return
+
+        menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
+              {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
+              {"title":__language__(30144) % self.serialustatus  ,"mode":"61",   "argv":{'action':'serialustatus'}},
+              {"title":'Torrent Stream (ACE): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
+              {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
+              {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
+              {"title":__language__(30145)                  ,"mode":"61",   "argv":{'action':'about'}}]
+
+        for i in menu:
+            link=Link(i['mode'], i['argv'])
+            h=Handler(int(sys.argv[1]), link)
+            if i['argv']['action'] in self.status and self.status[i['argv']['action']]==unicode(__language__(30258)):
+                h.item(link, title=unicode(i['title']),  popup=[(Link(i['mode']+'0', i['argv']),unicode(__language__(30286)))], popup_replace=True)
+            else:
+                h.item(link, title=unicode(i['title']))
+
+    def check_status(self,id,patchpath,filelist):
+        import filecmp
+        plugstatus=None
+        plugpath=xbmcaddon.Addon(id).getAddonInfo('path')
+        try: os.path.getsize(os.path.join(plugpath, filelist[0]))
+        except:
+            try:
+                plugpath=xbmcaddon.Addon(id).getAddonInfo('path').decode('utf-8').encode('cp1251')
+            except:
+                return unicode(__language__(30259))
+        try: os.path.getsize(os.path.join(__addonpath__, patchpath, filelist[0]))
+        except: __addonpath__=xbmcaddon.Addon(id='plugin.video.myshows').getAddonInfo('path').decode('utf-8').encode('cp1251')
+        for f in filelist:
+            try:
+                if not filecmp.cmp(os.path.join(plugpath, f), os.path.join(__addonpath__, patchpath, f)):
+                    plugstatus=unicode(__language__(30258))
+            except: break
+        if not plugstatus: plugstatus=unicode(__language__(30257))
+        return plugstatus
+
+    def install(self, action):
+        import shutil
+        plugstatus=False
+        for plug in self.patchfiles:
+            print str(plug)
+            if plug[0]==action:
+                id=plug[1]
+                patchpath=plug[2]
+                filelist=plug[3]
+                break
+
         plugpath=xbmcaddon.Addon(id).getAddonInfo('path')
         try: os.path.getsize(os.path.join(plugpath, filelist[0]))
         except: plugpath=xbmcaddon.Addon(id).getAddonInfo('path').decode('utf-8').encode('cp1251')
         try: os.path.getsize(os.path.join(__addonpath__, patchpath, filelist[0]))
         except: __addonpath__=xbmcaddon.Addon(id='plugin.video.myshows').getAddonInfo('path').decode('utf-8').encode('cp1251')
         for f in filelist:
-            if os.path.getsize(os.path.join(plugpath, f))!=os.path.getsize(os.path.join(__addonpath__, patchpath, f)):
-                plugstatus=unicode(__language__(30258))
-        if not plugstatus: plugstatus=unicode(__language__(30257))
-    except: plugstatus=unicode(__language__(30259))
-    return plugstatus
-
-def PluginStatus():
-    serialustatus=check_status('plugin.video.serialu.net','patch for plugin.video.serialu.net ver 1.2.2',['default.py','update.py'])
-    vkstatus=check_status('xbmc-vk.svoka.com','patch for xbmc-vk.svoka.com ver 2013-01-08',['xbmcvkui.py','xvvideo.py'])
-    torrenterstatus=check_status('plugin.video.torrenter','patch for plugin.video.torrenter ver 1.1.4.3',['Core.py','resources/searchers/RuTrackerOrg.py'])
-
-    try:
-        from TSCore import TSengine as tsengine
-        TSstatus=unicode(__language__(30267))
-    except: TSstatus=unicode(__language__(30259))
-
-    try:
-        import libtorrent
-    except:
-        torrenterstatus='LibTorrent '+unicode(__language__(30259))
-
-
-    from torrents import TorrentDB
-
-    try: apps=get_apps()
-    except: pass
-    try: action=urllib.unquote_plus(apps['argv']['action'])
-    except: action=None
-    if action:
-        if action=='vkcheck':
-            text=vkstatus
-        elif action=='serialucheck':
-            text=serialustatus
-        elif action=='torrenterstatus':
-            text=torrenterstatus
-            text2='LibTorrent and Torrenter at http://xbmc.ru/'
-        elif action=='tscheck':
-            text=TSstatus
-            text2='Download at http://torrentstream.org/'
-        elif action=='about':
-            text=unicode(__language__(30260))
-        if action not in ['tscheck', 'torrenterstatus']:
-            if text!=unicode(__language__(30257)):
-                text2=unicode(__language__(30261))
-            else:
-                text2=''
-        dialog = xbmcgui.Dialog()
-        dialog.ok(unicode(__language__(30146)), text, text2)
-        xbmc.executebuiltin("Action(back)")
-
-    menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
-          {"title":__language__(30143) % vkstatus       ,"mode":"61",    "argv":{'action':'vkcheck'}},
-          {"title":__language__(30144) % serialustatus  ,"mode":"61",   "argv":{'action':'serialucheck'}},
-          {"title":'Torrent Stream (ACE): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
-          {"title":'plugin.video.torrenter: %s' % torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
-          {"title":__language__(30145)                  ,"mode":"61",   "argv":{'action':'about'}}]
-    for i in menu:
-        link=Link(i['mode'], i['argv'])
-        h=Handler(int(sys.argv[1]), link)
-        h.item(link, title=unicode(i['title']))
+            try:success = shutil.copyfile(os.path.join(__addonpath__, patchpath, f), os.path.join(plugpath, f))
+            except:plugstatus=True
+        xbmc.executebuiltin('Container.Refresh')
+        if not plugstatus: showMessage(__language__(30286), __language__(30208))
+        else: showMessage(__language__(30286), __language__(30206))

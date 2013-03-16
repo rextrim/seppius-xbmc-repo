@@ -150,10 +150,15 @@ class Core:
             self.sectionMenu()
 
     def clearStorage(self, params = {}):
-        if os.path.exists(self.userStorageDirectory):
-            import shutil
-            shutil.rmtree(self.userStorageDirectory, ignore_errors=True)
-        xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Storage'), Localization.localize('Storage was cleared')))
+        try:
+            xbmcaddon.Addon(id='plugin.video.myshows')
+            fuckyou=True
+        except: fuckyou=False
+        if not fuckyou:
+            if os.path.exists(self.userStorageDirectory):
+                import shutil
+                shutil.rmtree(self.userStorageDirectory, ignore_errors=True)
+            xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Storage'), Localization.localize('Storage was cleared')))
 
     # dev state
     def serv(self, path):
@@ -250,9 +255,7 @@ class Core:
             listitem = xbmcgui.ListItem(torrent.getContentList()[contentId].path)
             playlist.add('file:///' + torrent.getFilePath(contentId), listitem)
             xbmc.Player().play(playlist)
-            try: external=urllib.unquote_plus(get("external"))
-            except: external=None
-            if not external: self.addHistory(torrent.getContentList()[contentId].path)
+            #self.addHistory(torrent.getContentList()[contentId].path)
             while 1 == xbmc.Player().isPlayingVideo():
                 torrent.fetchParts()
                 torrent.checkThread()
@@ -269,7 +272,7 @@ class Core:
                 ):
                     xbmc.executebuiltin("Notification(%s, %s)" % (Localization.localize('Information'), Localization.localize('Torrent downloading is stopped.')))
                     torrent.threadComplete = True
-            self.addRate(torrent.getContentList()[contentId].path)
+            #self.addRate(torrent.getContentList()[contentId].path)
         else:
             print self.__plugin__ + " Unexpected access to method playTorrent() without torrent content"
 
@@ -293,6 +296,7 @@ class Core:
             url = searcherObject.getTorrentFile(classMatch.group(2))
         self.__settings__.setSetting("lastTorrentUrl", url)
         torrent = Downloader.Torrent(self.userStorageDirectory, torrentFilesDirectory = self.torrentFilesDirectory)
+        if not torrent: torrent = Downloader.Torrent(self.userStorageDirectory, torrentFilesDirectory = self.torrentFilesDirectory)
         self.__settings__.setSetting("lastTorrent", torrent.saveTorrent(url))
         if silent!='true':
             contentId = 0
@@ -303,17 +307,19 @@ class Core:
                 myshows_files=[]
                 contentList = []
                 for contentId, contentFile in enumerate(torrent.getContentList()):
-                    fileTitle = "%s [%sMB]" % (contentFile.path, contentFile.size / 1024 / 1024)#In MB
+                    fileTitle = "%s" % (contentFile.path)#In MB
                     contentList.append((self.unescape(fileTitle), str(contentId)))
                 contentList = sorted(contentList, key=lambda x: x[0])
                 for title, identifier in contentList:
                     #self.drawItem(title, 'playTorrent', identifier, isFolder=False)
                     myshows_items.append(title)
                     myshows_files.append('plugin://plugin.video.torrenter/?action=playTorrent&url='+identifier)
+                if len(myshows_items)>1:myshows_items=self.cutFileNames(myshows_items)
                 myshows_items.append(unicode(myshows_lang(30400)))
                 myshows_files.append('plugin://plugin.video.myshows/?mode=203&stringdata='+get("sdata"))
                 dialog = xbmcgui.Dialog()
-                ret = dialog.select(unicode(myshows_lang(30401)), self.cutFileNames(myshows_items))
+                if len(myshows_items)==2: ret=0
+                else:ret = dialog.select(unicode(myshows_lang(30401)), myshows_items)
                 if ret>-1:
                     xbmc.executebuiltin('xbmc.RunPlugin("'+myshows_files[ret]+'")')
             else:
@@ -336,9 +342,10 @@ class Core:
         from difflib import Differ
         d = Differ()
         i=-1
-
-        text1 = str(l[0])
-        text2 = str(l[1])
+        m=self.getDirList(None, l)
+        if len (m)<2: return l
+        text1 = str(m[0])
+        text2 = str(m[1])
 
         seps=['.|:| ', '.|:|x', ' |:|x', ' |:|-', '_|:|',]
         for s in seps:
@@ -370,6 +377,18 @@ class Core:
             if fl[len(fl)-len(end):]==end: fl=fl[0:len(fl)-len(end)]
             #fl=fl[len(start):len(fl)-len(end)] только это вместо 2 сверху
             l.append(fl)
+        return l
+
+    def getDirList(self, path, newl=None):
+        l=[]
+        try:
+            if not newl: newl=os.listdir(path)
+        except:
+            if not newl: newl=os.listdir(path.decode('utf-8').encode('cp1251'))
+        for fl in newl:
+            match=re.match('.avi|.mp4|.mkV|.flv|.mov|.vob|.wmv|.ogm|.asx|.mpg|mpeg|.avc|.vp3|.fli|.flc|.m4v', fl[int(len(fl))-4:len(fl)], re.I)
+            if match:
+                l.append(fl)
         return l
 
     def recentPlaybleRu(self, params = {}):
@@ -566,13 +585,13 @@ class Core:
         filesList = []
         if self.ROOT + os.sep + 'resources' + os.sep + 'searchers' not in sys.path:
             sys.path.insert(0, self.ROOT + os.sep + 'resources' + os.sep + 'searchers')
-        try:
-            searcherObject = getattr(__import__(searcher), searcher)()
-            if searcherObject.isMagnetLinkSource and 'false' == self.__settings__.getSetting("use_magnet_links"):
-                return filesList
-            filesList = searcherObject.search(keyword)
-        except Exception, e:
-            print 'Unable to use searcher: ' + searcher + ' at ' + self.__plugin__ + ' searchWithSearcher(). Exception: ' + str(e)
+        #try:
+        searcherObject = getattr(__import__(searcher), searcher)()
+        if searcherObject.isMagnetLinkSource and 'false' == self.__settings__.getSetting("use_magnet_links"):
+            return filesList
+        filesList = searcherObject.search(keyword)
+        #except Exception, e:
+            #print 'Unable to use searcher: ' + searcher + ' at ' + self.__plugin__ + ' searchWithSearcher(). Exception: ' + str(e)
         return filesList
 
     def jstr(self, s):
@@ -593,10 +612,11 @@ class Core:
             myshows_lang=myshows_setting.getLocalizedString
 
             for (order, seeds, title, link, image) in filesList:
+                print '{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))
                 contextMenu = [
-                    ('Add to MyShows.ru' ,
-                     'XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":"%s", "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, 'rutracker', self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))))),
-                    (myshows_lang(30400),
+                    (myshows_lang(30409),
+                     'XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))))),
+                    (myshows_lang(30400) ,
                      'XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
                 ]
                 self.drawItem(title, 'openTorrent', link, image, contextMenu=contextMenu)
@@ -620,8 +640,11 @@ class Core:
     def addHistory(self, name):
         if 0 < len(self.__settings__.getSetting("auth")):
             response = json.loads(self.fetchData(self.URL + '/history/add?link=%s&name=%s' % (urllib.quote_plus(self.__settings__.getSetting("lastTorrentUrl")), urllib.quote_plus(name))).encode('utf-8'))
-        if not self.checkForAuth(response):
-            return
+        try:
+            if not self.checkForAuth(response):
+                return
+        except: pass
+        return
 
     def getHistory(self, params = {}):
         filesList = []

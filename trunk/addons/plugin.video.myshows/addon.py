@@ -10,9 +10,10 @@ except ImportError:
 
 from functions import *
 from torrents import *
+from net import *
 from app import Handler, Link
 
-__version__ = "1.4.6"
+__version__ = "1.5.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -176,6 +177,7 @@ def MyTorrents():
     myt=TorrentDB()
     if  sort!='shows' and showId==None:
         menu=[{"title":TextBB(__language__(30114), 'b'),    "mode":"50",    "argv":{'sort':'shows'}},
+              {"title":TextBB(__language__(30287), 'b'),             "mode":"52",   "argv":{}},
               {"title":TextBB(__language__(30140), 'b'),             "mode":"51",   "argv":{}},
               {"title":TextBB(__language__(30141), 'b'), "mode":"510",   "argv":{}}]
         for i in menu:
@@ -525,13 +527,15 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
               __language__(30228)+'|:|'+sys_url+'7',
-              __language__(30314)+'|:|'+sys_url+'8']
+              __language__(30314)+'|:|'+sys_url+'8',
+              __language__(30310)+'|:|'+sys_url+'201',]
     elif mode==25 or not sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
               __language__(30308)+'|:|'+sys_url+'1'+refresh_url,
-              __language__(30228)+'|:|'+sys_url+'200']
+              __language__(30310)+'|:|'+sys_url+'201',
+              __language__(30228)+'|:|'+sys_url+'200',]
     elif mode in (50,) and not sort:
         menu=[__language__(30227)+'|:|'+sys_url,
               __language__(30310)+'|:|'+sys_url+'1',
@@ -653,10 +657,18 @@ elif mode == 41:
     if action==None: action=login
     if sort==None: sort='profile'
     Profile(action, sort)
+elif mode == 50:
+    MyTorrents()
+elif mode == 51:
+    MyScanList()
+elif mode == 52:
+    uTorrentBrowser()
 elif mode == 60:
-    ClearCache(os.path.join(__addonpath__, 'data.db3'))
+    ClearCache()
 elif mode == 61:
-    PluginStatus()
+    PluginStatus().menu()
+elif mode == 610:
+    PluginStatus().install(action)
 elif mode == 100:
     if action==None: action='all'
     TopShows(action)
@@ -674,10 +686,12 @@ elif mode == 3001 or mode == 2501:
     BTCHATSearch(showId, id)
 elif mode == 3010:
     Source().addsource()
+    jdata=get_apps(stringdata)
     if not sort:AskPlay()
     elif sort=='activate':
-        xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (get_apps(stringdata)['showId']))
-        ScanSource().scanone()
+        xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (jdata['showId']))
+        if not not jdata['id']:
+            ScanSource().scanone()
 elif mode == 3011:
     Source().addjson()
 elif mode == 3012:
@@ -688,12 +702,8 @@ elif mode == 3090:
     AskPlay()
 elif mode == 301 or mode == 252:
     Favorite(id, refresh_url)
-elif mode == 50:
-    MyTorrents()
 elif mode in (500,258):
     DeleteSourses()
-elif mode == 51:
-    MyScanList()
 elif mode == 510:
     ScanAll()
 elif mode in (30202,259):
@@ -704,8 +714,8 @@ elif mode == 302002:
     ScanSource().delete()
 elif mode in (30200,257):
     DeleteSource()
-elif mode == 30201:
-    Source(stringdata).downloadsource()
+elif mode in (30201,25201):
+    DownloadSource(stringdata)
 elif mode == 303 or mode==203 or mode==253:
     AddSource()
 elif mode == 304 or mode==204 or mode==254:

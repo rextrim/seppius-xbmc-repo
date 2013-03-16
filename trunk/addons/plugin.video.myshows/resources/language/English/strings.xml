@@ -9,7 +9,30 @@
         <string id="30006">Cache off</string>
         <string id="30007">Autoscan on start</string>
         <string id="30008">Default Torrent Player</string>
+        <string id="30009">Common</string>
+        <string id="30010">Torrent</string>
+        <string id="50301">Save path</string>
+        <string id="50302">Call dialog</string>
+        <string id="50303">Default</string>
+        <string id="50304">Path</string>
+        <string id="50305">Create subdirectory for scrapper</string>
+        <string id="50312">Host µTorrent</string>
+        <string id="50313">Port µTorrent</string>
+        <string id="50314">URL</string>
+        <string id="50315">Login µTorrent</string>
+        <string id="50316">Password µTorrent</string>
 
+
+        <string id="30011">My Profile</string>
+        <string id="30012">Friend's News</string>
+        <string id="30013">S%sE%s [%s days] %s (%s)</string>
+        <string id="30014">Group by Show</string>
+        <string id="30015">[%s] %s (%s Ep)</string>
+        <string id="30016">[%s-%s] %s (%s Eps)</string>
+        <string id="30017">checked</string>
+        <string id="30018">checked</string>
+        <string id="30019">%s %s [%s] of %s</string>
+        <string id="30020">%s %s %s eps of %s</string>
 ///ListItems
         <string id="30100">All My Shows</string>
         <string id="30101">Search</string>
@@ -73,7 +96,7 @@
         <string id="30203">I'm searching for:</string>
         <string id="30204">Search string for VKontakte</string>
         <string id="30205">Cancel</string>
-	    <string id="30206">Error</string>
+	    <string id="30206">Error!</string>
         <string id="30207">Turn on onClick in Settings</string>
         <string id="30208">Done</string>
         <string id="30209">MyShows.ru</string>
@@ -108,7 +131,7 @@
         <string id="30238">Choose path with files:</string>
         <string id="30239">Add File</string>
         <string id="30240">Search VK (need patched xbmc.vk-svoka)</string>
-        <string id="30241">Search BTchat.com</string>
+        <string id="30241">Search BTchat.com (need patch plugin.video.torrenter)</string>
         <string id="30242">Add .torrent</string>
         <string id="30243">Back</string>
         <string id="30244">Add Directory</string>
@@ -128,7 +151,7 @@
         <string id="30258">NOT PATCHED</string>
         <string id="30259">NOT INSTALLED</string>
         <string id="30260">DiMartino on xbmc.ru and bitbucket.org</string>
-        <string id="30261">Read the rest in changelog.txt</string>
+        <string id="30261">You can install it via context menu</string>
         <string id="30262">Status:</string>
         <string id="30263">Scanning:</string>
         <string id="30264">Show status:</string>
@@ -136,28 +159,26 @@
         <string id="30266">You rated it</string>
         <string id="30267">INSTALLED</string>
         <string id="30268">RuTracker.Org Distribution (need patch plugin.video.torrenter)</string>
-
-    __language__(30267)
-
-        <string id="30269">Add File</string>
-        <string id="30270">Search VK (need patched xbmc.vk-svoka)</string>
-        <string id="30271">Search BTchat.com</string>
-        <string id="30272">Add .torrent</string>
-        <string id="30273">Back</string>
-        <string id="30274">Add Directory</string>
-        <string id="30275">Add Multiple Files</string>
-        <string id="30276">Add Multiple Files from .torrent</string>
-        <string id="30277">Choose .torrent for multifile add:</string>
-        <string id="30278">Choose directory:</string>
-        <string id="30279">Added %s new sources!</string>
-        <string id="30280">Can't play: %s</string>
-        <string id="30281">Deleted: %s sources</string>
-        <string id="30282">Would you like to play it?</string>
-        <string id="30283">BTchat search:</string>
-        <string id="30284">Root path "./"</string>
-        <string id="30285">Search Serialu.net (need patch plugin.video.serialu.net)</string>
-        <string id="30286">Input Serialu.net correct show title:</string>
-        <string id="30287">PATCHED</string>
+        <string id="30269">Magnet Link</string>
+        <string id="30270">Press OK only when µTorrent download metadata</string>
+        <string id="30271">Something went wrong</string>
+        <string id="30272">µTorrent Files:</string>
+        <string id="30273">Search The Pirate Bay (need patch plugin.video.torrenter)</string>
+        <string id="30274">Add from µTorrent (need WebUI)</string>
+        <string id="30275">It has been started. Downloaded:</string>
+        <string id="30276">%s Search:</string>
+        <string id="30277">Auto-scan in progress!</string>
+        <string id="30278">Scanning multiple sources from scanlist!</string>
+        <string id="30279">Warning!</string>
+        <string id="30280">The directory either empty or don't exist!</string>
+        <string id="30281">Start</string>
+        <string id="30282">Stop</string>
+        <string id="30283">Remove</string>
+        <string id="30284">Remove with files</string>
+        <string id="30285">Not a builtin function in uTorrent!</string>
+        <string id="30286">Install patch</string>
+        <string id="30287">µTorrent Browser</string>
+    __language__(30287)
         <string id="30288">NOT PATCHED</string>
         <string id="30289">NOT INSTALLED</string>
         <string id="30290">DiMartino on xbmc.ru and bitbucket.org</string>
@@ -177,7 +198,7 @@
         <string id="30307">Search Vkontakte</string>
         <string id="30308">Favorite/Ignore</string>
         <string id="30309">Search BTChat</string>
-        <string id="30310">Open on System</string>
+        <string id="30310">Download</string>
         <string id="30311">Scan</string>
         <string id="30312">Delete from scanlist</string>
         <string id="30313">Add to scanlist</string>
@@ -222,10 +243,8 @@
         <string id="30404">Try another option.</string>
         <string id="30405">Add the best as Source</string>
         <string id="30406">Cancel</string>
-
-
-	<string id="30407">Search Vkontakte</string>
-	<string id="30408">Favorite/Ignore</string>
-	<string id="30409">Search BTChat</string>
+        <string id="30407">Titles could not match</string>
+        <string id="30408">or you should update Serialu.net database</string>
+        <string id="30409">Add to MyShows.ru</string>
 
 </strings>
