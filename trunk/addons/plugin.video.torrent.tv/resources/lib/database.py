@@ -101,7 +101,7 @@ class DataBase:
 			schs = schs[:schs.__len__() - 1]
 			self.cursor.execute('SELECT id, url FROM channels WHERE id IN (%s)' % schs)
 		else:
-			self.cursor.execute('SELECT id, url FROM channels WHERE urlstream <> ""')
+			self.cursor.execute('SELECT id, url FROM channels WHERE (urlstream <> "") AND (del = 0)')
 		
 		res = self.cursor.fetchall()
 		ret = []
@@ -140,18 +140,22 @@ class DataBase:
 		
 	def GetChannels(self, group = None, where = None):
 		self.Connect()
+		select = 'SELECT id, name, url, urlstream, imgurl, (SELECT gro.name FROM groups AS gro WHERE ch.group_id = gro.id) AS grname FROM channels AS ch';
 		if where == None:
 			if group == None:
-				self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels ORDER BY count DESC')
+				select = select + ' WHERE (adult = 0)'
 			else:
-				self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels WHERE group_id = "%s" ORDER BY count DESC' % group)
+				select = select + ' WHERE (group_id = "%s")' % group
 		else:
-			self.cursor.execute('SELECT id, name, url, urlstream, imgurl FROM channels WHERE %s ORDER BY count DESC' % where)
-			
+			select = select + ' WHERE (%s) AND (adult = 0)' % where
+
+		select = select + ' AND (del = 0)'
+		select = select + ' ORDER BY count DESC, group_id ASC, name ASC'
+		self.cursor.execute(select)
 		res = self.cursor.fetchall()
 		ret = []
 		for line in res:
-			ret.append({'id': line[0], 'name': line[1].encode('utf-8'), 'url': line[2].encode('utf-8'), 'urlstream': line[3].encode('utf-8'), 'imgurl': line[4].encode('utf-8')})
+			ret.append({'id': line[0], 'name': line[1].encode('utf-8'), 'url': line[2].encode('utf-8'), 'urlstream': line[3].encode('utf-8'), 'imgurl': line[4].encode('utf-8'), 'group_name': line[5].encode('utf-8')})
 		self.Disconnect()
 		return ret
 		
@@ -175,33 +179,21 @@ class DataBase:
 		self.Connect()
 		self.cursor.execute('SELECT ch.addsdate FROM channels as ch GROUP BY ch.addsdate ORDER BY ch.addsdate DESC')
 		res = self.cursor.fetchone()
-		self.cursor.execute('SELECT id, name, url, urlstream, imgurl, (SELECT gro.name FROM groups AS gro WHERE ch.group_id = gro.id) AS grname ' +
-			'FROM channels as ch WHERE addsdate = "%s" ORDER BY group_id ASC' % res[0])
-		res = self.cursor.fetchall()
-		ret = []
-		for line in res:
-			ret.append(
-				{'id': line[0], 'name': line[1].encode('utf-8'), 'url': line[2].encode('utf-8'), 'urlstream': line[3].encode('utf-8'), 'imgurl': line[4].encode('utf-8'), 'group_name': line[5].encode('utf-8')}
-			)
 		self.Disconnect()
-		return ret
+		return self.GetChannels(where = 'addsdate = "%s"' % res[0])
 	
 	def GetLatestChannels(self):
-		self.Connect()
-		self.cursor.execute('SELECT id, name, url, urlstream, imgurl, (SELECT gro.name FROM groups AS gro WHERE ch.group_id = gro.id) AS grname ' +
-			'FROM channels as ch WHERE count > 0 ORDER BY count DESC')
-		res = self.cursor.fetchall()
-		ret = []
-		for line in res:
-			ret.append(
-				{'id': line[0], 'name': line[1].encode('utf-8'), 'url': line[2].encode('utf-8'), 'urlstream': line[3].encode('utf-8'), 'imgurl': line[4].encode('utf-8'), 'group_name': line[5].encode('utf-8')}
-			)
-		self.Disconnect()
-		return ret
+		return self.GetChannels(where = 'count > 0')
 	
 	def IncChannel(self, id):
 		self.Connect()
 		self.cursor.execute('UPDATE channels SET count = count + 1 WHERE id = "%s"' % id)
+		self.connection.commit()
+		self.Disconnect()
+	
+	def DelChannel(self, id):
+		self.Connect()
+		self.cursor.execute('UPDATE channels SET del = 1 WHERE id = "%s"' % id)
 		self.connection.commit()
 		self.Disconnect()
 	
@@ -278,7 +270,7 @@ class DataBase:
 				self.cursor.execute('UPDATE channels SET imgurl = "%s" WHERE id = "%s"' % ('http://torrent-tv.ru/'+img.find('img')['src'], img.find('a')['href'][31:]))
 			self.connection.commit()
 			
-			self.cursor.execute('SELECT id FROM channels WHERE urlstream <> ""')
+			self.cursor.execute('SELECT id FROM channels WHERE (urlstream <> "") AND (del = 0)')
 			sqlres = self.cursor.fetchall()
 			updch = []
 			for ch in sqlres:
