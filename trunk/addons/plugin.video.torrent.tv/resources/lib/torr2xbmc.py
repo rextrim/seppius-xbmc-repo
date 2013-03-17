@@ -103,7 +103,7 @@ def GetScript(params):
 			gzipFile = zipfile.ZipFile(PROGRAM_SOURCE_PATH)
 			PROGRAM_FILE = gzipFile.read('inter-tv.txt').decode('windows-1251', 'strict')
 		except Exception, e:
-			Log('Error (Line 107): not decode from windows-1251')
+			showMessage(message = '%s' % e)
 			return
 		import datetime
 		today = datetime.date.today()
@@ -148,7 +148,7 @@ def GetScript(params):
 			strToDay = strToDay + 'Ноябрь. '
 		elif today.month == 12:
 			strToDay = strToDay + 'Декабрь. '
-		
+		showMessage(message = strToDay)
 		txtProgram = ''
 		i = 0
 		j = 0
@@ -258,8 +258,11 @@ def GetChannelsDB (params):
 				'func': 'DelChannel',
 				'id': ch['id']
 			})
-			li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),)])
-			li.addContextMenuItems([('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),)])
+			commands = []
+			commands.append(('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),))
+			commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
+			li.addContextMenuItems(commands)
+			#li.addContextMenuItems([('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),)])
 			xbmcplugin.addDirectoryItem(hos, uri, li)
 		xbmcplugin.endOfDirectory(hos)
 	
@@ -328,6 +331,9 @@ def play_ch_db(params):
 	
 def play_ch_web(params):
 	http = GET('http://torrent-tv.ru/'+params['file'])
+	out = open('c:/temp/out.htm', 'w')
+	out.write(http)
+	out.close()
 	print 'http://torrent-tv.ru/'+params['file']
 	beautifulSoup = BeautifulSoup(http)
 	tget= beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
