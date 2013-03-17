@@ -331,9 +331,6 @@ def play_ch_db(params):
 	
 def play_ch_web(params):
 	http = GET('http://torrent-tv.ru/'+params['file'])
-	out = open('c:/temp/out.htm', 'w')
-	out.write(http)
-	out.close()
 	print 'http://torrent-tv.ru/'+params['file']
 	beautifulSoup = BeautifulSoup(http)
 	tget= beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
