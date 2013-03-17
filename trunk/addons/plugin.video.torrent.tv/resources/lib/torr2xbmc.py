@@ -231,40 +231,36 @@ def GetChannelsDB (params):
 		channels = db.GetNewChannels()
 	else:
 		channels = db.GetChannels(params['group'])
-	if channels.__len__() == 0:
-		db.FillDB()
-		GetChannels(params)
-		return
-	else:
-		for ch in channels:
-			img = ch['imgurl']
-			if __addon__.getSetting('logopack'):
-				logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
-				logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
-				if os.path.exists(logo_src):
-					img = logo_src
-			title = ch['name']
-			if params['group'] == '0' or params['group'] == 'hd' or params['group'] == 'latest' or params['group'] == 'new':
-				title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], title)
-			li = xbmcgui.ListItem(title, title, img, img)
-			uri = construct_request({
-				'func': 'play_ch_db',
-				'img': img.encode('utf-8'),
-				'title': ch['name'],
-				'file': ch['urlstream'],
-				'id': ch['id']
-			})
-			deluri = construct_request({
-				'func': 'DelChannel',
-				'id': ch['id']
-			})
-			commands = []
-			commands.append(('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),))
-			commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
-			li.addContextMenuItems(commands)
-			#li.addContextMenuItems([('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),)])
-			xbmcplugin.addDirectoryItem(hos, uri, li)
-		xbmcplugin.endOfDirectory(hos)
+
+	for ch in channels:
+		img = ch['imgurl']
+		if __addon__.getSetting('logopack'):
+			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
+			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
+			if os.path.exists(logo_src):
+				img = logo_src
+		title = ch['name']
+		if params['group'] == '0' or params['group'] == 'hd' or params['group'] == 'latest' or params['group'] == 'new':
+			title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], title)
+		li = xbmcgui.ListItem(title, title, img, img)
+		uri = construct_request({
+			'func': 'play_ch_db',
+			'img': img.encode('utf-8'),
+			'title': ch['name'],
+			'file': ch['urlstream'],
+			'id': ch['id']
+		})
+		deluri = construct_request({
+			'func': 'DelChannel',
+			'id': ch['id']
+		})
+		commands = []
+		commands.append(('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),))
+		commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
+		li.addContextMenuItems(commands)
+		#li.addContextMenuItems([('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),)])
+		xbmcplugin.addDirectoryItem(hos, uri, li)
+	xbmcplugin.endOfDirectory(hos)
 	
 def DelChannel(params):
 	db = DataBase(db_name, cookie)
@@ -333,8 +329,7 @@ def play_ch_web(params):
 	http = GET('http://torrent-tv.ru/'+params['file'])
 	print 'http://torrent-tv.ru/'+params['file']
 	beautifulSoup = BeautifulSoup(http)
-	tget= beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
-	print tget
+	tget= beautifulSoup.find('div', attrs={'class':'tv-player'})
 	
 	m=re.search('http:(.+)"', str(tget))
 	if m:
