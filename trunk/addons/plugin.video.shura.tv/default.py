@@ -65,7 +65,7 @@ def get_params():
 INFOTIMER_SHOW = None
 INFOTIMER_HIDE = None
 
-def gettbn(Title):
+def gettbn(Title):	
 		thumb2 = xbmc.translatePath(os.path.join(ImgPath, Title[:-2]+'.png'))
 		if os.path.isfile(thumb2)==0:
 			thumb2 = os.path.join(ImgPath, Title[:-1]+'.png')
