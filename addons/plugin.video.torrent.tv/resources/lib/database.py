@@ -110,7 +110,7 @@ class DataBase:
 			try:
 				page = GET('http://torrent-tv.ru/' + ch[1])
 				beautifulSoup = BeautifulSoup(page)
-				tget = beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
+				tget = beautifulSoup.find('div', attrs={'class':'tv-player'})
 				m=re.search('http:(.+)"', str(tget))
 				if m:
 					torr_link= m.group(0).split('"')[0]
