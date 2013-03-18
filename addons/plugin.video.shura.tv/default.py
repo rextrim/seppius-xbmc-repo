@@ -461,7 +461,8 @@ if '_s' in params and '_sn' in params:
 else:
 	SID = None
 	SID_NAME = None
-PLUGIN_CORE = iptv.shura(OTT)
+
+PLUGIN_CORE = iptv.shura(OTT, str(__settings__.getSetting('stream_type')))
 
 dc={"1 канал" : "001", "1+1" : "002"}
 try:

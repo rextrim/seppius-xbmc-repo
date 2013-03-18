@@ -45,3 +45,5 @@ New addon icon
 Missing epg fix
 [B]0.9.0[/B]
 Icons added
+[B]0.9.1[/B]
+Choose between Standard and HLS stream type in settings
