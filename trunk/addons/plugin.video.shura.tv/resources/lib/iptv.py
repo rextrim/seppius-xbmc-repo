@@ -182,18 +182,17 @@ class shura:
 		dom = parseString(response)
 		#retrieve the first xml tag (<tag>data</tag>) that the parser finds with name tagName:
 		#feeds = dom.getElementsByTagName('feed')
-				
 		for feed in dom.firstChild.childNodes:
 			id = name = url = archive = None
 			if feed.nodeName == 'feed': 
 				id = feed.getAttribute('id')
 				name = feed.getElementsByTagName('name')[0].firstChild.wholeText
-				if self.StreamType == 'Standard':
-					#xbmc.log('url type=Standard')
-					url = feed.getElementsByTagName('url')[0].firstChild.data
-				else:
+				if self.StreamType == '1':
 					#xbmc.log('url type=HLS')
 					url = feed.getElementsByTagName('url_hls')[0].firstChild.data
+				else:
+					#xbmc.log('url type=Standard')
+					url = feed.getElementsByTagName('url')[0].firstChild.data
 				archive = feed.getElementsByTagName('archive')[0].firstChild.data
 				#xbmc.log('archive='+archive)
 				#self.getCurrentEPG(url, id)
