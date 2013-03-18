@@ -97,7 +97,7 @@ else:
 		
 class shura:
 	
-	def __init__(self, OTT, addonid = ''):
+	def __init__(self, OTT, StreamType, addonid = ''):
 		
 		if not addonid:
 			addonid = os.path.basename(__file__)
@@ -110,6 +110,7 @@ class shura:
 		self.addonid = addonid
 		self.last_settings = None
 		self.auto_timezone = False
+		self.StreamType= StreamType
 		
 		self.last_list = None
 		self.last_epg = {}
@@ -187,7 +188,12 @@ class shura:
 			if feed.nodeName == 'feed': 
 				id = feed.getAttribute('id')
 				name = feed.getElementsByTagName('name')[0].firstChild.wholeText
-				url = feed.getElementsByTagName('url')[0].firstChild.data
+				if self.StreamType == 'Standard':
+					#xbmc.log('url type=Standard')
+					url = feed.getElementsByTagName('url')[0].firstChild.data
+				else:
+					#xbmc.log('url type=HLS')
+					url = feed.getElementsByTagName('url_hls')[0].firstChild.data
 				archive = feed.getElementsByTagName('archive')[0].firstChild.data
 				#xbmc.log('archive='+archive)
 				#self.getCurrentEPG(url, id)

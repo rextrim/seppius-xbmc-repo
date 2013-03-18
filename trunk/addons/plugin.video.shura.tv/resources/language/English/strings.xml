@@ -29,7 +29,7 @@
 	<string id="30026">Parental code</string>
 	<string id="30027">Channels list auto-refresh rate</string>
 	<string id="30028">Force channels list to be refreshed</string>
-	<string id="30029">Show progress of current program in %%</string>
+	<string id="30029">Stream type Standard or HLS</string>
 	<string id="30030">Colorize channels groups</string>
 	<string id="30031">Hide time field</string>
 	<string id="30032">start time of the current programm</string>
