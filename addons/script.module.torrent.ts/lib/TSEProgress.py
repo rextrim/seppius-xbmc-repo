@@ -10,7 +10,7 @@ import xbmcgui
 import xbmcaddon
 
 settings = xbmcaddon.Addon(id='script.module.torrent.ts')
-
+language = settings.getLocalizedString
 
 addonDir = settings.getAddonInfo("path")
 print addonDir
@@ -28,6 +28,7 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 		#self.doModal()
 		self.progress=0
 		self.isCanceled=False
+		
 		pass
 	def onInit(self):
 		self.controls = {}
@@ -35,6 +36,8 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 			self.getControls()
 		except:
 			print_exc()
+		self.button = self.getControl(2005)
+		self.button.setLabel(language(1006))
 		self.setFocus(self.getControl(2005))
 		#self.close()
 	def updater(self,progress,text1,text2):
@@ -44,6 +47,8 @@ class WTSEngine(xbmcgui.WindowXMLDialog):
 		self.label.setLabel(text1)
 		self.label = self.getControl(2003)
 		self.label.setLabel(text2)
+		self.button = self.getControl(2005)
+		self.button.setLabel(language(1006))
 		self.setFocus(self.getControl(2005))
 	def getControls(self):
 		pass
