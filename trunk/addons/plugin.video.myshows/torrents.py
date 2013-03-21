@@ -23,7 +23,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -356,7 +356,7 @@ class Source:
     def out(self):
         #self.libmode=False
         self.libmode=libmode
-        if int(__settings__.getSetting("torplayer"))==0 and self.libmode and torrmode:
+        if int(__settings__.getSetting("torplayer"))==0 and torrmode:
             self.libmode=False
         if self.stype=='url-torrent':
             self.TSplayer=tsengine()
@@ -432,6 +432,7 @@ class Source:
                     self.episodeId=x[1]
                     for id in jdata['episodes']:
                         if not x[0]: x[0]=self.seasonId
+                        elif self.seasonId!=x[0]: continue
                         if jdata['episodes'][id]['seasonNumber']==x[0] and jdata['episodes'][id]['episodeNumber']==x[1]:
                             self.seasonId=x[0]
                             self.id=int(id)
@@ -454,7 +455,9 @@ class Source:
                     showMessage(__language__(30208), __language__(30249) % (str(i)))
                 elif i==1:
                     showMessage(__language__(30208), __language__(30230) % (urllib.unquote_plus(filename)))
-        if not self.libmode: self.TSplayer.end()
+        if not self.libmode:
+            self.TSplayer.end()
+            xbmc.sleep(10000)
         return i
 
     def addmultifile(self):

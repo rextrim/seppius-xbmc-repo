@@ -13,7 +13,7 @@ from torrents import *
 from net import *
 from app import Handler, Link
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -100,11 +100,11 @@ def Shows(mode):
         else:
             rating=float(jdata[showId]['rating'])
         pre=prefix(showId=int(showId))
+        info={'Title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating}
+        if mode!=19:info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']),str(jdata[showId]['totalEpisodes']))+ \
+                                 '\r\n'+__language__(30266)+str(jdata[showId]['rating'])
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
-        item.setInfo( type='Video', infoLabels={'Title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating,
-                                                'plot':    __language__(30264)+jdata[showId]['showStatus']+ \
-                                                       '\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']),str(jdata[showId]['totalEpisodes']))+ \
-                                                       '\r\n'+__language__(30266)+str(jdata[showId]['rating'])} )
+        item.setInfo( type='Video', infoLabels=info )
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
@@ -542,7 +542,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30311)+'|:|'+sys_url+'2',
               __language__(30228)+'|:|'+sys_url+'0']
     elif mode==50 and sort:
-        menu=[__language__(30228)+'|:|'+sys_url+'0']
+        menu=[__language__(30314)+'|:|'+sys_url+'0']
     elif mode in (51,):
         menu=[]
         if ifstat==True: menu.append(__language__(30312)+'|:|'+sys_url+'02')

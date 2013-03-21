@@ -360,7 +360,7 @@ class UTorrent:
         i=-1
         for x in obj['files'][1]:
             i+=1
-            res.append((x[0],(int(float(x[2])/float(x[1])*100)),i))
+            res.append((x[0],(int(x[2]*100/x[1])),i))
         return res
 
     def add(self, torrent, dirname):
