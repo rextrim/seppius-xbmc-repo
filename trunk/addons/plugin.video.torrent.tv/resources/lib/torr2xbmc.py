@@ -153,9 +153,11 @@ def GetChannelsDB (params):
 			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
 			if os.path.exists(logo_src):
 				img = logo_src
-		sch = db.GetSchedules(ch['id'], 6, int(time.time()))
-		#print '%s' % sch[0]['program'][0]['title'].encode('utf-8')
-		#return
+		try:
+			sch = db.GetSchedules(ch['id'], 6, int(time.time()))
+		except:
+			GetChannelsDB(params)
+			return
 		if sch[0].has_key('program'):
 			startTime = time.localtime(float(sch[0]['program'][0]['start']))
 			endTime = time.localtime(float(sch[0]['program'][0]['end']))
@@ -370,7 +372,7 @@ if os.path.exists(cookiefile):
 
 db = DataBase(db_name, cookie)		
 dbver = db.GetDBVer()
-if db.GetDBVer() <> 4:
+if db.GetDBVer() <> 5:
 	del db
 	os.remove(db_name)
 
@@ -405,7 +407,8 @@ def addon_main():
 
 		if not os.path.exists(PLUGIN_DATA_PATH):
 			os.makedirs(PLUGIN_DATA_PATH)
-		os.remove(cookiefile)
+		if os.path.exists(cookiefile):
+			os.remove(cookiefile)
 		out = open(cookiefile, 'w')
 		GET('http://torrent-tv.ru/auth.php', data)
 		out.write(cookie)

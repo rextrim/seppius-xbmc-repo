@@ -34,8 +34,8 @@ CREATE TABLE settings (
 CREATE TABLE shedules (
   id           integer PRIMARY KEY AUTOINCREMENT NOT NULL,
   channel_id   integer NOT NULL,
-  start        datetime NOT NULL,
-  "end"        datetime NOT NULL,
+  start        bigint NOT NULL,
+  "end"        bigint NOT NULL,
   name         nvarchar(64) NOT NULL,
   fanart       nvarchar(255),
   description  text
@@ -52,4 +52,4 @@ CREATE TABLE groups (
   adult  bit DEFAULT 0
 );
 ----
-INSERT INTO settings (id, dbver) VALUES ("1", "4")
+INSERT INTO settings (id, dbver) VALUES ("1", "5")
