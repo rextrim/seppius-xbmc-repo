@@ -109,7 +109,7 @@ class RuTrackerOrg(SearcherABC.SearcherABC):
         cookie=None
         try:do_login=int(time.time())-int(sys.modules[ "__main__" ].__settings__.getSetting("rutracker-auth-time"))
         except: do_login=10001
-        if do_login>10000: cookie = self.login()
+        if do_login>1000: cookie = self.login()
         if cookie: sys.modules[ "__main__" ].__settings__.setSetting("rutracker-auth", cookie)
 
         referer = 'http://rutracker.org/forum/viewtopic.php?t=' + re.search('(\d+)$', url).group(1)

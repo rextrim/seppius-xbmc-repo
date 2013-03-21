@@ -9,7 +9,7 @@
 
 v.1.5.0:
 [+] Установка патчей из меню "Статус плагина"
-[+] Интеграция с µTorrent WebUI
+[+] Интеграция с µTorrent WebUI 
 [+] Поиск по BT-chat.com и ThePirateBay.org (через Torrenter)
 
 v.1.4.6:

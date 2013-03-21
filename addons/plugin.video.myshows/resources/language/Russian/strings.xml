@@ -70,6 +70,8 @@
         <string id="30144">plugin.video.serialu.net: %s</string>
         <string id="30145">Об авторе</string>
         <string id="30146">Статус Плагина</string>
+        <string id="30147">ДОСТУПНО</string>
+        <string id="30148">НЕТ ДОСТУПА</string>
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
         <string id="30201">Неверный логин или пароль!</string>

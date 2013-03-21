@@ -81,10 +81,9 @@
         <string id="30144">plugin.video.serialu.net: %s</string>
         <string id="30145">About author</string>
         <string id="30146">Plugin Status</string>
-    __language__(30146)
-
-        <string id="30147">Clear Cache</string>
-        <string id="30148">Season</string>
+        <string id="30147">ACCESSABLE</string>
+        <string id="30148">NOT ACCESSABLE</string>
+    __language__(30147)
         <string id="30149">Shows</string>
 
 

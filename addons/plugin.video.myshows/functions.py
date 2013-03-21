@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -27,7 +27,6 @@ passwd=__settings__.getSetting("password")
 ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
-btchat_auth=__settings__.getSetting("btchat_auth")
 socket.setdefaulttimeout(60)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
@@ -281,7 +280,7 @@ class Data():
         if self.filename:
             if self.refresh==True:
                 self.write()
-            self.fg = xbmcvfs.File(self.filename, 'r')
+            self.fg = open(self.filename, 'r')
             self.data = self.fg.read()
             self.fg.close()
             x=re.match('.*?}$', self.data)
@@ -292,7 +291,7 @@ class Data():
     def write(self):
         try: CacheDB(self.url).delete()
         except: pass
-        self.fw = xbmcvfs.File(self.filename, 'w')
+        self.fw = open(self.filename, 'w')
         self.data=get_url(self.cookie, self.url)
         self.fw.write(self.data)
         self.fw.close()
@@ -383,7 +382,7 @@ def FileNamesPrepare(filename):
     except: pass
 
 
-    urls=['^(\d*)x(\d*).*?','.*?s(\d*)e(\d*).*?','.*?(\d*)-(\d*).*?','.*?E(\d*).*?']
+    urls=['.+?(\d*)x(\d*).+?','.*?s(\d*)e(\d*).*?','.*?(\d*)-(\d*).*?','.*?E(\d*).*?']
     for file in urls:
         match=re.compile(file, re.DOTALL | re.I).findall(filename)
         if match:
@@ -480,9 +479,9 @@ class PluginStatus():
         from net import Download
 
         if Download().action('action=getsettings'):
-            utorrentstatus='ACCESSABLE'
+            utorrentstatus=unicode(__language__(30147))
         else:
-            utorrentstatus='NOT ACCESSABLE'
+            utorrentstatus=unicode(__language__(30148))
 
 
         try: apps=get_apps()
