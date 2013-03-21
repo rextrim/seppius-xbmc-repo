@@ -280,7 +280,7 @@ class Data():
         if self.filename:
             if self.refresh==True:
                 self.write()
-            self.fg = open(self.filename, 'r')
+            self.fg = xbmcvfs.File(self.filename, 'r')
             self.data = self.fg.read()
             self.fg.close()
             x=re.match('.*?}$', self.data)
@@ -291,7 +291,7 @@ class Data():
     def write(self):
         try: CacheDB(self.url).delete()
         except: pass
-        self.fw = open(self.filename, 'w')
+        self.fw = xbmcvfs.File(self.filename, 'w')
         self.data=get_url(self.cookie, self.url)
         self.fw.write(self.data)
         self.fw.close()
