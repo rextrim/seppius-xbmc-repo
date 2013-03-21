@@ -22,15 +22,16 @@ hos = int(sys.argv[1])
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
 __language__ = __addon__.getLocalizedString
-addon_icon    = __addon__.getAddonInfo('icon')
+addon_icon	 = __addon__.getAddonInfo('icon')
 addon_fanart  = __addon__.getAddonInfo('fanart')
-addon_path    = __addon__.getAddonInfo('path')
-addon_type    = __addon__.getAddonInfo('type')
-addon_id      = __addon__.getAddonInfo('id')
+addon_path	 = __addon__.getAddonInfo('path')
+addon_type	 = __addon__.getAddonInfo('type')
+addon_id		= __addon__.getAddonInfo('id')
 addon_author  = __addon__.getAddonInfo('author')
-addon_name    = __addon__.getAddonInfo('name')
+addon_name	 = __addon__.getAddonInfo('name')
 addon_version = __addon__.getAddonInfo('version')
 prt_file=__addon__.getSetting('port_path')
+adult = __addon__.getSetting('adult')
 aceport=62062
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
@@ -40,8 +41,10 @@ if (sys.platform == 'win32') or (sys.platform == 'win64'):
 	
 PROGRAM_SOURCE_PATH = os.path.join( PLUGIN_DATA_PATH , "%s_inter-tv.zip"  % datetime.date.today().strftime("%W") )
 	
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+
 try:
-	if prt_file: 
+	if prt_file:  
 		gf = open(prt_file, 'r')
 		aceport=int(gf.read())
 		gf.close()
@@ -90,159 +93,87 @@ def showMessage(heading='Torrent-TV.RU', message = '', times = 3000, pics = addo
 db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase.db')
 
 def GetScript(params):
-	try:
-		xbmc.executebuiltin( "ActivateWindow(%d)" % ( 10147 ) ) 
-		window = xbmcgui.Window( 10147 )
-		if not os.path.exists(PROGRAM_SOURCE_PATH):
-			gzip = GET('http://www.teleguide.info/download/new3/inter-tv.zip')
-			output = open(PROGRAM_SOURCE_PATH, 'wb')
-			output.write(gzip)
-			output.close()
-		import zipfile
-		try:
-			gzipFile = zipfile.ZipFile(PROGRAM_SOURCE_PATH)
-			PROGRAM_FILE = gzipFile.read('inter-tv.txt').decode('windows-1251', 'strict')
-		except Exception, e:
-			showMessage(message = '%s' % e)
-			return
-		import datetime
-		today = datetime.date.today()
-		strToDay = ''
-		if (today.weekday() == 0):
-			strToDay = strToDay + 'ПОНЕДЕЛЬНИК. '
-		elif (today.weekday() == 1):
-			strToDay = strToDay + 'ВТОРНИК. '
-		elif (today.weekday() == 2):
-			strToDay = strToDay + 'СРЕДА. '
-		elif (today.weekday() == 3):
-			strToDay = strToDay + 'ЧЕТВЕРГ. '
-		elif (today.weekday() == 4):
-			strToDay = strToDay + 'ПЯТНИЦА. '
-		elif (today.weekday() == 5):
-			strToDay = strToDay + 'СУББОТА. '
-		elif (today.weekday() == 6):
-			strToDay = strToDay + 'ВОСКРЕСЕНЬЕ. '
+	import time
+	xbmc.executebuiltin( "ActivateWindow(%d)" % ( 10147 ) )
+	window = xbmcgui.Window( 10147 )
 
-		strToDay = strToDay + '%.2d ' % today.day
-		if today.month == 1:
-			strToDay = strToDay + 'Январь. '
-		elif today.month == 2:
-			strToDay = strToDay + 'Февраль. '
-		elif today.month == 3:
-			strToDay = strToDay + 'Март. '
-		elif today.month == 4:
-			strToDay = strToDay + 'Апрель. '
-		elif today.month == 5:
-			strToDay = strToDay + 'Май. '
-		elif today.month == 6:
-			strToDay = strToDay + 'Июнь. '
-		elif today.month == 7:
-			strToDay = strToDay + 'Июль. '
-		elif today.month == 8:
-			strToDay = strToDay + 'Август. '
-		elif today.month == 9:
-			strToDay = strToDay + 'Сентябрь. '
-		elif today.month == 10:
-			strToDay = strToDay + 'Октябрь. '
-		elif today.month == 11:
-			strToDay = strToDay + 'Ноябрь. '
-		elif today.month == 12:
-			strToDay = strToDay + 'Декабрь. '
-		showMessage(message = strToDay)
-		txtProgram = ''
-		i = 0
-		j = 0
-		isProgram = -1
-		header = ''
-		selTime = False
-		lastTime = 0
-		import time
-		locTime = time.localtime()
-		curTime = time.strptime('%.2d:%.2d' % (locTime.tm_hour, locTime.tm_min), '%H:%M')
-		strs = []
-		lines = PROGRAM_FILE.expandtabs().splitlines()
-		txtProgram = ''
-		isProgram = -1
-		for line in lines[2:]:
-			try:
-				if line.encode('utf-8').find(strToDay + params['title']) == 0:
-					isProgram = 1
-					header = line
-					continue
-			except Exception, e:
-				Log('Error (Line 171): not encode to utf-8')
-				return
-				
-			if len(line) < 3 and isProgram > 0:
-				isProgram -= 1
-				continue
-			elif len(line) < 3 and isProgram == 0:
-				break
-			elif isProgram != -1:
-				strs.append(line)
-				if not selTime:
-					i += 1
-					try:
-						stime = line[0:5].replace(' ', '')
-						j += 1
-						bufj = j
-						if (stime <> ''):
-							ptime = time.strptime(stime, '%H:%M')
-							j = 0
-							if ptime <= curTime:
-								lastTime = i
-							else:
-								selTime = True
-								j = bufj
-							
-					except Exception, e:
-						xbmc.log( 'Error [GetScript] %s : %s' % (e, stime))
-						showMessage('Error', 'Ошибка конвертации времени')
-		for line in strs[i-j-1:]:
-			txtProgram = txtProgram + line + '\r\n'
+	db = DataBase(db_name, cookie)
+	sch = None
+	if params.has_key('id'):
 		try:
-			if txtProgram == '':
-				header = params['title']
-				txtProgram = '[COLOR FFFF0000]Нет программы[/COLOR]'.decode('utf-8')
-		except Exception, e:
-			Log('Error (Line 209): Not decode from utf-8')
+			sch = db.GetSchedules(params['id'])
+		except:
+			showMessage(message = 'Программа загружается')
+			xbmc.sleep(2000)
+			GetScript(params)
 			return
-		window.getControl(1).setLabel(header)
-		text = '%s' % txtProgram
-		window.getControl(5).setText(text)
-		gzipFile.close()
-	except Exception, e:
-		xbmc.log( 'Error [GetScript] %s' % (e))
-		showMessage('Error', e, 6000)
+	else:
+		del db
+		return
+	del db
+	
+	for ch in sch:
+		txtProgram = ''
+		if not ch.has_key('program'):
+			xbmc.sleep(13)
+			window.getControl(1).setLabel(params['title'])
+			window.getControl(5).setText('Нет программы')
+			return
+		for item in ch['program']:
+			startTime = time.localtime(float(item['start']))
+			endTime = time.localtime(float(item['end']))
+			txtProgram = txtProgram + '%.2d:%.2d - %.2d:%.2d: %s\n' % (startTime.tm_hour, startTime.tm_min, endTime.tm_hour, endTime.tm_min, item['title'])
+		
+		xbmc.sleep(13)
+		window.getControl(1).setLabel(ch['name'])
+		window.getControl(5).setText(txtProgram)
+	
+	
 		
 def GetChannelsDB (params):
 	db = DataBase(db_name, cookie)
 	channels = None
 	if not params.has_key('group'):
-		showMessage(message = 'Группа не найдена')
 		return
 	elif params['group'] == '0':
-		channels = db.GetChannels()
+		channels = db.GetChannels(adult = adult)
 	elif params['group'] == 'hd':
-		channels = db.GetChannelsHD()
+		channels = db.GetChannelsHD(adult = adult)
 	elif params['group'] == 'latest':
-		channels = db.GetLatestChannels()
+		channels = db.GetLatestChannels(adult = adult)
 	elif params['group'] == 'new':
-		channels = db.GetNewChannels()
+		channels = db.GetNewChannels(adult = adult)
 	else:
-		channels = db.GetChannels(params['group'])
-
+		channels = db.GetChannels(params['group'], adult = adult)
+	import time
 	for ch in channels:
 		img = ch['imgurl']
-		if __addon__.getSetting('logopack'):
+		if __addon__.getSetting('logopack') == 'true':
 			logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
 			logo_src = os.path.join(logo_path, ch['name'].decode('utf-8') + '.png')
 			if os.path.exists(logo_src):
 				img = logo_src
-		title = ch['name']
+		sch = db.GetSchedules(ch['id'], 6, int(time.time()))
+		#print '%s' % sch[0]['program'][0]['title'].encode('utf-8')
+		#return
+		if sch[0].has_key('program'):
+			startTime = time.localtime(float(sch[0]['program'][0]['start']))
+			endTime = time.localtime(float(sch[0]['program'][0]['end']))
+			title = '%s [COLOR FF0091E7]%.2d:%.2d - %.2d:%.2d: %s[/COLOR]' % (ch['name'], startTime.tm_hour, startTime.tm_min, endTime.tm_hour, endTime.tm_min, sch[0]['program'][0]['title'].encode('utf-8'))
+		else:
+			title = ch['name']
 		if params['group'] == '0' or params['group'] == 'hd' or params['group'] == 'latest' or params['group'] == 'new':
 			title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], title)
 		li = xbmcgui.ListItem(title, title, img, img)
+		if sch[0].has_key('program'):
+			prog = ''
+			for item in sch[0]['program']:
+				startTime = time.localtime(float(item['start']))
+				endTime = time.localtime(item['end'])
+				prog = prog + '%.2d:%.2d - %.2d:%.2d: %s\n' % (startTime.tm_hour, startTime.tm_min, endTime.tm_hour, endTime.tm_min, item['title'].encode('utf-8'))
+				li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': endTime.tm_year, 'genre': ch['group_name'], 'plot': '%s' % prog} )
+		else:
+			li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': time.localtime().tm_year, 'genre': ch['group_name']})
 		uri = construct_request({
 			'func': 'play_ch_db',
 			'img': img.encode('utf-8'),
@@ -255,18 +186,19 @@ def GetChannelsDB (params):
 			'id': ch['id']
 		})
 		commands = []
-		commands.append(('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], ch['name']),))
+		commands.append(('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&id=%s&title=%s)' % (sys.argv[0], ch['id'], ch['name']),))
 		commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
 		li.addContextMenuItems(commands)
-		#li.addContextMenuItems([('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),)])
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	xbmcplugin.endOfDirectory(hos)
+	del db
 	
 def DelChannel(params):
 	db = DataBase(db_name, cookie)
 	db.DelChannel(params['id'])
 	showMessage(message = 'Канал удален')
 	xbmc.executebuiltin("Container.Refresh")
+	del db
 	
 def GetChannelsWeb(params):
 	http = GET('http://torrent-tv.ru/' + params['file'])
@@ -283,19 +215,13 @@ def GetChannelsWeb(params):
 			if os.path.exists(logo_src):
 				img = logo_src.encode('utf-8')
 				
-		li = li = xbmcgui.ListItem(title,title,img,img)
+		li = xbmcgui.ListItem(title,title,img,img)
 		uri = construct_request({
 				'func': 'play_ch_web',
 				'img':img,
 				'title':title,
 				'file':link
 			})
-		try:
-			li.addContextMenuItems([('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&title=%s)' % (sys.argv[0], title),)])
-		except Exception, e:
-			xbmc.log( 'Error [GetChanels] %s' % (e))
-			showMessage(message = e)
-			break
 			
 		xbmcplugin.addDirectoryItem(hos, uri, li)
 	xbmcplugin.endOfDirectory(hos)
@@ -306,9 +232,9 @@ def play_ch_db(params):
 		db = DataBase(db_name, cookie)
 		url = db.UpdateUrlsStream([params['id']])
 		if url.__len__() == 0:
-			showMessage('Torrent TV', 'Канал не найден, обновите базу данных')
 			return
 		url = url[0]['urlstream']
+		del db
 	else:
 		url = params['file']
 	if url != '':
@@ -322,6 +248,7 @@ def play_ch_db(params):
 			TSPlayer.play_url_ind(0,params['title'],addon_icon,params['img'])
 			db = DataBase(db_name, cookie)
 			db.IncChannel(params['id'])
+			del db
 		TSPlayer.end()
 		showMessage('Torrent', 'Stop')
 	
@@ -356,7 +283,7 @@ def play_ch_web(params):
 
 def GetParts():
 	db = DataBase(db_name, cookie)
-	parts = db.GetParts()
+	parts = db.GetParts(adult = adult)
 		
 	for part in parts:
 		li = xbmcgui.ListItem(part['name'])
@@ -365,7 +292,7 @@ def GetParts():
 			'group': part['id'],
 		})
 		xbmcplugin.addDirectoryItem(hos, uri, li, True)
-			
+
 def mainScreen(params):
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Все каналы[/COLOR]')
 	uri = construct_request({
@@ -391,7 +318,7 @@ def mainScreen(params):
 	li = xbmcgui.ListItem('[COLOR FF00FF00]Новые каналы[/COLOR]')
 	uri = construct_request({
 		'func': 'GetChannelsDB',
-		'title': 'Новые Каналы',
+		'title': 'Новые каналы',
 		'group': 'new'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
@@ -408,6 +335,7 @@ def mainScreen(params):
 		'title': 'Трансляции',
 		'file': 'translations.php'
 	})
+
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	GetParts()
 	xbmcplugin.endOfDirectory(hos)
@@ -438,10 +366,11 @@ cookiefile = os.path.join(PLUGIN_DATA_PATH, 'cookie.txt')
 if os.path.exists(cookiefile):
 	fgetcook = open(cookiefile, 'r')
 	cookie = fgetcook.read()
+	del fgetcook
 
 db = DataBase(db_name, cookie)		
 dbver = db.GetDBVer()
-if db.GetDBVer() <> 2:
+if db.GetDBVer() <> 4:
 	del db
 	os.remove(db_name)
 
@@ -451,10 +380,13 @@ if lupd == None:
 	showMessage('Torrent TV', 'Производится обновление плэйлиста')
 	db.UpdateDB()
 else:
-	nupd = lupd + datetime.timedelta(hours = 8)
+	nupd = lupd + datetime.timedelta(hours = 7)
+	#nupd = lupd
+	#showMessage(message = '%s - %s' % (nupd, lupd), times = 5000)
 	if nupd < datetime.datetime.now():
 		showMessage('Torrent TV', 'Производится обновление плэйлиста')
 		db.UpdateDB()
+del db
 
 def addon_main():
 	params = get_params(sys.argv[2])
@@ -473,7 +405,7 @@ def addon_main():
 
 		if not os.path.exists(PLUGIN_DATA_PATH):
 			os.makedirs(PLUGIN_DATA_PATH)
-			
+		os.remove(cookiefile)
 		out = open(cookiefile, 'w')
 		GET('http://torrent-tv.ru/auth.php', data)
 		out.write(cookie)

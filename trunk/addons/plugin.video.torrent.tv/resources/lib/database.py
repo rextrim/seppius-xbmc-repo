@@ -10,6 +10,18 @@ import time
 import os
 import sys
 
+try:
+	import json
+except ImportError:
+	try:
+		import simplejson as json
+		xbmc.log( '[%s]: Error import json. Uses module simplejson' % addon_id, 2 )
+	except ImportError:
+		try:
+			import demjson3 as json
+			xbmc.log( '[%s]: Error import simplejson. Uses module demjson3' % addon_id, 3 )
+		except ImportError:
+			xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
 
 def GET(target, post=None, cookie = ""):
 	pass
@@ -46,6 +58,15 @@ class DataBase:
 		self.connection = 0
 		self.cursor = 0
 		self.last_error = 0
+		self.addon = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
+		self.addon_path =   xbmc.translatePath(self.addon.getAddonInfo('path'))
+		if (sys.platform == 'win32') or (sys.platform == 'win64'):
+			self.addon_path = self.addon_path.decode('utf-8')
+			
+		self.data_path = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
+		if (sys.platform == 'win32') or (sys.platform == 'win64'):
+			self.data_path = self.data_path.decode('utf-8')
+			
 		self.CreateDB()
 	
 	def GetDBVer(self):
@@ -55,14 +76,75 @@ class DataBase:
 		self.cursor.execute('SELECT dbver FROM settings WHERE id = 1')
 		return self.cursor.fetchone()[0]
 	
+	def UpdateSchedules(self, thread=False):
+		if thread:
+			thr = _DBThread(self.UpdateSchedules, False)
+			thr.start()
+			return
+		sur = os.path.join(self.addon_path, 'resources/schedules/raketa.dat')
+		if not os.path.exists(sur):
+			print '[ERROR] DataBase::UpdateSchedules: Not found resource file raketa.dat'
+			return False
+		
+		suf = open(sur, 'r')
+		line = suf.readline()
+		program = GET('http://raketa-tv.com//player/JSON/program_list.php')
+		jsonprog = json.loads(program)
+
+		self.Connect()
+		print 'delete old schedules'
+		self.cursor.execute("DELETE FROM shedules")
+		self.connection.commit()
+		print 'zip database'
+		self.cursor.execute("VACUUM")
+		self.connection.commit()
+		print 'del seq in shedules'
+		self.cursor.execute("UPDATE sqlite_sequence SET seq=0 WHERE Name='shedules'")
+		self.connection.commit()
+
+		while line:
+			aline = line.split(';')
+			if aline[0].find('###'):
+				for ch in jsonprog:
+					if ch['channel_number'] == aline[1]:
+						for sch in ch['program']:
+							self.cursor.execute("INSERT INTO shedules (channel_id, start, end, name) VALUES (%s, %s, %s, '%s')" % (aline[0], sch['ut_start'].encode('utf-8'), sch['ut_stop'].encode('utf-8'), sch['title'].encode('utf-8')))
+						break
+			line = suf.readline()
+					
+			self.connection.commit()
+		self.Disconnect()
+	
+	def GetSchedules(self, chid, limit = None, start = None):
+		self.Connect()
+		ssql = 'SELECT (SELECT name FROM channels WHERE sch.channel_id = id), channel_id, start, end, name FROM shedules as sch'
+		ssql = ssql + ' WHERE (channel_id = %s)' % chid
+		if start != None:
+			ssql = ssql + ' AND (end > %s)' % start
+		ssql = ssql + ' ORDER BY channel_id ASC, start ASC'
+		if limit != None:
+			ssql = ssql + ' LIMIT %s' % limit
+		self.cursor.execute(ssql)
+		res = self.cursor.fetchall()
+		self.Disconnect()
+		chn = 0
+		chsch = {}
+		ret = []
+		for sch in res:
+			if chn != sch[1]:
+				chn = sch[1]
+				chsch['name'] = sch[0]
+				chsch['program'] = []
+			chsch['program'].append({'start': sch[2], 'end': sch[3], 'title': sch[4]})
+
+		ret.append(chsch)
+		return ret
+	
 	def CreateDB(self):
-		__addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
-		_ADDON_PATH =   xbmc.translatePath(__addon__.getAddonInfo('path'))
-		if (sys.platform == 'win32') or (sys.platform == 'win64'):
-			_ADDON_PATH = _ADDON_PATH.decode('utf-8')
+		
 		if not os.path.exists(self.db_name):
 			xbmc.log('Create DataBase')
-			fsql = open(os.path.join(_ADDON_PATH, 'resources/tvbase.sql'), 'r')
+			fsql = open(os.path.join(self.addon_path, 'resources/tvbase.sql'), 'r')
 			ssql = fsql.read()
 			ssql = ssql.split('----')
 			fsql.close()
@@ -70,6 +152,7 @@ class DataBase:
 			cur = con.cursor()
 			for st in ssql:
 				cur.execute(st)
+
 			con.commit()
 			cur.close()
 			
@@ -87,7 +170,6 @@ class DataBase:
 		self.cursor.close()
 			
 	def UpdateUrlsStream(self, updlist = None, thread = False):
-		pass
 		if thread:
 			thr = _DBThread(self.UpdateUrlsStream, updlist)
 			thr.start()
@@ -128,9 +210,13 @@ class DataBase:
 		self.Disconnect()
 		return ret
 	
-	def GetParts(self):
+	def GetParts(self, adult = True):
 		self.Connect()
-		self.cursor.execute('SELECT id, name FROM groups')
+		ssql = 'SELECT id, name FROM groups'
+		if adult == 'true':
+			ssql = ssql + ' WHERE adult = 0'
+		
+		self.cursor.execute(ssql)
 		res = self.cursor.fetchall()
 		ret = []
 		for line in res:
@@ -138,17 +224,24 @@ class DataBase:
 		self.Disconnect()
 		return ret
 		
-	def GetChannels(self, group = None, where = None):
+	def GetChannels(self, group = None, where = None, adult = True):
 		self.Connect()
 		select = 'SELECT id, name, url, urlstream, imgurl, (SELECT gro.name FROM groups AS gro WHERE ch.group_id = gro.id) AS grname FROM channels AS ch';
 		if where == None:
 			if group == None:
-				select = select + ' WHERE (adult = 0)'
+				#select = select + ' WHERE (adult = 0)'
+				if adult == 'true':
+					select = select + ' WHERE (adult = 0)'
+				else:
+					select = select + ' WHERE (adult = 1) OR (adult = 0)'
 			else:
 				select = select + ' WHERE (group_id = "%s")' % group
+				if adult == 'true':
+					select = select + ' AND (adult = 0)'
 		else:
-			select = select + ' WHERE (%s) AND (adult = 0)' % where
-
+			select = select + ' WHERE (%s)' % where
+			if adult == 'true':
+				select = select + ' AND (adult = 0)'
 		select = select + ' AND (del = 0)'
 		select = select + ' ORDER BY count DESC, group_id ASC, name ASC'
 		self.cursor.execute(select)
@@ -159,8 +252,8 @@ class DataBase:
 		self.Disconnect()
 		return ret
 		
-	def GetChannelsHD(self):
-		return self.GetChannels(where = 'hd = 1')
+	def GetChannelsHD(self, adult = True):
+		return self.GetChannels(where = 'hd = 1', adult = adult)
 		
 	def GetLastUpdate(self):
 		self.Connect()
@@ -175,15 +268,15 @@ class DataBase:
 			return dt
 		return None
 	
-	def GetNewChannels(self, group = True):
+	def GetNewChannels(self, adult = True):
 		self.Connect()
 		self.cursor.execute('SELECT ch.addsdate FROM channels as ch GROUP BY ch.addsdate ORDER BY ch.addsdate DESC')
 		res = self.cursor.fetchone()
 		self.Disconnect()
-		return self.GetChannels(where = 'addsdate = "%s"' % res[0])
+		return self.GetChannels(where = 'addsdate = "%s"' % res[0], adult = adult)
 	
-	def GetLatestChannels(self):
-		return self.GetChannels(where = 'count > 0')
+	def GetLatestChannels(self, adult = True):
+		return self.GetChannels(where = 'count > 0', adult = adult)
 	
 	def IncChannel(self, id):
 		self.Connect()
@@ -199,8 +292,12 @@ class DataBase:
 	
 	def UpdateDB(self):
 		try:
-			pass
 			self.Connect()
+			self.cursor.execute('SELECT COUNT(id) FROM shedules WHERE end > %d' % int(time.time()))
+			res = self.cursor.fetchone()[0]
+			if res == 0:
+				self.UpdateSchedules(True)
+				
 			page = GET('http://torrent-tv.ru/channels.php', cookie = self.cookie)
 			beautifulSoup = BeautifulSoup(page)
 			el = beautifulSoup.findAll('a', attrs={'class': 'simple-link'})
@@ -270,11 +367,13 @@ class DataBase:
 				self.cursor.execute('UPDATE channels SET imgurl = "%s" WHERE id = "%s"' % ('http://torrent-tv.ru/'+img.find('img')['src'], img.find('a')['href'][31:]))
 			self.connection.commit()
 			
+			import time
 			self.cursor.execute('SELECT id FROM channels WHERE (urlstream <> "") AND (del = 0)')
 			sqlres = self.cursor.fetchall()
 			updch = []
 			for ch in sqlres:
 				updch.append(ch[0])
+			
 			self.UpdateUrlsStream(updch, True)
 			self.Disconnect()
 		except Exception, e:

@@ -2,7 +2,7 @@
 
 CREATE TABLE channels (
   id           integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-  name         nvarchar(24) NOT NULL,
+  name         nvarchar(32) NOT NULL DEFAULT "None",
   url          nvarchar(255) DEFAULT "",
   urlstream    nvarchar(255) DEFAULT "",
   broadcaster  nvarchar(8) DEFAULT "",
@@ -35,8 +35,9 @@ CREATE TABLE shedules (
   id           integer PRIMARY KEY AUTOINCREMENT NOT NULL,
   channel_id   integer NOT NULL,
   start        datetime NOT NULL,
-  "end"        datetime,
+  "end"        datetime NOT NULL,
   name         nvarchar(64) NOT NULL,
+  fanart       nvarchar(255),
   description  text
 );
 ----
@@ -51,4 +52,4 @@ CREATE TABLE groups (
   adult  bit DEFAULT 0
 );
 ----
-INSERT INTO settings (id, dbver) VALUES ("1", "2")
+INSERT INTO settings (id, dbver) VALUES ("1", "4")
