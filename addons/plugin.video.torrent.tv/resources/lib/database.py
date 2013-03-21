@@ -85,12 +85,11 @@ class DataBase:
 		if not os.path.exists(sur):
 			print '[ERROR] DataBase::UpdateSchedules: Not found resource file raketa.dat'
 			return False
-		
+
 		suf = open(sur, 'r')
 		line = suf.readline()
 		program = GET('http://raketa-tv.com//player/JSON/program_list.php')
 		jsonprog = json.loads(program)
-
 		self.Connect()
 		print 'delete old schedules'
 		self.cursor.execute("DELETE FROM shedules")
@@ -101,19 +100,22 @@ class DataBase:
 		print 'del seq in shedules'
 		self.cursor.execute("UPDATE sqlite_sequence SET seq=0 WHERE Name='shedules'")
 		self.connection.commit()
-
-		while line:
-			aline = line.split(';')
-			if aline[0].find('###'):
-				for ch in jsonprog:
-					if ch['channel_number'] == aline[1]:
-						for sch in ch['program']:
-							self.cursor.execute("INSERT INTO shedules (channel_id, start, end, name) VALUES (%s, %s, %s, '%s')" % (aline[0], sch['ut_start'].encode('utf-8'), sch['ut_stop'].encode('utf-8'), sch['title'].encode('utf-8')))
-						break
-			line = suf.readline()
-					
+		try:
+			while line:
+				aline = line.split(';')
+				if aline[0].find('###'):
+					for ch in jsonprog:
+						if ch['channel_number'] == aline[1]:
+							for sch in ch['program']:
+								self.cursor.execute("INSERT INTO shedules (channel_id, start, end, name) VALUES (%s, %s, %s, '%s')" % (aline[0], sch['ut_start'].encode('utf-8'), sch['ut_stop'].encode('utf-8'), sch['title'].encode('utf-8')))
+							break
+				line = suf.readline()
+						
 			self.connection.commit()
+		except Exception, e:
+			print '[DataBase.UpdateSchedules] Error: %s' % e
 		self.Disconnect()
+		xbmc.log('[DataBase.UpdateSchedules] End schedules is update %s' % time.time())
 	
 	def GetSchedules(self, chid, limit = None, start = None):
 		self.Connect()
@@ -293,11 +295,13 @@ class DataBase:
 	def UpdateDB(self):
 		try:
 			self.Connect()
+			import time
+							
 			self.cursor.execute('SELECT COUNT(id) FROM shedules WHERE end > %d' % int(time.time()))
 			res = self.cursor.fetchone()[0]
 			if res == 0:
 				self.UpdateSchedules(True)
-				
+			
 			page = GET('http://torrent-tv.ru/channels.php', cookie = self.cookie)
 			beautifulSoup = BeautifulSoup(page)
 			el = beautifulSoup.findAll('a', attrs={'class': 'simple-link'})
@@ -367,13 +371,12 @@ class DataBase:
 				self.cursor.execute('UPDATE channels SET imgurl = "%s" WHERE id = "%s"' % ('http://torrent-tv.ru/'+img.find('img')['src'], img.find('a')['href'][31:]))
 			self.connection.commit()
 			
-			import time
 			self.cursor.execute('SELECT id FROM channels WHERE (urlstream <> "") AND (del = 0)')
 			sqlres = self.cursor.fetchall()
 			updch = []
 			for ch in sqlres:
 				updch.append(ch[0])
-			
+
 			self.UpdateUrlsStream(updch, True)
 			self.Disconnect()
 		except Exception, e:
