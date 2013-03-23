@@ -176,6 +176,7 @@ def GetChannelsDB (params):
 				li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': endTime.tm_year, 'genre': ch['group_name'], 'plot': '%s' % prog} )
 		else:
 			li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': time.localtime().tm_year, 'genre': ch['group_name']})
+		li.setProperty('fanart_image', img.encode('utf-8'))
 		uri = construct_request({
 			'func': 'play_ch_db',
 			'img': img.encode('utf-8'),
@@ -383,8 +384,7 @@ if lupd == None:
 	db.UpdateDB()
 else:
 	nupd = lupd + datetime.timedelta(hours = 7)
-	#nupd = lupd
-	#showMessage(message = '%s - %s' % (nupd, lupd), times = 5000)
+
 	if nupd < datetime.datetime.now():
 		showMessage('Torrent TV', 'Производится обновление плэйлиста')
 		db.UpdateDB()

@@ -53,6 +53,7 @@ class _DBThread(threading.Thread):
 		
 class DataBase:
 	def __init__( self, db_name, cookie ):
+		self.lock = threading.RLock()
 		self.db_name = db_name
 		self.cookie = cookie
 		self.connection = 0
@@ -91,16 +92,18 @@ class DataBase:
 		program = GET('http://raketa-tv.com//player/JSON/program_list.php')
 		jsonprog = json.loads(program)
 		self.Connect()
+		
 		print 'delete old schedules'
-		self.cursor.execute("DELETE FROM shedules")
-		self.connection.commit()
-		print 'zip database'
-		self.cursor.execute("VACUUM")
-		self.connection.commit()
-		print 'del seq in shedules'
-		self.cursor.execute("UPDATE sqlite_sequence SET seq=0 WHERE Name='shedules'")
-		self.connection.commit()
+		self.lock.acquire()
 		try:
+			self.cursor.execute("DELETE FROM shedules")
+			self.connection.commit()
+			print 'zip database'
+			self.cursor.execute("VACUUM")
+			self.connection.commit()
+			print 'del seq in shedules'
+			self.cursor.execute("UPDATE sqlite_sequence SET seq=0 WHERE Name='shedules'")
+			self.connection.commit()
 			while line:
 				aline = line.split(';')
 				if aline[0].find('###'):
@@ -112,8 +115,13 @@ class DataBase:
 				line = suf.readline()
 						
 			self.connection.commit()
+			self.lock.release()
 		except Exception, e:
-			print '[DataBase.UpdateSchedules] Error: %s' % e
+			print '[DataBase.UpdateDB] Error: %s' % e
+			self.lock.release()
+			self.last_error = e
+			self.Disconnect()
+			return
 		self.Disconnect()
 		xbmc.log('[DataBase.UpdateSchedules] End schedules is update %s' % time.time())
 	
@@ -205,9 +213,17 @@ class DataBase:
 				torr_link = ''
 				self.last_error = e
 				xbmc.log('ERROR [UpdateUrlsStream]: %s' % e)
-				
-			self.cursor.execute('UPDATE channels SET urlstream = "%s" WHERE id = "%s"' % (torr_link, ch[0]))
-			self.connection.commit()
+			self.lock.acquire()
+			try:
+				self.cursor.execute('UPDATE channels SET urlstream = "%s" WHERE id = "%s"' % (torr_link, ch[0]))
+				self.connection.commit()
+				self.lock.release()
+			except Exception, e:
+				print '[DataBase.UpdateDB] Error: %s' % e
+				self.lock.release()
+				self.last_error = e
+				ret.append({'id': ch[0], 'urlstream': torr_link})
+				return ret
 			ret.append({'id': ch[0], 'urlstream': torr_link})
 		self.Disconnect()
 		return ret
@@ -337,9 +353,19 @@ class DataBase:
 					
 			grstr = grstr[:grstr.count(grstr)-2]
 			chstr = chstr[:chstr.count(chstr)-2]
-			self.cursor.execute('DELETE FROM groups WHERE (id NOT IN (%s))' % grstr)
-			self.cursor.execute('DELETE FROM channels WHERE id NOT IN (%s)' % chstr)
-			self.connection.commit()
+			
+			self.lock.acquire()
+			try:
+				self.cursor.execute('DELETE FROM groups WHERE (id NOT IN (%s))' % grstr)
+				self.cursor.execute('DELETE FROM channels WHERE id NOT IN (%s)' % chstr)
+				self.connection.commit()
+				self.lock.release()
+			except Exception, e:
+				print '[DataBase.UpdateDB] Error: %s' % e
+				self.lock.release()
+				self.last_error = e
+				return
+				
 			self.cursor.execute('SELECT id FROM groups')
 			bdgrres = self.cursor.fetchall()
 			bdgr = []
@@ -353,24 +379,39 @@ class DataBase:
 				bdch.append('%s' % line[0])
 				
 			newch = filter(lambda ch: not (ch['id'] in bdch), chdict)
-			for gr in newgr:
-				self.cursor.execute('INSERT INTO groups (id, name, url, adult) VALUES ("%s", "%s", "%s", "%d");' % (gr['id'], gr['name'], gr['url'], gr['adult']))
+			self.lock.acquire()
+			try:
+				for gr in newgr:
+					self.cursor.execute('INSERT INTO groups (id, name, url, adult) VALUES ("%s", "%s", "%s", "%d");' % (gr['id'], gr['name'], gr['url'], gr['adult']))
 			
-			for ch in newch:
-				td = datetime.date.today()
-				self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
-						ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
-					)
-			self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
-			self.connection.commit()
-			
+				for ch in newch:
+					td = datetime.date.today()
+					self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
+							ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
+						)
+				self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
+				self.connection.commit()
+				self.lock.release()
+			except Exception, e:
+				print '[DataBase.UpdateDB] Error: %s' % e
+				self.lock.release()
+				self.last_error = e
+				return
+
 			imgbs = BeautifulSoup(page)
 			imgels=imgbs.findAll('div', attrs={'class': 'best-channels-content'})
 			imgs = filter(lambda x: not (x.find('a')['href'][31:] in bdch), imgels)
-			for img in imgs:
-				self.cursor.execute('UPDATE channels SET imgurl = "%s" WHERE id = "%s"' % ('http://torrent-tv.ru/'+img.find('img')['src'], img.find('a')['href'][31:]))
-			self.connection.commit()
-			
+			self.lock.acquire()
+			try:
+				for img in imgs:
+					self.cursor.execute('UPDATE channels SET imgurl = "%s" WHERE id = "%s"' % ('http://torrent-tv.ru/'+img.find('img')['src'], img.find('a')['href'][31:]))
+				self.connection.commit()
+				self.lock.release()
+			except Exception, e:
+				print '[DataBase.UpdateDB] Error: %s' % e
+				self.lock.release()
+				self.last_error = e
+				return
 			self.cursor.execute('SELECT id FROM channels WHERE (urlstream <> "") AND (del = 0)')
 			sqlres = self.cursor.fetchall()
 			updch = []
