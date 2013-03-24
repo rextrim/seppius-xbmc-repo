@@ -51,3 +51,5 @@ Choose between Standard and HLS stream type in settings
 Settings file updated
 [B]0.9.3[/B]
 Stream type fix
+[B]0.9.4[/B]
+New icons
