@@ -81,12 +81,13 @@ class Torrent:
                     return
                 baseName = os.path.basename(self.getFilePath())
                 newFile = self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep + baseName + '.' + self.md5(torrentUrl) + '.torrent'
-                if not os.path.exists(newFile):                
-                    try:
-                        os.rename(torrentFile, newFile)
-                    except:
-                        print 'Unable to rename torrent file from "' + torrentFile + '" to "' + newFile + '" in Torrent::renameTorrent'
-                        return
+                if os.path.exists(newFile):
+                    os.remove(newFile)
+                try:
+                    os.rename(torrentFile, newFile)
+                except:
+                    print 'Unable to rename torrent file from "' + torrentFile + '" to "' + newFile + '" in Torrent::renameTorrent'
+                    return
                 self.torrentFile = newFile
                 self.torrentFileInfo = libtorrent.torrent_info(self.torrentFile)
                 return self.torrentFile
