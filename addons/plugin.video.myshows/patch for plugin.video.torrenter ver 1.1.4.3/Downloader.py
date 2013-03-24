@@ -19,6 +19,8 @@
 '''
 
 #http://www.rasterbar.com/products/libtorrent/manual.html
+import warnings
+warnings.filterwarnings('ignore', category=RuntimeWarning)
 import libtorrent
 import time
 import thread

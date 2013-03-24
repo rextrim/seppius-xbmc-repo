@@ -11,6 +11,8 @@ except:
 from functions import *
 from net import *
 
+
+
 try:
     from TSCore import TSengine as tsengine
     torrmode=True
@@ -18,12 +20,14 @@ except:
     torrmode=False
 
 try:
+    import warnings
+    warnings.filterwarnings('ignore', category=RuntimeWarning)
     import libtorrent
     libmode=True
 except:
     libmode=False
 
-__version__ = "1.5.1"
+__version__ = "1.5.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -549,13 +553,17 @@ class DownloadSource(Source):
         self.ind=None
         if self.stype in ['json','btchat', 'torrent', 'multitorrent', 'rutracker','tpb']:
 
+            items=Download().listdirs()[0]
             if __settings__.getSetting("torrent_save")=='0':
-                action=xbmcgui.Dialog()
-                filename=action.browse(0, __language__(30248), 'video')
-                if len(filename)>1:dirname=filename
-                else: return
+                dialog=xbmcgui.Dialog()
+                dirid=dialog.select(__language__(30248), items)
+                if dirid==-1: return
             else:
                 dirname=__settings__.getSetting("torrent_dir")
+                clean=Download().listdirs()[1]
+                try:dirid=clean.index(dirname)
+                except:dirid='0'
+
 
             if self.stype=='json':
                 self.stype=json.loads(self.filename)['stype']
@@ -571,10 +579,10 @@ class DownloadSource(Source):
                 except: f = open(urllib.unquote_plus(self.filename), 'rb')
                 torrent=f.read()
                 f.close
-                success=Download().add(torrent, dirname)
+                success=Download().add(torrent, dirid)
             elif self.stype in ['tpb', 'btchat']:
                 self.filename=self.filename.split('::')[1]
-                success=Download().add_url(self.filename, dirname)
+                success=Download().add_url(self.filename, dirid)
                 showMessage(__language__(30211), __language__(30212))
                 xbmc.sleep(1500)
                 if self.stype=='tpb': xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode(__language__(30270)))

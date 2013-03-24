@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <addon id="plugin.video.myshows"
        name="MyShows.ru"
-       version="1.5.2"
+       version="1.5.5"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.0"/>

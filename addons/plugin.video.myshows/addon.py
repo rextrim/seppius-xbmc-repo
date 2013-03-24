@@ -13,7 +13,7 @@ from torrents import *
 from net import *
 from app import Handler, Link
 
-__version__ = "1.5.1"
+__version__ = "1.5.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -40,19 +40,24 @@ if not check_login:
 
 class Main(Handler):
     def __init__(self):
-        self.menu=[{"title":__language__(30111),"mode":"41"},{"title":__language__(30139),"mode":"13"},
+        self.menu=[]
+        top=ontop()
+        if top: self.menu.append(top)
+        self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30139),"mode":"13"},
                    {"title":__language__(30106),"mode":"27"},
                    {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                    {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                    {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}]
+                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
 
     def handle(self):
         for self.i in self.menu:
-            self.item(Link(self.i['mode'], {'content': 'videos'}), title=unicode(self.i['title']))
+            try: argv=self.i['argv']
+            except: argv={'content': 'videos'}
+            self.item(Link(self.i['mode'], argv), title=unicode(self.i['title']))
 
 def Shows(mode):
     if mode==19:
@@ -519,16 +524,18 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30300)+'|:|'+sys_url+'0&action=watching'+refresh_url,
               __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
               __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
+              __language__(30315)+'|:|'+sys_url+'5',
               __language__(30303)+'|:|'+sys_url+'1&id=0',
-              __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url]
+              __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url]#TRANS
     elif mode==20:
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30311)+'|:|'+sys_url+'9',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
+              __language__(30315)+'|:|'+sys_url+'5',
+              __language__(30310)+'|:|'+sys_url+'201',
               __language__(30228)+'|:|'+sys_url+'7',
-              __language__(30314)+'|:|'+sys_url+'8',
-              __language__(30310)+'|:|'+sys_url+'201',]
+              __language__(30314)+'|:|'+sys_url+'8',] #TRANS
     elif mode==25 or not sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
@@ -551,11 +558,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
                     __language__(30311)+'|:|'+sys_url+'2',
                     __language__(30228)+'|:|'+sys_url+'0'])
 
-    for s in menu:
-        x=list()
-        x.append(s.split('|:|')[0])
-        x.append('XBMC.RunPlugin('+s.split('|:|')[1]+')')
-        myshows_dict.append(x)
+    for s in menu: myshows_dict.append([s.split('|:|')[0],'XBMC.RunPlugin('+s.split('|:|')[1]+')'])
     return myshows_dict
 
 params = get_params()
@@ -603,9 +606,9 @@ except: pass
 
 try:    title = urllib.unquote_plus(apps['title'])
 except: pass
-try:    showId = urllib.unquote_plus(apps['argv']['showId'])
+try:    showId = str(urllib.unquote_plus(apps['argv']['showId']))
 except: pass
-try:    seasonNumber = urllib.unquote_plus(apps['argv']['seasonNumber'])
+try:    seasonNumber = str(urllib.unquote_plus(apps['argv']['seasonNumber']))
 except: pass
 try:    mode = int(apps['mode'])
 except: pass
@@ -670,7 +673,7 @@ elif mode == 61:
 elif mode == 610:
     PluginStatus().install(action)
 elif mode == 100:
-    if action==None: action='all'
+    if not action: action='all'
     TopShows(action)
 elif mode == 200:
     Change_Status_Show(showId, action, refresh_url)
@@ -682,15 +685,13 @@ elif mode == 300:
     Change_Status_Episode(id, playcount, refresh_url)
 elif mode == 3000 or mode == 2500:
     VKSearch(showId, id)
-elif mode == 3001 or mode == 2501:
-    BTCHATSearch(showId, id)
 elif mode == 3010:
     Source().addsource()
     jdata=get_apps(stringdata)
     if not sort:AskPlay()
     elif sort=='activate':
         xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (jdata['showId']))
-        if not not jdata['id']:
+        if not jdata['id']:
             ScanSource().scanone()
 elif mode == 3011:
     Source().addjson()
@@ -720,5 +721,9 @@ elif mode == 303 or mode==203 or mode==253:
     AddSource()
 elif mode == 304 or mode==204 or mode==254:
     PlaySource()
+elif mode in (205,255):
+    ontop('update', stringdata)
+elif mode == 999:
+    pass
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
