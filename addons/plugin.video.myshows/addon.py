@@ -68,7 +68,11 @@ def Shows(mode):
             data= Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q='+urllib.quote_plus(KB.getText()))
     else:
         data=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/')
-    jdata = json.loads(data.get())
+
+    jload=data.get()
+    if jload:
+        jdata = json.loads(jload)
+    else: return
 
     if mode==13:
         menu=[{"title":TextBB(__language__(30100), 'b'),"mode":"10", "argv":{}},
@@ -107,7 +111,7 @@ def Shows(mode):
         pre=prefix(showId=int(showId))
         info={'Title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating}
         if mode!=19:info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']),str(jdata[showId]['totalEpisodes']))+ \
-                                 '\r\n'+__language__(30266)+str(jdata[showId]['rating'])
+                                 '\r\n'+__language__(30266)+' '+str(jdata[showId]['rating'])
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
         item.setInfo( type='Video', infoLabels=info )
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}

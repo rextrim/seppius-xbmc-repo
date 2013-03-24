@@ -157,6 +157,7 @@ def get_url(cookie, url):
         else:
             showMessage('HTTP Error', str(e.code))
             xbmc.sleep(2000)
+            return None
 
 def get_data(cookie, url, refresh=False):
     if refresh==True:
@@ -281,7 +282,11 @@ class Data():
             if self.refresh==True:
                 self.write()
             self.fg = xbmcvfs.File(self.filename, 'r')
-            self.data = self.fg.read()
+            try:self.data = self.fg.read()
+            except:
+                self.fg.close()
+                self.fg = open(self.filename, 'r')
+                self.data = self.fg.read()
             self.fg.close()
             x=re.match('.*?}$', self.data)
             if not x: self.data=self.data[0:len(self.data)-1]
@@ -292,7 +297,11 @@ class Data():
         try: CacheDB(self.url).delete()
         except: pass
         self.fw = xbmcvfs.File(self.filename, 'w')
-        self.data=get_url(self.cookie, self.url)
+        try:self.data=get_url(self.cookie, self.url)
+        except:
+            self.fg.close()
+            self.fw = open(self.filename, 'w')
+            self.data=get_url(self.cookie, self.url)
         self.fw.write(self.data)
         self.fw.close()
         CacheDB(self.url).add()
@@ -332,7 +341,7 @@ def ontop(action='get', ontop=None):
         __settings__.setSetting("ontop", str(ontop).encode('utf-8'))
     elif action=='get':
         x=__settings__.getSetting("ontop")
-        if x!="None":
+        if x!="None" and x:
             y={}
             y['mode']=re.compile("'%s': '(\d+)'" % ('mode')).findall(x)[0]
             y['argv']={}
@@ -486,9 +495,9 @@ def uTorrentBrowser():
 class PluginStatus():
     def __init__(self):
 
-        self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch for plugin.video.serialu.net ver 1.2.2',['default.py','update.py']),
-                ('vkstatus','xbmc-vk.svoka.com','patch for xbmc-vk.svoka.com ver 2013-01-08',['xbmcvkui.py','xvvideo.py']),
-                ('torrenterstatus','plugin.video.torrenter','patch for plugin.video.torrenter ver 1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py','resources/searchers/icons/bt-chat.com.png'])]
+        self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.2',['default.py','update.py']),
+                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_2013-01-08',['xbmcvkui.py','xvvideo.py']),
+                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py','resources/searchers/icons/bt-chat.com.png'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])
@@ -571,20 +580,22 @@ class PluginStatus():
     def check_status(self,id,patchpath,filelist):
         import filecmp
         plugstatus=None
-        plugpath=xbmcaddon.Addon(id).getAddonInfo('path')
+        try: plugpath=xbmcaddon.Addon(id).getAddonInfo('path')
+        except: return unicode(__language__(30259))
         try: os.path.getsize(os.path.join(plugpath, filelist[0]))
         except:
-            try:
-                plugpath=xbmcaddon.Addon(id).getAddonInfo('path').decode('utf-8').encode('cp1251')
-            except:
-                return unicode(__language__(30259))
+            try: plugpath=xbmcaddon.Addon(id).getAddonInfo('path').decode('utf-8').encode('cp1251')
+            except: return unicode(__language__(30259))
         try: os.path.getsize(os.path.join(__addonpath__, patchpath, filelist[0]))
         except: __addonpath__=xbmcaddon.Addon(id='plugin.video.myshows').getAddonInfo('path').decode('utf-8').encode('cp1251')
         for f in filelist:
             try:
-                if not filecmp.cmp(os.path.join(plugpath, f), os.path.join(__addonpath__, patchpath, f)):
-                    plugstatus=unicode(__language__(30258))
-            except: break
+                patch=os.path.join(__addonpath__, patchpath, f)
+                original=os.path.join(plugpath, f)
+                if os.path.isfile(original):
+                    if not filecmp.cmp(original, patch):
+                        plugstatus=unicode(__language__(30258))
+            except: pass
         if not plugstatus: plugstatus=unicode(__language__(30257))
         return plugstatus
 
