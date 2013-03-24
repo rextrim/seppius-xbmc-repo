@@ -40,6 +40,8 @@ PLUGIN_NAME = 'SHURA.TV'
 PLUGIN_CORE = None
 TRANSSID = ''
 thumb = os.path.join( addon.getAddonInfo('path'), "icon2.png" )
+CHANNELMAPPING_ORIG = os.path.join(addon.getAddonInfo('path'), 'channelmapping_orig.txt')
+CHANNELMAPPING_USER = os.path.join(addon.getAddonInfo('path'), 'channelmapping_user.txt')
 
 def ru(x):return x
 def xt(x):return xbmc.translatePath(x)
@@ -365,83 +367,141 @@ def ShowChannelsList(plugin, mode = 'TV'):
 	
 	xbmc.PlayList(xbmc.PLAYLIST_VIDEO).clear()
 
-	for channel in channels:
-		
-		epg=''
-		epg = PLUGIN_CORE.getLastEPG(channel['url'], channel['id'])
-		if epg==None or len(epg) <=0:
-			epg = PLUGIN_CORE.getCurrentEPG(channel['url'], channel['id'])
-		epg_start = 0
-		epg_end = 0
-		timerange = '-'
-		CurrentEPG=''
-		played = 0
-		try:
-			epg = epg[0]
-			if float(epg['start_time']) + float(epg['duration']) < float(time.time()) :
-				#xbmc.log('[SHURA.TV] current epg of channel ' + channel['id']+ ' must be refreshed')
-				epg = PLUGIN_CORE.getCurrentEPG(channel['url'], channel['id'])
-				epg = epg[0]
-			
-			CurrentEPG = epg['name'].encode('utf-8')
+	CHANNELMAPPING =''
+	channelsCountInFile=0
+	if os.path.isfile(CHANNELMAPPING_USER):
+		CHANNELMAPPING=CHANNELMAPPING_USER
+	else:
+		xbmc.log('[SHURA.TV] No personal channel list mapping found')
+		if os.path.isfile(CHANNELMAPPING_ORIG):
+			CHANNELMAPPING=CHANNELMAPPING_ORIG
+		else:
+			xbmc.log('[SHURA.TV] No orig channel list mapping found')
+	try:
+		if os.path.isfile(CHANNELMAPPING):
+			xbmc.log('[SHURA.TV] The %s channel mapping list is used' %CHANNELMAPPING)
+			l = open(CHANNELMAPPING, 'rb')
+			while 1:
+				line = l.readline()
+				if not line:
+					break
+				pass # do something
+				ch_id = line.split(':')[0]
+				#xbmc.log('[SHURA.TV] Current channel map %s' %ch_id)
+				channelsCountInFile = channelsCountInFile + 1
 
-			if "start_time" in epg:
-				epg_start = datetime.datetime.fromtimestamp(epg['start_time']).strftime('%H:%M')
-				if "duration" in epg:
-					epg_end = datetime.datetime.fromtimestamp(epg['start_time'] + epg['duration']).strftime('%H:%M')
-				timerange = '%s - %s ' % (epg_start , epg_end)
-			try:
-				epg_start = float(epg_start)
-			except ValueError:
-				epg_start = epg_start
-				
-			try:
-				duration = float(epg['duration'])
-			except ValueError:
-				duration = epg['duration']
-			
-			played = ((float(time.time())- float(epg['start_time'])) / duration)*100
-		except Exception, e:
-			xbmc.log('[SHURA.TV] exception i prepare EPG' + str(e))
-		archive_days=' Архив='.decode('utf-8')
-		archive_days= archive_days + str(int(channel['archive'])/24) +' дня'.decode('utf-8')
-		label = '%s[B] %s[/B] %s %s' % ('', channel['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') + ', '+str(int(played)), '%,'+ archive_days)
-		iconimage=gettbn(formating(channel['name']))
-		item=xbmcgui.ListItem(channel['name'], iconImage = iconimage, thumbnailImage = iconimage)
-		item.setLabel(label)
-		#item.setIconImage(iconimage)
-		
-		#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
-					
-		item.setProperty('IsPlayable', 'false')
-		
-		popup = []
-		
-		archive_text = __language__(30006)
-		
-		archive_text = __language__(30011)
-			
-		uri2 = sys.argv[0] + '?mode=Archive&channel=%s&host=%s' % (channel['id'], channel['url'])
-		popup.append((archive_text, 'XBMC.Container.Update(%s)'%uri2))
-		
-		popup.append((__language__(30021), 'Container.Refresh',))
-		
-		uri2 = sys.argv[0] + '?mode=Favourite&channel=%s' % (channel['id'])
-			
-		item.addContextMenuItems(popup, True)
-		index=channels.index(channel)
-		purl = sys.argv[0] + '?mode=OpenPage'\
-			+ '&num=' + urllib.quote_plus(str(index))
-			
-		xbmcplugin.addDirectoryItem(handle,purl,item, False, total_items)
-		
-		refresh_rate = int(__settings__.getSetting('autorefresh_rate'))
-		#xbmcplugin.setContent(handle, 'LiveTV')
+				for channel in channels:
+					#xbmc.log('[SHURA.TV] Comparing with channel %s' %channel['id'])
+					if channel['id']==ch_id:
+						#xbmc.log('[SHURA.TV] Match found for %s' %channel['id'])
+						epg=''
+						epg = PLUGIN_CORE.getLastEPG(channel['url'], channel['id'])
+						if epg==None or len(epg) <=0:
+							epg = PLUGIN_CORE.getCurrentEPG(channel['url'], channel['id'])
+						epg_start = 0
+						epg_end = 0
+						timerange = '-'
+						CurrentEPG=''
+						played = 0
+						#xbmc.log('[SHURA.TV] 1')
+						try:
+							epg = epg[0]
+							if float(epg['start_time']) + float(epg['duration']) < float(time.time()) :
+								#xbmc.log('[SHURA.TV] current epg of channel ' + channel['id']+ ' must be refreshed')
+								epg = PLUGIN_CORE.getCurrentEPG(channel['url'], channel['id'])
+								epg = epg[0]
 
-	xbmcplugin.setContent(handle, 'Movies')
-	xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
-	if refresh_rate > 0:
-		xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))
+							CurrentEPG = epg['name'].encode('utf-8')
+
+							if "start_time" in epg:
+								epg_start = datetime.datetime.fromtimestamp(epg['start_time']).strftime('%H:%M')
+								if "duration" in epg:
+									epg_end = datetime.datetime.fromtimestamp(epg['start_time'] + epg['duration']).strftime('%H:%M')
+								timerange = '%s - %s ' % (epg_start , epg_end)
+							try:
+								epg_start = float(epg_start)
+							except ValueError:
+								epg_start = epg_start
+								
+							try:
+								duration = float(epg['duration'])
+							except ValueError:
+								duration = epg['duration']
+							
+							played = ((float(time.time())- float(epg['start_time'])) / duration)*100
+						except Exception, e:
+							xbmc.log('[SHURA.TV] exception i prepare EPG' + str(e))
+						archive_days=' Архив='.decode('utf-8')
+						archive_days= archive_days + str(int(channel['archive'])/24) +' дня'.decode('utf-8')
+						label = '%s[B] %s[/B] %s %s' % ('', channel['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') + ', '+str(int(played)), '%,'+ archive_days)
+						iconimage=gettbn(formating(channel['name']))
+						item=xbmcgui.ListItem(channel['name'], iconImage = iconimage, thumbnailImage = iconimage)
+						item.setLabel(label)
+						#item.setIconImage(iconimage)
+						
+						#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
+						#xbmc.log('[SHURA.TV] 2')
+						item.setProperty('IsPlayable', 'false')
+						
+						popup = []
+						
+						archive_text = __language__(30006)
+						
+						archive_text = __language__(30011)
+							
+						uri2 = sys.argv[0] + '?mode=Archive&channel=%s&host=%s' % (channel['id'], channel['url'])
+						popup.append((archive_text, 'XBMC.Container.Update(%s)'%uri2))
+						
+						popup.append((__language__(30021), 'Container.Refresh',))
+						
+						uri2 = sys.argv[0] + '?mode=Favourite&channel=%s' % (channel['id'])
+							
+						item.addContextMenuItems(popup, True)
+						index=channels.index(channel)
+						purl = sys.argv[0] + '?mode=OpenPage'\
+							+ '&num=' + urllib.quote_plus(str(index))
+							
+						xbmcplugin.addDirectoryItem(handle,purl,item, False, total_items)
+						#xbmc.log('[SHURA.TV] 3')
+						refresh_rate = int(__settings__.getSetting('autorefresh_rate'))
+						#xbmcplugin.setContent(handle, 'LiveTV')
+						break
+			l.close()
+			xbmcplugin.setContent(handle, 'Movies')
+			xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+			if refresh_rate > 0:
+				xbmc.executebuiltin("XBMC.AlarmClock(%s,XBMC.Container.Refresh,%s,True)" % (refreshAlarmId, refresh_rate))
+			#xbmc.log('[SHURA.TV] 4')
+	except Exception, e:
+		xbmc.log('[SHURA.TV] Error loading channel mapping %s' % e)
+	if channelsCountInFile < len(channels):
+		if os.path.isfile(CHANNELMAPPING):
+			xbmc.log('[SHURA.TV] Some channels are missing in mapping file, appending...')
+			for channel in channels:
+				found=0
+				ch_id=channel['id']
+				file = open(CHANNELMAPPING, 'r')
+				while 1:
+					line = file.readline()
+					if not line:
+						break
+					pass # do something
+					if line.split(':')[0]==ch_id:
+						found=1
+						xbmc.log('[SHURA.TV] match found')
+						break
+				file.close()
+				if found==0:
+					xbmc.log('[SHURA.TV] No match found. Try to append %s' %ch_id)
+					try:
+						file = open(CHANNELMAPPING, 'a+')
+						file.write('\n'+ch_id+': ')
+						xbmc.log('[SHURA.TV] Channel %s added'% ch_id)
+						file.close()
+					except Exception, e:
+						xbmc.log('[SHURA.TV] Error during append channel to channel mapping file. Error=%s' % e)
+			
+
 
 def SetupInfoTimer():
 	resetInfoTimers()
