@@ -53,3 +53,5 @@ Settings file updated
 Stream type fix
 [B]0.9.4[/B]
 New icons
+[B]0.9.5[/B]
+Channel sorting via CHANNELMAPPING_ORIG.txt and CHANNELMAPPING_USER.txt mapping files. For description see shura.tv forum or README.txt in ..xbmc/addond/plugin.video.shura.tv
