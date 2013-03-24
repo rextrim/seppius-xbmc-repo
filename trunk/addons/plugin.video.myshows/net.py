@@ -14,16 +14,6 @@ import itertools
 import thread
 import tempfile
 
-#try:
-#    import libtorrent
-#except ImportError:
-#    _IS_LIBTORRENT = False
-#else:
-#    _IS_LIBTORRENT = True
-
-
-
-#import libtorrent
 _IS_LIBTORRENT = True
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -323,6 +313,24 @@ class UTorrent:
             'token': re.compile("<div[^>]+id='token'[^>]*>([^<]+)</div>")
         }
 
+    def listdirs(self):
+        obj = self.action('action=list-dirs')
+        if not obj:
+            return None
+        items=[]
+        clean=[]
+        for r in obj.get('download-dirs', []):
+            available=int(r['available'])
+            if available>1024:
+                memory='[%s GB]' % str(available/1024)
+            else:
+                memory='[%s MB]' % str(available)
+            items.append(r['path']+' '+memory)
+            path=r['path']
+            if path[len(path)-1:]!='\\': path+='\\'
+            clean.append(path)
+        return items, clean
+
     def list(self):
         obj = self.action('list=1')
         if not obj:
@@ -364,57 +372,13 @@ class UTorrent:
         return res
 
     def add(self, torrent, dirname):
-        obj = self.action('action=getsettings')
-
-        if not obj:
-            return None
-
-        old_dir = None
-        setting = [x[2] for x in obj['settings'] if x[0] == 'dir_active_download']
-        if setting:
-            old_dir = setting[0]
-
-        if isinstance(dirname, unicode):
-            dirname = dirname.encode('windows-1251')
-
-        obj = self.action('action=setsetting&s=dir_active_download_flag&v=true&s=dir_active_download&v=' + urllib.quote(dirname, ''))
-        if not obj:
-            return None
-
-        res = self.action('action=add-file', {'name': 'torrent_file', 'content-type': 'application/x-bittorrent', 'body': torrent})
-
-        if old_dir:
-            self.action('action=setsetting&s=dir_active_download&v=' + urllib.quote(old_dir.encode('windows-1251'), ''))
-
+        dirname='1'
+        res = self.action('action=add-file&download_dir='+dirname, {'name': 'torrent_file', 'download_dir': dirname, 'content-type': 'application/x-bittorrent', 'body': torrent})
         return True if res else None
 
     def add_url(self, torrent, dirname):
-        obj = self.action('action=getsettings')
-        if not obj:
-            return None
-
-        old_dir = None
-        setting = [x[2] for x in obj['settings'] if x[0] == 'dir_active_download']
-
-        if setting:
-            old_dir = setting[0]
-
-        if isinstance(dirname, unicode):
-            dirname = dirname.encode('windows-1251')
-
-        obj = self.action('action=setsetting&s=dir_active_download_flag&v=true&s=dir_active_download&v=' + urllib.quote(dirname, ''))
-        if not obj:
-            return None
-
-        #obj = self.action('action=getsettings')
-        #setting = [x[2] for x in obj['settings'] if x[0] == 'dir_active_download']
-        #print str(setting)
-
-        res = self.action('action=add-url&s='+urllib.quote(torrent))
-
-        if old_dir:
-            self.action('action=setsetting&s=dir_active_download&v=' + urllib.quote(old_dir.encode('windows-1251'), ''))
-
+        dirname='1'
+        res = self.action('action=add-url&download_dir='+dirname+'&s='+urllib.quote(torrent))
         return True if res else None
 
     def setprio(self, id, ind):

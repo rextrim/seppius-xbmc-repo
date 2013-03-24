@@ -177,7 +177,7 @@
         <string id="30285">Not a builtin function in uTorrent!</string>
         <string id="30286">Install patch</string>
         <string id="30287">µTorrent Browser</string>
-    __language__(30287)
+    __language__(30315)
         <string id="30288">NOT PATCHED</string>
         <string id="30289">NOT INSTALLED</string>
         <string id="30290">DiMartino on xbmc.ru and bitbucket.org</string>
@@ -202,8 +202,8 @@
         <string id="30312">Delete from scanlist</string>
         <string id="30313">Add to scanlist</string>
         <string id="30314">Delete Sourses</string>
+        <string id="30315">Set as Main top</string>
 
-        <string id="30315">Episode %s</string>
         <string id="30316">Hyped artists</string>
         <string id="30317">Only HD videos</string>
         <string id="30318">Sort videos by length</string>

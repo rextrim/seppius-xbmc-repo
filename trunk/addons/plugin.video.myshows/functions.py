@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.5.1"
+__version__ = "1.5.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -200,6 +200,7 @@ def ClearCache():
     cur.close()
     db.close()
     xbmcgui.Dialog().ok( __language__(30208), __language__(30236))
+    ontop('update')
     xbmc.executebuiltin("Action(back)")
 
 def invert_bool(var):
@@ -224,7 +225,7 @@ class CacheDB:
         self.cur.execute('select addtime from cache where url="'+self.url+'"')
         x=self.cur.fetchone()
         self._close()
-        if x: return x[0]
+        return x[0] if x else None
 
     def add(self):
         self._connect()
@@ -275,7 +276,6 @@ class Data():
                 self.refresh=True
                 __settings__.setSetting("forced_refresh_data","false")
 
-
     def get(self):
         if self.filename:
             if self.refresh==True:
@@ -285,7 +285,7 @@ class Data():
             self.fg.close()
             x=re.match('.*?}$', self.data)
             if not x: self.data=self.data[0:len(self.data)-1]
-            return self.data#[0:len(self.data)-1]
+            return self.data
         else: return get_url(self.cookie, self.url)
 
     def write(self):
@@ -311,6 +311,39 @@ class Data():
                 else:
                     return os.path.join(__tmppath__, self.files[self.i])
         return None
+
+def ontop(action='get', ontop=None):
+    from torrents import prefix
+    if action in ('update'):
+        if ontop:
+            jdata = json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get())
+            jstringdata=json.loads(ontop)
+            showId=str(jstringdata['showId'])
+            pre=prefix(showId=int(showId), seasonId=jstringdata['seasonId'])
+            #if ruName=='true' and jdata[showId]['ruTitle']: title=pre+jdata[showId]['ruTitle']
+            #else:
+            title=pre+jdata[showId]['title']
+            if jstringdata['seasonId']:
+                mode="25"
+                title+=' Season '+str(jstringdata['seasonId'])
+            else:mode="20"
+            ontop={'title':title,'mode':mode,'argv':{'stringdata':ontop}}
+            #print unicode(ontop)
+        __settings__.setSetting("ontop", str(ontop).encode('utf-8'))
+    elif action=='get':
+        x=__settings__.getSetting("ontop")
+        if x!="None":
+            y={}
+            y['mode']=re.compile("'%s': '(\d+)'" % ('mode')).findall(x)[0]
+            y['argv']={}
+            y['argv']['stringdata']=re.compile("{'%s': '(.+?)'}" % ('stringdata')).findall(x)[0]
+            y['argv']['showId']=re.compile('"%s": (\d+),' % ('showId')).findall(y['argv']['stringdata'])[0]
+            try:y['argv']['seasonNumber']=re.compile('"%s": (\d+),' % ('seasonId')).findall(y['argv']['stringdata'])[0]
+            except:pass
+            y['title']=re.compile("'%s': u'(.+?)'" % ('title')).findall(x)[0].encode('utf-8')
+            #print unicode(y)
+            return y
+        else: return None
 
 def getDirList(path, newl=None):
     l=[]
@@ -382,7 +415,7 @@ def FileNamesPrepare(filename):
     except: pass
 
 
-    urls=['.+?(\d*)x(\d*).+?','.*?s(\d*)e(\d*).*?','.*?(\d*)-(\d*).*?','.*?E(\d*).*?']
+    urls=['.*?(\d+)x(\d+).*?','.*?s(\d+)e(\d+).*?','.*?(\d+)-(\d+).*?','.*?E(\d+).*?']
     for file in urls:
         match=re.compile(file, re.DOTALL | re.I).findall(filename)
         if match:
@@ -471,6 +504,8 @@ class PluginStatus():
         except: TSstatus=unicode(__language__(30259))
 
         try:
+            import warnings
+            warnings.filterwarnings('ignore', category=RuntimeWarning)
             import libtorrent
         except:
             self.torrenterstatus='LibTorrent '+unicode(__language__(30259))
