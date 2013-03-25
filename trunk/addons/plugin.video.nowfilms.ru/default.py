@@ -423,38 +423,47 @@ def Source_List(params):
     xbmcplugin.endOfDirectory(h)
 
 def Get_PlayList(url, name):
-    print url
+	print url
 
-    html = get_HTML(url)
-    list = []
-    # -- parsing web page --------------------------------------------------
-    soup = BeautifulSoup(html, fromEncoding="windows-1251")
-    # -- get movie info
-    param = soup.find('param', {'name':'flashvars'})['value']
+	html = get_HTML(url)
 
-    for rec in param.split('&'):
-        if rec.split('=',1)[0] == 'pl':
-            video = rec.split('=',1)[1]
-        if rec.split('=',1)[0] == 'file':
-            video = rec.split('=',1)[1]
+	list = []
+	# -- parsing web page --------------------------------------------------
+	soup = BeautifulSoup(html, fromEncoding="windows-1251")
+	#xbmc.log('[NOWFILMS.RU html=]'+str(soup))
+	# -- get movie info
+	allResults = soup.findAll('param', attrs={'name': 'flashvars'})
 
-    if video[-3:] == 'txt':
-        html = get_HTML(video)
-        html = html.replace('\n', '')
-        if html[0] <> '[' and html[-1] == ']':
-            html = html[:-1]
-        pl = json.loads(html.decode('utf-8'))
+	#xbmc.log('[NOWFILMS.RU] found links =%s' %allResults)
+	for res in allResults:
+		video = ''
+		#xbmc.log('[NOWFILMS.RU] processing result=%s' %res)
+		for rec in res['value'].split('&'):
+			#xbmc.log('[NOWFILMS.RU] processing rec=%s' %rec)
+			if rec.split('=',2)[0] == 'pl':
+				video = rec.split('=',1)[1]
+			if rec.split('=',2)[0] == 'file':
+				video = rec.split('=',1)[1]
+			#if rec.split('=',1)[0] == 'st':
+				#video = rec.split('=',1)[1]
+		if video <> '': 
+			if video[-3:] == 'txt':
+				html = get_HTML(video)
+				html = html.replace('\n', '')
+				if html[0] <> '[' and html[-1] == ']':
+					html = html[:-1]
+				pl = json.loads(html.decode('utf-8'))
 
-        for rec in pl['playlist']:
-            try:
-                for rec1 in rec['playlist']:
-                    list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
-            except:
-                list.append({'name': rec['comment'], 'url': rec['file']})
-    else:
-        list.append({'name': name, 'url': video})
+				for rec in pl['playlist']:
+					try:
+						for rec1 in rec['playlist']:
+							list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
+					except:
+						list.append({'name': rec['comment'], 'url': rec['file']})
+			else:
+				list.append({'name': name, 'url': video})
 
-    return list
+	return list
 
 #---------- get genge list -----------------------------------------------------
 def Genre_List(params):
