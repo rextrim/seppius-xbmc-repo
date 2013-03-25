@@ -57,8 +57,10 @@
 27: (0x001B)	Discovery World	None
 29: (0x001D)	National Geographic	None
 37: (0x0025)	Загородная жизнь	None
+88: (0x0058)	Моя планета	None
 50: (0x0032)	Наука 2.0	None
 38: (0x0026)	РБК	None
+89: (0x0059)	Совершенно секретно	None
 22: (0x0016)	Eurosport	None
 58: (0x003A)	Eurosport 2	None
 70: (0x0046)	Viasat Sport Baltic	None
