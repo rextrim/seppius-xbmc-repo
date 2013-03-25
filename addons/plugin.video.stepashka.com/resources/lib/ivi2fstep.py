@@ -133,7 +133,23 @@ def GET(target, post=None):
 		return http
 	except Exception, e:
 		xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
-		showMessage('HTTP ERROR', e, 5000)
+		#showMessage('HTTP ERROR', e, 5000)
+		try:
+			req = urllib2.Request(url = 'http://online.stepashka.com/'+target, data = post)
+			req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+			#req.add_header('Host',	'online.stepashka.com')
+			req.add_header('Accept', '*/*')
+			req.add_header('Accept-Language', 'ru-RU')
+			req.add_header('Referer',	'http://www.stepashka.com')
+			resp = urllib2.urlopen(req)
+			CE = resp.headers.get('content-encoding')
+			http = resp.read()
+			resp.close()
+			return http
+		except Exception, e:
+			xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
+			showMessage('HTTP ERROR', e, 5000)
+		
 
 def mainScreen(params):
 	li = xbmcgui.ListItem('[Поиск]', addon_fanart, addon_icon)
@@ -154,7 +170,7 @@ def mainScreen(params):
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('ul', attrs={'id': 'menu'})
-	cats=content.findAll(href=re.compile("http://online.stepashka.com/[^i].+"))
+	cats=content.findAll(href=re.compile("http://online.stepashka.com/|filmy/|serialy/[^i].+"))
 	for line in cats:
 		title=None
 		if line.string:	title = str(line.string)
