@@ -811,7 +811,7 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.4.4" provider-name="Silhouette">
+<addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.4.5" provider-name="Silhouette">
   <requires><import addon="xbmc.python" version="1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -1726,6 +1726,22 @@ provider-name="Roman_V_M">
   <description lang="ru">Конвертор плейлистов IPTV в формате m3u для дополнения XBMC pvr.demo. Перед запуском укажите в настройках дополнения путь к плейлисту, который нужно сконвертировать, или его URL, а также папку со значками каналов (необязательно).</description>
 <platform>all</platform>
 </extension>
+</addon>
+
+<addon id="script.module.YaTv"
+       name="YaTv"
+       version="0.2.0"
+       provider-name="TDW">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.addon.metadata">
+    <summary>YaTv</summary>
+    <description>Yandex Телепрограмма</description>
+    <platform>all</platform>
+  </extension>
+  <extension library="default.py" point="xbmc.service" />
+  <extension point='xbmc.python.module' library='lib' />
 </addon>
 
 <addon id='script.module.torrent.ts' version='0.2.51-1' name='TorrentStream Engine Support' provider-name='NuisMons'>
