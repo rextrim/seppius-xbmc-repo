@@ -152,25 +152,44 @@ def GET(target, post=None):
 		
 
 def mainScreen(params):
-	li = xbmcgui.ListItem('[Поиск]', addon_fanart, addon_icon)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]Поиск[/COLOR]', addon_fanart, addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'func': 'doSearch',
 		'mode': '1'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[Последние добавления]', addon_fanart, addon_icon)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]Последние добавления[/COLOR]', addon_fanart, addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'href': 'http://online.stepashka.com/',
+		'title': 'Последние',
 		'func': 'readCategory'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]Фильмы[/COLOR]' , addon_icon, addon_icon)
+	uri = construct_request({
+	'sub':'filmy',
+	'func': 'subcat'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]Сериалы[/COLOR]' , addon_icon, addon_icon)
+	uri = construct_request({
+	'sub':'serialy',
+	'func': 'subcat'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	xbmcplugin.endOfDirectory(hos)
+
+def subcat(params):
 	http = GET(httpSiteUrl)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('ul', attrs={'id': 'menu'})
-	cats=content.findAll(href=re.compile("http://online.stepashka.com/|filmy/|serialy/[^i].+"))
+
+	cats=content.findAll(href=re.compile('http://online.stepashka.com/%s'%params['sub']))
+
+	list=[]
 	for line in cats:
 		title=None
 		if line.string:	title = str(line.string)
@@ -179,14 +198,17 @@ def mainScreen(params):
 			li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
 			li.setProperty('IsPlayable', 'false')
 			href = line['href']
+			
 			uri = construct_request({
 				'href': href,
+				'title':title,
 				'func': 'readCategory'
 			})
-			xbmcplugin.addDirectoryItem(hos, uri, li, True)
 
+			if href not in list:
+				xbmcplugin.addDirectoryItem(hos, uri, li, True)
+				list.append(href)
 	xbmcplugin.endOfDirectory(hos)
-
 def doSearch(params):
 	#print 'statr %s'%params
 	if params['mode']=='1':
@@ -198,18 +220,27 @@ def doSearch(params):
 		xbmc.executebuiltin('Container.Refresh(%s?func=doSearch&mode=0&href=%s)' % (sys.argv[0],  quote(href)))
 	else:
 		params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
+		params['search']=1
+		params['title']='Поиск'
 		readCategory(params)	
 
 def readCategory(params, postParams = None):
 	#print 'read'
 	fimg=None
 	try:
-		hlink=params['href']+params['page']
-		hlink=params['href']
+		hlink=params['href']+'page/'+params['page']+'/'
+		page=params['page']
 	except:
 		hlink=params['href']
+		page=1
+	try: 
+		if params['search']: search=True
+	except: search=False
 	http = GET(hlink)
 	if http == None: return False
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, страница %s[/COLOR]' % (params['title'],page), addon_icon, addon_icon)
+	uri = construct_request({})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	beautifulSoup = BeautifulSoup(http)
  	content = beautifulSoup.find('div', attrs={'id': 'dle-content'})
 	dataRows = beautifulSoup.findAll('div', attrs={'class': 'base shortstory'})
@@ -244,11 +275,11 @@ def readCategory(params, postParams = None):
 					except: mfil = pat.findall(desc)[0].replace('<br />','').replace('<br>','/n')
 					#print mfil
 					try:
-						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['pagespeed_lazy_src'])
+						li = xbmcgui.ListItem('%s' % title, addon_icon, fimg['pagespeed_lazy_src'])
 					except: pass
 					try:	
-						li = xbmcgui.ListItem('[%s]' % title, addon_icon, fimg['src'])
-					except: li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)	
+						li = xbmcgui.ListItem('%s' % title, addon_icon, fimg['src'])
+					except: li = xbmcgui.ListItem('%s' % title, addon_icon, addon_icon)	
 					li.setInfo(type='video', infoLabels = {'plot':mfil})
 					li.setProperty('IsPlayable', 'false')
 					uri = construct_request({
@@ -259,27 +290,44 @@ def readCategory(params, postParams = None):
 						'src': fimg['src']
 						})
 					xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	try:
-		dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
-		dataRows = dataRows1.findAll('a')
-	#print dataRows
+	#try:
+	dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
+	dataRows = dataRows1.findAll('a')
+	
+	if not search:
 		if len(dataRows) == 0:
 			showMessage('ОШИБКА', 'Неверная страница', 3000)
 			return False
 		else:
-			for link in dataRows:
-				href = link['href']
-				title = link.string
-				li = xbmcgui.ListItem('[%s]' % title, addon_icon, addon_icon)
-				li.setProperty('IsPlayable', 'false')
+
+			total= int(dataRows[::-1][0].string)
+
+			
+			for h in dataRows1.findAll('span'):
+				try: current = int(h.string)
+				except: pass
+			
+
+			if current<total:
+				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+1), addon_icon, addon_icon)
 				uri = construct_request({
-					'title': title,
-					'href': href,
-					'page': link['href'],
-					'func': 'readCategory',
-					})
+				'href': params['href'],
+				'page': current+1,
+				'title':params['title'],
+				'func': 'readCategory'
+				})
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	except: pass
+			if current+10<total:
+				if current==1: current=0
+				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+10), addon_icon, addon_icon)
+				uri = construct_request({
+				'href': params['href'],
+				'page': current+10,
+				'title':params['title'],
+				'func': 'readCategory'
+				})
+				xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	xbmc.executebuiltin('Container.SetViewMode(500)')
 	xbmcplugin.endOfDirectory(hos)
 
 def readFile(params):
@@ -299,11 +347,11 @@ def readFile(params):
 	if mfil: 
 		#print mfil[0][3:-1]
 		flname=xppod.Decode(mfil[0][3:-1])
-		print flname
+		#print flname
 	if pfil: 
 		#print pfil[0][3:-1]
 		flname=xppod.Decode(pfil[0][3:-1])
-		print flname
+		#print flname
 	if not flname: return False
 	vurl=findfile.split('&')
 	for ur in vurl:	findfile=ur
