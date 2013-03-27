@@ -152,14 +152,8 @@ def GET(target, post=None):
 		
 
 def mainScreen(params):
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]Поиск[/COLOR]', addon_fanart, addon_icon)
-	li.setProperty('IsPlayable', 'false')
-	uri = construct_request({
-		'func': 'doSearch',
-		'mode': '1'
-		})
-	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]Последние добавления[/COLOR]', addon_fanart, addon_icon)
+	
+	li = xbmcgui.ListItem('Последние добавления', addon_fanart, addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'href': 'http://online.stepashka.com/',
@@ -167,17 +161,30 @@ def mainScreen(params):
 		'func': 'readCategory'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]Фильмы[/COLOR]' , addon_icon, addon_icon)
+	li = xbmcgui.ListItem('Фильмы' , addon_icon, addon_icon)
 	uri = construct_request({
 	'sub':'filmy',
 	'func': 'subcat'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]Сериалы[/COLOR]' , addon_icon, addon_icon)
+	li = xbmcgui.ListItem('Сериалы', addon_icon, addon_icon)
 	uri = construct_request({
 	'sub':'serialy',
 	'func': 'subcat'
 	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('По годам' , addon_icon, addon_icon)
+	uri = construct_request({
+	'sub':'god',
+	'func': 'subcat'
+	})
+	xbmcplugin.addDirectoryItem(hos, uri, li, True)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]Поиск[/COLOR]', addon_fanart, addon_icon)
+	li.setProperty('IsPlayable', 'false')
+	uri = construct_request({
+		'func': 'doSearch',
+		'mode': '1'
+		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmcplugin.endOfDirectory(hos)
 
@@ -186,28 +193,45 @@ def subcat(params):
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('ul', attrs={'id': 'menu'})
+	if params['sub']=='god':
+		cats=content.findAll(value=re.compile('god'))
+		for line in cats[1:-1]:
+			title= line.string.encode('utf-8')
+			href=httpSiteUrl+line['value']+'/'
 
-	cats=content.findAll(href=re.compile('http://online.stepashka.com/%s'%params['sub']))
-
-	list=[]
-	for line in cats:
-		title=None
-		if line.string:	title = str(line.string)
-		else: title = str(line.find('b').string)
-		if title!='None':
-			li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
-			li.setProperty('IsPlayable', 'false')
-			href = line['href']
-			
-			uri = construct_request({
-				'href': href,
-				'title':title,
-				'func': 'readCategory'
-			})
-
-			if href not in list:
+			if title!='None':
+				li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
+				li.setProperty('IsPlayable', 'false')
+				#href = line['href']
+				
+				uri = construct_request({
+					'href': href,
+					'title':title,
+					'func': 'readCategory'
+				})
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
-				list.append(href)
+	else:
+		cats=content.findAll(href=re.compile('http://online.stepashka.com/%s'%params['sub']))
+	
+		list=[]
+		for line in cats:
+			title=None
+			if line.string:	title = str(line.string)
+			else: title = str(line.find('b').string)
+			if title!='None':
+				li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
+				li.setProperty('IsPlayable', 'false')
+				href = line['href']
+				
+				uri = construct_request({
+					'href': href,
+					'title':title,
+					'func': 'readCategory'
+				})
+
+				if href not in list:
+					xbmcplugin.addDirectoryItem(hos, uri, li, True)
+					list.append(href)
 	xbmcplugin.endOfDirectory(hos)
 def doSearch(params):
 	#print 'statr %s'%params
@@ -238,7 +262,7 @@ def readCategory(params, postParams = None):
 	except: search=False
 	http = GET(hlink)
 	if http == None: return False
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, страница %s[/COLOR]' % (params['title'],page), addon_icon, addon_icon)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, стр. %s[/COLOR]' % (params['title'],page), addon_icon, addon_icon)
 	uri = construct_request({})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	beautifulSoup = BeautifulSoup(http)
