@@ -13,7 +13,7 @@ from torrents import *
 from net import *
 from app import Handler, Link
 
-__version__ = "1.5.5"
+__version__ = "1.5.7"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -31,7 +31,7 @@ __tmppath__= os.path.join(__addonpath__, 'tmp')
 forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
-striplist=['the', 'tonight', 'show', 'with', '(2005)', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
+striplist=['the', 'tonight', 'show', 'with', '(2005)', '(2009)', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 
 
 check_login = re.search('='+login+';', cookie_auth)
@@ -48,7 +48,7 @@ class Main(Handler):
                    {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                    {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                    {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])
+                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},])# {"title":"TEST","mode":"999"}])#TRANS
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -60,6 +60,8 @@ class Main(Handler):
             self.item(Link(self.i['mode'], argv), title=unicode(self.i['title']))
 
 def Shows(mode):
+    syncshows=SyncXBMC()
+
     if mode==19:
         KB = xbmc.Keyboard()
         KB.setHeading(__language__(30203))
@@ -109,11 +111,15 @@ def Shows(mode):
         else:
             rating=float(jdata[showId]['rating'])
         pre=prefix(showId=int(showId))
-        info={'Title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating}
-        if mode!=19:info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']),str(jdata[showId]['totalEpisodes']))+ \
-                                 '\r\n'+__language__(30266)+' '+str(jdata[showId]['rating'])
+
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
+        info={'title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating, } #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
+        try:
+            info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(jdata[showId]['rating'])+'\r\n'
+        except:info['plot']=''
         item.setInfo( type='Video', infoLabels=info )
+        item=syncshows.shows(jdata[showId]['title'], item, info)
+
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
@@ -530,7 +536,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
               __language__(30315)+'|:|'+sys_url+'5',
               __language__(30303)+'|:|'+sys_url+'1&id=0',
-              __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url]#TRANS
+              __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url]
     elif mode==20:
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30311)+'|:|'+sys_url+'9',
@@ -539,7 +545,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30315)+'|:|'+sys_url+'5',
               __language__(30310)+'|:|'+sys_url+'201',
               __language__(30228)+'|:|'+sys_url+'7',
-              __language__(30314)+'|:|'+sys_url+'8',] #TRANS
+              __language__(30314)+'|:|'+sys_url+'8',]
     elif mode==25 or not sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
@@ -564,6 +570,9 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
 
     for s in menu: myshows_dict.append([s.split('|:|')[0],'XBMC.RunPlugin('+s.split('|:|')[1]+')'])
     return myshows_dict
+
+class Test(SyncXBMC):
+    pass
 
 params = get_params()
 try: apps=get_apps()
@@ -676,6 +685,8 @@ elif mode == 61:
     PluginStatus().menu()
 elif mode == 610:
     PluginStatus().install(action)
+elif mode == 611:
+    PluginStatus().install_plugin(action)
 elif mode == 100:
     if not action: action='all'
     TopShows(action)
@@ -728,6 +739,6 @@ elif mode == 304 or mode==204 or mode==254:
 elif mode in (205,255):
     ontop('update', stringdata)
 elif mode == 999:
-    pass
+    Test().list()
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

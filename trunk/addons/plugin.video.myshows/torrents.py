@@ -27,7 +27,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.5.5"
+__version__ = "1.5.7"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -744,15 +744,18 @@ class AddSource(Source):
             elif self.stype=='file':
                 dllist=sorted(Download().listfiles(id), key=lambda x: x[0])
                 dirlist=[x[0] for x in dllist]
+                cutlist=[]
                 if len(dirlist)>1: cutlist=cutFileNames(dirlist)
-                else: cutlist=dirlist
+                else: cutlist.extend(dirlist)
                 for s in dirlist:
                     i=dirlist.index(s)
                     cutlist[i]='['+str(dllist[i][1])+'%] '+cutlist[i]
                 cutlist.append(unicode(__language__(30205)))
                 if not ind and ind!=0:
-                    dialog = xbmcgui.Dialog()
-                    ret = dialog.select(__language__(30233), cutlist)
+                    if len(dirlist)>1:
+                        dialog = xbmcgui.Dialog()
+                        ret = dialog.select(__language__(30233), cutlist)
+                    else: ret=0
                 else:
                     for s in dllist:
                         if s[2]==ind: ret=dirlist.index(s[0])
@@ -763,7 +766,7 @@ class AddSource(Source):
                             self.addsource()
                             showMessage(__language__(30208), __language__(30230) % (self.filename))
                             if dllist[ret][1]==100: AskPlay()
-                            else: xbmcgui.Dialog().ok(unicode(__language__(30208)),unicode(__language__(30275))+unicode(dllist[ret][1])+'%.')
+                            else: showMessage(unicode(__language__(30208)),unicode(__language__(30275))+unicode(dllist[ret][1])+'%.')
                         except: showMessage(__language__(30206), __language__(30231) % (self.filename))
 
     def DirAdd(self):

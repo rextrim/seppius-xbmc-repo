@@ -11,6 +11,7 @@
         <string id="30008">Default Torrent Player</string>
         <string id="30009">Common</string>
         <string id="30010">Torrent</string>
+        <string id="30011">Debug</string>
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
         <string id="50303">Default</string>
@@ -203,8 +204,8 @@
         <string id="30313">Add to scanlist</string>
         <string id="30314">Delete Sourses</string>
         <string id="30315">Set as Main top</string>
+        <string id="30316">Install Plugin</string>
 
-        <string id="30316">Hyped artists</string>
         <string id="30317">Only HD videos</string>
         <string id="30318">Sort videos by length</string>
         <string id="30319">Show only 'HD' results</string>
