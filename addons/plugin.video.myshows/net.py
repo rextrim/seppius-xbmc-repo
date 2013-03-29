@@ -371,14 +371,12 @@ class UTorrent:
             res.append((x[0],(int(x[2]*100/x[1])),i))
         return res
 
-    def add(self, torrent, dirname):
-        dirname='1'
-        res = self.action('action=add-file&download_dir='+dirname, {'name': 'torrent_file', 'download_dir': dirname, 'content-type': 'application/x-bittorrent', 'body': torrent})
+    def add(self, torrent, dirid):
+        res = self.action('action=add-file&download_dir='+str(dirid), {'name': 'torrent_file', 'download_dir': str(dirid), 'content-type': 'application/x-bittorrent', 'body': torrent})
         return True if res else None
 
-    def add_url(self, torrent, dirname):
-        dirname='1'
-        res = self.action('action=add-url&download_dir='+dirname+'&s='+urllib.quote(torrent))
+    def add_url(self, torrent, dirid):
+        res = self.action('action=add-url&download_dir='+str(dirid)+'&s='+urllib.quote(torrent))
         return True if res else None
 
     def setprio(self, id, ind):

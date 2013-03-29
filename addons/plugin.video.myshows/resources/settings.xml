@@ -11,6 +11,8 @@
         <setting id="forced_refresh_data" type="hidden" default="false" />
         <setting id="refresh_period"  type="enum" label="30005" default="1" values="1|4|12|24"/>
         <setting id="refresh_always"   type="bool" label="30006" default="false"/>
+        <setting id="debug"   type="bool" label="30011" default="false"/>
+        <setting id="ontop" type="hidden" default="" />
     </category>
     <category label="Torrent">
         <setting id="torplayer"  type="enum" label="30008" default="0" values="TSengine|LibTorrent (Torrenter needed)"/>

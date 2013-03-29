@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.5.5"
+__version__ = "1.5.7"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -467,6 +467,9 @@ def uTorrentBrowser():
     except: ind=None
 
     if action:
+        if action=='context':
+            xbmc.executebuiltin("Action(ContextMenu)")
+            return
         if ind or ind==0:Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
         else: Download().action('action=%s&hash=%s' % (action, hash))
         xbmc.executebuiltin('Container.Refresh')
@@ -479,24 +482,28 @@ def uTorrentBrowser():
     else:
         dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
         for s in dllist:
-            menu.append({"title":'['+str(s[1])+'%] '+s[0], "mode":"52", "argv":{'hash':hash,'ind':str(s[2])}})
+            menu.append({"title":'['+str(s[1])+'%] '+s[0], "mode":"52", "argv":{'hash':hash,'ind':str(s[2]),'action':'context'}})
 
     for i in menu:
         link=Link(i['mode'], i['argv'])
         h=Handler(int(sys.argv[1]), link)
         popup=[]
-        if not hash:actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),]
-        else:actions=[('3', __language__(30281)),('0', __language__(30282))]
+        if not hash:
+            actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),]
+            folder=True
+        else:
+            actions=[('3', __language__(30281)),('0', __language__(30282))]
+            folder=False
         for a,title in actions:
             i['argv']['action']=a
             popup.append((Link(i['mode'], i['argv']),title))
-        h.item(link, title=unicode(i['title']), popup=popup, popup_replace=True)
+        h.item(link, title=unicode(i['title']), popup=popup, popup_replace=True, folder=folder)
 
 class PluginStatus():
     def __init__(self):
 
         self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.2',['default.py','update.py']),
-                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_2013-01-08',['xbmcvkui.py','xvvideo.py']),
+                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py','resources/searchers/icons/bt-chat.com.png'])]
         self.status={}
         for plug in self.patchfiles:
@@ -505,6 +512,7 @@ class PluginStatus():
         self.serialustatus=self.status['serialustatus']
         self.vkstatus=self.status['vkstatus']
         self.torrenterstatus=self.status['torrenterstatus']
+        self.search={'serialustatus':'serialu.net', 'vkstatus':'VK-xbmc', 'torrenterstatus':'Torrenter', }
 
     def menu(self):
         try:
@@ -574,6 +582,8 @@ class PluginStatus():
             h=Handler(int(sys.argv[1]), link)
             if i['argv']['action'] in self.status and self.status[i['argv']['action']]==unicode(__language__(30258)):
                 h.item(link, title=unicode(i['title']),  popup=[(Link(i['mode']+'0', i['argv']),unicode(__language__(30286)))], popup_replace=True)
+            elif i['argv']['action'] in self.status and self.status[i['argv']['action']]==unicode(__language__(30259)):
+                h.item(link, title=unicode(i['title']),  popup=[(Link(i['mode']+'1', i['argv']),unicode(__language__(30316)))], popup_replace=True)
             else:
                 h.item(link, title=unicode(i['title']))
 
@@ -599,6 +609,9 @@ class PluginStatus():
         if not plugstatus: plugstatus=unicode(__language__(30257))
         return plugstatus
 
+    def install_plugin(self, action):
+        xbmc.executebuiltin('XBMC.ActivateWindow(Addonbrowser,addons://search/%s)' % (self.search[action]))
+
     def install(self, action):
         import shutil
         plugstatus=False
@@ -621,3 +634,58 @@ class PluginStatus():
         xbmc.executebuiltin('Container.Refresh')
         if not plugstatus: showMessage(__language__(30286), __language__(30208))
         else: showMessage(__language__(30286), __language__(30206))
+
+class SyncXBMC():
+    def __init__(self):
+        self.menu=self.GetFromXBMC()
+        #print self.xbmc_shows
+
+    def list(self):
+        for i in self.menu:
+            item = xbmcgui.ListItem(i['title'], iconImage='DefaultFolder.png', thumbnailImage=i['thumbnail'])
+            item.setInfo( type='Video', infoLabels=i )
+            #print i
+            item.setProperty('fanart_image', i['fanart'])
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=True)
+
+    def shows(self, title, item, info=None):
+        for i in range(len(self.menu)):
+            if title in self.menu[i]['title']:
+                item.setProperty('fanart_image', self.menu[i]['fanart'])
+                if info:
+                    self.menu[i]['title']=info['title']
+                    self.menu[i]['playcount']=0
+                    self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
+                item.setInfo( type='Video', infoLabels=self.menu[i] )
+        return item
+
+    def GetFromXBMC(self):
+        from utilities import xbmcJsonRequest, Debug, notification, chunks, get_bool_setting
+        Debug('[Episodes Sync] Getting episodes from XBMC')
+
+        shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {'properties': ['title', 'genre', 'year', 'rating', 'plot', 'studio', 'mpaa', 'cast', 'imdbnumber', 'premiered', 'votes', 'fanart', 'thumbnail', 'episodeguide', 'playcount', 'season', 'episode']}, 'id': 0})
+
+        # sanity check, test for empty result
+        if not shows:
+            Debug('[Episodes Sync] xbmc json request was empty.')
+            return
+
+        # test to see if tvshows key exists in xbmc json request
+        if 'tvshows' in shows:
+            shows = shows['tvshows']
+            Debug("[Episodes Sync] XBMC JSON Result: '%s'" % str(shows))
+        else:
+            Debug("[Episodes Sync] Key 'tvshows' not found")
+            return
+
+        for show in shows:
+            show['episodes'] = []
+
+            episodes = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetEpisodes', 'params': {'tvshowid': show['tvshowid'], 'properties': ['season', 'episode', 'playcount', 'uniqueid']}, 'id': 0})
+            if 'episodes' in episodes:
+                episodes = episodes['episodes']
+
+                show['episodes'] = [x for x in episodes if type(x) == type(dict())]
+
+        self.xbmc_shows = [x for x in shows if x['episodes']]
+        return shows
