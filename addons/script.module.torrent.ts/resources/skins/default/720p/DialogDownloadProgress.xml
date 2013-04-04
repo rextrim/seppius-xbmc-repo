@@ -30,7 +30,6 @@
 				<posy>10</posy>
 				<width>550</width>
 				<height>20</height>
-				<label>инфо1</label>
 				<textcolor>white</textcolor>
 			</control>
 			<control type="label" id="2003">
@@ -39,7 +38,6 @@
 				<posy>30</posy>
 				<width>550</width>
 				<height>20</height>
-				<label>инфо2</label>
 				<textcolor>grey2</textcolor>
 			</control>
 			<control type="progress" id="2004">
@@ -60,7 +58,7 @@
 					<textcolor>FF99D8FF</textcolor>
 					<align>center</align>
 					<aligny>center</aligny>
-					<label>Отмена</label>
+					<label>Cancel</label>
 			</control>
 		</control>
 	</controls>

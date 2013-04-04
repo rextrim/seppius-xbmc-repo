@@ -23,4 +23,9 @@
 	<string id="1012">Error torrent loading</string>
 	<string id="1013">Timeout</string>
     
+	<string id="2000">Server Address</string>
+	<string id="2001">AutoPausing</string>
+	<string id="2002">AutoClose tsengine</string>
+	<string id="2003">Show Buffering Status</string>
+	
 </strings>

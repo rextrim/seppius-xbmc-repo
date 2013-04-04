@@ -2,7 +2,10 @@
 <settings>
 <category label="Настройки">
 
-    <setting id="ip_addr" type="text" label="Адрес сервера" default="127.0.0.1" />
-
+    <setting id="ip_addr" type="text" label="2000" default="127.0.0.1" />
+	<setting id="pausable" type="bool" label="2001" default="false" />
+	<setting id="autoexit" type="bool" label="2002" default="false" />
+	<setting id="autobuf" type="bool" label="2003" default="false" />
+	<setting id="prog" type="text" label="path to execute tsengine" default="127.0.0.1" />
   </category>
 </settings>
