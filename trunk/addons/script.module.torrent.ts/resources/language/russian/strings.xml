@@ -23,4 +23,8 @@
 	<string id="1012">Ошибка загрузки торрента</string>
 	<string id="1013">Не дождался ссылки для воспроизведения</string>
     
+	<string id="2000">Адрес сервера</string>
+	<string id="2001">Использовать автопаузу</string>
+	<string id="2002">Автозакрытие tsengine</string>
+	<string id="2003">Показывать уведомления о буферизации</string>
 </strings>
