@@ -92,7 +92,7 @@ class TSengine(xbmc.Player):
 		self.isAd=False
 		self.isStream=False
 		self.timeout=10
-		
+		self.title=''
 	def loop(self):
 		visible=False
 		pos=[25,50,75]
@@ -117,7 +117,9 @@ class TSengine(xbmc.Player):
 					self.dialog2.close()
 					break
 				self.dialog2.close()
+				lit= xbmcgui.ListItem(self.title)
 				self.play(self.r.got_url,lit)
+				self.r.params=[]
 				self.r.got_url=None
 				self.active=True
 			if self.isPlaying() and not self.isStream:
@@ -326,6 +328,7 @@ class TSengine(xbmc.Player):
 				self.dialog2.ui.showCancel=False
 				self.link=self.r.got_url
 				self.dialog2.close()
+				self.title=title
 				lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
 				self.play(self.r.got_url,lit)
 				self.r.got_url=None
@@ -491,6 +494,7 @@ class _ASpull(threading.Thread):
 			if len(self.params)>0:
 				if 'ad=1' in self.params: print 'Have Ad'
 				if 'stream=1' in self.params: print 'Is Stream'
+			#self.params.append('ad=1')
 			#self.ad=self.last_received.split(' ')[2]
 
 		elif self.last_com=='STATUS': pass
