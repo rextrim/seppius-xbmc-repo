@@ -922,7 +922,7 @@ Audio sources are
 
 <addon id="plugin.video.mults.spb.ru"
        name="Каталог мультфильмов"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
