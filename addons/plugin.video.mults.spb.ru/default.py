@@ -25,9 +25,10 @@ import socket
 socket.setdefaulttimeout(12)
 
 h = int(sys.argv[1])
-icon   = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
-inext  = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'next.png'))
-ivideo = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'video.png'))
+__addon__ = xbmcaddon.Addon(id='plugin.video.mults.spb.ru')
+icon   = xbmc.translatePath(__addon__.getAddonInfo('path') + 'icon.png')
+inext  = xbmc.translatePath(__addon__.getAddonInfo('path') + 'next.png')
+ivideo = xbmc.translatePath(__addon__.getAddonInfo('path') + 'video.png')
 
 
 def showMessage(heading, message, times = 3000):
@@ -40,10 +41,10 @@ def clean(name):
 	return name
 
 def GET(target):
-	conn = httplib.HTTPConnection(host='mults.spb.ru', port=80)
+	conn = httplib.HTTPConnection(host='mults.info', port=80)
 	html_headers = {
 		'User-Agent': 'XBMC/10-series (Python addon; XBMC-Russia; HD-lab Team; 2011; http://www.xbmc.org)', \
-		'Host':		'mults.spb.ru', \
+		'Host':		'mults.info', \
 		'Accept':	'text/html, application/xml, application/xhtml+xml, */*', \
 		'Cookie':	'rules=yes' }
 	conn.request(method='GET', url=target, headers=html_headers)
@@ -79,7 +80,7 @@ def getmenu(params):
 	found_items = len(row)
 	if found_items > 0:
 		for new_target, new_image, new_name in row:
-			new_image = 'http://mults.spb.ru' + new_image
+			new_image = 'http://mults.info' + new_image
 			uri = '%s?mode=playpage'%sys.argv[0]
 			uri += '&href=%s' % urllib.quote_plus('/mults/?id=%d' % int(re.compile('/mults/\?id=(.[0-9]+)').findall(new_target)[0]))
 			uri += '&name=%s' % urllib.quote_plus(new_name)
@@ -107,14 +108,14 @@ def playpage(params):
 	mults_http = GET(href)
 	try:
 		(Pid, flvu, imgu) = re.compile("show_flv\((.+?), '(.+?)', '(.+?)'\)").findall(mults_http)[0]
-		imgu = 'http://mults.spb.ru/screen/' + imgu
+		imgu = 'http://mults.info/screen/' + imgu
 	except:
 		imgu = icon
 	try:
 		file_url = re.compile("<a href='(.+?)' title='Скачать мультфильм через HTTP'>").findall(mults_http)[0]
-		file_url = 'http://mults.spb.ru' + file_url
+		file_url = 'http://mults.info' + file_url
 		li = xbmcgui.ListItem(name, iconImage=imgu, thumbnailImage=imgu)
-		li.setInfo(type = 'video', infoLabels={'studio':descr, 'genre':'Мультфильм', 'studio':'http://mults.spb.ru/'})
+		li.setInfo(type = 'video', infoLabels={'studio':descr, 'genre':'Мультфильм', 'studio':'http://mults.info/'})
 		xbmc.Player().play(file_url, li)
 	except:
 		return False
