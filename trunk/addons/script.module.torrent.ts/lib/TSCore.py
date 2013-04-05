@@ -524,7 +524,7 @@ class _ASpull(threading.Thread):
 def _tsMessage(heading, message, times = 3000, pics = addon_icon):
 	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
 	except Exception, e:
-		xbmc.log( '[%s]: _tsMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
+		xbmc.log( '_tsMessage: Transcoding UTF-8 failed [%s]' % (e), 2 )
 		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
 		except Exception, e:
-			xbmc.log( '[%s]: _tsMessage: exec failed [%s]' % (addon_id, e), 3 )
+			xbmc.log( '_tsMessage: exec failed [%s]' % (e), 3 )
