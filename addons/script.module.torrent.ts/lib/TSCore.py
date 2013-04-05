@@ -332,7 +332,6 @@ class TSengine(xbmc.Player):
 				lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
 				self.play(self.r.got_url,lit)
 				self.r.got_url=None
-				self.r.params=[]
 				self.loop()
 				return 'Ok'
 
