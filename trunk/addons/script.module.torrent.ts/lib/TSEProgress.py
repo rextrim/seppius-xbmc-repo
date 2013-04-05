@@ -46,7 +46,7 @@ class WASEngine(xbmcgui.WindowXMLDialog):
 		self.button = self.getControl(2005)
 		self.button.setLabel(language(1006))
 		self.button.setVisible(self.showCancel)
-		self.setFocus(self.getControl(2005))
+		if self.showCancel: self.setFocus(self.getControl(2005))
 
 	def onClick(self, controlID):
 		if controlID==2005: 

@@ -57,16 +57,16 @@ class TSengine(xbmc.Player):
 		comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' 100'
 		self._TSpush(comm)
 		self.active = False
-		if not self.isAd:
-			self.end()
+		#if not self.r.ad:
+		#	self.end()
 	def onPlayBackStopped( self ):
 		comm='EVENT stop'
 		self._TSpush(comm)
 		comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' 100'
 		self._TSpush(comm)
 		self.active = False
-		if not self.isAd:
-			self.end()
+		#if not self.r.ad:
+		#	self.end()
 	def onPlayBackPaused( self ):
 		comm='EVENT pause'
 		self._TSpush(comm)
@@ -76,7 +76,7 @@ class TSengine(xbmc.Player):
 		self._TSpush(comm)
 	
 	def _TSpush(self,command):
-		#print ">>%s"%command
+		print ">>%s"%command
 		try:
 			_sock.send(command+'\r\n')
 		except: print 'send error'
@@ -89,19 +89,16 @@ class TSengine(xbmc.Player):
 		self.error=None
 		self.link=None
 		self.paused=False
-		self.isAd=False
+
 		self.isStream=False
 		self.timeout=10
 		self.title=''
 	def loop(self):
 		visible=False
-		pos=[25,50,75]
-		if 'ad=1' in self.r.params: self.isAd=True
-		else: self.isAd=False
-		while self.active or self.isAd:
-			if 'ad=1' in self.r.params: self.isAd=True
-			else: self.isAd=False
-			if self.isAd and not self.active:
+		pos=[x for x in range(100)]
+		while self.active or self.r.ad:
+			print self.r.ad
+			if self.r.ad and not self.active:
 				self.dialog2 = progress.dwprogress()
 				self.dialog2.updater(0,language(1004))
 				
@@ -115,13 +112,13 @@ class TSengine(xbmc.Player):
 				self.dialog2.ui.showCancel=False
 				if self.dialog2.ui.isCanceled or self.r.err: 
 					self.dialog2.close()
-					self.r.params=[]
 					break
 				self.dialog2.close()
 				lit= xbmcgui.ListItem(self.title)
 				self.play(self.r.got_url,lit)
 				self.r.got_url=None
 				self.active=True
+				pos=[x for x in range(100)]
 			if self.isPlaying() and not self.isStream:
 				if self.getTotalTime()>0: cpos= int((1-(self.getTotalTime()-self.getTime())/self.getTotalTime())*100)
 				else: cpos=0
@@ -449,7 +446,7 @@ class _ASpull(threading.Thread):
 		self.speed=0
 		self.pause=None
 		self.version=None
-		self.ad=''
+		self.ad=False
 		self.err=None
 		#self.params=[]
 		self.temp=''
@@ -492,8 +489,10 @@ class _ASpull(threading.Thread):
 			self.got_url=self.last_received.split(' ')[1].replace('127.0.0.1',server_ip) # если пришло PLAY URL, то забираем себе ссылку
 			self.params=self.last_received.split(' ')[2:]
 			if len(self.params)>0:
-				if 'ad=1' in self.params: print 'Have Ad'
+				if 'ad=1' in self.params: self.ad=True
+				else: self.ad=False
 				if 'stream=1' in self.params: print 'Is Stream'
+				#self.ad=True
 			#self.params.append('ad=1')
 			#self.ad=self.last_received.split(' ')[2]
 
@@ -530,9 +529,9 @@ class _ASpull(threading.Thread):
 		self.daemon = False
 		
 def _tsMessage(heading, message, times = 3000, pics = addon_icon):
-	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), timeds, pics.encode('utf-8')))
+	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), time, pics.encode('utf-8')))
 	except Exception, e:
 		xbmc.log( '_tsMessage: Transcoding UTF-8 failed [%s]' % (e), 2 )
-		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
+		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, time, pics))
 		except Exception, e:
 			xbmc.log( '_tsMessage: exec failed [%s]' % (e), 3 )
