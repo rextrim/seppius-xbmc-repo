@@ -119,7 +119,6 @@ class TSengine(xbmc.Player):
 				self.dialog2.close()
 				lit= xbmcgui.ListItem(self.title)
 				self.play(self.r.got_url,lit)
-				self.r.params=[]
 				self.r.got_url=None
 				self.active=True
 			if self.isPlaying() and not self.isStream:
