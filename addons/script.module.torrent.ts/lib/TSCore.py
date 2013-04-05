@@ -115,6 +115,7 @@ class TSengine(xbmc.Player):
 				self.dialog2.ui.showCancel=False
 				if self.dialog2.ui.isCanceled or self.r.err: 
 					self.dialog2.close()
+					self.r.params=[]
 					break
 				self.dialog2.close()
 				lit= xbmcgui.ListItem(self.title)
