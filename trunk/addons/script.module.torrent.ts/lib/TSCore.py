@@ -52,17 +52,21 @@ class TSengine(xbmc.Player):
 		self._TSpush(comm)
 		self.paused = False
 	def onPlayBackEnded( self ):
+		comm='EVENT stop'
+		self._TSpush(comm)
 		comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' 100'
 		self._TSpush(comm)
+		self.active = False
 		if not self.isAd:
-			self.active = False
 			self.end()
 	def onPlayBackStopped( self ):
 		comm='EVENT stop'
 		self._TSpush(comm)
-		#if not self.isAd:
+		comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' 100'
+		self._TSpush(comm)
 		self.active = False
-		self.end()
+		if not self.isAd:
+			self.end()
 	def onPlayBackPaused( self ):
 		comm='EVENT pause'
 		self._TSpush(comm)
@@ -522,7 +526,7 @@ class _ASpull(threading.Thread):
 		self.daemon = False
 		
 def _tsMessage(heading, message, times = 3000, pics = addon_icon):
-	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
+	try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), timeds, pics.encode('utf-8')))
 	except Exception, e:
 		xbmc.log( '_tsMessage: Transcoding UTF-8 failed [%s]' % (e), 2 )
 		try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
