@@ -153,7 +153,7 @@ def GET(target, post=None):
 
 def mainScreen(params):
 	
-	li = xbmcgui.ListItem('Последние добавления', addon_fanart, addon_icon)
+	li = xbmcgui.ListItem('Последние добавления', addon_fanart, thumbnailImage = addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'href': 'http://online.stepashka.com/',
@@ -161,25 +161,25 @@ def mainScreen(params):
 		'func': 'readCategory'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('Фильмы' , addon_icon, addon_icon)
+	li = xbmcgui.ListItem('Фильмы' , addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({
 	'sub':'filmy',
 	'func': 'subcat'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('Сериалы', addon_icon, addon_icon)
+	li = xbmcgui.ListItem('Сериалы', addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({
 	'sub':'serialy',
 	'func': 'subcat'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('По годам' , addon_icon, addon_icon)
+	li = xbmcgui.ListItem('По годам' , addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({
 	'sub':'god',
 	'func': 'subcat'
 	})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]Поиск[/COLOR]', addon_fanart, addon_icon)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]Поиск[/COLOR]', addon_fanart, thumbnailImage = addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
 		'func': 'doSearch',
@@ -200,7 +200,7 @@ def subcat(params):
 			href=httpSiteUrl+line['value']+'/'
 
 			if title!='None':
-				li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
+				li = xbmcgui.ListItem(title, addon_fanart, thumbnailImage = addon_icon)
 				li.setProperty('IsPlayable', 'false')
 				#href = line['href']
 				
@@ -219,7 +219,7 @@ def subcat(params):
 			if line.string:	title = str(line.string)
 			else: title = str(line.find('b').string)
 			if title!='None':
-				li = xbmcgui.ListItem(title, addon_fanart, addon_icon)
+				li = xbmcgui.ListItem(title, addon_fanart, thumbnailImage = addon_icon)
 				li.setProperty('IsPlayable', 'false')
 				href = line['href']
 				
@@ -262,7 +262,7 @@ def readCategory(params, postParams = None):
 	except: search=False
 	http = GET(hlink)
 	if http == None: return False
-	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, стр. %s[/COLOR]' % (params['title'],page), addon_icon, addon_icon)
+	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, стр. %s[/COLOR]' % (params['title'],page), addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	beautifulSoup = BeautifulSoup(http)
@@ -299,21 +299,31 @@ def readCategory(params, postParams = None):
 					except: mfil = pat.findall(desc)[0].replace('<br />','').replace('<br>','/n')
 					#print mfil
 					try:
-						li = xbmcgui.ListItem('%s' % title, addon_icon, fimg['pagespeed_lazy_src'])
+						li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = fimg['pagespeed_lazy_src'])
 					except: pass
 					try:	
-						li = xbmcgui.ListItem('%s' % title, addon_icon, fimg['src'])
-					except: li = xbmcgui.ListItem('%s' % title, addon_icon, addon_icon)	
+						li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = fimg['src'])
+					except: li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = addon_icon)	
 					li.setInfo(type='video', infoLabels = {'plot':mfil})
 					li.setProperty('IsPlayable', 'false')
-					uri = construct_request({
-						'title': title,
-						'href': href,
-						'func': 'readFile',
-						'page': href,
-						'src': fimg['src']
-						})
-					xbmcplugin.addDirectoryItem(hos, uri, li, True)
+					try:
+						uri = construct_request({
+							'title': title,
+							'href': href,
+							'func': 'readFile',
+							'page': href,
+							'src': fimg['src']
+							})
+						xbmcplugin.addDirectoryItem(hos, uri, li, True)
+					except:
+						uri = construct_request({
+							'title': title,
+							'href': href,
+							'func': 'readFile',
+							'page': href,
+							'src': addon_icon
+							})
+						xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	#try:
 	dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
 	dataRows = dataRows1.findAll('a')
@@ -333,7 +343,7 @@ def readCategory(params, postParams = None):
 			
 
 			if current<total:
-				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+1), addon_icon, addon_icon)
+				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+1), addon_icon, thumbnailImage = addon_icon)
 				uri = construct_request({
 				'href': params['href'],
 				'page': current+1,
@@ -343,7 +353,7 @@ def readCategory(params, postParams = None):
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
 			if current+10<total:
 				if current==1: current=0
-				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+10), addon_icon, addon_icon)
+				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+10), addon_icon, thumbnailImage = addon_icon)
 				uri = construct_request({
 				'href': params['href'],
 				'page': current+10,
@@ -384,7 +394,10 @@ def readFile(params):
 	#print 'lurl'+lurl
 	if mfil: 
 		#print 'play file ' + mfil[0]
-		li = xbmcgui.ListItem(params['title'], addon_icon, params['src'])
+		try:	
+			li = xbmcgui.ListItem(params['title'], addon_icon, thumbnailImage = params['src'])
+		except: 
+			li = xbmcgui.ListItem(params['title'], addon_icon, thumbnailImage = addon_icon)
 		li.setProperty('IsPlayable', 'true')
 		#print 'mfil0: '+xppod.Decode(lurl.split('=')[1])
 		uri = construct_request({
@@ -438,7 +451,7 @@ def readFile(params):
 			#for n in tt: l=l+ str(ord(n))+','
 			#print l
 			try:
-				li = xbmcgui.ListItem(tt, addon_icon, params['src'])
+				li = xbmcgui.ListItem(tt, addon_icon, thumbnailImage = params['src'])
 				li.setProperty('IsPlayable', 'true')
 				uri = construct_request({
 					'func': 'play',
@@ -449,7 +462,7 @@ def readFile(params):
 			try:
 				for t in file['playlist']:
 				#print t
-					li = xbmcgui.ListItem(t['comment'].encode("latin-1","ignore"), addon_icon, params['src'])
+					li = xbmcgui.ListItem(t['comment'].encode("latin-1","ignore"), addon_icon, thumbnailImage = params['src'])
 					li.setProperty('IsPlayable', 'true')
 					uri = construct_request({
 						'func': 'play',
@@ -458,7 +471,7 @@ def readFile(params):
 					has_sesons=True
 					xbmcplugin.addDirectoryItem(hos, uri, li, False)
 				if has_sesons==False:
-					li = xbmcgui.ListItem(file['comment'].encode("latin-1","ignore"), addon_icon, params['src'])
+					li = xbmcgui.ListItem(file['comment'].encode("latin-1","ignore"), addon_icon, thumbnailImage = params['src'])
 					li.setProperty('IsPlayable', 'true')
 					uri = construct_request({
 						'func': 'play',
