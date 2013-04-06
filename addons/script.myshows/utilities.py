@@ -4,6 +4,7 @@
 import xbmc
 import xbmcaddon
 import xbmcgui
+import math
 
 try:
 	import simplejson as json
@@ -11,10 +12,18 @@ except ImportError:
 	import json
 
 # read settings
-__settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
+__settings__ = xbmcaddon.Addon("script.myshows")
 __language__ = __settings__.getLocalizedString
+__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
 
+debug = __myshows__.getSetting("debug")
 
+def Debug(msg, force = False):
+	if(debug == 'true' or force):
+		try:
+			print "[myshows] " + msg
+		except UnicodeEncodeError:
+			print "[myshows] " + msg.encode( "utf-8", "ignore" )
 
 def notification( header, message, time=5000, icon=__settings__.getAddonInfo("icon")):
 	xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i,%s)" % ( header, message, time, icon ) )

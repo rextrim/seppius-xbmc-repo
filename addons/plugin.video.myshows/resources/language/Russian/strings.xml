@@ -11,6 +11,10 @@
         <string id="30008">Плеер торрентов</string>
         <string id="30009">Общие</string>
         <string id="30010">Торренты</string>
+        <string id="30011">Дебаг</string>
+        <string id="30012">Оценить после просмотра</string>
+        <string id="30013">Скроббер</string>
+
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
         <string id="50303">Задать по умолчанию</string>
@@ -161,6 +165,9 @@
         <string id="30285">Функция не встроена в µTorrent!</string>
         <string id="30286">Установка патча</string>
         <string id="30287">µTorrent Браузер</string>
+        <string id="30288">Раздача NNM-Club.Ru (требует патч plugin.video.torrenter)</string>
+        <string id="30289">Выберите шоу:</string>
+        <string id="30290">Автоматическая отметка при просмотре в XBMC</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>

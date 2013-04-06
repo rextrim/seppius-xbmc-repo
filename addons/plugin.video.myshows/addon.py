@@ -13,7 +13,7 @@ from torrents import *
 from net import *
 from app import Handler, Link
 
-__version__ = "1.5.7"
+__version__ = "1.6.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -48,7 +48,7 @@ class Main(Handler):
                    {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                    {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                    {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},])# {"title":"TEST","mode":"999"}])#TRANS
+                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])#, {"title":"TEST","mode":"999"}])
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -119,9 +119,8 @@ def Shows(mode):
         except:info['plot']=''
         item.setInfo( type='Video', infoLabels=info )
         item=syncshows.shows(jdata[showId]['title'], item, info)
-
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
-        refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
+        refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
@@ -508,7 +507,7 @@ def Rate(showId, id, refresh_url):
         pass
     rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
     ret = dialog.select(__language__(30215) % rate_item, rate)
-    if ret!=rate.index(unicode(__language__(30205))):
+    if ret!=rate.index(unicode(__language__(30205))) and ret>-1:
         if id=='0':
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
@@ -570,6 +569,155 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
 
     for s in menu: myshows_dict.append([s.split('|:|')[0],'XBMC.RunPlugin('+s.split('|:|')[1]+')'])
     return myshows_dict
+
+class SyncXBMC():
+    def __init__(self):
+        #action='check'
+        #title='{"tvshowid": 6, "episode": 14, "uniqueid": {"unknown": "4537122"}, "year": 0, "season": 6, "tvdb_id": "244991", "episodeid": 107, "showtitle": "\u0421\u0432\u0435\u0442\u043e\u0444\u043e\u0440", "label": "14 \u0441\u0435\u0440\u0438\u044f"}'
+        self.menu=self.GetFromXBMC()
+        #print self.xbmc_shows
+        self.action=action
+        self.newshow=False
+        if self.action in ['check']:
+            self.match=json.loads(title)
+            self.doaction()
+
+    def doaction(self):
+        if self.action=='check':
+            #print self.match
+            #print str(self.getid(self.showtitle2showId(self.match['showtitle']), self.match['season'],self.match['episode'],self.match['label']))
+            try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
+            except:showId=self.showtitle2showId(self.match['showtitle'])
+            Debug('[doaction] [showId] '+str(showId))
+            if showId:
+                if self.newshow:
+                    Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
+                    xbmc.sleep(500)
+                #print '%s %s %s %s' % (showId, self.match['season'],self.match['episode'],self.match['label'].encode('utf-8', 'ignore'))
+                if showId:
+                    id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+                    Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                    if __settings__.getSetting("scrobrate")=='true':
+                        Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+
+    def showtitle2showId(self, showtitle, tvdb_id=None):
+        jload=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
+        if jload:
+            jdata = json.loads(jload)
+        else: return
+        for showId in jdata:
+            if showtitle==jdata[showId]['ruTitle'] or showtitle==jdata[showId]['title']:
+                return int(showId)
+        Debug('[showtitle2showId] '+showtitle)
+        jload=Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q=%s' % urllib.quote_plus(showtitle.encode('utf-8', 'ignore'))).get()
+        Debug('[showtitle2showId] Search '+jload)
+        if jload: jdata = json.loads(jload)
+        else:
+            if tvdb_id:
+                html=get_html_source("http://thetvdb.com/api/1D62F2F90030C444/series/%s/en.xml" % tvdb_id)
+                if re.findall('<SeriesName>(.+?)</SeriesName>', html, re.DOTALL)[0]:
+                    showtitle=re.findall('<SeriesName>(.+?)</SeriesName>', html, re.DOTALL)[0]
+            Debug('[showtitle2showId] After [tvdb_id] '+showtitle)
+            jload=Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q=%s' % urllib.quote_plus(showtitle.encode('utf-8', 'ignore'))).get()
+            if jload: jdata = json.loads(jload)
+            else: return
+        select_show=[]
+        showIds=[]
+        for showId in jdata:
+            select_show.append((jdata[showId]['title'], showId, int(jdata[showId]['watching'])))
+            if showtitle==jdata[showId]['ruTitle'] or showtitle==jdata[showId]['title']:
+                self.newshow=True
+                showIds.append(showId)
+                theshowId=showId
+        if len(showIds)==1:
+            return int(theshowId)
+        select_show=sorted(select_show, key=lambda x: x[2], reverse=True)
+        showtitles=[]
+        showIds=[]
+        for x in select_show:
+            showtitles.append(x[0])
+            showIds.append(x[1])
+        dialog = xbmcgui.Dialog()
+        ret = dialog.select(unicode(__language__(30289)), showtitles)
+        if ret!=-1:
+            return int(showIds[ret])
+
+    def getid(self, showId, seasonNumber, episodeId, lable=None):
+        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId))
+        jdata = json.loads(data.get())
+        if episodeId>0:
+            for id in jdata['episodes']:
+                if jdata['episodes'][id]['seasonNumber']==int(seasonNumber) and jdata['episodes'][id]['episodeNumber']==int(episodeId):
+                    return int(id)
+        elif lable:
+            for id in jdata['episodes']:
+                if jdata['episodes'][id]['title']==lable:
+                    return int(id)
+
+    def list(self):
+        for i in self.menu:
+            item = xbmcgui.ListItem(i['title'], iconImage='DefaultFolder.png', thumbnailImage=i['thumbnail'])
+            #item.setInfo( type='Video', infoLabels=i )
+            #print i
+            #item.setProperty('fanart_image', i['fanart'])
+            item=self.shows(i['title'],item)
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=True)
+
+    def shows(self, title, item, info=None):
+        if not self.menu:
+            return item
+        for i in range(len(self.menu)):
+            if title in self.menu[i]['title']:
+                item.setProperty('fanart_image', self.menu[i]['fanart'])
+
+                for studio_info in self.menu[i]['studio']:
+                    try: studio+=', '+str(studio_info)
+                    except: studio=str(studio_info)
+                self.menu[i]['studio']=str(studio)
+
+                for genre_info in self.menu[i]['genre']:
+                    try: genre+=', '+str(genre_info)
+                    except: genre=str(genre_info)
+                self.menu[i]['genre']=str(genre)
+
+                if info:
+                    self.menu[i]['title']=info['title']
+                    self.menu[i]['playcount']=0
+                    self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
+                item.setInfo( type='Video', infoLabels=self.menu[i] )
+                Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
+        return item
+
+    def GetFromXBMC(self):
+        from utilities import xbmcJsonRequest
+        Debug('[Episodes Sync] Getting episodes from XBMC')
+
+        shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {'properties': ['title', 'originaltitle', 'genre', 'year', 'rating', 'plot', 'studio', 'mpaa', 'cast', 'imdbnumber', 'premiered', 'votes', 'fanart', 'thumbnail', 'episodeguide', 'playcount', 'season', 'episode']}, 'id': 0})
+
+        # sanity check, test for empty result
+        if not shows:
+            Debug('[Episodes Sync] xbmc json request was empty.')
+            return
+
+        # test to see if tvshows key exists in xbmc json request
+        if 'tvshows' in shows:
+            shows = shows['tvshows']
+            Debug("[Episodes Sync] XBMC JSON Result: '%s'" % str(shows))
+        else:
+            Debug("[Episodes Sync] Key 'tvshows' not found")
+            return
+
+        for show in shows:
+            show['episodes'] = []
+
+            episodes = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetEpisodes', 'params': {'tvshowid': show['tvshowid'], 'properties': ['season', 'episode', 'playcount', 'uniqueid']}, 'id': 0})
+            if 'episodes' in episodes:
+                episodes = episodes['episodes']
+
+                show['episodes'] = [x for x in episodes if type(x) == type(dict())]
+
+        self.xbmc_shows = [x for x in shows if x['episodes']]
+        return shows
 
 class Test(SyncXBMC):
     pass
@@ -683,6 +831,8 @@ elif mode == 60:
     ClearCache()
 elif mode == 61:
     PluginStatus().menu()
+elif mode == 70:
+    SyncXBMC()
 elif mode == 610:
     PluginStatus().install(action)
 elif mode == 611:
@@ -739,6 +889,6 @@ elif mode == 304 or mode==204 or mode==254:
 elif mode in (205,255):
     ontop('update', stringdata)
 elif mode == 999:
-    Test().list()
+    SyncXBMC()
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

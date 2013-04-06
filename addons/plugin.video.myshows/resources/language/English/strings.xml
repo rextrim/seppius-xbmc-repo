@@ -12,6 +12,17 @@
         <string id="30009">Common</string>
         <string id="30010">Torrent</string>
         <string id="30011">Debug</string>
+        <string id="30012">Rate after watch</string>
+        <string id="30013">Scrobber</string>
+
+        <string id="30014">Group by Show</string>
+        <string id="30015">[%s] %s (%s Ep)</string>
+        <string id="30016">[%s-%s] %s (%s Eps)</string>
+        <string id="30017">checked</string>
+        <string id="30018">checked</string>
+        <string id="30019">%s %s [%s] of %s</string>
+        <string id="30020">%s %s %s eps of %s</string>
+
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
         <string id="50303">Default</string>
@@ -24,16 +35,7 @@
         <string id="50316">Password µTorrent</string>
 
 
-        <string id="30011">My Profile</string>
-        <string id="30012">Friend's News</string>
-        <string id="30013">S%sE%s [%s days] %s (%s)</string>
-        <string id="30014">Group by Show</string>
-        <string id="30015">[%s] %s (%s Ep)</string>
-        <string id="30016">[%s-%s] %s (%s Eps)</string>
-        <string id="30017">checked</string>
-        <string id="30018">checked</string>
-        <string id="30019">%s %s [%s] of %s</string>
-        <string id="30020">%s %s %s eps of %s</string>
+
 ///ListItems
         <string id="30100">All My Shows</string>
         <string id="30101">Search</string>
@@ -178,10 +180,13 @@
         <string id="30285">Not a builtin function in uTorrent!</string>
         <string id="30286">Install patch</string>
         <string id="30287">µTorrent Browser</string>
-    __language__(30315)
-        <string id="30288">NOT PATCHED</string>
-        <string id="30289">NOT INSTALLED</string>
-        <string id="30290">DiMartino on xbmc.ru and bitbucket.org</string>
+        <string id="30288">NNM-Club.Ru Distribution (need patch plugin.video.torrenter)</string>
+        <string id="30289">Choose the show:</string>
+        <string id="30290">Automatic scrobber for MyShows.ru</string>
+    __language__(30289)
+
+
+
         <string id="30291">Read the rest in changelog.txt</string>
         <string id="30292">Status:</string>
         <string id="30293">Scanning:</string>
