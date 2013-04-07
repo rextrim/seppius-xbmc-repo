@@ -44,11 +44,11 @@ class Main(Handler):
         top=ontop()
         if top: self.menu.append(top)
         self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30139),"mode":"13"},
-                   {"title":__language__(30106),"mode":"27"},
-                   {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
-                   {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
-                   {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])#, {"title":"TEST","mode":"999"}])
+                          {"title":__language__(30106),"mode":"27"},
+                          {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
+                          {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
+                          {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
+                          {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])#, {"title":"TEST","mode":"999"}])
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -146,39 +146,39 @@ def Seasons(showId):
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Episodes(showId, seasonNumber):
-        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
-        watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
-        jdata = json.loads(data.get())
-        try:watched_jdata = json.loads(watched_data.get())
-        except: watched_jdata=[]
+    data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
+    watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
+    jdata = json.loads(data.get())
+    try:watched_jdata = json.loads(watched_data.get())
+    except: watched_jdata=[]
 
-        for id in jdata['episodes']:
-            if jdata['episodes'][id]['seasonNumber']==int(seasonNumber):
-                if id in watched_jdata:
-                    playcount=1
-                else:
-                    playcount=0
-                pre=prefix(showId=int(showId),seasonId=jdata['episodes'][id]['seasonNumber'], id=int(id))
-                title=pre+jdata['episodes'][id]['title']+' ['+jdata['episodes'][id]['airDate']+']'
-                item = xbmcgui.ListItem('%s. %s' % (str(jdata['episodes'][id]['episodeNumber']), title), iconImage='DefaultFolder.png', thumbnailImage=str(jdata['episodes'][id]['image']))
-                item.setInfo( type='Video', infoLabels={'Title': title,
-                                                        'year': jdata['year'],
-                                                        'episode': jdata['episodes'][id]['episodeNumber'],
-                                                        'season': jdata['episodes'][id]['seasonNumber'],
-                                                        'tracknumber': jdata['episodes'][id]['sequenceNumber'],
-                                                        'playcount': playcount,
-                                                        'tvshowtitle': jdata['title'],
-                                                        'premiered': jdata['started'],
-                                                        'status': jdata['status'],
-                                                        'code': jdata['imdbId'],
-                                                        'aired': jdata['episodes'][id]['airDate'],
-                                                        'votes': jdata['voted']} )
-                stringdata={"showId":int(showId), "episodeId":jdata['episodes'][id]['episodeNumber'], "id":int(id), "seasonId":jdata['episodes'][id]['seasonNumber']}
-                sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId='+showId+'&episodeId='+str(jdata['episodes'][id]['episodeNumber'])+'&id=' + str(id) + '&playcount=' + str(playcount) + '&mode=30'
-                refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
-                item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
-                sys_url=sys_url+refresh_url
-                xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
+    for id in jdata['episodes']:
+        if jdata['episodes'][id]['seasonNumber']==int(seasonNumber):
+            if id in watched_jdata:
+                playcount=1
+            else:
+                playcount=0
+            pre=prefix(showId=int(showId),seasonId=jdata['episodes'][id]['seasonNumber'], id=int(id))
+            title=pre+jdata['episodes'][id]['title']+' ['+jdata['episodes'][id]['airDate']+']'
+            item = xbmcgui.ListItem('%s. %s' % (str(jdata['episodes'][id]['episodeNumber']), title), iconImage='DefaultFolder.png', thumbnailImage=str(jdata['episodes'][id]['image']))
+            item.setInfo( type='Video', infoLabels={'Title': title,
+                                                    'year': jdata['year'],
+                                                    'episode': jdata['episodes'][id]['episodeNumber'],
+                                                    'season': jdata['episodes'][id]['seasonNumber'],
+                                                    'tracknumber': jdata['episodes'][id]['sequenceNumber'],
+                                                    'playcount': playcount,
+                                                    'tvshowtitle': jdata['title'],
+                                                    'premiered': jdata['started'],
+                                                    'status': jdata['status'],
+                                                    'code': jdata['imdbId'],
+                                                    'aired': jdata['episodes'][id]['airDate'],
+                                                    'votes': jdata['voted']} )
+            stringdata={"showId":int(showId), "episodeId":jdata['episodes'][id]['episodeNumber'], "id":int(id), "seasonId":jdata['episodes'][id]['seasonNumber']}
+            sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId='+showId+'&episodeId='+str(jdata['episodes'][id]['episodeNumber'])+'&id=' + str(id) + '&playcount=' + str(playcount) + '&mode=30'
+            refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            sys_url=sys_url+refresh_url
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
 
 def EpisodeMenu(id, playcount, refresh_url):
     if change_onclick=='true':
@@ -564,8 +564,8 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
         if ifstat==True: menu.append(__language__(30312)+'|:|'+sys_url+'02')
         elif ifstat==False: menu.append(__language__(30313)+'|:|'+sys_url+'01')
         menu.extend([__language__(30227)+'|:|'+sys_url,
-                    __language__(30311)+'|:|'+sys_url+'2',
-                    __language__(30228)+'|:|'+sys_url+'0'])
+                     __language__(30311)+'|:|'+sys_url+'2',
+                     __language__(30228)+'|:|'+sys_url+'0'])
 
     for s in menu: myshows_dict.append([s.split('|:|')[0],'XBMC.RunPlugin('+s.split('|:|')[1]+')'])
     return myshows_dict
@@ -593,7 +593,7 @@ class SyncXBMC():
                 if self.newshow:
                     Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                     xbmc.sleep(500)
-                #print '%s %s %s %s' % (showId, self.match['season'],self.match['episode'],self.match['label'].encode('utf-8', 'ignore'))
+                    #print '%s %s %s %s' % (showId, self.match['season'],self.match['episode'],self.match['label'].encode('utf-8', 'ignore'))
                 if showId:
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
                     Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
@@ -608,10 +608,11 @@ class SyncXBMC():
         for showId in jdata:
             if showtitle==jdata[showId]['ruTitle'] or showtitle==jdata[showId]['title']:
                 return int(showId)
-        Debug('[showtitle2showId] '+showtitle)
+        Debug('[showtitle2showId] '+unicode(showtitle))
         jload=Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q=%s' % urllib.quote_plus(showtitle.encode('utf-8', 'ignore'))).get()
-        Debug('[showtitle2showId] Search '+jload)
-        if jload: jdata = json.loads(jload)
+        if jload:
+            jdata = json.loads(jload)
+            Debug('[showtitle2showId] Search '+unicode(jload))
         else:
             if tvdb_id:
                 html=get_html_source("http://thetvdb.com/api/1D62F2F90030C444/series/%s/en.xml" % tvdb_id)
