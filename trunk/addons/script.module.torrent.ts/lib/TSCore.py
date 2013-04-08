@@ -181,7 +181,7 @@ class TSengine(xbmc.Player):
 					import _winreg
 					t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
 					needed_value =  _winreg.QueryValueEx(t , 'EnginePath')[0]
-					path= needed_value.replace('tsengine.exe','')
+					path= needed_value.replace('tsengine.exe','').decode('utf-8')
 					print path
 					pfile= os.path.join( path,'acestream.port')
 					gf = open(pfile, 'r')
@@ -197,11 +197,11 @@ class TSengine(xbmc.Player):
 						import _winreg
 						t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
 						needed_value =  _winreg.QueryValueEx(t , 'EnginePath')[0]
-						path= needed_value.replace('tsengine.exe','')
+						path= needed_value.replace('tsengine.exe','').decode('utf-8')
 						print path
 						try: 
 						#	subprocess.Popen(needed_value,startupinfo=st)
-							os.startfile(needed_value)
+							os.startfile(needed_value.decode('utf-8'))
 						except: 
 							_tsMessage('AceStream','Cant start TSEngine')
 							self.error=1
