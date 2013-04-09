@@ -340,7 +340,7 @@ def mainScreen(params):
 		li = xbmcgui.ListItem("Избранное", iconImage = addon_icon, thumbnailImage = addon_icon)
 		uri = construct_request({
 			'func': 'mainScreen',
-			'url': 'http://online.anidub.com/favorites/'
+			'url': 'https://online.anidub.com/favorites/'
 		})
 		li.setProperty('fanart_image', addon_fanart)
 		xbmcplugin.addDirectoryItem(hos, uri, li, True)
@@ -509,15 +509,18 @@ def get_anime(params):
 	http = GET(params['m_path'])
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
+	#print beautifulSoup
 	content = beautifulSoup.find('div', attrs={'class': 'player'})
 	#print str(content)
 	options = content.findAll('option')
+	one=False
 	if options:
 		for list in options:
 			lnk=''
 			try:
 				lnk=list['value'].split('|')[0]
 			except: lnk=list['value']
+			print lnk
 			links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
 			img= links.find('img')['src']
 			listitem=xbmcgui.ListItem(list.string,img,img)
@@ -529,6 +532,18 @@ def get_anime(params):
 					})
 			if 'vk.com' in lnk:
 				xbmcplugin.addDirectoryItem(hos, uri, listitem)
+				one=True
+			else:
+				try:
+					link= beautifulSoup.findAll('iframe',attrs={'id':'film_main'})[0]['src']
+					uri = construct_request({
+						'func': 'play_anime',
+						'img':img,
+						'm_path':link
+						})
+					if not one: xbmcplugin.addDirectoryItem(hos, uri, listitem)
+					one=True
+				except: pass
 			#print lnk
 	else: 
 		links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
@@ -553,7 +568,7 @@ def play_anime(params):
 	track_page_view('','event','5(Video*Play)')
 	try: img=params['img']
 	except: img=addon_icon
-	#print params['m_path']
+	print params['m_path']
 	http= GET(params['m_path'])
 	#print http
 	soup = BeautifulSoup(http, fromEncoding="windows-1251")
