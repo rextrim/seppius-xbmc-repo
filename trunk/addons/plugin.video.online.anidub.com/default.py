@@ -119,7 +119,7 @@ cook_file = xbmc.translatePath('special://temp/'+ 'anidub.cookies')
 
 def GET(target, post=None):
 	target=target.replace('//page','/page')
-	print target
+	#print target
 	try:
 			cookiejar = cookielib.MozillaCookieJar()
 			urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
@@ -382,7 +382,7 @@ def mainScreen(params):
 						title = str( m.group(0)[:-4])
 						#print '/alst'
 				except: url=''
-			print links
+			#print links
 			try:
 				img= links.find('img')['data-original']
 			except:
@@ -520,7 +520,7 @@ def get_anime(params):
 			try:
 				lnk=list['value'].split('|')[0]
 			except: lnk=list['value']
-			print lnk
+			#print lnk
 			links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
 			img= links.find('img')['src']
 			listitem=xbmcgui.ListItem(list.string,img,img)
@@ -568,7 +568,7 @@ def play_anime(params):
 	track_page_view('','event','5(Video*Play)')
 	try: img=params['img']
 	except: img=addon_icon
-	print params['m_path']
+	#print params['m_path']
 	http= GET(params['m_path'])
 	#print http
 	soup = BeautifulSoup(http, fromEncoding="windows-1251")
