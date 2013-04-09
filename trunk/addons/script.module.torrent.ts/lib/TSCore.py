@@ -65,7 +65,7 @@ class TSengine(xbmc.Player):
 		comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' 100'
 		self._TSpush(comm)
 		self.active = False
-		#if not self.r.ad:
+		self.r.ad = False
 		#	self.end()
 	def onPlayBackPaused( self ):
 		comm='EVENT pause'
@@ -76,7 +76,7 @@ class TSengine(xbmc.Player):
 		self._TSpush(comm)
 	
 	def _TSpush(self,command):
-		print ">>%s"%command
+		#print ">>%s"%command
 		try:
 			_sock.send(command+'\r\n')
 		except: print 'send error'
@@ -97,7 +97,7 @@ class TSengine(xbmc.Player):
 		visible=False
 		pos=[x for x in range(100)]
 		while self.active or self.r.ad:
-			print self.r.ad
+			#print self.r.ad
 			if self.r.ad and not self.active:
 				self.dialog2 = progress.dwprogress()
 				self.dialog2.updater(0,language(1004))
@@ -123,7 +123,7 @@ class TSengine(xbmc.Player):
 				if self.getTotalTime()>0: cpos= int((1-(self.getTotalTime()-self.getTime())/self.getTotalTime())*100)
 				else: cpos=0
 				if cpos in pos: 
-					print cpos
+					#print cpos
 					pos.remove(cpos)
 					comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' %s'%cpos
 					self._TSpush(comm)
@@ -173,7 +173,7 @@ class TSengine(xbmc.Player):
 		
 		try:
 			_sock.connect((server_ip, aceport))
-			print aceport
+			#print aceport
 		except:
 			aceport=62062
 			if (sys.platform == 'win32') or (sys.platform == 'win64'):
@@ -182,7 +182,7 @@ class TSengine(xbmc.Player):
 					t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
 					needed_value =  _winreg.QueryValueEx(t , 'EnginePath')[0]
 					path= needed_value.replace('tsengine.exe','').decode('utf-8')
-					print path
+					#print path
 					pfile= os.path.join( path,'acestream.port')
 					gf = open(pfile, 'r')
 					aceport=int(gf.read())
@@ -198,7 +198,7 @@ class TSengine(xbmc.Player):
 						t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
 						needed_value =  _winreg.QueryValueEx(t , 'EnginePath')[0]
 						path= needed_value.replace('tsengine.exe','').decode('utf-8')
-						print path
+						#print path
 						try: 
 						#	subprocess.Popen(needed_value,startupinfo=st)
 							os.startfile(needed_value.decode('utf-8'))
