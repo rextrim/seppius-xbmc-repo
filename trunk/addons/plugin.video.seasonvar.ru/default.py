@@ -539,6 +539,7 @@ def Get_Cookies(url): #soup):
 
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(soup, parent_url):
+
     #-- get play list url
     plcode = ''
     for rec in soup.findAll('script', {'type':'text/javascript'}):
@@ -633,7 +634,8 @@ def Run_Java(SWF_code):
     f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.tpl'), 'r')
     f2 = open(os.path.join(Addon.getAddonInfo('path'),'test.js') , 'w')
     fcode = f1.read().replace('$script$', SWF_code.replace('eval(', '" "+('))
-    f2.write(fcode)
+
+    f2.write(fcode.encode('utf-8'))
     f1.close()
     f2.close()
     #--
