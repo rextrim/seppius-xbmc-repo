@@ -559,7 +559,7 @@ class Core:
             iterator = 0
         searchersList = []
         dirList = os.listdir(self.ROOT + os.sep + 'resources' + os.sep + 'searchers')
-        if not external:
+        if not external or external=='torrenterall':
             for searcherFile in dirList:
                 if re.match('^(\w+)\.py$', searcherFile):
                     searchersList.append(searcherFile)
@@ -604,22 +604,25 @@ class Core:
         try: external=urllib.unquote_plus(get("external"))
         except: external=None
         if external:
-            s=json.loads(json.loads(urllib.unquote_plus(get("sdata"))))
-            if len(filesList)<1:
+            try:
+                s=json.loads(json.loads(urllib.unquote_plus(get("sdata"))))
+                if len(filesList)<1:
+                    xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
+                    return
+                myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
+                myshows_lang=myshows_setting.getLocalizedString
+                for (order, seeds, title, link, image) in filesList:
+                    #print '{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))
+                    contextMenu = [
+                        (myshows_lang(30409),
+                         'XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))))),
+                        (myshows_lang(30400) ,
+                         'XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
+                    ]
+                    self.drawItem(title, 'openTorrent', link, image, contextMenu=contextMenu)
+            except:
                 xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
                 return
-            myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
-            myshows_lang=myshows_setting.getLocalizedString
-
-            for (order, seeds, title, link, image) in filesList:
-                #print '{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))
-                contextMenu = [
-                    (myshows_lang(30409),
-                     'XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))))),
-                    (myshows_lang(30400) ,
-                     'XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
-                ]
-                self.drawItem(title, 'openTorrent', link, image, contextMenu=contextMenu)
         else:
             for (order, seeds, title, link, image) in filesList:
                     contextMenu = [

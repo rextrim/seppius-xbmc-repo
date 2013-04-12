@@ -10,10 +10,11 @@ try:
 except ImportError:
 	import json
 
+
 # read settings
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
-
+from functions import Debug
 
 
 def notification( header, message, time=5000, icon=__settings__.getAddonInfo("icon")):

@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -35,9 +35,9 @@ forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
 striplist=['the', 'tonight', 'show', 'with', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
-debug = __settings__.getSetting("debug")
 
 def Debug(msg, force = False):
+    debug = xbmcaddon.Addon(id='plugin.video.myshows').getSetting("debug")
     if(debug == 'true' or force):
         try:
             print "[MyShows.Ru] " + msg
@@ -115,10 +115,11 @@ def int_xx(intxx):
         return str(intxx)
 
 def StripName(name, list, replace=' '):
-    name=name.lower()
-    for striper in list:
-        name=name.replace(striper, replace)
-    return name
+    lname=name.lower().split(' ')
+    name=''
+    for n in lname:
+        if n not in list: name+=' '+n
+    return name.strip()
 
 def auth():
     url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+md5(passwd).hexdigest()
@@ -375,10 +376,10 @@ def ontop(action='get', ontop=None):
 def getDirList(path, newl=None):
     l=[]
     try:
-        if not newl: newl=os.listdir(path)
+        if not newl: dirs, newl=xbmcvfs.listdir(path)
     except:
         try:
-            if not newl: newl=os.listdir(path.decode('utf-8').encode('cp1251'))
+            if not newl: dirs, newl=xbmcvfs.listdir(path.decode('utf-8').encode('cp1251'))
         except:
             showMessage(__language__(30206), __language__(30280))
             return l
@@ -403,7 +404,7 @@ def cutFileNames(l):
         if len(result)>5:
             break
 
-    print list(d.compare(text1.split(sep_file), text2.split(sep_file)))
+    Debug('[cutFileNames] '+unicode(list(d.compare(text1.split(sep_file), text2.split(sep_file)))))
 
     start=''
     end=''
@@ -421,14 +422,14 @@ def cutFileNames(l):
 
     newl=l
     l=[]
-    print start
-    print end
+    Debug('[cutFileNames] [start] '+unicode(start))
+    Debug('[cutFileNames] [end] '+unicode(end))
     for fl in newl:
         if fl[0:len(start)]==start: fl=fl[len(start):]
         if fl[len(fl)-len(end):]==end: fl=fl[0:len(fl)-len(end)]
         #fl=fl[len(start):len(fl)-len(end)] только это вместо 2 сверху
         l.append(fl)
-    print 'cutnames: '+str(l)
+    Debug('[cutFileNames] [cutnames] '+unicode(l))
     return l
 
 def FileNamesPrepare(filename):
@@ -523,7 +524,8 @@ class PluginStatus():
         self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.2',['default.py','update.py']),
                 ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
-                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py','resources/searchers/NNMClubRu.py','resources/searchers/icons/bt-chat.com.png'])]
+                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py',
+                 'resources/searchers/NNMClubRu.py','resources/searchers/icons/bt-chat.com.png','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])
@@ -575,8 +577,8 @@ class PluginStatus():
                 text=utorrentstatus
                 text2=unicode(__language__(30285))
             elif action=='tscheck':
-                text=TSstatus
-                text2='Download at http://torrentstream.org/'
+                text='Script at http://xbmc.ru/forum/showthread.php?t=1962'
+                text2='Engine at http://torrentstream.org/'
             elif action=='about':
                 text=unicode(__language__(30260))
             if action not in ['tscheck', 'torrenterstatus', 'utorrentstatus']:
@@ -596,7 +598,7 @@ class PluginStatus():
               {"title":'MyShows.ru (Service): %s' % self.myshows       ,"mode":"61",    "argv":{'action':'myshows',},},
               {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
               {"title":__language__(30144) % self.serialustatus  ,"mode":"61",   "argv":{'action':'serialustatus'}},
-              {"title":'Torrent Stream (ACE): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
+              {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
               {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
               {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
               {"title":__language__(30145)                  ,"mode":"61",   "argv":{'action':'about'}}]
@@ -640,7 +642,7 @@ class PluginStatus():
         import shutil
         plugstatus=False
         for plug in self.patchfiles:
-            print str(plug)
+            Debug('[PluginStatus] [install] '+unicode(plug))
             if plug[0]==action:
                 id=plug[1]
                 patchpath=plug[2]
