@@ -25,7 +25,7 @@ import re
 import sys, json
 
 class ThePirateBaySe(SearcherABC.SearcherABC):
-    
+
     '''
     Weight of source with this searcher provided.
     Will be multiplied on default weight.
@@ -62,7 +62,8 @@ class ThePirateBaySe(SearcherABC.SearcherABC):
     def search(self, keyword):
         filesList = []
         url = "http://apify.ifc0nfig.com/tpb/search?id=%s" % (urllib.quote_plus(keyword))
-        response = self.makeRequest(url)
+        try:response = self.makeRequest(url)
+        except:return filesList
         if None != response and 0 < len(response):
             dat=re.compile('{(.+?)}').findall(response)
             for data in dat:
