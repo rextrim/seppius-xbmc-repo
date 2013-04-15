@@ -545,8 +545,12 @@ def readdir(params):
 			if isFolder:
 				linkItem = item.find('a', 'title')
 			else:
-				linkItem = item.find('a', 'link-material')
-				playLink = item.find('a', 'b-player-link')
+                                playLinkClass = 'b-file-new__link-material'
+				linkItem = item.find('a', 'b-file-new__link-material-download')
+				playLink = item.find('a', playLinkClass)
+				if playLink is None:
+                                        playLinkClass = 'b-file-new__material'
+					playLink = item.find('div', playLinkClass)
 			
 			if linkItem is not None:
 				title = ""
@@ -560,11 +564,14 @@ def readdir(params):
 					if len(quality) > 1:
 						 title = title + " [" + str(quality[0].string) + "]"
 				else:
-					title = str(linkItem.find('span').string)
+					try:
+						title = str(playLink.find('span', playLinkClass + '-filename-text').string)
+					except:
+						pass
 
 				useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
 				fallbackHref = linkItem['href']
-				if useFlv and playLink is not None:
+				if useFlv and playLink is not None and playLink.name == 'a':
 					try:
 						href = httpSiteUrl + str(playLink['href'])
 					except:
