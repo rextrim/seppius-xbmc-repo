@@ -207,20 +207,20 @@
 				<expression>(.*)&amp;mdash;</expression>
 			</RegExp>
 			<!--STUDIO-->
-			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;STUDIOS&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
-				<expression>(/film/\d+/studio/)</expression>
+			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-studio-\2&quot; function=&quot;STUDIOS&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+				<expression>(/film/(\d+)/studio/)</expression>
 			</RegExp>
 			<!--PEOPLE-->
-			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;PEOPLE&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
-				<expression>(/film/\d+/cast/)</expression>
+			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-cast-\2&quot; function=&quot;PEOPLE&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+				<expression>(/film/(\d+)/cast/)</expression>
 			</RegExp>
 			<!--POSTERS Берем с кинопоиска сначала обложки, потом просто постеры -->
-			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;url cache=&quot;kinopoisk-coverurl-\1&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1adv_type/cover/&lt;/url&gt;&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
-				<expression>(/film/\d+/posters)</expression>
+			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;url cache=&quot;kinopoisk-coverurl-\2&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1adv_type/cover/&lt;/url&gt;&lt;url cache=&quot;kinopoisk-posters-\2&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+				<expression>(/film/(\d+)/posters)</expression>
 			</RegExp>
 			<!--TRAILER-->
-			<RegExp conditional="download_trailer" input="$$1" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;GetTrailers&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
-				<expression>(/film/\d+/video/)</expression>
+			<RegExp conditional="download_trailer" input="$$1" output="&lt;url cache=&quot;kinopoisk-video-\2&quot; function=&quot;GetTrailers&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
+				<expression>(/film/(\d+)/video/)</expression>
 			</RegExp>
 			<expression noclean="1"/>
 		</RegExp>
@@ -232,25 +232,25 @@
 	</GetPoster>
 	<GMP dest="4">
 		<RegExp input="$$8" output="&lt;details&gt;\1&lt;/details&gt;" dest="4+">
-			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;a href="(/picture/[0-9]+/)"&gt;&lt;img class="new" src="http://st.[^"]+" width</expression>
+			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-picture-\2&quot; function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;a href="(/picture/([0-9]+)/)"&gt;&lt;img class="new" src="http://st.[^"]+" width</expression>
 			</RegExp>
-			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;a href="(/picture/[0-9]+/)"&gt;&lt;img  src="http://st.[^"]+" width</expression>
+			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-picture-\2&quot; function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;a href="(/picture/([0-9]+)/)"&gt;&lt;img  src="http://st.[^"]+" width</expression>
 			</RegExp>
 			<RegExp input="$$1" output="\1" dest="7">
 				<expression noclean="1">&lt;div class="navigator"&gt;(.*?)&lt;/div&gt;</expression>
 			</RegExp>
-			<RegExp input="$$7" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;GMP_SINGLE&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;li &gt;&lt;a href="(/level/17/film/\d+/page/\d+/)"&gt;\d+&lt;/a&gt;&lt;/li&gt;</expression>
+			<RegExp input="$$7" output="&lt;url cache=&quot;kinopoisk-level17-\2&quot; function=&quot;GMP_SINGLE&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;li &gt;&lt;a href="(/level/17/film/(\d+)/page/\d+/)"&gt;\d+&lt;/a&gt;&lt;/li&gt;</expression>
 			</RegExp>
 			<expression noclean="1"/>
 		</RegExp>
 	</GMP>
 	<GMP_SINGLE dest="4">
 		<RegExp input="$$8" output="&lt;details&gt;\1&lt;/details&gt;" dest="4+">
-			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-url-\1&quot; function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
-				<expression repeat="yes" noclean="1">&lt;a href="(/picture/[0-9]+/)"&gt;&lt;img  src="http://st.[^"]+" width</expression>
+			<RegExp input="$$1" output="&lt;url cache=&quot;kinopoisk-picture-\2&quot; function=&quot;GetPoster&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="8+">
+				<expression repeat="yes" noclean="1">&lt;a href="(/picture/([0-9]+)/)"&gt;&lt;img  src="http://st.[^"]+" width</expression>
 			</RegExp>
 			<expression noclean="1"/>
 		</RegExp>
