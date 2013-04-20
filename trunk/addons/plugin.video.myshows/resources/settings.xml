@@ -8,10 +8,11 @@
         <setting id="change_onclick"   type="bool" label="30004" default="false"/>
         <setting id="refresh_period"  type="enum" label="30005" default="1" values="1|4|12|24"/>
         <setting id="refresh_always"   type="bool" label="30006" default="false"/>
+        <setting id="menu_style"  type="enum" label="30016" default="0" lvalues="30014|30015"/>
         <setting id="debug"   type="bool" label="30011" default="false"/>
     </category>
     <category label="Torrent">
-        <setting id="torplayer"  type="enum" label="30008" default="0" values="TSengine|LibTorrent (Torrenter needed)"/>
+        <setting id="torplayer"  type="enum" label="30008" default="0" lvalues="30017|30018"/>
         <setting id="torrent_save" type="enum" label="50301" lvalues="50302|50303" default="0" />
         <setting id="torrent_dir" type="folder" visible="eq(-1,1)" label="50304" />
         <setting type="sep" />

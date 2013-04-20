@@ -14,12 +14,12 @@
         <string id="30011">Debug</string>
         <string id="30012">Rate after watch</string>
         <string id="30013">Scrobber</string>
+        <string id="30014">Extra functional</string>
+        <string id="30015">Classic MyShows.ru</string>
+        <string id="30016">Menu Style</string>
+        <string id="30017">Torrent Stream (ACE)</string>
+        <string id="30018">LibTorrent (Torrenter needed)</string>
 
-        <string id="30014">Group by Show</string>
-        <string id="30015">[%s] %s (%s Ep)</string>
-        <string id="30016">[%s-%s] %s (%s Eps)</string>
-        <string id="30017">checked</string>
-        <string id="30018">checked</string>
         <string id="30019">%s %s [%s] of %s</string>
         <string id="30020">%s %s %s eps of %s</string>
 
@@ -86,10 +86,29 @@
         <string id="30146">Plugin Status</string>
         <string id="30147">ACCESSABLE</string>
         <string id="30148">NOT ACCESSABLE</string>
-    __language__(30147)
-        <string id="30149">Shows</string>
+        <string id="30149">Extra functions</string>
+        __language__(30149)
 
-
+        <string id="30150">Can't play: %s</string>
+        <string id="30151">Deleted: %s sources</string>
+        <string id="30152">Would you like to play it?</string>
+        <string id="30153">BTchat search:</string>
+        <string id="30154">Root path "./"</string>
+        <string id="30155">Search Serialu.net (need patch plugin.video.serialu.net)</string>
+        <string id="30156">Input Serialu.net correct show title:</string>
+        <string id="30157">PATCHED</string>
+        <string id="30158">NOT PATCHED</string>
+        <string id="30159">NOT INSTALLED</string>
+        <string id="30160">DiMartino on xbmc.ru and bitbucket.org</string>
+        <string id="30161">You can install it via context menu</string>
+        <string id="30162">Status:</string>
+        <string id="30163">Scanning:</string>
+        <string id="30164">Show status:</string>
+        <string id="30165">You watched %s of %s</string>
+        <string id="30166">You rated it</string>
+        <string id="30167">INSTALLED</string>
+        <string id="30168">RuTracker.Org Distribution (need patch plugin.video.torrenter)</string>
+        <string id="30169">Magnet Link</string>
 
 ///Dialogs, Notifications
         <string id="30200">Authorization Error</string>
@@ -183,11 +202,9 @@
         <string id="30288">NNM-Club.Ru Distribution (need patch plugin.video.torrenter)</string>
         <string id="30289">Choose the show:</string>
         <string id="30290">Automatic scrobber for MyShows.ru</string>
-    __language__(30289)
+        <string id="30291">Full Torrenter Search</string>
+    __language__(30291)
 
-
-
-        <string id="30291">Read the rest in changelog.txt</string>
         <string id="30292">Status:</string>
         <string id="30293">Scanning:</string>
 
@@ -210,8 +227,8 @@
         <string id="30314">Delete Sourses</string>
         <string id="30315">Set as Main top</string>
         <string id="30316">Install Plugin</string>
+        <string id="30317">Rate episode</string>
 
-        <string id="30317">Only HD videos</string>
         <string id="30318">Sort videos by length</string>
         <string id="30319">Show only 'HD' results</string>
         <string id="30320">Personal MyShows.ru list</string>

@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -294,8 +294,8 @@ class Source:
                     return stype
                 except:
                     #xbmc.log('FILENAME IN GETTYPE'+self.filename)
-                    self.stypes=[r'json', r'vk-file', r'url-file', r'btchat', r'rutracker',r'tpb',r'nnm',r'kz', 'smb']
-                    self.fnames=['{.*?}', 'http://.*?vk\.com.*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?']
+                    self.stypes=[r'json', r'vk-file', r'url-file', r'btchat', r'rutracker',r'tpb',r'nnm',r'kz', 'smb', 'torrenter']
+                    self.fnames=['{.*?}', 'http://.*?vk\.com.*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
                     self.i=-1
                     for fn in self.fnames:
                         self.i+=1
@@ -305,9 +305,9 @@ class Source:
                             stype=self.stypes[self.i]
                             break
                     if stype=='json':
-                        if json.loads(self.filename)['stype'] not in ('btchat', 'torrent', 'rutracker', 'tpb', 'nnm','kz'):
+                        if json.loads(self.filename)['stype'] not in ('btchat', 'torrent', 'rutracker', 'tpb', 'nnm','kz', 'torrenter'):
                             stype=json.loads(self.filename)['stype']
-                    elif stype not in ['vk-file', 'url-file', 'btchat', 'rutracker', 'tpb', 'nnm','kz']:
+                    elif stype not in ['vk-file', 'url-file', 'btchat', 'rutracker', 'tpb', 'nnm','kz', 'torrenter']:
                         if len(xbmcvfs.listdir(self.filename)[1])>0:
                             stype='dir'
                         elif self.filename.rfind('.torrent', len(self.filename)-8)==-1:
@@ -328,6 +328,7 @@ class Source:
                     if externals[i]==self.filename.split('::')[0]:
                         self.stype=i
                         break
+            if self.stype=='torrenterall': self.stype='torrenter'
             TorrentDB().add(self.filename, self.stype, self.showId, self.seasonId, self.id, self.episodeId)
             showMessage(__language__(30208), __language__(30230) % self.filename)
         except: showMessage(__language__(30206), __language__(30237) % self.filename)
@@ -555,7 +556,8 @@ class DownloadSource(Source):
     def handle(self):
         success=None
         self.ind=None
-        if self.stype in ['json','btchat', 'torrent', 'multitorrent', 'rutracker','tpb','nnm','kz']:
+        nomagnet=False
+        if self.stype in ['json','btchat', 'torrent', 'multitorrent', 'rutracker','tpb','nnm','kz' ,'torrenter']:
 
             items=Download().listdirs()[0]
             if __settings__.getSetting("torrent_save")=='0':
@@ -573,23 +575,24 @@ class DownloadSource(Source):
                 self.stype=json.loads(self.filename)['stype']
                 self.ind=json.loads(self.filename)['ind']
                 self.filename = json.loads(self.filename)['filename']
-            elif self.stype in ('rutracker','nnm','kz'):
+            elif self.stype in ('rutracker','nnm','kz') or self.stype=='torrenter' and self.filename.split('::')[1][0:6]!='magnet':
                 xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&silent=true&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),urllib.quote_plus(self.stringdata)))
                 xbmc.sleep(3000)
+                nomagnet=True
                 self.filename=xbmcaddon.Addon(id='plugin.video.torrenter').getSetting('lastTorrent')
 
-            if self.stype in ['torrent', 'multitorrent', 'rutracker','nnm','kz']:
+            if self.stype in ['torrent', 'multitorrent', 'rutracker','nnm','kz'] or self.stype=='torrenter' and nomagnet:
                 try: f = open(self.filename, 'rb')
                 except: f = open(urllib.unquote_plus(self.filename), 'rb')
                 torrent=f.read()
                 f.close
                 success=Download().add(torrent, dirid)
-            elif self.stype in ['tpb', 'btchat']:
+            elif self.stype in ['tpb', 'btchat'] or self.stype=='torrenter' and not nomagnet:
                 self.filename=self.filename.split('::')[1]
                 success=Download().add_url(self.filename, dirid)
                 showMessage(__language__(30211), __language__(30212))
                 xbmc.sleep(1500)
-                if self.stype=='tpb': xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode(__language__(30270)))
+                if self.stype in ['tpb', 'torrenter']: xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode(__language__(30270)))
 
 
             if success:
@@ -690,10 +693,10 @@ class AddSource(Source):
         #print 'AddSOURCE self.stype in biginning, biatshes!: '+str(self.stype)
         if not self.stype:
             if self.id:
-                myshows_titles=['Все трекеры в Torrenter (RU,BT,PB,NN,KZ)',__language__(30239), __language__(30240), __language__(30241), __language__(30242),__language__(30255), __language__(30273), __language__(30274), __language__(30243)]
+                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242),__language__(30255), __language__(30273), __language__(30274), __language__(30243)]
                 myshows_items=['torrenterall','file', 'vk-file', 'btchat', 'torrent', 'serialu', 'tpb', 'utorrent', None]
             else:
-                myshows_titles=['Все трекеры в Torrenter (RU,BT,PB,NN,KZ)',__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246),__language__(30255), __language__(30274), __language__(30243)]#TRANS
+                myshows_titles=[__language__(30291),__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246),__language__(30255), __language__(30274), __language__(30243)]
                 myshows_items=['torrenterall', 'dir', 'rutracker' , 'nnm', 'torrent', 'multifile', 'multitorrent','serialu', 'utorrent', None]
             dialog = xbmcgui.Dialog()
             i = dialog.select(__language__(30235), myshows_titles)
@@ -819,7 +822,7 @@ class ScanSource(Source):
             self.seasonId=getdict['seasonId']
             if self.stype in ('multitorrent', 'torrent'):
                 i=self.addmultijson()
-            elif self.stype in ('rutracker','tpb','nnm','kz'):
+            elif self.stype in ('rutracker','tpb','nnm','kz', 'torrenter'):
                 xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&silent=true&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),urllib.quote_plus(self.stringdata)))
                 xbmc.sleep(3000)
                 self.filename=xbmcaddon.Addon(id='plugin.video.torrenter').getSetting('lastTorrent')
@@ -883,8 +886,8 @@ class PlayFile(Source):
         #xbmc.log('LOL THIS IS STYPE IN PLAYFILE:'+str(self.stype))
         if self.stype=='file' or self.stype=='vk-file':
             xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
-        elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz']:
-            if self.stype== 'tpb': showMessage(__language__(30211), __language__(30212))
+        elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
+            if self.stype in ['tpb', 'torrenter']: showMessage(__language__(30211), __language__(30212))
             xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),self.stringdata))
         elif self.stype in ['torrent','multitorrent','url-torrent','json']:
             self.play_torrent()
@@ -1023,8 +1026,10 @@ class TorrenterSearch():
         dialog = xbmcgui.Dialog()
         ret = dialog.select(__language__(30276) % self.stypes[self.stype], dialog_items)
         query=dialog_items[ret].encode('utf-8')
+        wnd = xbmcgui.Window(xbmcgui.getCurrentWindowId())
+        print xbmcgui.getCurrentWindowId()
         if ret>-1 and ret<len(dialog_items)-1:
-            xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.torrenter/?action=search&url=%s&sdata=%s&external=%s)' % (query, urllib.quote_plus(json.dumps('{"stype":%s, "showId":%s, "seasonId":%s, "episodeId":%s, "id":%s}' % (jstr(self.stype), jstr(self.showId), jstr(self.seasonId), jstr(self.episodeId), jstr(self.id)))),self.externals[self.stype],))
+            xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.torrenter/?action=search&url=%s&sdata=%s&external=%s)' % (query, urllib.quote_plus(json.dumps('{"stype":%s, "showId":%s, "seasonId":%s, "episodeId":%s, "id":%s}' % (jstr(self.stype), jstr(self.showId), jstr(self.seasonId), jstr(self.episodeId), jstr(self.id)))),self.externals[self.stype]))
         return
 
 def chooseDir(urls, path=None):
@@ -1061,8 +1066,8 @@ def prefix(showId=None, seasonId=None, id=None, stype=None):
             for k in getlist:
                 if id and k['id']==id or not id and seasonId and k['seasonId']==seasonId:
                     stype=k['stype']
-    stypes=['json', 'vk-file', 'url-file', 'btchat', 'dir', 'file', 'torrent', 'multifile', 'multitorrent','serialu-file','serialu','rutracker','tpb','nnm','kz']
-    prefixes=['JS', 'VK', 'UF', 'BT', 'D', 'F', 'T', 'MF', 'MT','SF','SU','RU','PB','NN','KZ']
+    stypes=['json', 'vk-file', 'url-file', 'btchat', 'dir', 'file', 'torrent', 'multifile', 'multitorrent','serialu-file','serialu','rutracker','tpb','nnm','kz', 'torrenter']
+    prefixes=['JS', 'VK', 'UF', 'BT', 'D', 'F', 'T', 'MF', 'MT','SF','SU','RU','PB','NN','KZ','TR']
     prefix=None
     for i in stypes:
         if stype==i:
