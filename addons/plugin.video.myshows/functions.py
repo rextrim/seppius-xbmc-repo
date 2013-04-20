@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -443,9 +443,9 @@ def FileNamesPrepare(filename):
     except: pass
 
 
-    urls=['.*?(\d+)x(\d+).*?','.*?s(\d+)e(\d+).*?','.*?(\d+)-(\d+).*?','.*?E(\d+).*?']
+    urls=['.+?(\d+)[x|-](\d+).+?','.+?s(\d+)e(\d+).+?','.+?E(\d+).+?']
     for file in urls:
-        match=re.compile(file, re.DOTALL | re.I).findall(filename)
+        match=re.compile(file, re.DOTALL | re.I | re.IGNORECASE).findall(filename)
         if match:
             try:
                 my_episode=int(match[1])
@@ -473,6 +473,14 @@ def jstr(s):
     if not s: s='null'
     elif not unicode(s).isnumeric(): s='"%s"'%(s)
     return str(s)
+
+def lockView(viewId):
+    skinOptimizations = (
+        { 'list': 50, 'info': 503,'wide': 51,'icons': 500, }, #Confluence
+        { 'list': 50,'info': 51,'wide': 52,'icons': 53, } #Tra nsperency!
+    )
+    try: xbmc.executebuiltin("Container.SetViewMode(%s)" % str(skinOptimizations[0][viewId]))
+    except: return
 
 def uTorrentBrowser():
     from net import Download
@@ -525,7 +533,7 @@ class PluginStatus():
                 ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py',
-                 'resources/searchers/NNMClubRu.py','resources/searchers/icons/bt-chat.com.png','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png'])]
+                 'resources/searchers/NNMClubRu.py','resources/searchers/icons/bt-chat.com.png','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png','resources/searchers/RuTorOrg.py','resources/searchers/KrasfsRu.py'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])

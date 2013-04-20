@@ -10,10 +10,9 @@ except ImportError:
 
 from functions import *
 from torrents import *
-from net import *
 from app import Handler, Link
 
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -31,7 +30,7 @@ __tmppath__= os.path.join(__addonpath__, 'tmp')
 forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
-striplist=['the', 'tonight', 'show', 'with', '(2005)', '(2009)', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
+striplist=['the', 'tonight', 'show', 'with', '(2005)', '(2009)', '(2012)', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 
 
 check_login = re.search('='+login+';', cookie_auth)
@@ -41,14 +40,24 @@ if not check_login:
 class Main(Handler):
     def __init__(self):
         self.menu=[]
+        menu_style=__settings__.getSetting("menu_style")
         top=ontop()
         if top: self.menu.append(top)
-        self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30139),"mode":"13"},
-                   {"title":__language__(30106),"mode":"27"},
-                   {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
-                   {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
-                   {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                   {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}, {"title":"TEST","mode":"999"}])
+        if menu_style=='1':
+            self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30100),"mode":"10"},
+                              {"title":__language__(30102),"mode":"17"},{"title":__language__(30103),"mode":"14"},
+                              {"title":__language__(30104),"mode":"15"},
+                              {"title":__language__(30105),"mode":"16"},{"title":__language__(30106),"mode":"27"},
+                              {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
+                              {"title":__language__(30112),"mode":"40"}, {"title":__language__(30101),"mode":"19"},
+                              {"title":__language__(30149),"mode":"62"},])
+        else:
+            self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30139),"mode":"13"},
+                       {"title":__language__(30106),"mode":"27"},
+                       {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
+                       {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
+                       {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
+                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},])# {"title":"TEST","mode":"999"}])
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -58,6 +67,15 @@ class Main(Handler):
             try: argv=self.i['argv']
             except: argv={'content': 'videos'}
             self.item(Link(self.i['mode'], argv), title=unicode(self.i['title']))
+
+class ExtraFunction(Main):
+    def __init__(self):
+        self.menu.extend([{"title":__language__(30136),"mode":"50"},
+                          {"title":__language__(30137),"mode":"60"},
+                          {"title":__language__(30146),"mode":"61"},
+                          {"title":__language__(30141),"mode":"510"},
+                          ])
+        self.handle()
 
 def Shows(mode):
     syncshows=SyncXBMC()
@@ -109,7 +127,7 @@ def Shows(mode):
         if mode==19:
             rating=int(jdata[showId]['watching'])
         else:
-            rating=float(jdata[showId]['rating'])
+            rating=float(jdata[showId]['rating'])*2
         pre=prefix(showId=int(showId))
 
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
@@ -550,6 +568,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
+              __language__(30317)+'|:|'+sys_url+'2',
               __language__(30308)+'|:|'+sys_url+'1'+refresh_url,
               __language__(30310)+'|:|'+sys_url+'201',
               __language__(30228)+'|:|'+sys_url+'200',]
@@ -616,7 +635,7 @@ class SyncXBMC():
             Debug('[showtitle2showId] Search '+unicode(jload))
         else:
             if tvdb_id:
-                html=get_html_source("http://thetvdb.com/api/1D62F2F90030C444/series/%s/en.xml" % tvdb_id)
+                html=get_html_source("http://thetvdb.com/api/33DBB309BB2B0ADB/series/%s/en.xml" % tvdb_id)
                 if re.findall('<SeriesName>(.+?)</SeriesName>', html, re.DOTALL)[0]:
                     showtitle=re.findall('<SeriesName>(.+?)</SeriesName>', html, re.DOTALL)[0]
             Debug('[showtitle2showId] After [tvdb_id] '+showtitle)
@@ -848,6 +867,8 @@ elif mode == 60:
     ClearCache()
 elif mode == 61:
     PluginStatus().menu()
+elif mode == 62:
+    ExtraFunction()
 elif mode == 70:
     SyncXBMC()
 elif mode == 610:
@@ -861,7 +882,7 @@ elif mode == 200:
     Change_Status_Show(showId, action, refresh_url)
 elif mode == 250:
     Change_Status_Season(showId, seasonNumber, action, refresh_url)
-elif mode == 251 or mode==201:
+elif mode in (251,201,302):
     Rate(showId, id, refresh_url)
 elif mode == 300:
     Change_Status_Episode(id, playcount, refresh_url)

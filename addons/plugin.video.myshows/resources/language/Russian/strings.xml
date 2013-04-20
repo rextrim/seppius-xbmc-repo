@@ -14,6 +14,11 @@
         <string id="30011">Дебаг</string>
         <string id="30012">Оценить после просмотра</string>
         <string id="30013">Скроббер</string>
+        <string id="30014">Полное меню</string>
+        <string id="30015">Функционал MyShows.ru</string>
+        <string id="30016">Меню</string>
+        <string id="30017">Torrent Stream (ACE)</string>
+        <string id="30018">LibTorrent (требуется Torrenter)</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -76,6 +81,8 @@
         <string id="30146">Статус Плагина</string>
         <string id="30147">ДОСТУПНО</string>
         <string id="30148">НЕТ ДОСТУПА</string>
+        <string id="30149">Дополнительные функции</string>
+
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
         <string id="30201">Неверный логин или пароль!</string>
@@ -168,6 +175,7 @@
         <string id="30288">Раздача NNM-Club.Ru (требует патч plugin.video.torrenter)</string>
         <string id="30289">Выберите шоу:</string>
         <string id="30290">Автоматическая отметка при просмотре в XBMC</string>
+        <string id="30291">Все трекеры в Torrenter</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
@@ -187,7 +195,7 @@
         <string id="30314">Удалить Источники</string>
         <string id="30315">Добавить на Главную</string>
         <string id="30316">Установить Плагин</string>
-
+        <string id="30317">Оценить эпизод</string>
 
 ///Other plugins
         <string id="30400">Назад</string>
