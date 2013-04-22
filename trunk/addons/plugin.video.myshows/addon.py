@@ -706,14 +706,14 @@ class SyncXBMC():
                 item.setProperty('fanart_image', self.menu[i]['fanart'])
 
                 for studio_info in self.menu[i]['studio']:
-                    try: studio+=', '+str(studio_info)
-                    except: studio=str(studio_info)
-                self.menu[i]['studio']=str(studio)
+                    try: studio+=', '+studio_info
+                    except: studio=studio_info
+                self.menu[i]['studio']=studio.encode('utf-8')
 
                 for genre_info in self.menu[i]['genre']:
-                    try: genre+=', '+str(genre_info)
-                    except: genre=str(genre_info)
-                self.menu[i]['genre']=str(genre)
+                    try: genre+=', '+genre_info
+                    except: genre=genre_info
+                self.menu[i]['genre']=genre.encode('utf-8')
 
                 if info:
                     self.menu[i]['title']=info['title']
