@@ -443,7 +443,7 @@ def FileNamesPrepare(filename):
     except: pass
 
 
-    urls=['.+?(\d+)[x|-](\d+).+?','.+?s(\d+)e(\d+).+?','.+?E(\d+).+?']
+    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)']
     for file in urls:
         match=re.compile(file, re.DOTALL | re.I | re.IGNORECASE).findall(filename)
         if match:
@@ -461,7 +461,7 @@ def FileNamesPrepare(filename):
                         try:
                             my_episode=int(match[0][0])
                         except: break
-            #print str([my_season, my_episode, filename])
+            Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
             return [my_season, my_episode, filename]
 
 def TextBB(string, action=None, color=None):
