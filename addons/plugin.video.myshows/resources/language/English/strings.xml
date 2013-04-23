@@ -19,8 +19,8 @@
         <string id="30016">Menu Style</string>
         <string id="30017">Torrent Stream (ACE)</string>
         <string id="30018">LibTorrent (Torrenter needed)</string>
+        <string id="30019">Old style rate window</string>
 
-        <string id="30019">%s %s [%s] of %s</string>
         <string id="30020">%s %s %s eps of %s</string>
 
         <string id="50301">Save path</string>
@@ -269,4 +269,10 @@
         <string id="30408">or you should update Serialu.net database</string>
         <string id="30409">Add to MyShows.ru</string>
 
+/// Rating
+        <string id="1315">It's really bad :(</string>
+        <string id="1316">Not good</string>
+        <string id="1317">It's ok</string>
+        <string id="1318">Good one</string>
+        <string id="1319">I'm loving it</string>
 </strings>

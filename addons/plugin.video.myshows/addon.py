@@ -11,6 +11,7 @@ except ImportError:
 from functions import *
 from torrents import *
 from app import Handler, Link
+from rating import *
 
 __version__ = "1.6.2"
 __plugin__ = "MyShows.ru " + __version__
@@ -57,7 +58,7 @@ class Main(Handler):
                        {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                        {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                        {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},])# {"title":"TEST","mode":"999"}])
+                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},])#{"title":"TEST","mode":"999"}])
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -517,15 +518,21 @@ def Change_Status_Season(showId, seasonNumber, action, refresh_url):
     showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
 
 def Rate(showId, id, refresh_url):
-    dialog = xbmcgui.Dialog()
+    ratewindow=__settings__.getSetting("ratewindow")
+    rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
     if id=='0':
         rate_item=__language__(30213)+' '+showId
     else:
         rate_item=__language__(30214)+' '+id
         pass
-    rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
-    ret = dialog.select(__language__(30215) % rate_item, rate)
-    if ret!=rate.index(unicode(__language__(30205))) and ret>-1:
+    if ratewindow=='true':
+        dialog = xbmcgui.Dialog()
+        ret = dialog.select(__language__(30215) % rate_item, rate)
+    else:
+        ret=rateMedia(showId, id)
+        if ret:
+            ret=int(ret)-1
+    if ret>-1 and ret<5:
         if id=='0':
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
@@ -755,7 +762,7 @@ class SyncXBMC():
         return shows
 
 def Test():
-    xbmc.executebuiltin('XBMC.Action(Back)')
+    rateMedia('7', '1199981', None)
     pass
 
 params = get_params()
