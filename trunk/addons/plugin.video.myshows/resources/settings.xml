@@ -23,5 +23,6 @@
     </category>
     <category label="30013">
         <setting id="scrobrate"   type="bool" label="30012" default="false"/>
+        <setting id="ratewindow"   type="bool" label="30019" default="false"/>
     </category>
 </settings>

@@ -1,0 +1,228 @@
+<window>
+    <defaultcontrol>11034</defaultcontrol>
+    <coordinates>
+        <system>1</system>
+        <posx>340</posx>
+        <posy>235</posy>
+    </coordinates>
+
+    <animation effect="fade" time="250">WindowOpen</animation>
+    <animation effect="fade" time="250">WindowClose</animation>
+
+    <controls>
+        <!--DIALOG BASE-->
+        <control type="group">
+            <control type="image"> <!--DIALOG BACKGROUND-->
+                <description>Background</description>
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>600</width>
+                <height>250</height>
+                <texture>ConfluenceDialogBack.png</texture>
+            </control>
+
+            <control type="image">
+                <description>Dialog Header Image</description>
+                <posx>40</posx>
+                <posy>16</posy>
+                <width>520</width>
+                <height>40</height>
+                <texture>Confluencedialogheader.png</texture>
+            </control>
+
+            <control type="label" id="10011"> <!--DIALOG TITLE-->
+                <description>Title</description>
+                <posx>0</posx>
+                <posy>27</posy>
+                <width>600</width>
+                <height>20</height>
+                <label>$ADDON[plugin.video.myshows 30317]</label>
+                <align>center</align>
+                <aligny>center</aligny>
+            </control>
+
+            <control type="label" id="10012"> <!--MEDIA TITLE-->
+                <description>Title</description>
+                <posx>0</posx>
+                <posy>60</posy>
+                <width>600</width>
+                <height>20</height>
+                <label>-</label>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>font12</font>
+                <textcolor>FFBBBBBB</textcolor>
+            </control>
+
+            <control type="label" id="10013"> <!--RATING TITLE-->
+                <description>Title</description>
+                <posx>0</posx>
+                <posy>185</posy>
+                <width>600</width>
+                <height>20</height>
+                <label>-</label>
+                <align>center</align>
+                <aligny>center</aligny>
+                <font>font12</font>
+                <textcolor>FFBBBBBB</textcolor>
+            </control>
+
+            <control type="button" id="10014">
+                <description>Close Window button</description>
+                <posx>510</posx>
+                <posy>8</posy>
+                <width>64</width>
+                <height>32</height>
+                <label>-</label>
+                <onup>11034</onup>
+                <ondown>11034</ondown>
+                <onclick>PreviousMenu</onclick>
+                <texturefocus>ConfluenceDialogCloseButton-focus.png</texturefocus>
+                <texturenofocus>ConfluenceDialogCloseButton.png</texturenofocus>
+                <visible>system.getbool(input.enablemouse)</visible>
+            </control>
+        </control>
+
+        <!--ADVANCED-->
+
+        <control type="group" id="10015">
+                <control type="button" id="11030">
+                    <description>1 Button</description>
+                    <posx>80</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <label>-</label>
+                    <texturefocus>1.png</texturefocus>
+                    <texturenofocus>1.png</texturenofocus>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <onup>10014</onup>
+                    <ondown>10014</ondown>
+                    <onleft>11034</onleft>
+                    <onright>11031</onright>
+                    <animation effect="zoom" end="115,115" center="auto" time="100">focus</animation>
+                </control>
+
+                <control type="button" id="11031">
+                    <description>2 Button</description>
+                    <posx>170</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <label>-</label>
+                    <texturefocus>1.png</texturefocus>
+                    <texturenofocus>1.png</texturenofocus>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <onleft>11030</onleft>
+                    <onright>11032</onright>
+                    <onup>10014</onup>
+                    <ondown>10014</ondown>
+                    <visible allowhiddenfocus="true">!Control.HasFocus(11030)|!Control.HasFocus(11032)</visible>
+                    <animation effect="zoom" end="115,115" center="auto" time="100">focus</animation>
+                </control>
+
+                <control type="image">
+                    <description>2 Button Placeholder</description>
+                    <posx>170</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <texture>2.png</texture>
+                    <visible>Control.HasFocus(11030)</visible>
+                </control>
+
+                <control type="button" id="11032">
+                    <description>3 Button</description>
+                    <posx>260</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <label>-</label>
+                    <texturefocus>1.png</texturefocus>
+                    <texturenofocus>1.png</texturenofocus>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <onleft>11031</onleft>
+                    <onright>11033</onright>
+                    <onup>10014</onup>
+                    <ondown>10014</ondown>
+                    <visible allowhiddenfocus="true">!Control.HasFocus(11030)|!Control.HasFocus(11031)</visible>
+                    <animation effect="zoom" end="115,115" center="auto" time="100">focus</animation>
+                </control>
+
+                <control type="image">
+                    <description>3 Button Placeholder</description>
+                    <posx>260</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <texture>2.png</texture>
+                    <visible>Control.HasFocus(11030)|Control.HasFocus(11031)</visible>
+                </control>
+
+                <control type="button" id="11033">
+                    <description>4 Button</description>
+                    <posx>350</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <label>-</label>
+                    <texturefocus>1.png</texturefocus>
+                    <texturenofocus>1.png</texturenofocus>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <onleft>11032</onleft>
+                    <onright>11034</onright>
+                    <onup>10014</onup>
+                    <ondown>10014</ondown>
+                    <visible allowhiddenfocus="true">!Control.HasFocus(11030)|!Control.HasFocus(11031)|!Control.HasFocus(11032)</visible>
+                    <animation effect="zoom" end="115,115" center="auto" time="100">focus</animation>
+                </control>
+
+                <control type="image">
+                    <description>4 Button Placeholder</description>
+                    <posx>350</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <texture>2.png</texture>
+                    <visible>Control.HasFocus(11030)|Control.HasFocus(11031)|Control.HasFocus(11032)</visible>
+                </control>
+
+                <control type="button" id="11034">
+                    <description>5 Button</description>
+                    <posx>440</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <label>-</label>
+                    <texturefocus>1.png</texturefocus>
+                    <texturenofocus>1.png</texturenofocus>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <onleft>11033</onleft>
+                    <onright>11030</onright>
+                    <onup>10014</onup>
+                    <ondown>10014</ondown>
+                    <visible allowhiddenfocus="true">!Control.HasFocus(11030)|!Control.HasFocus(11031)|!Control.HasFocus(11032)|!Control.HasFocus(11033)</visible>
+                    <animation effect="zoom" end="115,115" center="auto" time="100">focus</animation>
+                </control>
+
+                <control type="image">
+                    <description>5 Button Placeholder</description>
+                    <posx>440</posx>
+                    <posy>100</posy>
+                    <width>70</width>
+                    <height>70</height>
+                    <texture>2.png</texture>
+                    <visible>Control.HasFocus(11030)|Control.HasFocus(11031)|Control.HasFocus(11032)|Control.HasFocus(11033)</visible>
+                </control>
+
+            </control>
+
+
+    </controls>
+
+</window>
