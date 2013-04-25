@@ -1776,7 +1776,7 @@ provider-name="Roman_V_M">
 
 <addon id="script.torrent-tv.ru"
        name="Torrent-TV XBMC"
-       version="0.0.2"
+       version="0.0.3"
        provider-name="Torrent-TV">
     <requires>
 		<import addon="xbmc.python" version="2.0" />

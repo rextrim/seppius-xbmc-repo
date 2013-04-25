@@ -162,6 +162,7 @@ class WMainForm(xbmcgui.WindowXML):
                 self.showStatus(jdata['error'])
                 return
             self.category['Избранное'] = []
+            print '%s' % jdata
             for ch in jdata['channel']:
                 if not ch['logo']:
                     ch['logo'] = ''
@@ -184,7 +185,7 @@ class WMainForm(xbmcgui.WindowXML):
             self.img_progress.setVisible(False)
             self.hideStatus()
         except Exception, e:
-            LogToXBMC('OnInit: ' % e, 2)
+            LogToXBMC('OnInit: %s' % e, 2)
 
     def onFocus(self, ControlID):
         if ControlID == 50:
@@ -271,6 +272,8 @@ class WMainForm(xbmcgui.WindowXML):
             controlEpg.setLabel('%.2d:%.2d - %.2d:%.2d %s' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[0]['name']))
             nextepg = ''
             for i in (1,2,3):
+                if i >= curepg.__len__():
+                    break
                 sbt = time.localtime(curepg[i]['btime'])
                 set = time.localtime(curepg[i]['etime'])
                 nextepg = nextepg + '%.2d:%.2d - %.2d:%.2d %s\n' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[i]['name'])
@@ -306,6 +309,9 @@ class WMainForm(xbmcgui.WindowXML):
 
     def fillChannels(self):
         self.showStatus("Заполнение списка")
+        if not self.list:
+            self.showStatus("Список не инициализирован")
+            return
         self.list.reset()
         li = xbmcgui.ListItem('..')
         self.list.addItem(li)

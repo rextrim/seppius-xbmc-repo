@@ -87,8 +87,13 @@ class TSengine(xbmc.Player):
                     print 'Считываем порт'
                     import _winreg
                     t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
+                    print 'Получили нужную ветку реестра'
                     self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
+                    print 'Получили нужный ключ'
+                    _winreg.CloseKey(t)
+                    
                     path= self.ts_path.replace('tsengine.exe','').decode('utf-8')
+                    print 'Местонахождение tsengine %s' % path.encode('utf-8')
                     self.pfile= os.path.join( path,'acestream.port')
                     if not os.path.exists(self.pfile):
                         if self.parent: self.parent.showStatus("Запуск TS")
@@ -100,10 +105,14 @@ class TSengine(xbmc.Player):
                                 if self.parent: self.parent.showStatus("Запуск TS")
                                 raise Exception("Не возможно запустить TS")
                             xbmc.sleep(1000)
+                    print 'Aceport найден'
                     if self.parent: self.parent.hideStatus()
+                    print 'Открытие файла'
                     gf = open(self.pfile, 'r')
                     self.aceport=int(gf.read())
                     gf.close()
+                    del gf
+                    ADDON.setSetting('port', '%s' % self.aceport)
                     print 'Порт считан. Переподключаемся'
                     self.connectToTS()
                     return
