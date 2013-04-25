@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<category label="Основные">
+		<setting id="login" type="text" label="Логин" default="" />
+		<setting id="password" type="text" label="Пароль" option="hidden" default="" />
+		<!--<setting id="adult" type="bool" label="Скрывать каналы для взрослых" default="false"/>
+		<setting id="ip_addr" type="text" label="IP-адрес tsengine" default="127.0.0.1" />
+		<setting id="port" type="number" label="Порт tsengine (только при удаленном подключении)" default="62062" /> -->
+	</category>
+</settings>
