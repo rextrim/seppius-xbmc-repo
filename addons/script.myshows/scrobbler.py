@@ -202,6 +202,8 @@ class Scrobbler(threading.Thread):
 
 	def scrobble(self):
 		Debug("[Scrobbler] scrobble()")
+		Debug("[Scrobbler] self.curVideo:"+unicode(self.curVideo))
+		Debug("[Scrobbler] self.curVideoData"+unicode(self.curVideoData))
 		if self.curVideo['type']:
 			match = None
 			if 'id' in self.curVideo:
@@ -220,7 +222,7 @@ class Scrobbler(threading.Thread):
 				match['season'] = self.curVideoData['season']
 				match['episode'] = self.curVideoData['episode']
 				match['uniqueid'] = self.curVideoData['uniqueid']['unknown']
-			elif 'label' in self.curVideo:
+			elif 'label' in self.curVideo and len(self.curVideo['label'])>0:
 				match = {}
 				match['label'] = self.curVideo['label']
 
