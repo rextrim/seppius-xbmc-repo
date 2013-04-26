@@ -981,7 +981,7 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="MyShows.ru"
-       version="1.6.3a"
+       version="1.6.3b"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
@@ -1756,7 +1756,7 @@ provider-name="Roman_V_M">
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id="script.myshows" name="MyShows.ru (Service)" version="0.0.4" provider-name="DiMartino">
+<addon id="script.myshows" name="MyShows.ru (Service)" version="0.0.5" provider-name="DiMartino">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.simplejson" version="2.0.10"/>
