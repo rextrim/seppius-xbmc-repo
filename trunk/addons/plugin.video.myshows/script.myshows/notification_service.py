@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ Handles notifications from XBMC via its own thread and forwards them on to the scrobbler """
 
-import sys
+import sys, re
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -134,7 +134,7 @@ class myshowsPlayer(xbmc.Player):
 
 	# called when xbmc starts playing a file
 	def onPlayBackStarted(self):
-		xbmc.sleep(1000)
+		xbmc.sleep(2000)
 		self.type = None
 		self.id = None
 		
@@ -149,7 +149,11 @@ class myshowsPlayer(xbmc.Player):
 			if checkScrobblingExclusion(_filename):
 				Debug("[myshowsPlayer] onPlayBackStarted() - '%s' is in exclusion settings, ignoring." % _filename)
 				return
-			
+
+			try:
+				if result['item']['label']=='':	result['item']['label']=_filename.replace('\\','/').split('/')[len(_filename.replace('\\','/').split('/'))-1]
+			except: pass
+
 			self.type = result["item"]["type"]
 
 			data = {"action": "started"}

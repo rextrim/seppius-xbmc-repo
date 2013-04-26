@@ -62,6 +62,15 @@ def id2title(showId, id=None):
         else:
             return title.encode('utf-8'), None
 
+def date2SE(showId, date):
+    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    if jload:
+        jdata = json.loads(jload)
+        for id in jdata['episodes']:
+            #print jdata['episodes'][id]['airDate']+' NOT '+str(date)
+            if jdata['episodes'][id]['airDate']==str(date):
+                return jdata['episodes'][id]['seasonNumber'], jdata['episodes'][id]['episodeNumber']
+
 def fdate_bigger_ldate(fdate, ldate):
     if int(fdate.split('.')[2])>int(ldate.split('.')[2]):
         return True
@@ -476,14 +485,24 @@ def FileNamesPrepare(filename):
             return [my_season, my_episode, filename]
 
 def filename2match(filename):
+    results={'label':filename}
     urls=['(.+)s(\d+)e(\d+)']
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         if match:
-            showtitle, season, episode=match[0]
-            showtitle=showtitle.replace('.',' ').strip()
-            Debug('[filename2match] '+str((showtitle, int(season), int(episode))))
-            return (showtitle, season, episode)
+            results['showtitle'], results['season'], results['episode']=match[0]
+            results['showtitle']=results['showtitle'].replace('.',' ').strip()
+            Debug('[filename2match] '+str(results))
+            return results
+    urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})']
+    for file in urls:
+        match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
+        if match:
+            results['showtitle']=match[0][0].replace('.',' ').strip()
+            results['date']='%s.%s.%s' % (match[0][3],match[0][2],match[0][1])
+            Debug('[filename2match] '+str(results))
+            return results
+
 
 def TextBB(string, action=None, color=None):
     if action=='b':

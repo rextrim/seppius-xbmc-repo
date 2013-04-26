@@ -366,7 +366,7 @@ class UTorrent:
             return None
         res=[]
         i=-1
-        print obj
+
         for x in obj['files'][1]:
             i+=1
             if x[1]>=1024*1024*1024:

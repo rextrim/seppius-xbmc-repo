@@ -629,17 +629,19 @@ class SyncXBMC():
                         if len(idlist)==1:
                             id=idlist[0]
                     else:
-                        self.match['showtitle'], self.match['season'],self.match['episode']=filename2match(self.match['label'])
+                        self.match=filename2match(self.match['label'])
             if not showId and 'showtitle' in self.match:
                 try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
                 except:showId=self.showtitle2showId(self.match['showtitle'])
+            if 'date' in self.match and not 'episode' in self.match:
+                self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
                 if self.newshow:
                     Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                     xbmc.sleep(500)
-                #print '%s %s %s %s' % (showId, self.match['season'],self.match['episode'],self.match['label'].encode('utf-8', 'ignore'))
-                if not id: id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+                if not id and 'season' in self.match and 'episode' in self.match: id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+                else: return
                 if __settings__.getSetting("scrobrate")=='true':
                     rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
                 else: rateOK=True
