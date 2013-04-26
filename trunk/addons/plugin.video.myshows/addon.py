@@ -634,13 +634,16 @@ class SyncXBMC():
                 try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
                 except:showId=self.showtitle2showId(self.match['showtitle'])
             if 'date' in self.match and not 'episode' in self.match:
-                self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
+                id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
                 if self.newshow:
+                    Debug('[doaction] New show! Marking as watching')
                     Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                     xbmc.sleep(500)
-                if not id and 'season' in self.match and 'episode' in self.match: id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+                if not id and 'season' in self.match and 'episode' in self.match:
+                    Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
+                    id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
                 else: return
                 if __settings__.getSetting("scrobrate")=='true':
                     rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
@@ -650,12 +653,12 @@ class SyncXBMC():
 
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
-        jload=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
-        if jload:
-            jdata = json.loads(jload)
+        jloadshows=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
+        if jloadshows:
+            jdatashows = json.loads(jloadshows)
         else: return
-        for showId in jdata:
-            if showtitle==jdata[showId]['ruTitle'] or showtitle==jdata[showId]['title']:
+        for showId in jdatashows:
+            if showtitle==jdatashows[showId]['ruTitle'] or showtitle==jdatashows[showId]['title']:
                 return int(showId)
         Debug('[showtitle2showId] '+unicode(showtitle))
         jload=Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q=%s' % urllib.quote_plus(showtitle.encode('utf-8', 'ignore'))).get()
@@ -684,21 +687,26 @@ class SyncXBMC():
         select_show=sorted(select_show, key=lambda x: x[2], reverse=True)
         showtitles=[]
         showIds=[]
+        showId=None
         for x in select_show:
             showtitles.append(x[0])
             showIds.append(x[1])
         if len(showIds)==1:
-            return int(showIds[0])
+            showId=int(showIds[0])
         else:
             dialog = xbmcgui.Dialog()
             ret = dialog.select(unicode(__language__(30289)), showtitles)
             if ret!=-1:
-                return int(showIds[ret])
+                showId=int(showIds[ret])
+        if showId:
+            if showId in jdatashows and jdatashows[showId]['watchStatus']!='watching':
+                self.newshow=True
+            return showId
 
     def getid(self, showId, seasonNumber, episodeId, lable=None):
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId))
         jdata = json.loads(data.get())
-        if seasonNumber>0:
+        if seasonNumber and int(seasonNumber)>0:
             for id in jdata['episodes']:
                 if jdata['episodes'][id]['seasonNumber']==int(seasonNumber) and jdata['episodes'][id]['episodeNumber']==int(episodeId):
                     return int(id)

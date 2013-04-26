@@ -69,7 +69,7 @@ def date2SE(showId, date):
         for id in jdata['episodes']:
             #print jdata['episodes'][id]['airDate']+' NOT '+str(date)
             if jdata['episodes'][id]['airDate']==str(date):
-                return jdata['episodes'][id]['seasonNumber'], jdata['episodes'][id]['episodeNumber']
+                return id, jdata['episodes'][id]['seasonNumber'], jdata['episodes'][id]['episodeNumber']
 
 def fdate_bigger_ldate(fdate, ldate):
     if int(fdate.split('.')[2])>int(ldate.split('.')[2]):
