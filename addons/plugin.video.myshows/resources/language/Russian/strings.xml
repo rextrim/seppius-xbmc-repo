@@ -20,6 +20,9 @@
         <string id="30017">Torrent Stream (ACE)</string>
         <string id="30018">LibTorrent (требуется Torrenter)</string>
         <string id="30019">Старое окно рейтинга</string>
+        <string id="30020">Вспылающие окна</string>
+        <string id="30021">Пробовать использовать имя файла</string>
+        <string id="30022">Отмечать только если поставили оценку</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -214,7 +217,7 @@
         <string id="1315">Не стоит смотреть :(</string>
         <string id="1316">Так себе</string>
         <string id="1317">Можно посмотреть</string>
-        <string id="1318">Хорошая серия</string>
-        <string id="1319">Отличная серия</string>
+        <string id="1318">Хорошо</string>
+        <string id="1319">Отлично!</string>
 
 </strings>

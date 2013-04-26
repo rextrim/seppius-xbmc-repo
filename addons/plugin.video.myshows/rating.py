@@ -4,6 +4,7 @@
 import xbmc
 import xbmcaddon
 import xbmcgui
+from functions import id2title
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
@@ -24,13 +25,13 @@ focus_labels = {
 	11034: __language__(1319).encode('utf-8', 'ignore'),
 }
 
-def rateMedia(showId, id):
+def rateMedia(showId, id, rate_item):
     xbmc.executebuiltin('Dialog.Close(all, true)')
 
     gui = RatingDialog(
         "RatingDialog.xml",
         __settings__.getAddonInfo('path'),
-        showId=showId, id=id
+        showId=showId, id=id, rate_item=rate_item
     )
 
     gui.doModal()
@@ -41,14 +42,15 @@ def rateMedia(showId, id):
 
 
 class RatingDialog(xbmcgui.WindowXMLDialog):
-    def __init__(self, xmlFile, resourcePath, forceFallback=False, media_type=None, media=None, rating_type=None, showId='None', id='None'):
+    def __init__(self, xmlFile, resourcePath, forceFallback=False, media_type=None, media=None, rating_type=None, showId='None', id='None', rate_item='None'):
         self.rating = None
-        self.showId, self.id = showId, id
+        self.showId, self.id, self.rate_item = showId, id, rate_item
 
     def onInit(self):
         self.getControl(10015).setVisible(True)
-        self.getControl(10012).setLabel('ShowId %s - id %s' % (self.showId, self.id))
-        #self.setFocusId(11034) #Focus 5 Button
+        self.getControl(10011).setLabel(self.rate_item)
+        self.title=id2title(self.showId, self.id)
+        self.getControl(10012).setLabel('%s - %s' % (self.title[0],self.title[1]))
 
 
     def onClick(self, controlID):

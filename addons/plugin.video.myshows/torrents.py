@@ -331,7 +331,7 @@ class Source:
             if self.stype=='torrenterall': self.stype='torrenter'
             TorrentDB().add(self.filename, self.stype, self.showId, self.seasonId, self.id, self.episodeId)
             showMessage(__language__(30208), __language__(30230) % self.filename)
-        except: showMessage(__language__(30206), __language__(30237) % self.filename)
+        except: showMessage(__language__(30206), __language__(30237) % self.filename, forced=True)
 
     def handle(self):
         pass
@@ -606,7 +606,7 @@ class DownloadSource(Source):
                     stringdata=json.dumps(stringdata)
                     add=AddSource(stringdata)
                     add.uTorrentAdd(id, self.ind)
-            else: showMessage(__language__(30206), __language__(30271))
+            else: showMessage(__language__(30206), __language__(30271), forced=True)
 
 
 
@@ -716,7 +716,7 @@ class AddSource(Source):
                     self.addsource()
                     showMessage(__language__(30208), __language__(30230) % (filename))
                     AskPlay()
-                except: showMessage(__language__(30206), __language__(30231) % (filename))
+                except: showMessage(__language__(30206), __language__(30231) % (filename), forced=True)
         elif stype=='multitorrent':
             action=xbmcgui.Dialog()
             filename=action.browse(1, __language__(30247), 'video', '.torrent')
@@ -756,7 +756,7 @@ class AddSource(Source):
                 else: cutlist.extend(dirlist)
                 for s in dirlist:
                     i=dirlist.index(s)
-                    cutlist[i]='['+str(dllist[i][1])+'%] '+cutlist[i]
+                    cutlist[i]='['+str(dllist[i][1])+'%]['+dllist[i][3]+'] '+cutlist[i]
                 cutlist.append(unicode(__language__(30205)))
                 if not ind and ind!=0:
                     if len(dirlist)>1:
@@ -774,7 +774,7 @@ class AddSource(Source):
                             showMessage(__language__(30208), __language__(30230) % (self.filename))
                             if dllist[ret][1]==100: AskPlay()
                             else: showMessage(unicode(__language__(30208)),unicode(__language__(30275))+unicode(dllist[ret][1])+'%.')
-                        except: showMessage(__language__(30206), __language__(30231) % (self.filename))
+                        except: showMessage(__language__(30206), __language__(30231) % (self.filename), forced=True)
 
     def DirAdd(self):
         action=xbmcgui.Dialog()
@@ -786,7 +786,7 @@ class AddSource(Source):
                 try:
                     self.addsource()
                     showMessage(__language__(30208), __language__(30230) % (filename))
-                except: showMessage(__language__(30206), __language__(30231) % (filename))
+                except: showMessage(__language__(30206), __language__(30231) % (filename), forced=True)
             elif self.addstype=='multifile':
                 i=self.addmultifile()
                 showMessage(__language__(30208), __language__(30249) % (str(i)))

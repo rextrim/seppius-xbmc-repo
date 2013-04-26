@@ -366,9 +366,18 @@ class UTorrent:
             return None
         res=[]
         i=-1
+        print obj
         for x in obj['files'][1]:
             i+=1
-            res.append((x[0],(int(x[2]*100/x[1])),i))
+            if x[1]>=1024*1024*1024:
+                size=str(x[1]/(1024*1024*1024))+'GB'
+            elif x[1]>=1024*1024:
+                size=str(x[1]/(1024*1024))+'MB'
+            elif x[1]>=1024:
+                size=str(x[1]/1024)+'KB'
+            else:
+                size=str(x[1])+'B'
+            res.append((x[0],(int(x[2]*100/x[1])),i,size))
         return res
 
     def add(self, torrent, dirid):

@@ -220,6 +220,10 @@ class Scrobbler(threading.Thread):
 				match['season'] = self.curVideoData['season']
 				match['episode'] = self.curVideoData['episode']
 				match['uniqueid'] = self.curVideoData['uniqueid']['unknown']
+			elif 'label' in self.curVideo:
+				match = {}
+				match['label'] = self.curVideo['label']
+
 			if match == None:
 				return
 
