@@ -687,10 +687,13 @@ class SyncXBMC():
         for x in select_show:
             showtitles.append(x[0])
             showIds.append(x[1])
-        dialog = xbmcgui.Dialog()
-        ret = dialog.select(unicode(__language__(30289)), showtitles)
-        if ret!=-1:
-            return int(showIds[ret])
+        if len(showIds)==1:
+            return int(showIds[0])
+        else:
+            dialog = xbmcgui.Dialog()
+            ret = dialog.select(unicode(__language__(30289)), showtitles)
+            if ret!=-1:
+                return int(showIds[ret])
 
     def getid(self, showId, seasonNumber, episodeId, lable=None):
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId))
