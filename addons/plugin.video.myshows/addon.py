@@ -605,7 +605,10 @@ class SyncXBMC():
         self.menu=self.GetFromXBMC()
         #print self.xbmc_shows
         self.action=action
-        self.newshow=False
+        self.jloadshows=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
+        if self.jloadshows:
+            self.jdatashows = json.loads(self.jloadshows)
+        else: return
         if self.action in ['check']:
             self.match=json.loads(title)
             self.doaction()
@@ -638,7 +641,7 @@ class SyncXBMC():
                 id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
-                if self.newshow:
+                if showId not in self.jdatashows or self.jdatashows[showId]['watchStatus']!='watching':
                     Debug('[doaction] New show! Marking as watching')
                     Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                     xbmc.sleep(500)
@@ -653,12 +656,8 @@ class SyncXBMC():
 
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
-        jloadshows=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
-        if jloadshows:
-            jdatashows = json.loads(jloadshows)
-        else: return
-        for showId in jdatashows:
-            if showtitle==jdatashows[showId]['ruTitle'] or showtitle==jdatashows[showId]['title']:
+        for showId in self.jdatashows:
+            if showtitle==self.jdatashows[showId]['ruTitle'] or showtitle==self.jdatashows[showId]['title']:
                 return int(showId)
         Debug('[showtitle2showId] '+unicode(showtitle))
         jload=Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q=%s' % urllib.quote_plus(showtitle.encode('utf-8', 'ignore'))).get()
@@ -679,7 +678,6 @@ class SyncXBMC():
         for showId in jdata:
             select_show.append((jdata[showId]['title'], showId, int(jdata[showId]['watching'])))
             if showtitle==jdata[showId]['ruTitle'] or showtitle==jdata[showId]['title']:
-                self.newshow=True
                 showIds.append(showId)
                 theshowId=showId
         if len(showIds)==1:
@@ -699,8 +697,6 @@ class SyncXBMC():
             if ret!=-1:
                 showId=int(showIds[ret])
         if showId:
-            if showId in jdatashows and jdatashows[showId]['watchStatus']!='watching':
-                self.newshow=True
             return showId
 
     def getid(self, showId, seasonNumber, episodeId, lable=None):
