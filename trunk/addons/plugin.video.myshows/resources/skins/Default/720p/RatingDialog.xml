@@ -1,5 +1,5 @@
 <window>
-    <defaultcontrol>11034</defaultcontrol>
+    <defaultcontrol>11033</defaultcontrol>
     <coordinates>
         <system>1</system>
         <posx>340</posx>
@@ -36,7 +36,7 @@
                 <posy>27</posy>
                 <width>600</width>
                 <height>20</height>
-                <label>$ADDON[plugin.video.myshows 30317]</label>
+                <label>-</label>
                 <align>center</align>
                 <aligny>center</aligny>
             </control>

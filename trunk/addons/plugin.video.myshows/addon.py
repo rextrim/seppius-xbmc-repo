@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.6.2"
+__version__ = "1.6.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -80,7 +80,7 @@ class ExtraFunction(Main):
 
 def Shows(mode):
     syncshows=SyncXBMC()
-
+    #lockView('info')
     if mode==19:
         KB = xbmc.Keyboard()
         KB.setHeading(__language__(30203))
@@ -165,6 +165,7 @@ def Seasons(showId):
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Episodes(showId, seasonNumber):
+        #lockView('info')
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
         watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
         jdata = json.loads(data.get())
@@ -179,7 +180,7 @@ def Episodes(showId, seasonNumber):
                     playcount=0
                 pre=prefix(showId=int(showId),seasonId=jdata['episodes'][id]['seasonNumber'], id=int(id))
                 title=pre+jdata['episodes'][id]['title']+' ['+jdata['episodes'][id]['airDate']+']'
-                item = xbmcgui.ListItem('%s. %s' % (str(jdata['episodes'][id]['episodeNumber']), title), iconImage='DefaultFolder.png', thumbnailImage=str(jdata['episodes'][id]['image']))
+                item = xbmcgui.ListItem('%s. %s' % (str(jdata['episodes'][id]['episodeNumber']), title), iconImage=str(jdata['episodes'][id]['image']), thumbnailImage=str(jdata['episodes'][id]['image']))
                 item.setInfo( type='Video', infoLabels={'Title': title,
                                                         'year': jdata['year'],
                                                         'episode': jdata['episodes'][id]['episodeNumber'],
@@ -524,12 +525,11 @@ def Rate(showId, id, refresh_url):
         rate_item=__language__(30213)+' '+showId
     else:
         rate_item=__language__(30214)+' '+id
-        pass
     if ratewindow=='true':
         dialog = xbmcgui.Dialog()
         ret = dialog.select(__language__(30215) % rate_item, rate)
     else:
-        ret=rateMedia(showId, id)
+        ret=rateMedia(showId, id, __language__(30215) % rate_item)
         if ret:
             ret=int(ret)-1
     if ret>-1 and ret<5:
@@ -539,6 +539,7 @@ def Rate(showId, id, refresh_url):
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
         Data(cookie_auth, rate_url, refresh_url).get()
         showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
+        return True
 
 def Favorite(id, refresh_url):
     dialog = xbmcgui.Dialog()
@@ -613,19 +614,38 @@ class SyncXBMC():
         if self.action=='check':
             #print self.match
             #print str(self.getid(self.showtitle2showId(self.match['showtitle']), self.match['season'],self.match['episode'],self.match['label']))
-            try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
-            except:showId=self.showtitle2showId(self.match['showtitle'])
+            id=None
+            showId=None
+            if __settings__.getSetting("label")=='true':
+                idlist=[]
+                if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
+                    data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+self.match['label']).get()
+                    if data:
+                        jdata=json.loads(data)
+                        showId=jdata['show']['id']
+                        ids=jdata['show']['episodes']
+                        for x in ids:
+                            idlist.append(x)
+                        if len(idlist)==1:
+                            id=idlist[0]
+                    else:
+                        self.match['showtitle'], self.match['season'],self.match['episode']=filename2match(self.match['label'])
+            if not showId and 'showtitle' in self.match:
+                try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
+                except:showId=self.showtitle2showId(self.match['showtitle'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
                 if self.newshow:
                     Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                     xbmc.sleep(500)
                 #print '%s %s %s %s' % (showId, self.match['season'],self.match['episode'],self.match['label'].encode('utf-8', 'ignore'))
-                if showId:
-                    id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+                if not id: id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+                if __settings__.getSetting("scrobrate")=='true':
+                    rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                else: rateOK=True
+                if rateOK or __settings__.getSetting("rateandcheck")=='false':
                     Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
-                    if __settings__.getSetting("scrobrate")=='true':
-                        Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
         jload=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
@@ -744,7 +764,7 @@ class SyncXBMC():
         # test to see if tvshows key exists in xbmc json request
         if 'tvshows' in shows:
             shows = shows['tvshows']
-            Debug("[Episodes Sync] XBMC JSON Result: '%s'" % str(shows))
+            #Debug("[Episodes Sync] XBMC JSON Result: '%s'" % str(shows))
         else:
             Debug("[Episodes Sync] Key 'tvshows' not found")
             return

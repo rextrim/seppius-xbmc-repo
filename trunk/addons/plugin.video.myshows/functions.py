@@ -35,17 +35,32 @@ forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
 striplist=['the', 'tonight', 'show', 'with', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
+debug = __settings__.getSetting("debug")
 
 def Debug(msg, force = False):
-    debug = xbmcaddon.Addon(id='plugin.video.myshows').getSetting("debug")
     if(debug == 'true' or force):
         try:
             print "[MyShows.Ru] " + msg
         except UnicodeEncodeError:
             print "[MyShows.Ru UTF-8] " + msg.encode( "utf-8", "ignore" )
 
-def showMessage(heading, message, times = 10000):
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8'), unicode(message).encode('utf-8'), times, icon))
+def showMessage(heading, message, times = 10000, forced=False):
+    notification = __settings__.getSetting("notification")
+    if debug=='true' or notification=='true' or forced:
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8'), unicode(message).encode('utf-8'), times, icon))
+
+def id2title(showId, id=None):
+    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    if jload:
+        jdata = json.loads(jload)
+        if ruName=='true' and jdata['ruTitle']:
+            title=jdata['ruTitle']
+        else:
+            title=jdata['title']
+        if id:
+            return title.encode('utf-8'), jdata['episodes'][id]['title'].encode('utf-8')
+        else:
+            return title.encode('utf-8'), None
 
 def fdate_bigger_ldate(fdate, ldate):
     if int(fdate.split('.')[2])>int(ldate.split('.')[2]):
@@ -154,18 +169,15 @@ def get_url(cookie, url):
         return array
     except urllib2.HTTPError as e:
         if e.code==401:
-            cookie=auth()
-            headers = { 'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
-                        'Content-Type':'application/x-www-form-urlencoded',
-                        'Cookie':cookie}
+            headers['Cookie']=auth()
             conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
             array=conn.read()
             conn.close()
             return array
         else:
-            showMessage('HTTP Error', str(e.code))
+            if debug: showMessage('HTTP Error', str(e.code), forced=True)
             xbmc.sleep(2000)
-            return None
+            return
 
 def get_html_source(url):
     class AppURLopener(urllib.FancyURLopener):
@@ -176,7 +188,6 @@ def get_html_source(url):
     htmlsource = sock.read()
     sock.close()
     return htmlsource
-
 
 def get_data(cookie, url, refresh=False):
     if refresh==True:
@@ -381,7 +392,7 @@ def getDirList(path, newl=None):
         try:
             if not newl: dirs, newl=xbmcvfs.listdir(path.decode('utf-8').encode('cp1251'))
         except:
-            showMessage(__language__(30206), __language__(30280))
+            showMessage(__language__(30206), __language__(30280), forced=True)
             return l
     for fl in newl:
         match=re.match('.avi|.mp4|.mkV|.flv|.mov|.vob|.wmv|.ogm|.asx|.mpg|mpeg|.avc|.vp3|.fli|.flc|.m4v', fl[int(len(fl))-4:len(fl)], re.I)
@@ -464,6 +475,16 @@ def FileNamesPrepare(filename):
             Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
             return [my_season, my_episode, filename]
 
+def filename2match(filename):
+    urls=['(.+)s(\d+)e(\d+)']
+    for file in urls:
+        match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
+        if match:
+            showtitle, season, episode=match[0]
+            showtitle=showtitle.replace('.',' ').strip()
+            Debug('[filename2match] '+str((showtitle, int(season), int(episode))))
+            return (showtitle, season, episode)
+
 def TextBB(string, action=None, color=None):
     if action=='b':
         string='[B]'+string+'[/B]'
@@ -475,8 +496,9 @@ def jstr(s):
     return str(s)
 
 def lockView(viewId):
+    xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     skinOptimizations = (
-        { 'list': 50, 'info': 503,'wide': 51,'icons': 500, }, #Confluence
+        { 'list': 50, 'info': 504,'wide': 51,'icons': 500, }, #Confluence
         { 'list': 50,'info': 51,'wide': 52,'icons': 53, } #Tra nsperency!
     )
     try: xbmc.executebuiltin("Container.SetViewMode(%s)" % str(skinOptimizations[0][viewId]))
@@ -667,5 +689,5 @@ class PluginStatus():
             except:plugstatus=True
         xbmc.executebuiltin('Container.Refresh')
         if not plugstatus: showMessage(__language__(30286), __language__(30208))
-        else: showMessage(__language__(30286), __language__(30206))
+        else: showMessage(__language__(30286), __language__(30206), forced=True)
 

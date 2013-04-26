@@ -181,9 +181,12 @@ class myshowsPlayer(xbmc.Player):
 					data["title"] = xbmc.getInfoLabel("VideoPlayer.Title")
 					Debug("[myshowsPlayer] onPlayBackStarted() - Playing a non-library 'movie' - %s (%d)." % (data["title"], data["year"]))
 				else:
-					Debug("[myshowsPlayer] onPlayBackStarted() - Non-library file, not enough data for scrobbling, skipping.")
-					return
-			
+					self.type = "episode"
+					data["type"] = "episode"
+					Debug("[myshowsPlayer] onPlayBackStarted() - Non-library file, not enough data for scrobbling, try use lable.")
+					try:data["label"]=result["item"]["label"]
+					except: return
+
 			elif self.type == "episode" or self.type == "movie":
 				# get library id
 				self.id = result["item"]["id"]
