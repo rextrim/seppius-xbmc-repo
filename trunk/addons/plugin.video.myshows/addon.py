@@ -630,6 +630,7 @@ class SyncXBMC():
                             id=idlist[0]
                     else:
                         self.match=filename2match(self.match['label'])
+                        Debug('[doaction] [filename2match] '+unicode(self.match))
             if not showId and 'showtitle' in self.match:
                 try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
                 except:showId=self.showtitle2showId(self.match['showtitle'])
@@ -644,7 +645,6 @@ class SyncXBMC():
                 if not id and 'season' in self.match and 'episode' in self.match:
                     Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
-                else: return
                 if __settings__.getSetting("scrobrate")=='true':
                     rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
                 else: rateOK=True
