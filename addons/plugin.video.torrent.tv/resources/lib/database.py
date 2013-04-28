@@ -9,6 +9,18 @@ import xbmcaddon
 import time
 import os
 import sys
+__addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
+addon_icon     = __addon__.getAddonInfo('icon')
+addon_id        = __addon__.getAddonInfo('id')
+
+def showMessage(message = '', heading='TorrentTV', times = 3000, pics = addon_icon):
+    try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
+    except Exception, e:
+        xbmc.log( '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
+        try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
+        except Exception, e:
+            xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
+
 
 try:
     import json
@@ -23,6 +35,20 @@ except ImportError:
         except ImportError:
             xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
 
+AddChannels = {
+    "Discovery Channel": {"group_id": "6", "hd": 0, "adult": 0},
+    "Discovery Science": {"group_id": "6", "hd": 0, "adult": 0},
+    "Discovery World": {"group_id": "6", "hd": 0, "adult": 0},
+    "Investigation Discovery Europe": {"group_id": "6", "hd": 0, "adult": 0},
+    "Discovery HD Showcase": {"group_id": "6", "hd": 1, "adult": 0},
+    "Discowery HD Showcase": {"group_id": "6", "hd": 1, "adult": 0},
+    "Discovery Showcase HD": {"group_id": "6", "hd": 1, "adult": 0},
+    "ТНТ": {"group_id": "8", "hd": 0, "adult": 0}}
+
+AddURL = {
+    "458": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_2+2.acelive",
+    "720": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_Viasat%20Sport.acelive"}
+
 def GET(target, post=None, cookie = ""):
     pass
     try:
@@ -31,7 +57,7 @@ def GET(target, post=None, cookie = ""):
         if cookie != "":
             req.add_header('Cookie', cookie)
             
-        resp = urllib2.urlopen(req)
+        resp = urllib2.urlopen(req, timeout=10000)
             
         http = resp.read()
         resp.close()
@@ -180,23 +206,95 @@ class DataBase:
         self.cursor.close()
             
     def UpdateUrlsStream(self, updlist = None, thread = False):
-        torr_link = ''
-        try:
-            page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + updlist[0])
-            beautifulSoup = BeautifulSoup(page)
-            tget = beautifulSoup.find('div', attrs={'class':'tv-player'})
-            m=re.search('http:(.+)"', str(tget))
-            if m:
-                torr_link= m.group(0).split('"')[0]
-            else:
-                m = re.search('load.*', str(tget))
-                torr_link = m.group(0).split('"')[1]
-        except Exception, e:
+        pass
+        if thread:
+            thr = _DBThread(self.UpdateUrlsStream, updlist)
+            thr.start()
+            return
+        self.Connect()
+        #print 'Обновление торр-ссылок '
+        schs = ""
+        if updlist != None:
+            for ch in updlist:
+                schs = schs + ('%s' % ch) + ","
+            
+            schs = schs[:schs.__len__() - 1]
+            self.cursor.execute('SELECT id, url FROM channels WHERE id IN (%s)' % schs)
+        else:
+            self.cursor.execute('SELECT id, url FROM channels WHERE (urlstream <> "") AND (del = 0)')
+        
+        res = self.cursor.fetchall()
+        ret = []
+        for ch in res:
             torr_link = ''
-            self.last_error = e
-            xbmc.log('ERROR [UpdateUrlsStream]: %s' % e)
-        return torr_link
-    
+            try:
+                page = GET('http://torrent-tv.ru/' + ch[1])
+                if page == None:
+                    page = GET('http://1ttv.org/' + ch[1])
+                    if page == None:
+                        showMessage('Torrent TV', 'Сайты не отвечают')
+                try:
+                    torr_link = AddURL[str(ch[0])]
+                except:
+                    beautifulSoup = BeautifulSoup(page)
+                    tget = beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
+                    m=re.search('http:(.+)"', str(tget))
+                    if m:
+                        torr_link= m.group(0).split('"')[0]
+                    else:
+                        m = re.search('load.*', str(tget))
+                        torr_link = m.group(0).split('"')[1]
+            except Exception, e:
+                torr_link = ''
+                self.last_error = e
+                xbmc.log('ERROR [UpdateUrlsStream]: %s' % e)
+            self.cursor.execute('UPDATE channels SET urlstream = "%s" WHERE id = "%s"' % (torr_link, ch[0]))
+            self.connection.commit()
+            ret.append({'id': ch[0], 'urlstream': torr_link})
+        self.Disconnect()
+        return ret
+
+    def GetUrlsStream(self, id, thread = False):
+        pass
+        if thread:
+            thr = _DBThread(self.UpdateUrlsStream, updlist)
+            thr.start()
+            return
+        self.Connect()
+        self.cursor.execute('SELECT urlstream FROM channels WHERE (urlstream <> "") AND (del = 0) AND id IN (%s)' % id)
+        res = self.cursor.fetchall()
+        torr_link = ''
+        for ch in res:
+            torr_link = ch
+        if res != []:
+            self.Disconnect()
+            return torr_link[0]
+        else:
+            try:
+                page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + id)
+                if page == None:
+                    page = GET('http://1ttv.org/torrent-online.php?translation=' + id)
+                    if page == None:
+                        showMessage('Torrent TV', 'Сайты не отвечают')
+                try: torr_link = AddURL[id]
+                except:
+                    beautifulSoup = BeautifulSoup(page)
+                    tget = beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
+                    m=re.search('http:(.+)"', str(tget))
+                    if m:
+                        torr_link= m.group(0).split('"')[0]
+                    else:
+                        m = re.search('load.*', str(tget))
+                        torr_link = m.group(0).split('"')[1]
+            except Exception, e:
+                torr_link = ''
+                self.last_error = e
+                xbmc.log('ERROR [GetUrlsStream]: %s' % e)
+            self.cursor.execute('UPDATE channels SET urlstream = "%s" WHERE id = "%s"' % (torr_link, id))
+            self.connection.commit()
+            self.Disconnect()
+            return torr_link
+
     def GetParts(self, adult = True):
         self.Connect()
         ssql = 'SELECT id, name FROM groups'
@@ -253,9 +351,14 @@ class DataBase:
             self.Disconnect()
             return None
         else:
-            dt = datetime.datetime.fromtimestamp(time.mktime(time.strptime(res[0], '%Y-%m-%d %H:%M:%S.%f')))
-            self.Disconnect()
-            return dt
+            try:
+                dt = datetime.datetime.fromtimestamp(time.mktime(time.strptime(res[0], '%Y-%m-%d %H:%M:%S.%f')))
+                self.Disconnect()
+                return dt
+            except:
+                dt = datetime.datetime.now()- datetime.timedelta(hours = 23)
+                self.Disconnect()
+                return dt
         return None
     
     def GetNewChannels(self, adult = True):
@@ -268,6 +371,9 @@ class DataBase:
     def GetLatestChannels(self, adult = True):
         return self.GetChannels(where = 'count > 0', adult = adult)
     
+    def GetFavouriteChannels(self, adult = True):
+        return self.GetChannels(where = 'favourite = 1', adult = adult)
+        
     def IncChannel(self, id):
         self.Connect()
         self.cursor.execute('UPDATE channels SET count = count + 1 WHERE id = "%s"' % id)
@@ -279,18 +385,29 @@ class DataBase:
         self.cursor.execute('UPDATE channels SET del = 1 WHERE id = "%s"' % id)
         self.connection.commit()
         self.Disconnect()
-    
+
+    def FavouriteChannel(self, id):
+        self.Connect()
+        self.cursor.execute('UPDATE channels SET favourite = 1 WHERE id = "%s"' % id)
+        self.connection.commit()
+        self.Disconnect()
+
+    def DelFavouriteChannel(self, id):
+        self.Connect()
+        self.cursor.execute('UPDATE channels SET favourite = 0 WHERE id = "%s"' % id)
+        self.connection.commit()
+        self.Disconnect()
+
     def UpdateDB(self):
         try:
             self.Connect()
             import time
-                            
-            #self.cursor.execute('SELECT COUNT(id) FROM shedules WHERE end > %d' % int(time.time()))
-            #res = self.cursor.fetchone()[0]
-            #if res == 0:
-            #    self.UpdateSchedules(True)
-            
             page = GET('http://torrent-tv.ru/channels.php', cookie = self.cookie)
+            if page == None:
+                page = GET('http://1ttv.org/channels.php', cookie = self.cookie)
+                if page == None:
+                    showMessage('Torrent TV', 'Сайты не отвечают')
+
             beautifulSoup = BeautifulSoup(page)
             el = beautifulSoup.findAll('a', attrs={'class': 'simple-link'})
             
@@ -323,9 +440,22 @@ class DataBase:
                     chdict.append({'id': ch['href'][31:], 'name': ch.string, 'url': ch['href'], 'adult': access, 'group_id': gr['href'][17:], 'sheduleurl': '', 'imgurl': '', 'hd': hd})
                     chstr = chstr + ch['href'][31:] + ","
                     
+            chs = beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
+            for ch in chs:
+                try:
+                    grid = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['group_id'].decode('utf-8')
+                    hd = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['hd']
+                    access = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['adult']
+                    try:
+                        chdict.append({'id': ch.find('a')['href'][31:], 'name': ch.find('strong').string.encode('utf-8').replace('\n', '').strip().decode('utf-8'), 'url': ch.find('a')['href'], 'adult': access, 'group_id':grid, 'sheduleurl': '', 'imgurl': '', 'hd': hd})
+                        chstr = chstr + ch.find('a')['href'][31:] + ","
+                    except Exception, e:
+                        print e
+                except: pass
+                
             grstr = grstr[:grstr.count(grstr)-2]
             chstr = chstr[:chstr.count(chstr)-2]
-            
+
             self.lock.acquire()
             try:
                 self.cursor.execute('DELETE FROM groups WHERE (id NOT IN (%s))' % grstr)
@@ -357,10 +487,12 @@ class DataBase:
                     self.cursor.execute('INSERT INTO groups (id, name, url, adult) VALUES ("%s", "%s", "%s", "%d");' % (gr['id'], gr['name'], gr['url'], gr['adult']))
             
                 for ch in newch:
-                    td = datetime.date.today()
-                    self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
+                    try:
+                        td = datetime.date.today()
+                        self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
                             ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
                         )
+                    except:pass
                 self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
                 self.connection.commit()
                 self.lock.release()
@@ -389,7 +521,7 @@ class DataBase:
             updch = []
             for ch in sqlres:
                 updch.append(ch[0])
-
+            self.UpdateUrlsStream(updch, True)
             self.Disconnect()
         except Exception, e:
             self.last_error = e

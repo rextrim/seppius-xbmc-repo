@@ -6,5 +6,8 @@
 		<setting id="password" type="text" label="Пароль" option="hidden" default="" />
 		<setting id="logopack" type="bool" label="Использовать внешние лого" default="false"/>
 		<setting id="adult" type="bool" label="Скрывать каналы для взрослых" default="false"/>
+		<setting id="fanart" type="bool" label="Скрыть фоновую картинку" default="false"/>
+		<setting id="disable" type="bool" label="Скрыть фанарт" default="false"/>
+		<setting id="description" type="bool" label="Скрыть описание программы" default="false"/>
 	</category>
 </settings>

@@ -3,6 +3,7 @@
 # Copyright (c) 2011 XBMC-Russia, HD-lab Team, E-mail: dev@hd-lab.ru
 # Writer (c) 2011, Welicobratov K.A., E-mail: powerdeth@narod.ru
 import sys, os, xbmcaddon
+
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
 _ADDON_PATH =   xbmc.translatePath(__addon__.getAddonInfo('path'))
 if (sys.platform == 'win32'):
@@ -10,5 +11,5 @@ if (sys.platform == 'win32'):
 sys.path.append( os.path.join( _ADDON_PATH, 'resources', 'lib') )
 
 if (__name__ == '__main__' ):
-	import torr2xbmc
-	torr2xbmc.addon_main()
+    import torr2xbmc
+    torr2xbmc.addon_main()
