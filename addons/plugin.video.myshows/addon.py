@@ -622,7 +622,8 @@ class SyncXBMC():
             if __settings__.getSetting("label")=='true':
                 idlist=[]
                 if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
-                    data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+self.match['label']).get()
+                    Debug('[doaction] Trying to find filename on myshows.ru: '+self.match['label'])
+                    data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+urllib.quote_plus(self.match['label'])).get()
                     if data:
                         jdata=json.loads(data)
                         showId=jdata['show']['id']
@@ -641,7 +642,7 @@ class SyncXBMC():
                 id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
-                if showId not in self.jdatashows or self.jdatashows[showId]['watchStatus']!='watching':
+                if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
                     Debug('[doaction] New show! Marking as watching')
                     Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                     xbmc.sleep(500)
