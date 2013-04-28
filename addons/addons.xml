@@ -1730,14 +1730,14 @@ provider-name="Roman_V_M">
 
 <addon id="script.module.YaTv"
        name="YaTv"
-       version="0.2.0"
-       provider-name="TDW">
+       version="2.0.0"
+       provider-name="TDW, -=St.Anger=-">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
   <extension point="xbmc.addon.metadata">
     <summary>YaTv</summary>
-    <description>Yandex Телепрограмма</description>
+    <description>Ya TV Guid</description>
     <platform>all</platform>
   </extension>
   <extension library="default.py" point="xbmc.service" />
