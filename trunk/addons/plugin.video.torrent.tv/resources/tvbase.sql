@@ -14,7 +14,8 @@ CREATE TABLE channels (
   addsdate     date,
   imgurl       nvarchar(255) DEFAULT "",
   hd           bit DEFAULT 0,
-  count        integer DEFAULT 0
+  count        integer DEFAULT 0,
+  favourite    integer DEFAULT 0
 );
 ----
 --Table: settings

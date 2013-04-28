@@ -3,5 +3,8 @@
 	<category label="Настройки">
 		<setting id="port_path" type="file" label="Местонахождение файла acestream.port" default="" />
 		<setting id="logopack" type="bool" label="Использовать внешние лого" default="false"/>
+		<setting id="fanart" type="bool" label="Скрыть фоновую картинку" default="false"/>
+		<setting id="disable" type="bool" label="Скрыть фанарт" default="false"/>
+		<setting id="description" type="bool" label="Скрыть описание программы" default="false"/>
 	</category>
 </settings>
