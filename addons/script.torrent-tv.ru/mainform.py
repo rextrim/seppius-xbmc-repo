@@ -13,14 +13,17 @@ import time
 from ts import TSengine as tsengine
 from player import MyPlayer
 from adswnd import AdsForm
+from menu import MenuForm
+
+import defines
 
 def LogToXBMC(text, type = 1):
     ttext = ''
     if type == 2:
         ttext = 'ERROR:'
 
-    PLUGIN_DATA_PATH = WMainForm.ADDON.getAddonInfo('path')
-    log = open(PLUGIN_DATA_PATH + '/mainform.log', 'a')
+    log = open(defines.ADDON_PATH + '/mainform.log', 'a')
+    print '[MainForm %s] %s %s\r' % (time.strftime('%X'),ttext, text)
     log.write('[MainForm %s] %s %s\r' % (time.strftime('%X'),ttext, text))
     log.close()
     del log
@@ -29,10 +32,8 @@ def LogToXBMC(text, type = 1):
 
 class MyThread(threading.Thread):
 
-    def __init__(self, func, params):
+    def __init__(self, func, params, back = True):
         threading.Thread.__init__(self)
-        self.daemon = True
-        self.TSPlayer = None
         self.func = func
         self.params = params
         #self.parent = parent
@@ -57,17 +58,27 @@ def GET(target, post=None, cookie = None):
         xbmc.log( 'GET EXCEPT [%s]' % (e), 4 )
 
 class WMainForm(xbmcgui.WindowXML):
-    CANCEL_DIALOG  = ( 9, 10, 11, 92, 101, 216, 247, 257, 275, 61467, 61448, )
+    CANCEL_DIALOG  = ( 9, 10, 11, 92, 216, 247, 257, 275, 61467, 61448, )
+    CONTEXT_MENU_IDS = (117, 101)
     ARROW_ACTIONS = (1,2,3,4)
     BTN_CHANNELS_ID = 102
     BTN_TRANSLATIONS_ID = 103
     BTN_VOD_ID = 113
     BTN_CLOSE = 101
+    BTN_FULLSCREEN = 208
+    CONTROL_LIST = 50
     PANEL_ADS = 105
     PROGRESS_BAR = 110
-    ADDON = xbmcaddon.Addon( id = 'script.torrent-tv.ru' )
-    ADDON_ICON	 = ADDON.getAddonInfo('icon')
-    ADDON_PATH = ADDON.getAddonInfo('path')
+    
+    CHN_TYPE_FAVOURITE = 'Избранное'
+    CHN_TYPE_TRANSLATION = 'Трансляции'
+    CHN_TYPE_MODERATION = 'На модерации'
+    API_ERROR_INCORRECT = 'incorrect'
+    API_ERROR_NOCONNECT = 'noconnect'
+    API_ERROR_ALREADY = 'already'
+    API_ERROR_NOPARAM = 'noparam'
+    API_ERROR_NOFAVOURITE = 'nofavourite'
+
 
     def __init__(self, *args, **kwargs):
         self.isCanceled = False
@@ -76,18 +87,18 @@ class WMainForm(xbmcgui.WindowXML):
         self.seltab = 0
         self.epg = {}        
         self.selitem = '0'
-        self.TSPlayer = None
         self.img_progress = None
         self.txt_progress = None
         self.list = None
-        self.player = MyPlayer("player.xml", WMainForm.ADDON_PATH, 'default')
+        self.player = MyPlayer("player.xml", defines.ADDON_PATH, 'default')
         self.player.parent = self
-        self.amalkerWnd = AdsForm("adsdialog.xml", WMainForm.ADDON_PATH, 'default')
+        self.amalkerWnd = AdsForm("adsdialog.xml", defines.ADDON_PATH, 'default')
+        self.cur_category = WMainForm.CHN_TYPE_FAVOURITE
     
     def initLists(self):
         self.category = {}
-        self.category['На модерации'] = []
-        self.category['Избранное'] = []
+        self.category[WMainForm.CHN_TYPE_MODERATION] = []
+        self.category[WMainForm.CHN_TYPE_FAVOURITE] = []
         self.translation = []
         self.epg = {}
 
@@ -107,15 +118,21 @@ class WMainForm(xbmcgui.WindowXML):
             li.setProperty('url_type', ch['stream_type'])
             li.setProperty('url', ch['stream_url'])
             li.setProperty('epg_cdn_id', '%s' % ch['epg_cdn_id'])
-            li.setProperty('icon', 'http://torrent-tv.ru/uploads/' + ch['logo'])
+            li.setProperty('icon', ch['logo'])
             if param == 'channel':
                 if not self.category.has_key(ch['category'].encode('utf-8')):
                     self.category[ch['category'].encode('utf-8')] = []
+                li.setProperty('commands', MenuForm.CMD_ADD_FAVOURITE)
                 self.category[ch['category'].encode('utf-8')].append(li)
             elif param == 'moderation':
-                self.category['На модерации'].append(li)
+                li.setProperty('commands', MenuForm.CMD_ADD_FAVOURITE)
+                self.category[WMainForm.CHN_TYPE_MODERATION].append(li)
             elif param == 'translation':
+                li.setProperty('commands', MenuForm.CMD_ADD_FAVOURITE)
                 self.translation.append(li)
+            elif param == 'favourite':
+                li.setProperty('commands', MenuForm.CMD_DEL_FAVOURITE)
+                self.category[WMainForm.CHN_TYPE_FAVOURITE].append(li)
 
     def getEpg(self, param):
        data = GET('http://xbmc.torrent-tv.ru/get_epg.php?session=%s&channel_id=%s' % (self.session, param), cookie = self.session)
@@ -134,11 +151,12 @@ class WMainForm(xbmcgui.WindowXML):
 
     def onInit(self):
         try:
+            LogToXBMC('OnInit')
             self.img_progress = self.getControl(108)
             self.txt_progress = self.getControl(107)
             self.progress = self.getControl(WMainForm.PROGRESS_BAR)
             self.showStatus("Авторизация")
-            data = GET('http://xbmc.torrent-tv.ru/auth.php?username=%s&password=%s' % (WMainForm.ADDON.getSetting('login'), WMainForm.ADDON.getSetting('password')))
+            data = GET('http://xbmc.torrent-tv.ru/auth.php?username=%s&password=%s' % (defines.ADDON.getSetting('login'), defines.ADDON.getSetting('password')))
             jdata = json.loads(data)
             if jdata['success'] == 0:
                 print jdata['error']
@@ -147,43 +165,8 @@ class WMainForm(xbmcgui.WindowXML):
             print jdata
             self.session = jdata['session']
             print 'Login OK'
-            self.initLists()
-            thr = MyThread(self.getChannels, 'channel')
-            thr.start()
-            thr1 = MyThread(self.getChannels, 'translation')
-            thr1.start()
-            thr2 = MyThread(self.getChannels, 'moderation')
-            thr2.start()
-            self.showStatus("Получение списка каналов")
-            data = GET('http://xbmc.torrent-tv.ru/alltranslation.php?session=%s&type=favourite' % self.session, cookie = self.session)
-            jdata = json.loads(data)
-            if jdata['success'] == 0:
-                print jdata['error']
-                self.showStatus(jdata['error'])
-                return
-            self.category['Избранное'] = []
-            print '%s' % jdata
-            for ch in jdata['channel']:
-                if not ch['logo']:
-                    ch['logo'] = ''
-                else:
-                    ch['logo'] = 'http://torrent-tv.ru/uploads/' + ch['logo']
-                li = xbmcgui.ListItem(ch['name'], ch['id'], ch['logo'], ch['logo'])
-                if not ch['stream_type']:
-                    ch['stream_type'] = ''
-                if not ch['stream_url']:
-                    ch['stream_url'] = ''
-                li.setProperty('url_type', ch['stream_type'])
-                li.setProperty('url', ch['stream_url'])
-                li.setProperty('type', 'translation')
-                li.setProperty('icon', ch['logo'])
-                li.setProperty('epg_cdn_id', ch['epg_cdn_id'])
-                self.category['Избранное'].append(li)
-            self.cur_category = 'Избранное'
-            self.list = self.getControl(50)
-            self.setFocus(self.getControl(WMainForm.BTN_CHANNELS_ID))
-            self.img_progress.setVisible(False)
-            self.hideStatus()
+            self.updateList()
+            
         except Exception, e:
             LogToXBMC('OnInit: %s' % e, 2)
 
@@ -206,7 +189,7 @@ class WMainForm(xbmcgui.WindowXML):
                     self.showStatus('Загрузка программы')
                     thr = MyThread(self.getEpg, epg_id)
                     thr.start()
-                img = self.getControl(111)
+                img = self.getControl(1111)
                 LogToXBMC(selItem.getProperty('icon'))
                 img.setImage(selItem.getProperty('icon'))
     
@@ -234,11 +217,10 @@ class WMainForm(xbmcgui.WindowXML):
     def onClick(self, controlID):
         control = self.getControl(controlID)
         LogToXBMC('onClick %s' % controlID)
-        if controlID == WMainForm.BTN_CHANNELS_ID: 
-            self.onClickChannels()
-        if controlID == WMainForm.BTN_TRANSLATIONS_ID: self.onClickTranslations()
-
-        if controlID == 50:
+        if controlID == WMainForm.BTN_CHANNELS_ID: self.onClickChannels()
+        elif controlID == WMainForm.BTN_TRANSLATIONS_ID: self.onClickTranslations()
+        elif controlID == 200: self.setFocusId(50)
+        elif controlID == 50:
             selItem = control.getSelectedItem()
             if not selItem:
                 return
@@ -249,21 +231,26 @@ class WMainForm(xbmcgui.WindowXML):
                 self.cur_category = selItem.getLabel()
                 self.fillChannels()
                 return
-            self.player.Start(selItem)
+            buf = xbmcgui.ListItem(selItem.getLabel())
+            buf.setProperty('epg_cdn_id', selItem.getProperty('epg_cdn_id'))
+            buf.setProperty('icon', selItem.getProperty('icon'))
+            buf.setProperty('url_type', selItem.getProperty('url_type'))
+            buf.setProperty('url', selItem.getProperty('url'))
+            self.player.Start(buf)
            
             LogToXBMC('CUR SELTAB %s' % self.seltab)
             
             print 'END PLAYED| Click Channels'
             xbmc.executebuiltin('SendClick(12345,102)')
+        elif controlID == WMainForm.BTN_FULLSCREEN:
+            self.player.show()
 
     def showSimpleEpg(self, epg_id = None):
         controlEpg = self.getControl(109)
         controlEpg1 = self.getControl(112)
         if epg_id and self.epg[epg_id].__len__() > 0:
             ctime = time.time()
-            LogToXBMC('%s %s' % (self.epg[epg_id][0]['name'].encode('utf-8'), time.localtime(float(self.epg[epg_id][0]['btime']))))
             curepg = filter(lambda x: (float(x['etime']) > ctime), self.epg[epg_id])
-            LogToXBMC('%s %s' % (curepg[0]['name'].encode('utf-8'), time.localtime(float(curepg[0]['btime']))))
             bt = float(curepg[0]['btime'])
             et = float(curepg[0]['etime'])
             sbt = time.localtime(bt)
@@ -291,13 +278,65 @@ class WMainForm(xbmcgui.WindowXML):
         if action in WMainForm.CANCEL_DIALOG:
             LogToXBMC('CLOSE FORM')
             self.isCanceled = True
+            #xbmc.executebuiltin('Action(PreviousMenu)')
+            self.player.Stop()
             self.close()
         elif action.getId() in WMainForm.ARROW_ACTIONS:
             self.onFocus(self.getFocusId())
-        #elif action.getId() == 101:
-        #    self.player.Stop()
-        #    xbmc.executebuiltin('Action(back)')
+        elif action.getId() in WMainForm.CONTEXT_MENU_IDS and self.getFocusId() == WMainForm.CONTROL_LIST:
+            if action.getId() == 101:
+                return
+            mnu = MenuForm("menu.xml", defines.ADDON_PATH, 'default')
+            mnu.li = self.getFocus().getSelectedItem()
+            mnu.get_method = GET
+            mnu.session = self.session
+            LogToXBMC('Выполнить комманду')
+            mnu.doModal()
+            LogToXBMC('Комманда выполнена')
+            res = mnu.GetResult()
+            LogToXBMC('Результат комманды %s' % res)
+            if res == 'OK':
+                self.updateList()
+            elif res == WMainForm.API_ERROR_INCORRECT:
+                self.showStatus('Пользователь не опознан по сессии')
+            elif res == WMainForm.API_ERROR_NOCONNECT:
+                self.showStatus('Ошибка соединения с БД')
+            elif res == WMainForm.API_ERROR_ALREADY:
+                self.showStatus('Канал уже был добавлен в избранное ранее')
+            elif res == WMainForm.API_ERROR_NOPARAM:
+                self.showStatus('Ошибка входных параметров')
+            elif res == WMainForm.API_ERROR_NOFAVOURITE:
+                self.showStatus('Канал не найден в избранном')
+        else:
+            super(WMainForm, self).onAction(action)
 
+    def updateList(self):
+        self.list = self.getControl(50)
+        self.initLists()
+        thr = MyThread(self.getChannels, 'channel', not (self.cur_category in (WMainForm.CHN_TYPE_TRANSLATION, WMainForm.CHN_TYPE_MODERATION, WMainForm.CHN_TYPE_FAVOURITE)))
+        thr.daemon = False
+        thr.start()
+        thr1 = MyThread(self.getChannels, 'translation', self.cur_category == WMainForm.CHN_TYPE_TRANSLATION)
+        thr1.daemon = False
+        thr1.start()
+        thr2 = MyThread(self.getChannels, 'moderation', self.cur_category == WMainForm.CHN_TYPE_MODERATION)
+        thr2.daemon = False
+        thr2.start()
+        thr3 = MyThread(self.getChannels, 'favourite', self.cur_category == WMainForm.CHN_TYPE_FAVOURITE)
+        thr3.start()
+        LogToXBMC('Ожидание результата')
+        if self.cur_category == WMainForm.CHN_TYPE_FAVOURITE:
+            thr3.join()
+        elif self.cur_category == WMainForm.CHN_TYPE_MODERATION:
+            thr2.join()
+        elif self.cur_category == WMainForm.CHN_TYPE_TRANSLATION:
+            thr1.join()
+        else:
+            thr.join()
+        self.list.reset()
+        self.setFocus(self.getControl(WMainForm.BTN_CHANNELS_ID))
+        self.img_progress.setVisible(False)
+        self.hideStatus()
 
     def showStatus(self, str):
         if self.img_progress: self.img_progress.setVisible(True)

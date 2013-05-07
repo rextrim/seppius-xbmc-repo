@@ -17,13 +17,12 @@ import urllib
 import copy
 import time
 
+import defines
+
 #from player import MyPlayer
 from adswnd import AdsForm
 
-
 #defines
-ADDON = xbmcaddon.Addon( id = 'script.torrent-tv.ru' )
-ADDON_PATH = ADDON.getAddonInfo('path')
 DEFAULT_TIMEOUT = 125
 
 #functions
@@ -32,8 +31,7 @@ def LogToXBMC(text, type = 1):
     if type == 2:
         ttext = 'ERROR:'
 
-    PLUGIN_DATA_PATH = ADDON.getAddonInfo('path')
-    log = open(PLUGIN_DATA_PATH + '/ts.log', 'a')
+    log = open(defines.ADDON_PATH + '/ts.log', 'a')
     log.write('[TSEngine %s] %s %s\r' % (time.strftime('%X'),ttext, text))
     log.close()
     del log
@@ -47,18 +45,23 @@ class TSengine(xbmc.Player):
     MODE_NONE = None
 
     def onPlayBackStopped(self):
-        if not self.amalker:
+        LogToXBMC('onPlayBackStopped')
+        if not self.amalker and self.playing:
             LogToXBMC('STOP')
-            #self.parent.player.close()
-            self.end()
+            self.parent.player.close()
+            self.tsstop()
         else:
             self.parent.amalkerWnd.close()
+
+    def onPlayBackEnded(self):
+        LogToXBMC('onPlayBackEnded')
+        self.onPlayBackStopped()
 
     def onPlayBackStarted(self):
         pass
         LogToXBMC('%s %s %s' % (xbmcgui.getCurrentWindowId(), self.amalker, self.getPlayingFile()))
         if not self.amalker:
-            #self.parent.player.show()
+            self.parent.player.show()
             pass
         else:
             pass
@@ -78,8 +81,9 @@ class TSengine(xbmc.Player):
         try:
             print 'Подключение к TS %s %s ' % (self.server_ip, self.aceport)
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(60)
             self.sock.connect((self.server_ip, self.aceport))
+            self.sock.setblocking(0)
+            self.sock.settimeout(32)
         except Exception, e:
             print 'Ошибка подключения %s' % e
             if ((sys.platform == 'win32') or (sys.platform == 'win64')) and self.server_ip == '127.0.0.1':
@@ -112,7 +116,7 @@ class TSengine(xbmc.Player):
                     self.aceport=int(gf.read())
                     gf.close()
                     del gf
-                    ADDON.setSetting('port', '%s' % self.aceport)
+                    defines.ADDON.setSetting('port', '%s' % self.aceport)
                     print 'Порт считан. Переподключаемся'
                     self.connectToTS()
                     return
@@ -120,19 +124,41 @@ class TSengine(xbmc.Player):
                     LogToXBMC('connectToTS: %s' % e)
                     return
             else:
-                LogToXBMC('ConnectToTS: %s' % e)
-                return
+                import subprocess
+                try:
+                    proc = subprocess.Popen('acestreamengine-client-console')
+                    xbmc.sleep(1000)
+                    i = 0
+                    while True:
+                        try:
+                            i = i + 1
+                            if i > 30:
+                                break
+                            self.sock.connect(self.server_ip, self.aceport)
+                            break
+                        except:
+                            continue
+                    if i > 30:
+                        msg = TSMessage()
+                        msg.type = TSMessage.ERROR
+                        msg.params = "Не возможно запустить TS"
+                        self.showState(msg)
+                    
+                except:
+                    LogToXBMC('Cannot start TS', 1)
+                    return
         print 'Все ок'
         self.thr = SockThread(self.sock)
         self.thr.state_method = self.showState
         self.thr.owner = self
         self.thr.start()
-
+        # Общаемся
         self.sendCommand('HELLOBG version=3')
         self.Wait(TSMessage.HELLOTS)
         msg = self.thr.getTSMessage()
+        print msg.getType()
         if msg.getType() == TSMessage.HELLOTS:
-            if msg.getParams()['version'].find('2.0') == -1:
+            if msg.getParams().has_key('version') and msg.getParams()['version'].find('2.0') == -1:
                 strerr = 'Unsupport TS version %s' % msg.getParams()['version']
                 if self.parent: self.parent.showStatus("Не поддерживаемая версия TS")
                 self.last_error = strerr
@@ -178,22 +204,27 @@ class TSengine(xbmc.Player):
         self.stream = False
         self.playing = False
         self.ts_path = ''
+        self.paused = False
        
-        LogToXBMC(ADDON.getSetting('ip_addr'))
-        if ADDON.getSetting('ip_addr'):
-            self.server_ip=ADDON.getSetting('ip_addr')
+        LogToXBMC(defines.ADDON.getSetting('ip_addr'))
+        if defines.ADDON.getSetting('ip_addr'):
+            self.server_ip=defines.ADDON.getSetting('ip_addr')
         else:
             self.server_ip = ipaddr
-            ADDON.setSetting('ip_addr', ipaddr)
-        if ADDON.getSetting('web_port'):
-            self.webport = ADDON.getSetting('webport')
+            defines.ADDON.setSetting('ip_addr', ipaddr)
+        if defines.ADDON.getSetting('web_port'):
+            self.webport = defines.ADDON.getSetting('webport')
         else:
             self.webport = '6878'
-        if ADDON.getSetting('port'):
-            self.aceport = int(ADDON.getSetting('port'))
+        if defines.ADDON.getSetting('port'):
+            self.aceport = int(defines.ADDON.getSetting('port'))
         else:
             self.aceport = 62062
-        
+
+        if not defines.ADDON.getSetting('age'):
+            defines.ADDON.setSetting('age', '1')
+        if not defines.ADDON.getSetting('gender'):
+            defines.ADDON.setSetting('gender', '1')
         try:
             self.connectToTS()
             LogToXBMC('Connected to TS')
@@ -224,8 +255,19 @@ class TSengine(xbmc.Player):
                 if self.parent: self.parent.showStatus("Ошибка ожидания. Операция прервана")
                 self.end()
                 return
+    
+    def createThread(self):
+        self.thr = SockThread(self.sock)
+        self.thr.active = True
+        self.thr.state_method = self.showState
+        self.thr.owner = self
+        self.thr.start()
 
     def load_torrent(self, torrent, mode):
+        if self.playing:
+            self.tsstop()
+        if not self.thr.active:
+            self.createThread()
         cmdparam = ''
         self.mode = mode
         if mode != TSengine.MODE_PID:
@@ -240,15 +282,18 @@ class TSengine(xbmc.Player):
         LogToXBMC('load_torrent - %s' % msg.getType())
         if msg.getType() == TSMessage.LOADRESP:
             try:
+                LogToXBMC('Compile file list')
                 jsonfile = msg.getParams()['json']
                 if not jsonfile.has_key('files'):
                     self.parent.showStatus(jsonfile['message'])
                     self.last_error = Exception(jsonfile['message'])
+                    LogToXBMC('Erorr Compile file list %s' % self.last_error)
                     return
                 self.count= len(jsonfile['files'])
                 self.files = {}
                 for file in jsonfile['files']:
                     self.files[file[1]] = urllib.unquote_plus(urllib.quote(file[0]))
+                LogToXBMC('End Compile file list')
             except Exception, e:
                 LogToXBMC(e, 2)
                 self.last_error = e
@@ -274,8 +319,22 @@ class TSengine(xbmc.Player):
                 elif _descr[0] == 'check':
                     LogToXBMC('showState: Проверка %s' % _descr[1])
                     self.parent.showStatus('Проверка %s' % _descr[1])
+        elif state.getType() == TSMessage.EVENT:
+            if state.getParams() == 'getuserdata':
+                self.sendCommand('USERDATA [{"gender": %s}, {"age": %s}]' % (int(defines.ADDON.getSetting('gender')) + 1, int(defines.ADDON.getSetting('age')) + 1))
         elif state.getType() == TSMessage.ERROR:
             self.parent.showStatus(state.getParams())
+        elif state.getType() == TSMessage.PAUSE:
+            if not self.paused:
+                self.pause()
+                self.paused = True
+                LogToXBMC('Приостановить воспроизведение')
+        elif state.getType() == TSMessage.RESUME:
+            if self.paused:
+                self.pause()
+                self.paused = False
+                LogToXBMC('Возобновить воспроизведение')
+
         LogToXBMC('showState: %s' % state.getParams())
     
     def play_url_ind(self, index=0, title='', icon=None, thumb=None):
@@ -303,6 +362,7 @@ class TSengine(xbmc.Player):
                 self.title = title
                 self.icon = icon
                 self.playing = True
+                
                 self.thr.msg = TSMessage()
                 if self.amalker:
                     self.parent.showStatus('Рекламный ролик')
@@ -313,10 +373,10 @@ class TSengine(xbmc.Player):
                 self.icon = icon
                 self.thumb = thumb
                 lit= xbmcgui.ListItem(title, iconImage = icon, thumbnailImage = thumb)
-                self.play(self.link, lit, windowed = self.amalker)
+                self.play(self.link, lit, windowed = True)
                 self.playing = True
+                self.paused = False
                 self.loop()
-                LogToXBMC('Цикл')
             except Exception, e:
                 LogToXBMC(e, 2)
                 self.last_error = e
@@ -327,7 +387,6 @@ class TSengine(xbmc.Player):
             LogToXBMC(self.last_error, 2)
             if self.parent: self.parent.showStatus("Неверный ответ от TS. Операция прервана")
             self.end()
-        LogToXBMC("PlayUrlInd (index: %s, title: %s)" % (index, title))
 
     def loop(self):
         #xbmc.sleep(500)
@@ -340,18 +399,20 @@ class TSengine(xbmc.Player):
                 break
             try:
                 xbmc.sleep(250)
+                #if not self.isPlaying() and self.playing:
+                #    self.tsstop()
+                #    break
             except:
                 LogToXBMC('ERROR SLEEPING')
                 self.parent.close()
                 return
-        LogToXBMC('START7 %s' % self.isPlayingVideo())
+
         if self.amalker:
             self.sendCommand('PLAYBACK ' + self.play_url + ' 100')
             self.Wait(TSMessage.START)
             msg = self.thr.getTSMessage()
             if msg.getType() == TSMessage.START:
                 try:
-                    LogToXBMC('START1')
                     _params = msg.getParams()
                     if not _params.has_key('url'):
                         raise Exception('Incorrect msg from TS %s' % msg.getType())
@@ -359,15 +420,15 @@ class TSengine(xbmc.Player):
                         self.stream = True
                     else:
                         self.stream = False
-                    LogToXBMC('START2')
+
                     self.play_url = _params['url'].replace('127.0.0.1', self.server_ip).replace('6878', self.webport)
                     self.amalker = _params.has_key('ad') and not _params.has_key('interruptable')
-                    LogToXBMC('START3 %s' % self.play_url)
                     if self.amalker:
                         self.parent.showStatus('Рекламный ролик')
-                    LogToXBMC('Повторный запуск. Реклама = %s' % (self.amalker))
+
                     lit= xbmcgui.ListItem(title, iconImage = self.icon, thumbnailImage = self.thumb)
-                    self.play(self.play_url, lit, windowed = self.amalker)
+                    self.play(self.play_url, lit, windowed = True)
+                    self.paused = False
                     self.loop()
                 except Exception, e:
                     LogToXBMC(e, 2)
@@ -388,12 +449,15 @@ class TSengine(xbmc.Player):
         self.thr.msg = TSMessage()
         self.thr.active = False
         self.playing = False
+        self.paused = False
         self.sock.close()
 
     def tsstop(self):
         self.sendCommand('STOP')
         self.playing = False
         self.stop()
+        self.thr.active = False
+        self.paused = False
 
 class TSMessage:
     ERROR = 'ERROR'
@@ -403,6 +467,9 @@ class TSMessage:
     STATUS = 'STATUS'
     STATE = 'STATE'
     START = 'START'
+    EVENT = 'EVENT'
+    PAUSE = 'PAUSE'
+    RESUME = 'RESUME'
     NONE = ''
     def __init__(self):
         self.type = TSMessage.NONE
@@ -444,11 +511,10 @@ class SockThread(threading.Thread):
                     cmds = self.lastRecv.split('\r\n')
                     for cmd in cmds:
                         if cmd.replace(' ', '').__len__() > 0:
-                            self._constructMsg(cmd)
                             LogToXBMC('RUN Получена комманда = ' + cmd)
-                            LogToXBMC('%s' % self.isRecv)
+                            self._constructMsg(cmd)
                     self.lastRecv = ''
-
+                xbmc.sleep(16)
             except Exception, e:
                 self.isRecv = True
                 self.active = False
@@ -460,16 +526,21 @@ class SockThread(threading.Thread):
                 self.state_method(_msg)
                 #self.owner.parent.close()
         LogToXBMC('Close from threed')
+        self.error = None
 
     def _constructMsg(self,  strmsg):
         posparam = strmsg.find(' ')
-        _msg = strmsg[:posparam]
+        if posparam == -1:
+            _msg = strmsg
+        else:
+            _msg = strmsg[:posparam]
 
         if _msg == TSMessage.HELLOTS:
             self.msg = TSMessage()
             self.msg.setType(TSMessage.HELLOTS)
-            _prm = strmsg[posparam+1:].split('=')
-            self.msg.setParams({_prm[0]: _prm[1]})
+            if posparam > -1:
+                _prm = strmsg[posparam+1:].split('=')
+                self.msg.setParams({_prm[0]: _prm[1]})
         elif _msg == TSMessage.AUTH:
             self.msg = TSMessage()
             self.msg.setType(TSMessage.AUTH)
@@ -507,6 +578,12 @@ class SockThread(threading.Thread):
                 self.state.setParams(strmsg[posparam+1:])
                 self.state_method(self.state)
             return
+        elif _msg == TSMessage.EVENT:
+            self.event = TSMessage()
+            _strparams = strmsg[posparam+1:]
+            self.event.setType(TSMessage.EVENT)
+            self.event.setParams(_strparams)
+            self.state_method(self.event)
         elif _msg == TSMessage.START:
             self.msg = TSMessage()
             _strparams = strmsg[posparam+1:].split(' ')
@@ -522,6 +599,15 @@ class SockThread(threading.Thread):
                 _params['url'] = _strparams[0]
             self.msg.setType(TSMessage.START)
             self.msg.setParams(_params)
+        elif _msg == TSMessage.PAUSE:
+            msg = TSMessage()
+            msg.setType(TSMessage.PAUSE)
+            self.state_method(msg)
+        elif _msg == TSMessage.RESUME:
+            msg = TSMessage()
+            msg.setType(TSMessage.RESUME)
+            self.state_method(msg)
+
 
     def getTSMessage(self):
         res = copy.deepcopy(self.msg)

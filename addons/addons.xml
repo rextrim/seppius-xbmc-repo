@@ -619,7 +619,7 @@ Audio sources are
 
 <addon id="plugin.video.fasttorrent.org"
        name="fast-torrent.org"
-       version="0.9.0"
+       version="0.9.8"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -1776,11 +1776,10 @@ provider-name="Roman_V_M">
 
 <addon id="script.torrent-tv.ru"
        name="Torrent-TV XBMC"
-       version="0.0.3"
+       version="0.0.7"
        provider-name="Torrent-TV">
     <requires>
 		<import addon="xbmc.python" version="2.0" />
-		<import addon="script.module.torrent.ts"/>
     </requires>
     <extension point="xbmc.python.script" library="default.py">
         <provides>video</provides>
