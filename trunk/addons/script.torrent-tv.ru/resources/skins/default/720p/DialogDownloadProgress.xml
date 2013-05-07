@@ -1,5 +1,5 @@
 ﻿<window id="12345">
-	<defaultcontrol>2006</defaultcontrol>
+	<defaultcontrol>50</defaultcontrol>
 	<allowoverlay>no</allowoverlay>
 	<coordinates>
 
@@ -46,8 +46,8 @@
 				    <label>-</label>
 				    <font>-</font>
 				    <onclick>Close</onclick>
-				    <texturefocus>DialogCloseButton-focus.png</texturefocus>
-				    <texturenofocus>DialogCloseButton.png</texturenofocus>
+				    <texturefocus>CloseButton-focus.png</texturefocus>
+				    <texturenofocus>CloseButton.png</texturenofocus>
 				    <onleft>113</onleft>
 				    <onright>102</onright>
 				    <ondown>50</ondown>
@@ -124,6 +124,7 @@
             <height>290</height>
             <visible>true</visible>
             <onup>101</onup>
+            <ondown>200</ondown>
             <orientation>horizontal</orientation>
             <viewtype>list</viewtype>
             <pagecontrol>70</pagecontrol>
@@ -221,24 +222,69 @@
       <control type="group">
           <description>Window</description>
           <control type="image">
-            <posx>128</posx>
+            <posx>140</posx>
             <posy>580</posy>
-            <width>1024</width>
+            <width>990</width>
             <height>200</height>
             <texture border="40">window.png</texture>
           </control>
         <control type="group">
+          <control type="togglebutton" id="204">
+            <posx>150</posx>
+            <posy>590</posy>
+            <width>26</width>
+            <height>26</height>
+            <label>-</label>
+            <onleft>208</onleft>
+            <onright>200</onright>
+            <onup>50</onup>
+            <texturefocus>pausefocus.png</texturefocus>
+            <texturenofocus>pause.png</texturenofocus>
+            <usealttexture>Player.Paused | Player.Forwarding | Player.Rewinding</usealttexture>
+            <alttexturefocus>playfocus.png</alttexturefocus>
+            <alttexturenofocus>play.png</alttexturenofocus>
+            <onclick>XBMC.PlayerControl(Play)</onclick>
+            <visible>Player.HasVideo</visible>
+          </control>
+          <control type="button" id="200">
+            <posx>180</posx>
+            <posy>590</posy>
+            <width>26</width>
+            <height>26</height>
+            <onleft>204</onleft>
+            <onright>208</onright>
+            <onup>50</onup>
+            <texturefocus>stopfocus.png</texturefocus>
+            <texturenofocus>stop.png</texturenofocus>
+            <onclick>XBMC.PlayerControl(Stop)</onclick>
+            <visible>Player.HasVideo</visible>
+          </control>
+          <control type="button" id="208">
+            <description>FULL SCREEN</description>
+            <posx>210</posx>
+            <posy>590</posy>
+            <width>26</width>
+            <height>26</height>
+            <onleft>200</onleft>
+            <onright>204</onright>
+            <onup>50</onup>
+            <texturefocus>fullscreenfocus.png</texturefocus>
+            <texturenofocus>fullscreen.png</texturenofocus>
+            <visible>Player.HasVideo</visible>
+          </control>
           <description>Info</description>
-          <control type="image" id="111">
+          <control type="image" id="1111">
             <posx>160</posx>
-            <posy>610</posy>
+            <posy>615</posy>
             <width>100</width>
-            <height>auto</height>
+            <height>100</height>
             <visible>true</visible>
-            <info>unkchannel.jpg</info>
+            <texture>unkchannel.jpg</texture>
+            <aspectratio>keep</aspectratio>
           </control>
         </control>
         <control type="group">
+          
           <control type="label" id = "109">
             <description>Current EPG</description>
             <posx>333</posx>
@@ -255,7 +301,7 @@
             <visible>true</visible>
             <colordiffuse>88FFFFFF</colordiffuse>
             <width>670</width>
-            <height>6</height>
+            <height>7</height>
             <info>ListItem.Progress</info>
           </control>
           <control type="label" id ="112">
@@ -270,8 +316,8 @@
           </control>
           <control type="label" id="107">
             <description>My First label</description>
-            <posx>1100</posx>
-            <posy>605</posy>
+            <posx>1080</posx>
+            <posy>590</posy>
             <width>320</width>
             <height>autho</height>
             <visible>true</visible>
@@ -283,8 +329,8 @@
           </control>
           <control type="image" id="108">
             <description>Busy animation</description>
-            <posx>1110</posx>
-            <posy>606</posy>
+            <posx>1090</posx>
+            <posy>590</posy>
             <width>16</width>
             <height>16</height>
             <texture>busy.png</texture>
