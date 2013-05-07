@@ -32,6 +32,7 @@ def LogToXBMC(text, type = 1):
         ttext = 'ERROR:'
 
     log = open(defines.ADDON_PATH + '/ts.log', 'a')
+    print '[TSEngine %s] %s %s\r' % (time.strftime('%X'),ttext, text)
     log.write('[TSEngine %s] %s %s\r' % (time.strftime('%X'),ttext, text))
     log.close()
     del log
@@ -95,8 +96,9 @@ class TSengine(xbmc.Player):
                     self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
                     print 'Получили нужный ключ'
                     _winreg.CloseKey(t)
-                    
-                    path= self.ts_path.replace('tsengine.exe','').decode('utf-8')
+
+                    path= self.ts_path.replace('tsengine.exe','')
+
                     print 'Местонахождение tsengine %s' % path.encode('utf-8')
                     self.pfile= os.path.join( path,'acestream.port')
                     if not os.path.exists(self.pfile):
@@ -127,7 +129,6 @@ class TSengine(xbmc.Player):
                 import subprocess
                 try:
                     proc = subprocess.Popen('acestreamengine-client-console')
-                    xbmc.sleep(1000)
                     i = 0
                     while True:
                         try:
@@ -137,6 +138,7 @@ class TSengine(xbmc.Player):
                             self.sock.connect(self.server_ip, self.aceport)
                             break
                         except:
+                            xbmc.sleep(1000)
                             continue
                     if i > 30:
                         msg = TSMessage()
