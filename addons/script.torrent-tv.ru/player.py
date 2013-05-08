@@ -61,7 +61,7 @@ class MyPlayer(xbmcgui.WindowXML):
         controlEpg = self.getControl(MyPlayer.CONTROL_EPG_ID)
         controlEpg1 = self.getControl(112)
         progress = self.getControl(MyPlayer.CONTROL_PROGRESS_ID)
-        if epg_id and self.parent.epg[epg_id].__len__() > 0:
+        if epg_id and self.parent.epg.has_key(epg_id) and self.parent.epg[epg_id].__len__() > 0:
             ctime = time.time()
             curepg = filter(lambda x: (float(x['etime']) > ctime), self.parent.epg[epg_id])
             bt = float(curepg[0]['btime'])
@@ -80,11 +80,12 @@ class MyPlayer(xbmcgui.WindowXML):
             #controlEpg1.setLabel(nextepg)
         else:
             controlEpg.setLabel('Нет программы')
-            controlEpg1.setLabel('')
+            #controlEpg1.setLabel('')
             progress.setPercent(1)
 
     def Stop(self):
         print 'CLOSE STOP'
+        #self.TSPlayer.thr.error = Exception('Stop player')
         xbmc.executebuiltin('PlayerControl(Stop)')
 
     def Start(self, li):
@@ -131,6 +132,7 @@ class MyPlayer(xbmcgui.WindowXML):
             self.close()
         wnd = self.getControl(MyPlayer.CONTROL_WINDOW_ID)
         if not self.visible:
+            self.UpdateEpg()
             wnd.setVisible(True)
             if self.focusId == MyPlayer.CONTROL_WINDOW_ID:
                 self.setFocusId(MyPlayer.CONTROL_BUTTON_PAUSE)
