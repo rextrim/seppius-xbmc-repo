@@ -141,13 +141,12 @@ class WMainForm(xbmcgui.WindowXML):
           print jdata['error']
           self.epg[param] = []
           self.showSimpleEpg(param)
-          self.hideStatus()
-          return
        else:
            self.epg[param] = jdata['data']
-           if self.selitem != jdata['data'][0]['channel_id']:
+           selitem = self.list.getSelectedItem()
+           if selitem.getProperty('epg_cdn_id') == param:
                self.showSimpleEpg(param)
-               self.hideStatus()
+       self.hideStatus()
 
     def onInit(self):
         try:
@@ -251,8 +250,8 @@ class WMainForm(xbmcgui.WindowXML):
         if epg_id and self.epg[epg_id].__len__() > 0:
             ctime = time.time()
             curepg = filter(lambda x: (float(x['etime']) > ctime), self.epg[epg_id])
-            bt = float(curepg[0]['btime'])
-            et = float(curepg[0]['etime'])
+            bt = float(float(curepg[0]['btime']))
+            et = float(float(curepg[0]['etime']))
             sbt = time.localtime(bt)
             set = time.localtime(et)
             self.progress.setPercent((ctime - bt)*100/(et - bt))
@@ -261,8 +260,8 @@ class WMainForm(xbmcgui.WindowXML):
             for i in (1,2,3):
                 if i >= curepg.__len__():
                     break
-                sbt = time.localtime(curepg[i]['btime'])
-                set = time.localtime(curepg[i]['etime'])
+                sbt = time.localtime(float(curepg[i]['btime']))
+                set = time.localtime(float(curepg[i]['etime']))
                 nextepg = nextepg + '%.2d:%.2d - %.2d:%.2d %s\n' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[i]['name'])
             controlEpg1.setLabel(nextepg)
 
@@ -279,6 +278,7 @@ class WMainForm(xbmcgui.WindowXML):
             LogToXBMC('CLOSE FORM')
             self.isCanceled = True
             #xbmc.executebuiltin('Action(PreviousMenu)')
+            self.player.TSPlayer.closed = True
             self.player.Stop()
             self.close()
         elif action.getId() in WMainForm.ARROW_ACTIONS:
