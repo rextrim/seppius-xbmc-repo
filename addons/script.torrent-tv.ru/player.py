@@ -53,6 +53,7 @@ class MyPlayer(xbmcgui.WindowXML):
             return
         self.UpdateEpg()
         self.getControl(MyPlayer.CONTROL_WINDOW_ID).setVisible(False)
+        self.setFocusId(MyPlayer.CONTROL_EPG_ID)
 
     def UpdateEpg(self):
         if not self.li:

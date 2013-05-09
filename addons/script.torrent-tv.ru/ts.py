@@ -128,23 +128,30 @@ class TSengine(xbmc.Player):
             else:
                 import subprocess
                 try:
-                    proc = subprocess.Popen('acestreamengine-client-console')
+                    if self.parent: self.parent.showStatus("Запуск TS")
+                    proc = subprocess.Popen("acestreamengine-client-gtk")
                     i = 0
                     while True:
                         try:
                             i = i + 1
                             if i > 30:
                                 break
-                            self.sock.connect(self.server_ip, self.aceport)
+                            LogToXBMC("Попытка подлючения")
+                            if self.parent: self.parent.showStatus("Запуск TS %s" % i)
+                            self.sock.connect((self.server_ip, self.aceport))
+                            if self.parent: self.parent.hideStatus()
                             break
-                        except:
-                            xbmc.sleep(1000)
+                        except Exception, e:
+                            LogToXBMC("Подключение не удалось %s" % e)
+                            xbmc.sleep(998)
                             continue
                     if i > 30:
                         msg = TSMessage()
                         msg.type = TSMessage.ERROR
                         msg.params = "Не возможно запустить TS"
+                        LogToXBMC("Не возможно запустить TS")
                         self.showState(msg)
+                        return
                     
                 except:
                     LogToXBMC('Cannot start TS', 1)
