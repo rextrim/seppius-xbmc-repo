@@ -26,7 +26,7 @@ import demjson3
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-Addon = xbmcaddon.Addon(id='plugin.video.my-hit.ru')
+Addon = xbmcaddon.Addon(id='plugin.video.docu.im')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
@@ -485,6 +485,7 @@ def Movie_Detail_List():
             url  = 'http://docu.im/movie/player/%s/style.txt'%(movie_id)
             html = get_HTML(url)
             info = Decode(html)
+
             rec = demjson3.loads(info)
             rec = demjson3.loads(rec['pl'])
 
@@ -628,7 +629,12 @@ def PLAY():
     else:
         audio_id = 0
 
-    video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=0 live=0'%(v_host, url, v_quality[0], v_audio[0], v_auth)
+    if Addon.getSetting('Ext_Player') == 'false':
+        video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=1 live=1'%(v_host, url, v_quality[0], v_audio[0], v_auth)
+    else:
+        rtmp = xbmc.translatePath(Addon.getSetting('RTMP'))
+        vlc =  xbmc.translatePath(Addon.getSetting('VLC'))
+        video = '"%srtmpdump.exe" "%svlc.exe" "%s"  "%s" "mp4:%s?audioIndex=%s&%s"'%(rtmp, vlc, v_host, url, v_quality[0], v_audio[0], v_auth)
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
