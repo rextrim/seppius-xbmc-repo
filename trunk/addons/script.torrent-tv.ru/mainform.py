@@ -278,8 +278,9 @@ class WMainForm(xbmcgui.WindowXML):
             LogToXBMC('CLOSE FORM')
             self.isCanceled = True
             #xbmc.executebuiltin('Action(PreviousMenu)')
-            self.player.TSPlayer.closed = True
-            self.player.Stop()
+            if self.player.TSPlayer:
+               self.player.TSPlayer.closed = True
+               self.player.Stop()
             self.close()
         elif action.getId() in WMainForm.ARROW_ACTIONS:
             self.onFocus(self.getFocusId())
