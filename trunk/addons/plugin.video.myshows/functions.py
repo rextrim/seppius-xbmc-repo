@@ -17,7 +17,7 @@ except:
 
 
 
-__version__ = "1.6.2"
+__version__ = "1.6.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -184,7 +184,7 @@ def get_url(cookie, url):
             conn.close()
             return array
         else:
-            if debug: showMessage('HTTP Error', str(e.code), forced=True)
+            if debug=='true': showMessage('HTTP Error', str(e.code), forced=True)
             xbmc.sleep(2000)
             return
 
@@ -301,6 +301,8 @@ def auto_scan():
 
 class Data():
     def __init__(self, cookie_auth, url, refresh_url=None):
+        if not xbmcvfs.exists(__tmppath__):
+            xbmcvfs.mkdir(__tmppath__)
         self.cookie=cookie_auth
         self.filename = self.url2filename(url)
         self.refresh=False
@@ -459,11 +461,12 @@ def FileNamesPrepare(filename):
     try:
         if int(filename):
             my_episode=int(filename)
+            Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
             return [my_season, my_episode, filename]
     except: pass
 
 
-    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)']
+    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)','\((\d{2}|\d{1})\)']
     for file in urls:
         match=re.compile(file, re.DOTALL | re.I | re.IGNORECASE).findall(filename)
         if match:
@@ -502,7 +505,6 @@ def filename2match(filename):
             results['date']='%s.%s.%s' % (match[0][3],match[0][2],match[0][1])
             Debug('[filename2match] '+str(results))
             return results
-
 
 def TextBB(string, action=None, color=None):
     if action=='b':
@@ -570,7 +572,7 @@ def uTorrentBrowser():
 class PluginStatus():
     def __init__(self):
 
-        self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.2',['default.py','update.py']),
+        self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.3',['default.py','update.py']),
                 ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py',

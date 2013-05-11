@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.6.3"
+__version__ = "1.6.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -226,43 +226,53 @@ def MyTorrents():
         showlist=[]
         listdict=myt.get_all()
         for x in listdict:
-            str_showId=str(x['showId'])
-            if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
-            else: show_title=jdata[str_showId]['title']
-            title=show_title
-            if str_showId not in showlist:
-                showlist.append(str_showId)
-                item = xbmcgui.ListItem(title+' (%s)'%(str(myt.countshowId(str_showId))), iconImage='DefaultFolder.png', thumbnailImage='')
-                item.setInfo( type='Video', infoLabels={'Title': title } )
-                stringdata={"showId":x['showId'], "seasonId":None, "episodeId":None, "id":None}
-                sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&sort=&showId='+str_showId+'&mode=50'
-                item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
-                xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+            try:
+                str_showId=str(x['showId'])
+                try:
+                    if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
+                    else: show_title=jdata[str_showId]['title']
+                except: show_title=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())['title']
+                title=show_title
+                if str_showId not in showlist:
+                    showlist.append(str_showId)
+                    item = xbmcgui.ListItem(title+' (%s)'%(str(myt.countshowId(str_showId))), iconImage='DefaultFolder.png', thumbnailImage='')
+                    item.setInfo( type='Video', infoLabels={'Title': title } )
+                    stringdata={"showId":x['showId'], "seasonId":None, "episodeId":None, "id":None}
+                    sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&sort=&showId='+str_showId+'&mode=50'
+                    item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+                    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+            except:
+                Debug('[MyTorrents] Something went wrong with showId %s' % (str_showId), True)
         xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_TITLE)
     else:
         if showId==None: listdict=myt.get_all()
         else: listdict=myt.get_all(showId=int(showId))
 
         for x in listdict:
-            str_showId=str(x['showId'])
-            str_seasonId=str(x['seasonId'])
-            str_episodeId=str(x['episodeId'])
-            str_id=str(x['id'])
-            str_filename=unicode(x['filename'])
-            if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
-            else: show_title=jdata[str_showId]['title']
-            title=''
-            if prefix(stype=x['stype']): title=prefix(stype=x['stype'])
+            try:
+                str_showId=str(x['showId'])
+                str_seasonId=str(x['seasonId'])
+                str_episodeId=str(x['episodeId'])
+                str_id=str(x['id'])
+                str_filename=unicode(x['filename'])
+                try:
+                    if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
+                    else: show_title=jdata[str_showId]['title']
+                except: show_title=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())['title']
+                title=''
+                if prefix(stype=x['stype']): title=prefix(stype=x['stype'])
 
-            if str_seasonId!='None': title=title+' S'+int_xx(str_seasonId)
-            if str_episodeId!='None': title=title+'E'+int_xx(str_episodeId)
-            title+=' '+show_title
-            item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage='')
-            item.setInfo( type='Video', infoLabels={'Title': title } )
-            stringdata={"showId":x['showId'], "episodeId":x['episodeId'], "id":x['id'], "seasonId":x['seasonId']}
-            sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&action='+urllib.quote_plus(str_filename.encode('utf-8'))+'&id='+str_id+'&mode=3020'
-            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
-            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
+                if str_seasonId!='None': title=title+' S'+int_xx(str_seasonId)
+                if str_episodeId!='None': title=title+'E'+int_xx(str_episodeId)
+                title+=' '+show_title
+                item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage='')
+                item.setInfo( type='Video', infoLabels={'Title': title } )
+                stringdata={"showId":x['showId'], "episodeId":x['episodeId'], "id":x['id'], "seasonId":x['seasonId']}
+                sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&action='+urllib.quote_plus(str_filename.encode('utf-8'))+'&id='+str_id+'&mode=3020'
+                item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+                xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
+            except:
+                Debug('[MyTorrents] Something went wrong with %s' % (str({"showId":x['showId'], "episodeId":x['episodeId'], "id":x['id'], "seasonId":x['seasonId']})), True)
 
 def MyScanList():
     myscan=ScanDB()
@@ -642,10 +652,6 @@ class SyncXBMC():
                 id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
-                if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
-                    Debug('[doaction] New show! Marking as watching')
-                    Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
-                    xbmc.sleep(500)
                 if not id and 'season' in self.match and 'episode' in self.match:
                     Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
@@ -653,8 +659,11 @@ class SyncXBMC():
                     rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
                 else: rateOK=True
                 if rateOK or __settings__.getSetting("rateandcheck")=='false':
+                    if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
+                        Debug('[doaction] New show! Marking as watching')
+                        Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
+                        xbmc.sleep(500)
                     Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
-
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
         for showId in self.jdatashows:
@@ -678,7 +687,7 @@ class SyncXBMC():
         showIds=[]
         for showId in jdata:
             select_show.append((jdata[showId]['title'], showId, int(jdata[showId]['watching'])))
-            if showtitle==jdata[showId]['ruTitle'] or showtitle==jdata[showId]['title']:
+            if unicode(showtitle).lower()==unicode(jdata[showId]['ruTitle']).lower() or unicode(showtitle).lower()==unicode(jdata[showId]['title']).lower():
                 showIds.append(showId)
                 theshowId=showId
         if len(showIds)==1:
@@ -757,7 +766,7 @@ class SyncXBMC():
                     self.menu[i]['playcount']=0
                     self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
                 item.setInfo( type='Video', infoLabels=self.menu[i] )
-                Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
+                #Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
         return item
 
     def GetFromXBMC(self):

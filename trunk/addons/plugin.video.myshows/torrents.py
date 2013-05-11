@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.6.2"
+__version__ = "1.6.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -37,7 +37,7 @@ __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
 __tmppath__= os.path.join(__addonpath__, 'tmp')
 striplist=['the', 'tonight', 'show', 'with', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
-
+debug = __settings__.getSetting("debug")
 aceport=62062
 
 try:
@@ -70,9 +70,7 @@ class TorrentDB:
             elif noseasonId==True: self.where+=' and seasonId is null'
             if noid: self.where+=' and id is null'
         self.cur.execute('select filename, stype, showId, seasonId, id, episodeId from sources'+self.where+' order by addtime desc')
-        #xbmc.log(str('select filename, stype, showId, seasonId, id, episodeId from sources'+self.where+' order by addtime desc'))
         res = [{'filename': x[0], 'stype': x[1], 'showId': x[2], 'seasonId': x[3], 'id': x[4], 'episodeId': x[5]} for x in self.cur.fetchall()]
-        ##xbmc.log(str(res))
         self._close()
         return res
 
@@ -83,12 +81,10 @@ class TorrentDB:
         elif noid==True: self.where+=' and id is null'
         if seasonId: self.where+=' and seasonId='+str(seasonId)
         elif noseasonId==True: self.where+=' and seasonId is null'
-        #xbmc.log(str('select filename, stype, showId, seasonId, id, episodeId  from sources'+self.where+' order by addtime desc'))
         self.cur.execute('select filename, stype, showId, seasonId, id, episodeId from sources'+self.where)
         try:
             x=self.cur.fetchone()
             res = {'filename': x[0], 'stype': x[1], 'showId': x[2], 'seasonId': x[3], 'id': x[4], 'episodeId': x[5]}
-            #xbmc.log(str(res))
         except: res=None
         self._close()
         return res
@@ -100,11 +96,9 @@ class TorrentDB:
         else:
             self.where=" where filename='"+filename+"'"
         self.cur.execute('select filename, stype, showId, seasonId, id, episodeId from sources'+self.where)
-        #xbmc.log(str('select filename, stype, showId, seasonId, id, episodeId  from sources'+self.where+' order by addtime desc'))
         x=self.cur.fetchone()
         try: res = {'filename': x[0], 'stype': x[1], 'showId': x[2], 'seasonId': x[3], 'id': x[4], 'episodeId': x[5]}
         except: res=None
-        #xbmc.log(str(res))
         self._close()
         return res
 
@@ -114,7 +108,6 @@ class TorrentDB:
         self.cur.execute('select count(showId) from sources'+self.where)
         x=self.cur.fetchone()
         res=x[0]
-        #xbmc.log(str(res))
         self._close()
         return res
 
@@ -214,14 +207,11 @@ class ScanDB(TorrentDB):
 
 class Source:
     def __init__(self, stringdata=None):
-        #xbmc.log('DAMN STRINGDATA IN HERE:'+str(stringdata))
         if not stringdata:
             params=get_params()
             stringdata = params['stringdata']
-            #xbmc.log('DAMN GET_PARAMS STRINGDATA IN HERE:'+str(stringdata))
         self.stringdata=stringdata
         self.apps=get_apps(stringdata)
-        #xbmc.log('DAMN UNQUOTED SELF.APPS IN HERE:'+str(self.apps))
 
         self.filename   = None
         self.showId     = None
@@ -260,8 +250,8 @@ class Source:
         except: pass
 
         try:
-            xbmc.log('[MY SOURCE STYPE]: '+str(self.stype))
-            xbmc.log('FILENAME HERE FROM GETDICT '+self.filename.decode('utf-8'))
+            Debug('[MY SOURCE STYPE]: '+str(self.stype))
+            Debug('FILENAME HERE FROM GETDICT '+self.filename.decode('utf-8'))
         except: pass
         self.handle()
 
@@ -271,8 +261,8 @@ class Source:
             return urllib.unquote_plus(self.apps['filename']).decode('utf-8')
         except:
             getdict=TorrentDB().get(self.showId, self.id, self.seasonId, invert_bool(self.id))
-            try: print ('FILENAME IN GETFILEANEM FROM GETDICT '+getdict['filename'].decode('utf-8'))
-            except: pass
+            try:Debug('FILENAME IN GETFILEANEM FROM GETDICT '+getdict['filename'].decode('utf-8'))
+            except:pass
             try: return getdict['filename'].decode('utf-8')
             except:
                 try:
@@ -287,19 +277,16 @@ class Source:
         except:
             if self.filename:
                 try:
-                    #print self.filename
                     dumps=TorrentDB().getbyfilename(self.filename)
                     jdumps=json.loads(dumps)
                     stype=jdumps['stype']
                     return stype
                 except:
-                    #xbmc.log('FILENAME IN GETTYPE'+self.filename)
                     self.stypes=[r'json', r'vk-file', r'url-file', r'btchat', r'rutracker',r'tpb',r'nnm',r'kz', 'smb', 'torrenter']
                     self.fnames=['{.*?}', 'http://.*?vk\.com.*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
                     self.i=-1
                     for fn in self.fnames:
                         self.i+=1
-                        #xbmc.log(str(self.i)+':'+str(fn))
                         self.match=re.compile(str(fn), re.I | re.DOTALL).match(self.filename)
                         if self.match:
                             stype=self.stypes[self.i]
@@ -317,7 +304,6 @@ class Source:
                     return stype
 
             else:
-                #xbmc.log('NO FILENAME IN GETTYPE '+str(self.filename))
                 return None
 
     def addsource(self):
@@ -363,7 +349,6 @@ class Source:
         if not self.libmode:self.TSplayer.end()
 
     def out(self):
-        #self.libmode=False
         self.libmode=libmode
         if int(__settings__.getSetting("torplayer"))==0 and torrmode:
             self.libmode=False
@@ -394,14 +379,12 @@ class Source:
                     s=torrentFileInfo.files()
                     for f in s:
                         self.filelist.append((f.path[f.path.find('\\')+1:],s.index(f)))
-                        #print str((f.path[f.path.find('\\')+1:],s.index(f)))
                 out='Ok'
         return out
 
     def addmultijson(self):
         i=0
         ind=-1
-        #print '1ADDMULTIJSON IN DA HOUSE WITH FILENAME LOL: '+self.filename+' AND STYPE MTFKA '+self.stype
         out=self.out()
         myshows_items=[]
         myshows_files=[]
@@ -416,50 +399,43 @@ class Source:
             if len(myshows_files)==1:
                 myshows_files[0]=unicode(myshows_files[0][1])
             elif len(myshows_files)>1:
-                #myshows_files=sorted(myshows_files, key=lambda x: x[0])
                 for x in myshows_files: myshows_items.append(urllib.unquote_plus(x[0]))
                 for x in myshows_files: myshows_items_indexes[urllib.unquote_plus(x[0])]=x[2]
                 for x in myshows_files: myshows_files[myshows_files.index(x)]=unicode(x[1])
-
                 myshows_temp=getDirList(None, myshows_items)
-
-                #print 'FUCK 1'+str(myshows_temp)+str(len(chooseDir(myshows_temp)))
 
                 if len(chooseDir(myshows_temp))>1:
                     dialog = xbmcgui.Dialog()
                     ret = dialog.select(__language__(30238), chooseDir(myshows_temp))
                 else: ret=0
                 myshows_temp=chooseDir(myshows_temp, unicode(chooseDir(myshows_temp)[ret]))
-                #print 'FUCK 2'+str(myshows_temp)
                 data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId))
                 jdata = json.loads(data.get())
 
                 if len(myshows_temp)>1: cutlist=cutFileNames(myshows_temp)
                 else: cutlist=myshows_temp
                 for fn in cutlist:
+                    doit=False
                     x=FileNamesPrepare(fn)
                     self.episodeId=x[1]
-                    for id in jdata['episodes']:
-                        if not x[0]: x[0]=self.seasonId
-                        elif self.seasonId!=x[0]: continue
-                        if jdata['episodes'][id]['seasonNumber']==x[0] and jdata['episodes'][id]['episodeNumber']==x[1]:
-                            self.seasonId=x[0]
-                            self.id=int(id)
-                            break
-                    self.filename=myshows_files[myshows_items_indexes[myshows_temp[cutlist.index(fn)]]]
-                    if not TorrentDB().getbyfilename(self.filename):
-                        #print 'adasdadsadasdas'
-                        try:
-                            TorrentDB().add(self.filename, "json", self.showId, self.seasonId, self.id, x[1])
-                            i+=1
-                            filename=str(myshows_files[cutlist.index(fn)])
-                        except:
-                            #print 'ZANYATO BIATCH'+str(x[1])+myshows_files[cutlist.index(fn)]+' '+str(self.showId)+' '+str(self.seasonId)+' '+str(self.id)+' '+str(x[1])
+                    if not self.seasonId and x[0] or self.seasonId==x[0] or self.seasonId and not x[0]:
+                        for id in jdata['episodes']:
+                            if jdata['episodes'][id]['seasonNumber']==x[0] and jdata['episodes'][id]['episodeNumber']==x[1] \
+                                or not x[0] and jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==x[1]:
+                                self.id=int(id)
+                                doit=True
+                                break
+                        self.filename=myshows_files[myshows_items_indexes[myshows_temp[cutlist.index(fn)]]]
+                        if not TorrentDB().getbyfilename(self.filename) and doit:
+                            try:
+                                if x[0]:seasonId=x[0]
+                                else:seasonId=self.seasonId
+                                TorrentDB().add(self.filename, 'json', self.showId, seasonId, self.id, x[1])
+                                i+=1
+                                filename=str(myshows_files[cutlist.index(fn)])
+                            except: pass
+                        else:
                             pass
-                    else:
-                        #print 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-                        pass
-
                 if i>1:
                     showMessage(__language__(30208), __language__(30249) % (str(i)))
                 elif i==1:
@@ -477,25 +453,27 @@ class Source:
         dirlist=getDirList(filename)
         if len(dirlist)>1: cutlist=cutFileNames(dirlist)
         else: cutlist=dirlist
-        #print 'BEGINSDA'+str(cutlist)
         for fn in cutlist:
             x=FileNamesPrepare(fn)
             if x:
+                doit=False
                 self.filename=os.path.join(filename, dirlist[cutlist.index(fn)])
-                self.stype='file'
                 self.episodeId=x[1]
-                for id in jdata['episodes']:
-                    if not self.seasonId: self.seasonId=x[0]
-                    if jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==x[1]:
-                        self.id=int(id)
-                        break
-                if not TorrentDB().getbyfilename(self.filename):
-                    try:
-                        TorrentDB().add(self.filename, self.stype, self.showId, self.seasonId, self.id, self.episodeId)
-                        i+=1
-                    except:
-                        #print 'ZANYATO BIATCH'+str(x[1])+self.filename+' '+str(self.showId)+' '+str(self.seasonId)+' '+str(self.id)+' '+str(x[1])
-                        pass
+                if not self.seasonId and x[0] or self.seasonId==x[0]:
+                    for id in jdata['episodes']:
+                        if jdata['episodes'][id]['seasonNumber']==x[0] and jdata['episodes'][id]['episodeNumber']==x[1] \
+                            or not x[0] and jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==x[1]:
+                            self.id=int(id)
+                            doit=True
+                            break
+                    if not TorrentDB().getbyfilename(self.filename) and doit:
+                        try:
+                            if x[0]:seasonId=x[0]
+                            else:seasonId=self.seasonId
+                            TorrentDB().add(self.filename, 'file', self.showId, seasonId, self.id, self.episodeId)
+                            i+=1
+                        except:
+                            pass
         try:TorrentDB().add(filename, 'multifile', self.showId, self.seasonId)
         except: pass
         if i>1:
@@ -505,17 +483,13 @@ class Source:
         return i
 
     def play_torrent(self):
-        #print '1PLAY URL IN DA HOUSE WITH FILENAME LOL: '+self.filename+' AND STYPE MTFKA '+self.stype
         skip=False
         if self.stype=='json':
             skip=True
             apps=json.loads(self.filename)
             self.filename=apps['filename']
             self.stype=apps['stype']
-
-        #print 'PLAY URL IN DA HOUSE WITH FILENAME LOL: '+self.filename+' AND STYPE MTFKA '+self.stype
         out=self.out()
-        #print '2PLAY URL IN DA HOUSE WITH FILENAME LOL: '+urllib.unquote_plus(self.filename)+' AND STYPE MTFKA '+self.stype
         if out=='Ok' and not skip:
             myshows_items=[]
             myshows_files=[]
@@ -525,7 +499,7 @@ class Source:
             myshows_files.sort()
             for x in myshows_files: myshows_items.append(urllib.unquote_plus(x).split('|:|')[0])
             for x in myshows_files: myshows_files[myshows_files.index(unicode(x))]=unicode(x).split('|:|')[1]
-            print str(myshows_files)
+            Debug(str(myshows_files))
             myshows_items.append(unicode(__language__(30205)))
             myshows_files.append(unicode(__language__(30205)))
 
@@ -541,7 +515,6 @@ class Source:
         if not self.libmode:self.TSplayer.end()
 
     def play_it(self, apps):
-        #xbmc.log('THIS !@ '+unicode(apps))
         self.filename = urllib.unquote_plus(apps['filename'])
         self.title = urllib.unquote_plus(apps['title'])
         self.ind = apps['ind']
@@ -569,7 +542,6 @@ class DownloadSource(Source):
                 clean=Download().listdirs()[1]
                 try:dirid=clean.index(dirname)
                 except:dirid='0'
-
 
             if self.stype=='json':
                 self.stype=json.loads(self.filename)['stype']
@@ -623,7 +595,7 @@ def chooseHASH():
     hash=None
     dat=Download().list()
     for data in dat:
-        print str((data['id'], data['dir'].encode('utf-8')))
+        Debug(str((data['id'], data['dir'].encode('utf-8'))))
         dialog_files.append((data['id'], data['dir'].encode('utf-8')))
         dialog_items.append('['+str(data['progress'])+'%] '+data['name'])
     dialog = xbmcgui.Dialog()
@@ -690,7 +662,6 @@ class Serialu(Source):
 
 class AddSource(Source):
     def handle(self):
-        #print 'AddSOURCE self.stype in biginning, biatshes!: '+str(self.stype)
         if not self.stype:
             if self.id:
                 myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242),__language__(30255), __language__(30273), __language__(30274), __language__(30243)]
@@ -799,9 +770,7 @@ class PlaySource(Source):
             else:
                 AddSource()
         else:
-            #xbmc.log('PlaySource SI & I'+str(self.showId)+' & '+str(self.id))
             PlayFile()
-            #except: showMessage(__language__(30206), __language__(30250) % (self.filename))
 
 class DeleteSource(Source):
     def handle(self):
@@ -815,7 +784,6 @@ class ScanSource(Source):
     def scanone(self, silent=None):
         i=0
         self.stype=self.gettype()
-        #print 'ScanSource: '+self.filename+' AND STYPE MTFKA '+self.stype
         if self.filename and self.filename!='':
             getdict=TorrentDB().getbyfilename(self.filename)
             self.showId=getdict['showId']
@@ -883,7 +851,6 @@ class AskPlay(Source):
 
 class PlayFile(Source):
     def handle(self):
-        #xbmc.log('LOL THIS IS STYPE IN PLAYFILE:'+str(self.stype))
         if self.stype=='file' or self.stype=='vk-file':
             xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
         elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
@@ -937,7 +904,6 @@ class ShowAllSources(Source):
         myshows_titles.append(unicode(__language__(30205)))
         dialog = xbmcgui.Dialog()
         i = dialog.select(__language__(30235), myshows_titles)
-        #xbmc.log(str(i))
         if i==myshows_files.index(unicode(__language__(30232))): AddSource()
         elif i==-1 or i==myshows_files.index(unicode(__language__(30205))): return False
         else: PlayFile(myshows_files[i])
@@ -973,7 +939,6 @@ def VKSearch(showId, id):
     ret = dialog.select(__language__(30204), dialog_items)
     query=dialog_items[ret].encode('utf-8')
     if ret>-1 and ret<len(dialog_items)-1:
-        #print str(ret)
         query=urllib.quote(query)
         xbmc.executebuiltin('xbmc.RunPlugin("plugin://xbmc-vk.svoka.com/?query='+query+'&mode=SEARCH&external=1&stringdata='+urllib.quote_plus('{"stype":"vk-file","showId":'+str(showId)+',"id":'+id+'}')+'&sdata='+str('%s, %s, %s, %s') %(str(showId), s, id, e)+'")')
     return None
@@ -1027,7 +992,6 @@ class TorrenterSearch():
         ret = dialog.select(__language__(30276) % self.stypes[self.stype], dialog_items)
         query=dialog_items[ret].encode('utf-8')
         wnd = xbmcgui.Window(xbmcgui.getCurrentWindowId())
-        print xbmcgui.getCurrentWindowId()
         if ret>-1 and ret<len(dialog_items)-1:
             xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.torrenter/?action=search&url=%s&sdata=%s&external=%s)' % (query, urllib.quote_plus(json.dumps('{"stype":%s, "showId":%s, "seasonId":%s, "episodeId":%s, "id":%s}' % (jstr(self.stype), jstr(self.showId), jstr(self.seasonId), jstr(self.episodeId), jstr(self.id)))),self.externals[self.stype]))
         return

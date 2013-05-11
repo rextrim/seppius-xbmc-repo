@@ -438,7 +438,8 @@ def Get_Serial(params):
         return False
 
     # -- parsing web page
-    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+    html = re.compile('<body>(.+?)<\/body>', re.MULTILINE|re.DOTALL).findall(html)[0]
+    soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
     pl_url = ''
 
     is_multiseason = len(soup.findAll('object', {'type':'application/x-shockwave-flash'}))
@@ -537,8 +538,9 @@ def Get_Serial(params):
 
                 ##print urllib.unquote_plus(u)
                 #myshows
+                i.setProperty('IsPlayable', 'true')
                 xbmcplugin.addDirectoryItem(h, u, i, False)
-                print(u)
+                #print(u)
             else:#myshows
                 myshows_items.append('S%sE%s'%(str(episodeId),str(seasonId)))#myshows
                 if not sdata['id']:
@@ -557,7 +559,7 @@ def Get_Serial(params):
         fw.close()
         xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.myshows/?mode=3012&stringdata='+urllib.quote_plus(stringdata)+'")')
     else:
-        xbmcplugin.endOfDirectory(h)
+        xbmcplugin.endOfDirectory(h, True)
 
 #-------------------------------------------------------------------------------
 
@@ -611,7 +613,8 @@ def PLAY(params):
     # -- if requested continious play
     if Addon.getSetting('continue_play') == 'true':
         pl=Get_Play_List(pl_url, pl_pos, img)
-        xbmc.Player().play(pl)
+        #xbmc.Player().play(pl)
+        xbmcplugin.setResolvedUrl(h, True, pl[0])
     # -- play only selected item
     else:
         if url.find('http:') == -1:
