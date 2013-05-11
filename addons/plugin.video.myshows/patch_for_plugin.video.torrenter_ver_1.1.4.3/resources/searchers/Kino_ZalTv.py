@@ -86,7 +86,6 @@ class Kino_ZalTv(SearcherABC.SearcherABC):
         referer = url
         print url
         html=self.makeRequest(url)
-        print html
         dl_id=re.search("<a href=\"http://kino-zal.tv/download.php\?id=(\d+)\">", html, re.DOTALL).group(1)
         url='http://kino-zal.tv/download.php?id='+str(dl_id)
         localFileName = tempfile.gettempdir() + os.path.sep + self.md5(url)
