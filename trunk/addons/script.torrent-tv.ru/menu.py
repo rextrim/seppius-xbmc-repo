@@ -1,4 +1,7 @@
-﻿import xbmcgui
+﻿# Copyright (c) 2013 Torrent-TV.RU
+# Writer (c) 2013, Welicobratov K.A., E-mail: 07pov23@gmail.com
+
+import xbmcgui
 import time
 import xbmcaddon
 import json
@@ -21,6 +24,7 @@ class MenuForm(xbmcgui.WindowXMLDialog):
     CMD_DEL_FAVOURITE = 'del_favourite'
     CMD_UP_FAVOURITE = 'up_favourite'
     CMD_DOWN_FAVOURITE = 'down_favourite'
+    CMD_CLOSE_TS = 'close_ts'
     CONTROL_CMD_LIST = 301
     def __ini__(self, *args, **kwargs):
         self.li = None
@@ -41,8 +45,12 @@ class MenuForm(xbmcgui.WindowXMLDialog):
                     title = 'Добавить в избранное'
                 elif c == MenuForm.CMD_DEL_FAVOURITE:
                     title = 'Удалить из избранного'
-                elif c == MenuForm.CMD_DOWN_FAVOURITE:
+                elif c == MenuForm.CMD_UP_FAVOURITE:
                     title = 'Поднять вверх'
+                elif c == MenuForm.CMD_DOWN_FAVOURITE:
+                    title = 'Опустить вниз'
+                elif c == MenuForm.CMD_CLOSE_TS:
+                    title = 'Завершить TS'
                 list.addItem(xbmcgui.ListItem(title, c))
             list.setHeight(cmds.__len__()*38)
             list.selectItem(0)
@@ -58,10 +66,11 @@ class MenuForm(xbmcgui.WindowXMLDialog):
             lt = self.getControl(MenuForm.CONTROL_CMD_LIST)
             li = lt.getSelectedItem()
             cmd = li.getLabel2()
-            if cmd == MenuForm.CMD_DEL_FAVOURITE:
-                self.DelFromFavourite()
-            elif cmd == MenuForm.CMD_ADD_FAVOURITE:
-                self.AddToFavourite()
+            if cmd == MenuForm.CMD_DEL_FAVOURITE: self.DelFromFavourite()
+            elif cmd == MenuForm.CMD_ADD_FAVOURITE: self.AddToFavourite()
+            elif cmd == MenuForm.CMD_DOWN_FAVOURITE: self.DownFavourite()
+            elif cmd == MenuForm.CMD_UP_FAVOURITE: self.UpFavourite()
+            elif cmd == MenuForm.CMD_CLOSE_TS: self.CloseTS()
             self.close()
 
     def _sendCmd(self, cmd):
@@ -79,6 +88,16 @@ class MenuForm(xbmcgui.WindowXMLDialog):
 
     def AddToFavourite(self):
         self._sendCmd('favourite_add.php')
+
+    def UpFavourite(self):
+        self._sendCmd('favourite_up.php')
+
+    def DownFavourite(self):
+        self._sendCmd('favourite_down.php')
+
+    def CloseTS(self):
+        LogToXBMC('Closet TS')
+        self.result = 'TSCLOSE'
 
     def GetResult(self):
         res = self.result

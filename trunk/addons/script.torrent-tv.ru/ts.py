@@ -1,5 +1,5 @@
-﻿# Copyright (c) 2010-2011 Torrent-TV.RU
-# Writer (c) 2011, Welicobratov K.A., E-mail: 07pov23@gmail.com
+﻿# Copyright (c) 20131 Torrent-TV.RU
+# Writer (c) 2013, Welicobratov K.A., E-mail: 07pov23@gmail.com
 
 #imports
 import xbmc
@@ -23,7 +23,7 @@ import defines
 from adswnd import AdsForm
 
 #defines
-DEFAULT_TIMEOUT = 125
+DEFAULT_TIMEOUT = 122
 
 #functions
 def LogToXBMC(text, type = 1):
@@ -80,46 +80,47 @@ class TSengine(xbmc.Player):
 
     def connectToTS(self):
         try:
-            print 'Подключение к TS %s %s ' % (self.server_ip, self.aceport)
+            LogToXBMC('Подключение к TS %s %s ' % (self.server_ip, self.aceport))
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.server_ip, self.aceport))
             self.sock.setblocking(0)
             self.sock.settimeout(32)
         except Exception, e:
-            print 'Ошибка подключения %s' % e
+            LogToXBMC('Ошибка подключения %s' % e)
             if ((sys.platform == 'win32') or (sys.platform == 'win64')) and self.server_ip == '127.0.0.1':
                 try:
-                    print 'Считываем порт'
+                    if self.pfile != '' and os.path.exists(self.pfile):
+                        os.remove(self.pfile)
+                    LogToXBMC('Считываем порт')
                     import _winreg
                     t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
-                    print 'Получили нужную ветку реестра'
                     self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
-                    print 'Получили нужный ключ'
                     _winreg.CloseKey(t)
 
                     path= self.ts_path.replace('tsengine.exe','')
-
-                    print 'Местонахождение tsengine %s' % path.encode('utf-8')
+                    LogToXBMC('1')
                     self.pfile= os.path.join( path,'acestream.port')
+                    LogToXBMC('Пытаюсь открыть acestream.port')
                     if not os.path.exists(self.pfile):
+                        LogToXBMC('Запуск TS')
                         if self.parent: self.parent.showStatus("Запуск TS")
                         a = 0
                         self.startTS(self.ts_path)
                         while not os.path.exists(self.pfile):
                             a = a + 1
+                            if self.parent: self.parent.showStatus("Запуск TS")
                             if a >= 30:
-                                if self.parent: self.parent.showStatus("Запуск TS")
+                                LogToXBMC('Не возможно запустить TS')
                                 raise Exception("Не возможно запустить TS")
-                            xbmc.sleep(1000)
-                    print 'Aceport найден'
+                            xbmc.sleep(986)
+                            LogToXBMC('3')
+                    LogToXBMC('2')
                     if self.parent: self.parent.hideStatus()
-                    print 'Открытие файла'
                     gf = open(self.pfile, 'r')
                     self.aceport=int(gf.read())
                     gf.close()
                     del gf
                     defines.ADDON.setSetting('port', '%s' % self.aceport)
-                    print 'Порт считан. Переподключаемся'
                     self.connectToTS()
                     return
                 except Exception, e:
@@ -129,6 +130,7 @@ class TSengine(xbmc.Player):
                 import subprocess
                 try:
                     if self.parent: self.parent.showStatus("Запуск TS")
+
                     proc = subprocess.Popen("acestreamengine-client-gtk")
                     i = 0
                     while True:
@@ -143,7 +145,7 @@ class TSengine(xbmc.Player):
                             break
                         except Exception, e:
                             LogToXBMC("Подключение не удалось %s" % e)
-                            xbmc.sleep(998)
+                            xbmc.sleep(995)
                             continue
                     if i > 30:
                         msg = TSMessage()
@@ -213,6 +215,7 @@ class TSengine(xbmc.Player):
         self.stream = False
         self.playing = False
         self.ts_path = ''
+        self.pfile = ''
         self.paused = False
         self.closed = False
        
@@ -236,8 +239,8 @@ class TSengine(xbmc.Player):
         if not defines.ADDON.getSetting('gender'):
             defines.ADDON.setSetting('gender', '1')
         try:
+            LogToXBMC('Connetct to TS')
             self.connectToTS()
-            LogToXBMC('Connected to TS')
         except Exception, e:
             LogToXBMC('ERROR Connect to TS: %s' % e, 2)
             return
@@ -245,10 +248,13 @@ class TSengine(xbmc.Player):
     def sendCommand(self, cmd):
         try:
             LogToXBMC('Send command %s' % cmd)
+            if not self.thr.active:
+                self.createThread()
             self.sock.send(cmd + '\r\n')
         except Exception, e:
             try:
                 self.connectToTS()
+                self.sendCommand(cmd)
             except Exception, e:
                 self.thr.active = False
                 self.parent.close()
@@ -288,7 +294,7 @@ class TSengine(xbmc.Player):
         comm = 'LOADASYNC ' + self.quid + ' ' + mode + ' ' + torrent + cmdparam
         if self.parent: self.parent.showStatus("Загрузка торрента")
         self.tsstop()
-        self.createThread()
+        
         self.sendCommand(comm)
         self.Wait(TSMessage.LOADRESP)
         msg = self.thr.getTSMessage()
@@ -338,14 +344,21 @@ class TSengine(xbmc.Player):
         elif state.getType() == TSMessage.ERROR:
             self.parent.showStatus(state.getParams())
     
-    def play_url_ind(self, index=0, title='', icon=None, thumb=None):
+    def play_url_ind(self, index=0, title='', icon=None, thumb=None, torrent=None, mode = None):
         if self.last_error:
+            return
+        if torrent or self.torrent == '':
+            self.torrent = torrent
+            self.mode = mode
+        if not self.torrent or self.torrent == '':
+            self.parent.showStatus('Нечево проигрывать')
             return
         spons = ''
         if self.mode != TSengine.MODE_PID:
             spons = ' 0 0 0'
         comm='START '+self.mode+ ' ' + self.torrent + ' '+ str(index) + spons
         LogToXBMC("Запуск торрента")
+        self.tsstop()
         self.sendCommand(comm)
         if self.parent: self.parent.showStatus("Запуск торрента")
         self.Wait(TSMessage.START)
@@ -396,6 +409,7 @@ class TSengine(xbmc.Player):
         while self.playing:
             #if not self.isPlayingVideo():
             #    break
+
             if self.isPlayingVideo() and self.amalker and (self.getTotalTime() - self.getTime()) < 0.5:
                 self.parent.amalkerWnd.close()
                 break
@@ -429,7 +443,7 @@ class TSengine(xbmc.Player):
                     if self.amalker:
                         self.parent.showStatus('Рекламный ролик')
 
-                    lit= xbmcgui.ListItem(title, iconImage = self.icon, thumbnailImage = self.thumb)
+                    lit= xbmcgui.ListItem(self.title, iconImage = self.icon, thumbnailImage = self.thumb)
                     self.play(self.play_url, lit, windowed = True)
                     self.paused = False
                     self.loop()
@@ -528,6 +542,8 @@ class SockThread(threading.Thread):
                 _msg.type = TSMessage.ERROR
                 _msg.params = 'Ошибка соединения с TS'
                 self.state_method(_msg)
+                #self.owner.end()
+                #self.owner.connectToTS()
                 #self.owner.parent.close()
         LogToXBMC('Close from threed')
         self.error = None
