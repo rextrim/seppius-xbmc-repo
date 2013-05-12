@@ -1,5 +1,5 @@
-﻿# Copyright (c) 2010-2011 Torrent-TV.RU
-# Writer (c) 2011, Welicobratov K.A., E-mail: 07pov23@gmail.com
+﻿# Copyright (c) 2013 Torrent-TV.RU
+# Writer (c) 2013, Welicobratov K.A., E-mail: 07pov23@gmail.com
 
 import xbmcgui
 import threading
@@ -98,15 +98,18 @@ class MyPlayer(xbmcgui.WindowXML):
         #self.TSPlayer.connectToTS()
         self.li = li
         LogToXBMC('Load Torrent')
-        if li.getProperty('url_type') == 'torrent':
-            self.TSPlayer.load_torrent(li.getProperty('url'),'TORRENT')
-        else:
-            self.TSPlayer.load_torrent(li.getProperty('url'), 'PID')
+        #if li.getProperty('url_type') == 'torrent':
+        #    self.TSPlayer.load_torrent(li.getProperty('url'),'TORRENT')
+        #else:
+        #    self.TSPlayer.load_torrent(li.getProperty('url'), 'PID')
 
         #if self.TSPlayer.last_error:
         #    self.hide()
+        mode = 'PID'
+        if li.getProperty('url_type') == 'torrent':
+            mode = 'TORRENT'
         LogToXBMC('Play torrent')
-        self.TSPlayer.play_url_ind(0,li.getLabel(), li.getProperty('icon'), li.getProperty('icon'))
+        self.TSPlayer.play_url_ind(0,li.getLabel(), li.getProperty('icon'), li.getProperty('icon'), torrent = li.getProperty('url'), mode = mode)
         
     def hide(self):
         pass
@@ -123,6 +126,16 @@ class MyPlayer(xbmcgui.WindowXML):
         self.setFocusId(MyPlayer.CONTROL_WINDOW_ID)
         self.focusId = MyPlayer.CONTROL_WINDOW_ID
         
+    def EndTS(self):
+        if self.TSPlayer:
+            self.TSPlayer.end()
+        import subprocess
+        import sys
+
+        if sys.platform == 'win32' or sys.platform == 'win64':
+            LogToXBMC("Закрыть TS");
+            subprocess.Popen('taskkill /F /IM tsengine.exe /T')
+            self.TSPlayer = None
 
     def onAction(self, action):
         if action in CANCEL_DIALOG:
@@ -143,7 +156,7 @@ class MyPlayer(xbmcgui.WindowXML):
             if self.t:
                 self.t.cancel()
                 self.t = None
-            self.t = threading.Timer(2, self.hideControl)
+            self.t = threading.Timer(3, self.hideControl)
             self.t.start()
 
     def onClick(self, controlID):

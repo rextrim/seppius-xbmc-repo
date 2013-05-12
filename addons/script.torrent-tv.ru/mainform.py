@@ -1,5 +1,5 @@
-﻿# Copyright (c) 2010-2011 Torrent-TV.RU
-# Writer (c) 2011, Welicobratov K.A., E-mail: 07pov23@gmail.com
+﻿# Copyright (c) 2013 Torrent-TV.RU
+# Writer (c) 2013, Welicobratov K.A., E-mail: 07pov23@gmail.com
 
 #imports
 import xbmcgui
@@ -122,16 +122,16 @@ class WMainForm(xbmcgui.WindowXML):
             if param == 'channel':
                 if not self.category.has_key(ch['category'].encode('utf-8')):
                     self.category[ch['category'].encode('utf-8')] = []
-                li.setProperty('commands', MenuForm.CMD_ADD_FAVOURITE)
+                li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
                 self.category[ch['category'].encode('utf-8')].append(li)
             elif param == 'moderation':
-                li.setProperty('commands', MenuForm.CMD_ADD_FAVOURITE)
+                li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
                 self.category[WMainForm.CHN_TYPE_MODERATION].append(li)
             elif param == 'translation':
-                li.setProperty('commands', MenuForm.CMD_ADD_FAVOURITE)
+                li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
                 self.translation.append(li)
             elif param == 'favourite':
-                li.setProperty('commands', MenuForm.CMD_DEL_FAVOURITE)
+                li.setProperty('commands', "%s,%s,%s,%s" % (MenuForm.CMD_DEL_FAVOURITE, MenuForm.CMD_UP_FAVOURITE, MenuForm.CMD_DOWN_FAVOURITE, MenuForm.CMD_CLOSE_TS))
                 self.category[WMainForm.CHN_TYPE_FAVOURITE].append(li)
 
     def getEpg(self, param):
@@ -165,6 +165,12 @@ class WMainForm(xbmcgui.WindowXML):
             self.session = jdata['session']
             print 'Login OK'
             self.updateList()
+            #li = xbmcgui.ListItem('Test')
+            #li.setProperty('url_type', 'torrent')
+            #li.setProperty('url', '401c6e3029a374f0bc345f1e35136eb525759cb7')
+            #li.setProperty('epg_cdn_id', '')
+            #li.setProperty('icon', '')
+            #self.translation.append(li)
             
         except Exception, e:
             LogToXBMC('OnInit: %s' % e, 2)
@@ -189,7 +195,6 @@ class WMainForm(xbmcgui.WindowXML):
                     thr = MyThread(self.getEpg, epg_id)
                     thr.start()
                 img = self.getControl(1111)
-                LogToXBMC(selItem.getProperty('icon'))
                 img.setImage(selItem.getProperty('icon'))
     
     def onClickChannels(self):
@@ -308,6 +313,10 @@ class WMainForm(xbmcgui.WindowXML):
                 self.showStatus('Ошибка входных параметров')
             elif res == WMainForm.API_ERROR_NOFAVOURITE:
                 self.showStatus('Канал не найден в избранном')
+            elif res == 'TSCLOSE':
+                LogToXBMC("Закрыть TS");
+                self.player.EndTS();
+                    
         else:
             super(WMainForm, self).onAction(action)
 
@@ -327,13 +336,13 @@ class WMainForm(xbmcgui.WindowXML):
         thr3.start()
         LogToXBMC('Ожидание результата')
         if self.cur_category == WMainForm.CHN_TYPE_FAVOURITE:
-            thr3.join()
+            thr3.join(10)
         elif self.cur_category == WMainForm.CHN_TYPE_MODERATION:
-            thr2.join()
+            thr2.join(10)
         elif self.cur_category == WMainForm.CHN_TYPE_TRANSLATION:
-            thr1.join()
+            thr1.join(10)
         else:
-            thr.join()
+            thr.join(10)
         self.list.reset()
         self.setFocus(self.getControl(WMainForm.BTN_CHANNELS_ID))
         self.img_progress.setVisible(False)
