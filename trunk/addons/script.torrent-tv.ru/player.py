@@ -139,11 +139,16 @@ class MyPlayer(xbmcgui.WindowXML):
 
     def onAction(self, action):
         if action in CANCEL_DIALOG:
-            print 'Closes player'
+            LogToXBMC('Closes player %s %s' % (action.getId(), action.getButtonCode()))
             self.close()
         elif action.getId() == MyPlayer.ACTION_RBC:
-            print 'CLOSE PLAYER 101'
+            LogToXBMC('CLOSE PLAYER 101 %s %s' % (action.getId(), action.getButtonCode()))
             self.close()
+        elif action.getId() == 0 and action.getButtonCode() == 61530:
+            xbmc.executebuiltin('Action(FullScreen)')
+            xbmc.sleep(4000)
+            xbmc.executebuiltin('Action(Back)')
+
         wnd = self.getControl(MyPlayer.CONTROL_WINDOW_ID)
         if not self.visible:
             self.UpdateEpg()
@@ -156,7 +161,7 @@ class MyPlayer(xbmcgui.WindowXML):
             if self.t:
                 self.t.cancel()
                 self.t = None
-            self.t = threading.Timer(3, self.hideControl)
+            self.t = threading.Timer(4, self.hideControl)
             self.t.start()
 
     def onClick(self, controlID):
