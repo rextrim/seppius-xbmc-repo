@@ -20,27 +20,27 @@
         <control type="group">
           <description>Window</description>
           <control type="image">
-            <posx>165</posx>
-            <posy>610</posy>
-            <width>950</width>
-            <height>200</height>
+            <posx>5</posx>
+            <posy>600</posy>
+            <width>1270</width>
+            <height>210</height>
             <texture border="40">window.png</texture>
           </control>
         </control>
         <control type="label">
           <description>Time</description>
-          <posx>1050</posx>
-          <posy>620</posy>
+          <posx>1200</posx>
+          <posy>610</posy>
           <font>font13</font>
           <visible>true</visible>
           <label>$INFO[System.Time]</label>
         </control>
         <control type="group">
           
-          <posx>130</posx>
-          <posy>582</posy>
+          <posx>0</posx>
+          <posy>579</posy>
           <control type="togglebutton" id="204">
-            <posx>160</posx>
+            <posx>135</posx>
             <posy>100</posy>
             <width>30</width>
             <height>30</height>
@@ -54,7 +54,7 @@
             <onclick>XBMC.PlayerControl(Play)</onclick>
           </control>
           <control type="button" id="200">
-            <posx>200</posx>
+            <posx>170</posx>
             <posy>100</posy>
             <width>30</width>
             <height>30</height>
@@ -66,7 +66,7 @@
           </control>
           <control type="button" id="205">
             <description>VIDEO SETTINGS</description>
-            <posx>250</posx>
+            <posx>235</posx>
             <posy>100</posy>
             <width>30</width>
             <height>30</height>
@@ -78,7 +78,7 @@
           </control>
           <control type="button" id="206">
             <description>AUDIO SETTINGS</description>
-            <posx>290</posx>
+            <posx>270</posx>
             <posy>100</posy>
             <width>30</width>
             <height>30</height>
@@ -90,7 +90,7 @@
           </control>
           <control type="button" id="207">
             <description>CHANNEL LIST</description>
-            <posx>350</posx>
+            <posx>330</posx>
             <posy>100</posy>
             <width>30</width>
             <height>30</height>
@@ -101,8 +101,8 @@
             <onclick>Close</onclick>
           </control>
           <control type="image" id="202">
-            <posx>45</posx>
-            <posy>35</posy>
+            <posx>20</posx>
+            <posy>30</posy>
             <width>100</width>
             <height>100</height>
             <visible>true</visible>
@@ -112,9 +112,9 @@
           <control type="group">
             <control type="label" id = "109">
               <description>Current EPG</description>
-              <posx>170</posx>
-              <posy>38</posy>
-              <width>741</width>
+              <posx>135</posx>
+              <posy>30</posy>
+              <width>1000</width>
               <label>Нет программы</label>
               <font>font13</font>
               <scroll>true</scroll>
@@ -123,23 +123,26 @@
             </control>
             <control type="progress" id ="110">
               <description>Progress EGP</description>
-              <posx>160</posx>
-              <posy>70</posy>
+              <posx>130</posx>
+              <posy>60</posy>
               <visible>true</visible>
               <colordiffuse>88FFFFFF</colordiffuse>
-              <width>800</width>
-              <height>8</height>
+              <width>1100</width>
+              <height>9</height>
               <info>ListItem.Progress</info>
             </control>
             <control type="label" id ="112">
               <description>Next EPG</description>
-              <posx>150</posx>
-              <posy>50</posy>
+              <posx>135</posx>
+              <posy>75</posy>
               <align>left</align>
               <aligny>top</aligny>
-              <width>700</width>
-              <height>200</height>
-              <font>font10</font>
+              <width>1000</width>
+              <height>30</height>
+              <font>font12</font>
+              <visible>true</visible>
+              <label></label>
+              <scroll>true</scroll>
             </control>
           </control>
         </control>

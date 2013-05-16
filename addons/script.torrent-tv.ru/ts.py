@@ -93,14 +93,30 @@ class TSengine(xbmc.Player):
                         os.remove(self.pfile)
                     LogToXBMC('Считываем порт')
                     import _winreg
-                    t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
-                    self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
+                    t = None
+                    path = ''
+                    try:
+                        t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
+                        self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
+                        LogToXBMC(self.ts_path.encode('utf-8'))
+                        path= self.ts_path.replace('tsengine.exe','')
+                    except:
+                        try:
+                            LogToXBMC('ACEStream')
+                            t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\ACEStream')
+                            self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
+                            LogToXBMC(self.ts_path.encode('utf-8'))
+                            path= self.ts_path.replace('ace_engine.exe','')
+                            LogToXBMC(path.encode('utf-8'))
+                        except Exception, e:
+                            LogToXBMC('Error Opening acestream.port %s' % e)
+                            return
+                        
+                    
                     _winreg.CloseKey(t)
-
-                    path= self.ts_path.replace('tsengine.exe','')
                     LogToXBMC('1')
                     self.pfile= os.path.join( path,'acestream.port')
-                    LogToXBMC('Пытаюсь открыть acestream.port')
+                    LogToXBMC('Пытаюсь открыть acestream.port %s' % self.pfile.encode('utf-8'))
                     if not os.path.exists(self.pfile):
                         LogToXBMC('Запуск TS')
                         if self.parent: self.parent.showStatus("Запуск TS")

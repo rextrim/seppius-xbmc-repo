@@ -6,12 +6,15 @@ import xbmcaddon
 
 import defines
 
-defines.showMessage('Start plugin')
+#defines.showMessage('Start plugin')
 
 import mainform 
 
 if __name__ == '__main__':
-    w = mainform.WMainForm("DialogDownloadProgress.xml", defines.ADDON_PATH, 'default')
+    if not defines.ADDON.getSetting('skin'):
+        defines.ADDON.setSetting('skin', 'default')
+    
+    w = mainform.WMainForm("mainform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
     
     w.doModal()
     #del w

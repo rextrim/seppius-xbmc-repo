@@ -90,17 +90,18 @@ class WMainForm(xbmcgui.WindowXML):
         self.img_progress = None
         self.txt_progress = None
         self.list = None
-        self.player = MyPlayer("player.xml", defines.ADDON_PATH, 'default')
+        self.player = MyPlayer("player.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
         self.player.parent = self
-        self.amalkerWnd = AdsForm("adsdialog.xml", defines.ADDON_PATH, 'default')
+        self.amalkerWnd = AdsForm("adsdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
         self.cur_category = WMainForm.CHN_TYPE_FAVOURITE
+        self.epg = {}
+        self.selitem_id = -1
     
     def initLists(self):
         self.category = {}
         self.category[WMainForm.CHN_TYPE_MODERATION] = []
         self.category[WMainForm.CHN_TYPE_FAVOURITE] = []
         self.translation = []
-        self.epg = {}
 
     def getChannels(self, param):
         data = GET('http://xbmc.torrent-tv.ru/alltranslation.php?session=%s&type=%s' % (self.session, param), cookie = self.session)
@@ -184,6 +185,8 @@ class WMainForm(xbmcgui.WindowXML):
                 if selItem.getLabel2() == self.selitem or selItem.getLabel() == '..':
                     return
                 self.selitem = selItem.getLabel2()
+                self.selitem_id = self.list.getSelectedPosition()
+                LogToXBMC('Selected %s' % self.selitem_id)
                 epg_id = selItem.getProperty('epg_cdn_id')
                 #LogToXBMC('Icon list item = %s' % selItem.getIconImage())
                 if epg_id == '0':
@@ -207,6 +210,10 @@ class WMainForm(xbmcgui.WindowXML):
                 btn = self.getControl(self.seltab)
                 btn.setLabel(btn.getLabel().replace('<', '').replace('>',''))
         self.seltab = WMainForm.BTN_CHANNELS_ID
+        LogToXBMC('Focused %s %s' % (WMainForm.CONTROL_LIST, self.selitem_id))
+        if self.selitem_id > -1:
+            #self.setFocusId(WMainForm.CONTROL_LIST)
+            self.list.selectItem(self.selitem_id)
 
     def onClickTranslations(self):
         self.fillTranslation()
@@ -217,6 +224,10 @@ class WMainForm(xbmcgui.WindowXML):
                 btn = self.getControl(self.seltab)
                 btn.setLabel(btn.getLabel().replace('<', '').replace('>',''))
         self.seltab = WMainForm.BTN_TRANSLATIONS_ID
+        LogToXBMC('Focused %s %s' % (WMainForm.CONTROL_LIST, self.selitem_id))
+        if self.selitem_id > -1:
+            #self.setFocusId(WMainForm.CONTROL_LIST)
+            self.list.selectItem(self.selitem_id)
 
     def onClick(self, controlID):
         control = self.getControl(controlID)
@@ -251,7 +262,6 @@ class WMainForm(xbmcgui.WindowXML):
 
     def showSimpleEpg(self, epg_id = None):
         controlEpg = self.getControl(109)
-        controlEpg1 = self.getControl(112)
         if epg_id and self.epg[epg_id].__len__() > 0:
             ctime = time.time()
             curepg = filter(lambda x: (float(x['etime']) > ctime), self.epg[epg_id])
@@ -267,18 +277,24 @@ class WMainForm(xbmcgui.WindowXML):
                     break
                 sbt = time.localtime(float(curepg[i]['btime']))
                 set = time.localtime(float(curepg[i]['etime']))
-                nextepg = nextepg + '%.2d:%.2d - %.2d:%.2d %s\n' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[i]['name'])
-            controlEpg1.setLabel(nextepg)
+                nextepg = '%.2d:%.2d - %.2d:%.2d %s' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[i]['name'])
+                ce = self.getControl(112 + i - 1)
+                ce.setLabel(nextepg);
+            #controlEpg1.setLabel(nextepg)
 
         else:
             controlEpg.setLabel('Нет программы')
-            controlEpg1.setLabel('')
+            self.getControl(112).setLabel('')
+            self.getControl(113).setLabel('')
+            self.getControl(114).setLabel('')
             self.progress.setPercent(1)
 
     def onAction(self, action):
         if not action:
             super(WMainForm, self).onAction(action)
             return
+        if action.getButtonCode() == 61513:
+            return;
         if action in WMainForm.CANCEL_DIALOG:
             LogToXBMC('CLOSE FORM')
             self.isCanceled = True
@@ -292,7 +308,7 @@ class WMainForm(xbmcgui.WindowXML):
         elif action.getId() in WMainForm.CONTEXT_MENU_IDS and self.getFocusId() == WMainForm.CONTROL_LIST:
             if action.getId() == 101:
                 return
-            mnu = MenuForm("menu.xml", defines.ADDON_PATH, 'default')
+            mnu = MenuForm("menu.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
             mnu.li = self.getFocus().getSelectedItem()
             mnu.get_method = GET
             mnu.session = self.session
@@ -321,6 +337,7 @@ class WMainForm(xbmcgui.WindowXML):
             super(WMainForm, self).onAction(action)
 
     def updateList(self):
+        self.showStatus("Получение списка каналов")
         self.list = self.getControl(50)
         self.initLists()
         thr = MyThread(self.getChannels, 'channel', not (self.cur_category in (WMainForm.CHN_TYPE_TRANSLATION, WMainForm.CHN_TYPE_MODERATION, WMainForm.CHN_TYPE_FAVOURITE)))
@@ -347,6 +364,8 @@ class WMainForm(xbmcgui.WindowXML):
         self.setFocus(self.getControl(WMainForm.BTN_CHANNELS_ID))
         self.img_progress.setVisible(False)
         self.hideStatus()
+        LogToXBMC(self.selitem_id)
+        
 
     def showStatus(self, str):
         if self.img_progress: self.img_progress.setVisible(True)

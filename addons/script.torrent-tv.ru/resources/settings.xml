@@ -5,6 +5,7 @@
 		<setting id="password" type="text" label="Пароль" option="hidden" default="" />
 		<setting label="Пол" type="enum" id="gender" values="Мужской|Женский"/>
 		<setting label="Возраст" type="enum" id="age" values="Младше 13|13-17|18-24|25-34|35-44|45-54|55-64|Старше 64"/>
+    <setting label="Обложка" type="labelenum" id="skin" values="default|st.anger"/>
 		<!--<setting id="adult" type="bool" label="Скрывать каналы для взрослых" default="false"/>
 		<setting id="ip_addr" type="text" label="IP-адрес tsengine" default="127.0.0.1" />
 		<setting id="port" type="number" label="Порт tsengine (только при удаленном подключении)" default="62062" /> -->
