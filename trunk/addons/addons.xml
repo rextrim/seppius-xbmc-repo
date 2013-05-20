@@ -1069,6 +1069,7 @@ Audio sources are
 	</extension>
 </addon>
 
+<addon id="plugin.video.pokerstars.tv" name="Pokerstars TV" provider-name="Sergey Pulyaev" version="0.0.12">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
