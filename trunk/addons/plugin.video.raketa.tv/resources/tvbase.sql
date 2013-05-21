@@ -53,4 +53,4 @@ CREATE TABLE groups (
   adult  bit DEFAULT 0
 );
 ----
-INSERT INTO settings (id, dbver) VALUES ("1", "5")
+INSERT INTO settings (id, dbver) VALUES ("1", "6")

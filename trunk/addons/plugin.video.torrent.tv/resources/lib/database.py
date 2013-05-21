@@ -458,7 +458,7 @@ class DataBase:
 
             self.lock.acquire()
             try:
-                self.cursor.execute('DELETE FROM groups WHERE (id NOT IN (%s))' % grstr)
+                self.cursor.execute('DELETE FROM groups WHERE id NOT IN (%s)' % grstr)
                 self.cursor.execute('DELETE FROM channels WHERE id NOT IN (%s)' % chstr)
                 self.connection.commit()
                 self.lock.release()

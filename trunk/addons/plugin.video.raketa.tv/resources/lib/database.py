@@ -14,7 +14,7 @@ __addon__ = xbmcaddon.Addon( id = 'plugin.video.raketa.tv' )
 addon_icon     = __addon__.getAddonInfo('icon')
 addon_id        = __addon__.getAddonInfo('id')
 
-def showMessage(message = '', heading='TorrentTV', times = 3000, pics = addon_icon):
+def showMessage(message = '', heading='RaketaTV', times = 3000, pics = addon_icon):
     try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
     except Exception, e:
         xbmc.log( '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
@@ -410,17 +410,20 @@ class DataBase:
                 grdict.append({'id': group['id'], 'name': group['title'], 'url': '', 'adult': 0})
                 grstr = grstr + group['id'] + ","
         for ch in data['channels']:
-            chdict.append({'id': ch['number'], 'name': ch['title'], 'url': '', 'adult': 0, 'group_id': ch['category_id'], 'sheduleurl': '', 'imgurl': ch['icon'], 'hd': ch['hd'], 'urlstream': base64.urlsafe_b64decode(ch['id'].replace('?', 'L').replace('|', 'M').encode('utf-8'))})
+            if ch['category_id'] == "203":category_id == "205"
+            else:category_id = ch['category_id']
+            chdict.append({'id': ch['number'], 'name': ch['title'], 'url': '', 'adult': 0, 'group_id': category_id, 'sheduleurl': '', 'imgurl': ch['icon'], 'hd': ch['hd'], 'urlstream': base64.urlsafe_b64decode(ch['id'].replace('?', 'L').replace('|', 'M').encode('utf-8'))})
             chstr = chstr + ch['number'] + ","
         grstr = grstr[:grstr.__len__()-1]
         chstr = chstr[:chstr.__len__()-1]
         self.lock.acquire()
         self.Connect()
         try:
-            self.cursor.execute('DELETE FROM groups WHERE (id IN (%s))' % grstr)
-            self.cursor.execute('DELETE FROM channels WHERE id IN (%s)' % chstr)
+            self.cursor.execute('DELETE FROM groups WHERE id NOT IN (%s)' % grstr)
+            self.cursor.execute('DELETE FROM channels WHERE id NOT IN (%s)' % chstr)
             self.connection.commit()
             self.lock.release()
+            #return
         except Exception, e:
             print '[DataBase.UpdateDB] Error: %s' % e
             self.lock.release()

@@ -36,6 +36,14 @@ prt_file=__addon__.getSetting('port_path')
 adult = __addon__.getSetting('adult')
 login = __addon__.getSetting("login")
 passw = __addon__.getSetting("password")
+autostart = __addon__.getSetting('autostart')
+ch_color = __addon__.getSetting('ch_color')
+prog_color = __addon__.getSetting("prog_color")
+ch_b = __addon__.getSetting("ch_b")
+prog_b = __addon__.getSetting('prog_b')
+prog_str = __addon__.getSetting('prog_str')
+ch_i = __addon__.getSetting("ch_i")
+prog_i = __addon__.getSetting('prog_i')
 aceport=62062
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
@@ -43,6 +51,9 @@ PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_da
 
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
     PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
+
+if prog_str == "true": pr_str = " "
+else: pr_str = chr(10)
     
 PROGRAM_SOURCE_PATH = os.path.join( PLUGIN_DATA_PATH , "%s_inter-tv.zip"  % datetime.date.today().strftime("%W") )
     
@@ -109,7 +120,7 @@ def GET(target, post=None):
                         if not http.find('Вход') > 1:
                             return http
                         else:
-                            showMessage('Raketa TV', 'ОШИБКА авторизации', 3000)
+                            showMessage('Torrent TV', 'ОШИБКА авторизации', 3000)
                             return http
                     resp.close()
                 except:
@@ -144,7 +155,7 @@ def GetCookie(target, post=None):
         if not http.find('Вход') > 1:
             showMessage('Torrent TV', 'Успешная авторизация', 3000)
             return cookie
-        else: showMessage('Raketa TV', 'ОШИБКА авторизации', 3000)
+        else: showMessage('Torrent TV', 'ОШИБКА авторизации', 3000)
     except Exception, e:
         xbmc.log( '[%s]: GET COOKIE EXCEPT [%s]' % (addon_id, e), 4 )
         showMessage('HTTP ERROR: '+str(target), e, 5000)
@@ -207,7 +218,7 @@ dx={
 "Animal Planet": "365",
 "Animal Planet HD": "990",
 "A-One": "680",
-"A-ONE UA": "680",
+#"A-ONE UA": "680",
 "AXN Sci-Fi": "516",
 "SONY Sci-Fi": "516",
 "BBC World News": "828",
@@ -216,6 +227,7 @@ dx={
 "CBS Drama": "911",
 "CBS Reality": "912",
 "Comedy TV": "51",
+"C Music": "319",
 "Da Vinci Learning": "410",
 "DIVA Universal Russia": "713",
 "Dobro TV": "937",
@@ -252,6 +264,7 @@ dx={
 "Gulli": "810",
 "HD Life": "415",
 "HD Спорт": "429",
+"HD СПОРТ": "429",
 "ICTV": "709",
 "JimJam": "494",
 "Kids co": "598",
@@ -266,8 +279,7 @@ dx={
 "MTV Dance": "332",
 "MTV Hits UK": "849",
 "MTV Rocks": "388",
-"MTV Russia": "430",
-"MTV Ukraina": "430",
+"MTV Russia": "557",
 "MTV live HD": "382",
 "MTV Live HD": "382",
 "Music Box UA": "25",
@@ -307,7 +319,7 @@ dx={
 "TV 1000 Action East": "125",
 "TV 1000 Русское кино": "267",
 "TV XXI (TV21)": "309",
-"Ukrainian Fashion": "939",
+#"Ukrainian Fashion": "939",
 "Universal Channel": "213",
 "VH1": "491",
 "VH1 Classic": "156",
@@ -331,12 +343,13 @@ dx={
 "Детский мир": "747",
 "Дождь": "384",
 "Дождь HD": "384",
-"Дом кино": "Дом кино",
+"Дом кино": "834",
 "Домашние животные": "520",
 "Домашний": "304",
 "Драйв ТВ": "505",
 "Еврокино": "352",
 "ЕДА": "931",
+"Еда": "931",
 "ЕДА HD": "930",
 "Живи": "113",
 "Звезда": "405",
@@ -360,6 +373,7 @@ dx={
 "Кинопоказ": "22",
 "Комедия ТВ": "821",
 "Кто есть кто": "769",
+"Кто Есть Кто": "769",
 "Кухня ТВ": "614",
 "КХЛ ТВ": "481",
 "КХЛ HD": "481",
@@ -368,6 +382,7 @@ dx={
 "Мега": "788",
 "Мир": "726",
 "Мир сериала": "145",
+"Мир Сериала": "145",
 "Много ТВ": "799",
 "Моя планета": "675",
 "Москва 24": "334",
@@ -390,6 +405,7 @@ dx={
 "НТВ+ Киноклуб": "462",
 "НТВ+ Кинолюкс": "8",
 "НТВ+ Киносоюз": "71",
+"НТВ+ Кино Cоюз": "71",
 "НТВ+ Кинохит": "542",
 "НТВ+ Наше кино": "12",
 "НТВ+ Наше новое кино": "485",
@@ -397,6 +413,7 @@ dx={
 "НТВ+ Баскетбол": "697",
 "НТВ+ Наш футбол": "499",
 "НТВ+ Спорт": "134",
+"НТВ+СПОРТ": "134",
 "НТВ+ Спорт Онлайн": "183",
 "НТВ+ Спорт Союз": "306",
 "НТВ+ Спорт плюс": "377",
@@ -419,6 +436,7 @@ dx={
 "Первый канал (Европа)": "391",
 "Первый канал (СНГ)": "391",
 "Первый канал HD": "983",
+"ПЕРВЫЙ HD": "983",
 "Первый национальный (Украина)": "773",
 "Первый образовательный": "774",
 "Перец": "511",
@@ -469,6 +487,7 @@ dx={
 "Телепутешествия HD": "331",
 "ТЕТ": "479",
 "ТРК Украина": "326",
+"Ukraine": "326",
 "ТРО Союза": "730",
 "ТРО": "730",
 "Успех": "547",
@@ -484,7 +503,69 @@ dx={
 "Юмор ТВ": "412",
 "Юмор тв": "412",
 "Юмор BOX": "412",
-"Эгоист ТВ": "431"
+"Эгоист ТВ": "431",
+"TV1000 Megahit HD": "816vsetv",
+"TV1000 Premium HD": "814vsetv",
+"TV1000 Comedy HD": "818vsetv",
+"Малятко ТВ": "606vsetv",
+"Моя дитина": "761vsetv",
+"ПлюсПлюс": "24vsetv",
+"A-ONE UA": "772vsetv",
+"Ru Music": "388vsetv",
+"Star TV Ukraine": "513vsetv",
+"М2": "445vsetv",
+"Муз ТВ": "808vsetv",
+"NBA TV": "790vsetv",
+"Спорт 1 (Украина)": "270vsetv",
+"Спорт 2 (Украина)": "309vsetv",
+"Гамма": "479vsetv",
+"К2": "20vsetv",
+"КРТ": "149vsetv",
+"Культура Украина": "285vsetv",
+"УТР": "689vsetv",
+"Унiан": "740vsetv",
+"Travel Channel": "88vsetv",
+"Travel Channel HD": "690vsetv",
+"Travel+ adventure": "832vsetv",
+"Право ТВ": "861vsetv",
+"Эко-ТВ": "685vsetv",
+"24 Украина": "298vsetv",
+"Business": "386vsetv",
+"CNN International": "47vsetv",
+"Погода ТВ": "759vsetv",
+"Рада Украина": "823vsetv",
+"Real Estate-TV": "481vsetv",
+"SHOPping-TV (Ukraine)": "810vsetv",
+"Teen TV": "448vsetv",
+"Ukrainian Fashion": "773vsetv",
+"ВТВ": "139vsetv",
+"Меню ТВ": "348vsetv",
+"НЛО ТВ": "843vsetv",
+"Daring TV": "696vsetv",
+"Hustler TV": "666vsetv",
+"Playboy TV": "663vsetv",
+"Private Spice": "143vsetv",
+"XXL": "664vsetv",
+"Искушение": "754vsetv",
+"Ночной клуб": "455vsetv",
+"Русская ночь": "296vsetv",
+"Глас": "294vsetv",
+"100 ТВ": "382vsetv",
+"БСТ": "272vsetv",
+"GLAS": "457vsetv",
+"Израиль плюс": "532vsetv",
+"ОНТ Украина": "111vsetv",
+"ТРК Киев": "75vsetv",
+"ab moteurs": "127vsetv",
+"Look TV": "726vsetv",
+"Сонце": "874vsetv",
+"ТНТ Bravo Молдова": "737vsetv",
+"тнт+4": "557vsetv",
+"VIASAT Sport Baltic": "504vsetv",
+"Гумор ТБ": "505vsetv",
+"Открытый Мир": "692vsetv",
+"TV Rus": "799vsetv",
+"MTV Ukraina": "353vsetv",
 }
 
 #####################################       
@@ -523,44 +604,65 @@ def GetChannelsDB (params):
             title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], title)
  ###################################
         try:
+            d=[]
             ni=dx[ch['name']]
             d=YaTv.GetPr(id2=ni)
         except:ni=ch['name']
-        try:prog = d[ni]["plot"]
+        try:prog = d["plot"]
         except:prog =""
         try:
-            tbn=d[ni]["img"]
+            tbn=d["img"]
             if tbn == '': tbn = img
         except:tbn = img
-        try:genre = d[ni]["genre"]
+        try:
+            genre = d["genre"]
+            if genre == "": genre = ch['group_name']
         except:genre = ch['group_name']
-        title =title +chr(10)+prog[:prog.find("[COLOR FF999999]")]
-        prog =chr(10)+prog
-        prog1 = str(prog[:prog.find("[COLOR FF999999]")]).strip()
-        if prog1 == "":
-            prog1 = title
+        if ch_b == "true":
+            if ch_i == "true": title = "[I][B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B][/I]"
+            else: title = "[B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B]"
+        else:
+            if ch_i == "true": title = "[I][COLOR FF"+ch_color+"]" + title + "[/COLOR][/I]"
+            else: title = "[COLOR FF"+ch_color+"]" + title + "[/COLOR]"
+        try:
+            if d["strt"] > time.time(): title = title
+            else: title =title +pr_str+d["plttime"]+" "+d["pltprog"]
+            prog =chr(10)+prog
+            #if d["strt"] > time.time(): prog1 = ""
+            #else:
+                #try:prog1 = d["prog1"]
+                #except:prog1 = ""
+        except:
+            try:title =title +pr_str+d["plttime"]+" "+d["pltprog"]
+            except:title =title
+            prog =chr(10)+prog
+            #try:prog1 = d["prog1"]
+            #except:prog1 = ""
+        #if prog1 == "":
+            #prog1 = title
+        try:title1 = (d["plttime"]+" "+d["pltprog"]).strip()
+        except:title1 = title
         if __addon__.getSetting('fanart') == 'false':
             if __addon__.getSetting('disable') == 'false':
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-                try:li.setProperty('fanart_image', tbn.encode('utf-8'))
-                except:li.setProperty('fanart_image', tbn.encode('utf-8'))
+                li = xbmcgui.ListItem(title, title, img, img)
+                li.setProperty('fanart_image', tbn.encode('utf-8'))
             else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, img)
                 li.setProperty('fanart_image', img)
         else:
             if __addon__.getSetting('disable') == 'false':
-                try:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, tbn.encode('utf-8'))
-                except:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, tbn.encode('utf-8'))
             else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, img)
         startTime = time.localtime()#float(item['start'])
         endTime = time.localtime()#item['end']
-        li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': endTime.tm_year, 'genre': genre, 'plot': prog} )
+        li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': endTime.tm_year, 'genre': genre, 'plot': prog})
  ###################################           
         uri = construct_request({
             'func': 'play_ch_db',
             'img': img.encode('utf-8'),
-            'title': prog1,
+            'title': title1,
+            #'studio': prog1,
             'file': ch['urlstream'],
             'id': ch['id']
         })
@@ -582,7 +684,7 @@ def GetChannelsDB (params):
             commands.append(('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (favouriteuri),))
         commands.append(('[COLOR FFCC3333]Удалить[/COLOR][COLOR FFB77D00] из "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (delfavouriteuri),))
         commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
-        li.addContextMenuItems(commands, True)
+        li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
     del db
@@ -624,7 +726,7 @@ def GetChannelsWeb(params):
     channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
     for ch in channels:
         link =ch.find('a')['href']
-        title= ch.find('strong').string.encode('utf-8').replace('\n', '')
+        title= ch.find('strong').string.encode('utf-8').replace('\n', '').strip()
         img='http://torrent-tv.ru/'+ch.find('img')['src']
         if __addon__.getSetting('logopack'):
             logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
@@ -633,36 +735,56 @@ def GetChannelsWeb(params):
                 img = logo_src
  ###################################
         try:
+            d=[]
             ni=dx[title.strip()]
             d=YaTv.GetPr(id2=ni)
         except:ni=title.strip()
-        try:prog = d[ni]["plot"]
+        try:prog = d["plot"]
         except:prog =""
         try:
-            tbn=d[ni]["img"]
+            tbn=d["img"]
             if tbn == '': tbn = img
         except:tbn = img
-        try:genre = d[ni]["genre"]
+        try:genre = d["genre"]
         except:genre = ''
-        title =title +chr(10)+prog[:prog.find("[COLOR FF999999]")]
-        prog =chr(10)+prog
-        prog1 = str(prog[:prog.find("[COLOR FF999999]")]).strip()
-        if prog1 == "":
-            prog1 = title
+        if ch_b == "true":
+            if ch_i == "true": title = "[I][B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B][/I]"
+            else: title = "[B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B]"
+        else:
+            if ch_i == "true": title = "[I][COLOR FF"+ch_color+"]" + title + "[/COLOR][/I]"
+            else: title = "[COLOR FF"+ch_color+"]" + title + "[/COLOR]"
+        try:
+            if d["strt"] > time.time(): title = title
+            else: title =title +pr_str+d["plttime"]+" "+d["pltprog"]
+            prog =chr(10)+prog
+            #if d["strt"] > time.time(): prog1 = ""
+            #else:
+                #try:prog1 = d["prog1"]
+                #except:prog1 = ""
+        except:
+            try:title =title +pr_str+d["plttime"]+" "+d["pltprog"]
+            except:title =title
+            prog =chr(10)+prog
+            #try:prog1 = d["prog1"]
+            #except:prog1 = ""
+        #if prog1 == "":
+            #prog1 = title
+        try:title1 = (d["plttime"]+" "+d["pltprog"]).strip()
+        except:title1 = title
         if __addon__.getSetting('fanart') == 'false':
             if __addon__.getSetting('disable') == 'false':
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-                try:li.setProperty('fanart_image', tbn.encode('utf-8'))
-                except:li.setProperty('fanart_image', tbn.encode('utf-8'))
+                li = xbmcgui.ListItem(title, title, img, img)
+                li.setProperty('fanart_image', tbn.encode('utf-8'))
             else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, img)
                 li.setProperty('fanart_image', img)
         else:
             if __addon__.getSetting('disable') == 'false':
-                try:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, tbn.encode('utf-8'))
-                except:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, tbn.encode('utf-8'))
             else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, img)
+
+
         startTime = time.localtime()#float(item['start'])
         endTime = time.localtime()#item['end']
         li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': endTime.tm_year, 'genre': genre, 'plot': prog} )
@@ -672,15 +794,16 @@ def GetChannelsWeb(params):
         uri = construct_request({
                 'func': 'play_ch_web',
                 'img':img.encode('utf-8'),
-                'title':prog1,
+                'title':title1,
                 'file':link
         })
         commands = []
-        li.addContextMenuItems(commands, True)
+        li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
 
 def play_ch_db(params):
+    xbmc.executebuiltin('Action(Stop)') 
     url = ''
     if params['file'] == '':
         db = DataBase(db_name, cookie)
@@ -704,7 +827,7 @@ def play_ch_db(params):
             del db
             TSPlayer.end()
             xbmc.executebuiltin('Container.Refresh')
-            showMessage('Torrent', 'Stop')
+            #showMessage('Torrent', 'Stop')
             return
         else:
             #TSPlayer.end()
@@ -748,10 +871,11 @@ def play_ch_db(params):
                     db.IncChannel(params['id'])
                     del db
                     TSPlayer.end()
-                    showMessage('Torrent', 'Stop')
+                    #showMessage('Torrent', 'Stop')
                     return
   
 def play_ch_web(params):
+    xbmc.executebuiltin('Action(Stop)') 
     http = GET('http://torrent-tv.ru/' + params['file'])
     if http == None:
         http = GET('http://1ttv.org/' + params['file'])
@@ -770,7 +894,7 @@ def play_ch_web(params):
         if out=='Ok':
             TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
         TSplayer.end()
-        showMessage(message = 'Stop')
+        #showMessage(message = 'Stop')
     else:
         m = re.search('load.*', str(tget))
         ID = m.group(0).split('"')[1]
@@ -783,7 +907,7 @@ def play_ch_web(params):
         except Exception, e:
             showMessage(message = e)
         xbmc.executebuiltin('Container.Refresh')
-        showMessage(message = 'Stop')
+        #showMessage(message = 'Stop')
 
 def GetParts():
     db = DataBase(db_name, cookie)
@@ -795,7 +919,7 @@ def GetParts():
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
     for part in parts:
         li = xbmcgui.ListItem(part['name'])
-        li.addContextMenuItems(commands, True)
+        li.addContextMenuItems(commands)
         uri = construct_request({
             'func': 'GetChannelsDB',
             'group': part['id'],
@@ -817,7 +941,7 @@ def mainScreen(params):
     commands = []
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
     li = xbmcgui.ListItem('[COLOR FFB77D00]ИЗБРАННЫЕ[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsDB',
         'title': 'ИЗБРАННЫЕ',
@@ -825,7 +949,7 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     li = xbmcgui.ListItem('[COLOR FF00FF00]Все каналы[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsDB',
         'title': 'Все каналы',
@@ -833,7 +957,7 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     li = xbmcgui.ListItem('[COLOR FF00FF00]Последние просмотренные[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsDB',
         'title': 'Последние просмотренные',
@@ -841,7 +965,7 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     li = xbmcgui.ListItem('[COLOR FF00FF00]HD Каналы[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsDB',
         'title': 'HD Каналы',
@@ -849,7 +973,7 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     li = xbmcgui.ListItem('[COLOR FF00FF00]Новые каналы[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsDB',
         'title': 'Новые каналы',
@@ -857,7 +981,7 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     li = xbmcgui.ListItem('[COLOR FF0099FF]На модерации[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsWeb',
         'title': 'На модерации',
@@ -865,17 +989,17 @@ def mainScreen(params):
     })
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     li = xbmcgui.ListItem('[COLOR FF0099FF]Трансляции[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsWeb',
         'title': 'Трансляции',
         'file': 'translations.php'
     })
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     GetParts()
     xbmcplugin.endOfDirectory(hos)
-    
+   
 from urllib import unquote, quote, quote_plus
 
 def get_params(paramstring):
@@ -907,7 +1031,7 @@ def addon_main():
         
         db = DataBase(db_name, cookie='')        
         dbver = db.GetDBVer()
-        if db.GetDBVer() <> 5:
+        if db.GetDBVer() <> 6:
             del db
             os.remove(db_name)
 
@@ -941,6 +1065,21 @@ def addon_main():
         func = None
         xbmc.log( '[%s]: Primary input' % addon_id, 1 )
 
+        
+        #latest = {'title': 'Последние просмотренные', 'group': 'latest'}
+        #favourite = {'title': 'ИЗБРАННЫЕ', 'group': 'favourite'}
+        #if autostart == "1":
+            #mainScreen(params)
+            #xbmc.executebuiltin('Container.Refresh')
+            #GetChannelsDB(latest)
+            #xbmc.executebuiltin('Container.Refresh')
+        #elif autostart == "2":
+            #mainScreen(params)
+            #xbmc.executebuiltin('Container.Refresh')
+            #xbmc.setResolvedUrl()
+            #GetChannelsDB(favourite)
+            #xbmc.executebuiltin('Container.Refresh')
+        #else:
         mainScreen(params)
     if func != None:
         try:
