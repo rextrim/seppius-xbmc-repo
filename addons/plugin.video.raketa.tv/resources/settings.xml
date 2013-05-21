@@ -3,8 +3,19 @@
 	<category label="Настройки">
 		<setting id="port_path" type="file" label="Местонахождение файла acestream.port" default="" />
 		<setting id="logopack" type="bool" label="Использовать внешние лого" default="false"/>
+	</category>
+	<category label="Настройки программы">
 		<setting id="fanart" type="bool" label="Скрыть фоновую картинку" default="false"/>
 		<setting id="disable" type="bool" label="Скрыть фанарт" default="false"/>
 		<setting id="description" type="bool" label="Скрыть описание программы" default="false"/>
+		<setting id="ch_color" type="text" label="Цвет канала" default="B77D00" />
+		<setting id="prog_color" type="text" label="Цвет передачи" default="FFFFFF" />
+		<setting id="time_color" type="text" label="Цвет времени" default="0084FF" />
+		<setting id="ch_b" type="bool" label="Выделить жирным канал" default="false"/>
+		<setting id="prog_b" type="bool" label="Выделить жирным программу" default="false"/>
+		<setting id="ch_i" type="bool" label="Выделить курсивом канал" default="false"/>
+		<setting id="prog_i" type="bool" label="Выделить курсивом программу" default="false"/>
+		<setting id="prog_str" type="bool" label="Канал и программа в одну строку" default="false"/>
+		<!--setting id="autostart" type="enum" values="Нет|Последние просмотренные|Избранные" label="Автозапуск категории" default="Нет" /-->
 	</category>
 </settings>

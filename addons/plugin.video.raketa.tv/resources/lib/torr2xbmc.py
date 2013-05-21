@@ -36,10 +36,20 @@ prt_file=__addon__.getSetting('port_path')
 adult = __addon__.getSetting('adult')
 login = __addon__.getSetting("login")
 passw = __addon__.getSetting("password")
+ch_color = __addon__.getSetting('ch_color')
+prog_color = __addon__.getSetting("prog_color")
+ch_b = __addon__.getSetting("ch_b")
+prog_b = __addon__.getSetting('prog_b')
+prog_str = __addon__.getSetting('prog_str')
+ch_i = __addon__.getSetting("ch_i")
+prog_i = __addon__.getSetting('prog_i')
+
 aceport=62062
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.raketa.tv') )
 
+if prog_str == "true": pr_str = " "
+else: pr_str = chr(10)
 
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
     PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
@@ -217,7 +227,9 @@ dx={
 "Cartoon Network": "601",
 "CBS Drama": "911",
 "CBS Reality": "912",
+"Zone Reality": "912",
 "Comedy TV": "51",
+"C Music": "319",
 "Da Vinci Learning": "410",
 "DIVA Universal Russia": "713",
 "Diva Universal": "713",
@@ -266,6 +278,7 @@ dx={
 "JimJam": "494",
 "Kids co": "598",
 "Maxxi-TV": "228",
+"Maxxi TV": "228",
 "MCM Top": "533",
 "MGM": "608",
 "MGM HD": "934",
@@ -276,9 +289,7 @@ dx={
 "MTV Dance": "332",
 "MTV Hits UK": "849",
 "MTV Rocks": "388",
-"MTV Russia": "430",
-"MTV Ukraina": "430",
-"MTV Ukraine": "430",
+"MTV Russia": "557",
 "MTV live HD": "382",
 "MTV Live HD": "382",
 "Music Box UA": "25",
@@ -310,6 +321,7 @@ dx={
 "SET HD": "311",
 "S.E.T": "311",
 "Sony Turbo": "935",
+"sony turbo": "935",
 "Smile of Child": "789",
 "Улыбка Ребенка": "789",
 "STV": "165",
@@ -318,6 +330,7 @@ dx={
 "TiJi": "555",
 "TLC": "425",
 "Tonis": "627",
+"Tonis Украина": "627",
 "TVCI": "435",
 "TV 1000": "127",
 "TV 1000 Action East": "125",
@@ -329,7 +342,9 @@ dx={
 "Ukrainian Fashion": "939",
 "Universal Channel": "213",
 "VH1": "491",
+"VH 1": "491",
 "VH1 Classic": "156",
+"VH 1 Classic": "156",
 "Viasat Explorer": "521",
 "Viasat History": "277",
 "Viasat Nature East": "765",
@@ -354,7 +369,8 @@ dx={
 "Детский мир/Телеклуб": "747",
 "Дождь": "384",
 "Дождь HD": "384",
-"Дом кино": "Дом кино",
+"Дом кино": "834",
+"Дом Кино": "834",
 "Домашние животные": "520",
 "Домашний": "304",
 "Драйв ТВ": "505",
@@ -381,8 +397,10 @@ dx={
 "Интер": "677",
 "Интер Украина": "677",
 "Интер+": "808",
+"Интер Плюс Украина": "808",
 "Интересное ТВ": "24",
 "К1": "453",
+"K 1 Украина": "453",
 "Карусель": "740",
 "Кинопоказ": "22",
 "Комедия ТВ": "821",
@@ -399,6 +417,7 @@ dx={
 "Много ТВ": "799",
 "МногоTV": "799",
 "Моя планета": "675",
+"Моя Планета": "675",
 "Москва 24": "334",
 "Москва Доверие": "655",
 "Москва доверие": "655",
@@ -449,6 +468,7 @@ dx={
 "НТВ+ Футбол 2": "563",
 "Футбол 2": "563",
 "НТВ+ Футбол HD": "664",
+"Футбол HD": "664",
 "НТВ+ Футбол 2 HD": "563",
 "Футбол 2 HD": "563",
 "НТН (Украина)": "140",
@@ -488,6 +508,7 @@ dx={
 "Рен ТВ": "689",
 "РЖД": "509",
 "Ретро ТВ": "6",
+"Рэтро ТВ": "6",
 "Россия 1": "711",
 "Россия": "711",
 "Россия 2": "515",
@@ -507,6 +528,7 @@ dx={
 "Спас": "447",
 "Спас ТВ": "447",
 "СПОРТ": "154",
+#"Спорт": "134",
 "Спорт 1": "181",
 "Спорт 1 Россия": "181",
 "Спорт 1 HD": "554",
@@ -520,10 +542,11 @@ dx={
 "ТБН": "576",
 "ТДК": "776",
 "ТВ 3": "698",
-"ТВ 3": "279",
+"ТВ-3": "698",
 "TBi": "650",
 "ТВі Украина": "650",
 "ТВЦ": "649",
+"ТВ Центр": "649",
 "ТНТ": "353",
 "Тонус ТВ": "637",
 "Тонус-ТВ": "637",
@@ -540,6 +563,7 @@ dx={
 "Усадьба": "779",
 "Феникс+ Кино": "686",
 "Футбол": "328",
+"Телеканал Футбол": "328",
 "Футбол (украина)": "666",
 "Футбол+ (украина)": "753",
 "Футбол Украина": "666",
@@ -553,7 +577,70 @@ dx={
 "Юмор ТВ": "412",
 "Юмор тв": "412",
 "Юмор BOX": "412",
-"Эгоист ТВ": "431"
+"Эгоист ТВ": "431",
+"TV 1000 Megahit HD": "816vsetv",
+"TV 1000 Premium HD": "814vsetv",
+"TV 1000 Comedy HD": "818vsetv",
+"Малятко TV Украина": "606vsetv",
+"Моя дитина": "761vsetv",
+"Плюс Плюс Украина": "24vsetv",
+"A-ONE UA Украина": "772vsetv",
+"RU MUSIC": "388vsetv",
+"Star TV Ukraine": "513vsetv",
+"STAR TV Украина": "513vsetv",
+"М2": "445vsetv",
+"Муз ТВ": "808vsetv",
+"NBA TV": "790vsetv",
+"Спорт 1 Украина": "270vsetv",
+"Спорт 2 Украина": "309vsetv",
+"Гамма": "479vsetv",
+"K 2 Украина": "20vsetv",
+"КРТ": "149vsetv",
+"Культура Украина": "285vsetv",
+"УТР": "689vsetv",
+"Унiан": "740vsetv",
+"Travel Channel": "88vsetv",
+"Travel Channel HD": "690vsetv",
+"Travel Adventure": "832vsetv",
+"Право ТВ": "861vsetv",
+"Эко-ТВ": "685vsetv",
+"24 Украина": "298vsetv",
+"Business": "386vsetv",
+"CNN International": "47vsetv",
+"Погода ТВ": "759vsetv",
+"Рада Украина": "823vsetv",
+"Real Estate-TV": "481vsetv",
+"SHOPping-TV (Ukraine)": "810vsetv",
+"Teen TV": "448vsetv",
+"Ukrainian Fashion": "773vsetv",
+"ВТВ": "139vsetv",
+"Меню ТВ": "348vsetv",
+"НЛО ТВ": "843vsetv",
+"Daring TV": "696vsetv",
+"Hustler TV": "666vsetv",
+"Playboy TV": "663vsetv",
+"Private Spice": "143vsetv",
+"XXL": "664vsetv",
+"Искушение": "754vsetv",
+"Ночной клуб": "455vsetv",
+"Русская ночь": "296vsetv",
+"Глас": "294vsetv",
+"100ТВ": "382vsetv",
+"БСТ": "272vsetv",
+"GLAS": "457vsetv",
+"Израиль плюс": "532vsetv",
+"ОНТ Украина": "111vsetv",
+"ТРК Киев": "75vsetv",
+"ab moteurs": "127vsetv",
+"Look TV": "726vsetv",
+"Сонце": "874vsetv",
+"ТНТ Bravo Молдова": "737vsetv",
+"тнт+4": "557vsetv",
+"VIASAT Sport Baltic": "504vsetv",
+"Гумор ТБ": "505vsetv",
+"Открытый Мир": "692vsetv",
+"MTV Ukraina": "353vsetv",
+"MTV Ukraine": "353vsetv",
 }
 
 #####################################       
@@ -595,36 +682,56 @@ def GetChannelsDB (params):
             title = '[COLOR FF7092BE]%s:[/COLOR] %s' % (ch['group_name'], title)
  ###################################
         try:
+            d=[]
             ni=dx[ch['name']]
             d=YaTv.GetPr(id2=ni)
         except:ni=ch['name']
-        try:prog = d[ni]["plot"]
+        try:prog = d["plot"]
         except:prog =""
         try:
-            tbn=d[ni]["img"]
+            tbn=d["img"]
             if tbn == '': tbn = img
         except:tbn = img
-        try:genre = d[ni]["genre"]
+        try:
+            genre = d["genre"]
+            if genre == "": genre = ch['group_name']
         except:genre = ch['group_name']
-        title =title +chr(10)+prog[:prog.find("[COLOR FF999999]")]
-        prog =chr(10)+prog
-        prog1 = str(prog[:prog.find("[COLOR FF999999]")]).strip()
-        if prog1 == "":
-            prog1 = title
+        if ch_b == "true":
+            if ch_i == "true": title = "[I][B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B][/I]"
+            else: title = "[B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B]"
+        else:
+            if ch_i == "true": title = "[I][COLOR FF"+ch_color+"]" + title + "[/COLOR][/I]"
+            else: title = "[COLOR FF"+ch_color+"]" + title + "[/COLOR]"
+        try:
+            if d["strt"] > time.time(): title = title
+            else: title =title +pr_str+d["plttime"]+" "+d["pltprog"]
+            prog =chr(10)+prog
+            #if d["strt"] > time.time(): prog1 = ""
+            #else:
+                #try:prog1 = d["prog1"]
+                #except:prog1 = ""
+        except:
+            try:title =title +pr_str+d["plttime"]+" "+d["pltprog"]
+            except:title =title
+            prog =chr(10)+prog
+            #try:prog1 = d["prog1"]
+            #except:prog1 = ""
+        #if prog1 == "":
+            #prog1 = title
+        try:title1 = (d["plttime"]+" "+d["pltprog"]).strip()
+        except:title1 = title
         if __addon__.getSetting('fanart') == 'false':
             if __addon__.getSetting('disable') == 'false':
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-                try:li.setProperty('fanart_image', tbn.encode('utf-8'))
-                except:li.setProperty('fanart_image', tbn.encode('utf-8'))
+                li = xbmcgui.ListItem(title, title, img, img)
+                li.setProperty('fanart_image', tbn.encode('utf-8'))
             else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, img)
                 li.setProperty('fanart_image', img)
         else:
             if __addon__.getSetting('disable') == 'false':
-                try:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, tbn.encode('utf-8'))
-                except:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, tbn.encode('utf-8'))
             else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
+                li = xbmcgui.ListItem(title, title, img, img)
         startTime = time.localtime()#float(item['start'])
         endTime = time.localtime()#item['end']
         li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': endTime.tm_year, 'genre': genre, 'plot': prog} )
@@ -632,7 +739,7 @@ def GetChannelsDB (params):
         uri = construct_request({
             'func': 'play_ch_db',
             'img': img.encode('utf-8'),
-            'title': prog1,
+            'title': title1,
             'file': ch['urlstream'],
             'id': ch['id']
         })
@@ -653,7 +760,7 @@ def GetChannelsDB (params):
             commands.append(('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (favouriteuri),))
         commands.append(('[COLOR FFCC3333]Удалить[/COLOR][COLOR FFB77D00] из "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (delfavouriteuri),))
         commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
-        li.addContextMenuItems(commands, True)
+        li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
     del db
@@ -680,75 +787,8 @@ def DelFavouriteChannel(params):
     xbmc.executebuiltin("Container.Refresh")
     del db
     
-def GetChannelsWeb(params):
-#########################
-    try:
-        import YaTv
-    except: pass
-#########################
-    http = GET('http://torrent-tv.ru/' + params['file'])
-    if http == None:
-        http = GET('http://1ttv.org/' + params['file'])
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
-    beautifulSoup = BeautifulSoup(http)
-    channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
-    for ch in channels:
-        link =ch.find('a')['href']
-        title= ch.find('strong').string.encode('utf-8').replace('\n', '')
-        img='http://torrent-tv.ru/'+ch.find('img')['src']
-        if __addon__.getSetting('logopack'):
-            logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
-            logo_src = os.path.join(logo_path, ch.find('strong').string.replace('\n', '').replace('  ', '') + '.png')
-            if os.path.exists(logo_src):
-                img = logo_src
- ###################################
-        try:ni=dx[title.strip()]
-        except:ni=title.strip()
-        try:prog = d[ni]["plot"]
-        except:prog =""
-        try:
-            tbn=d[ni]["img"]
-            if tbn == '': tbn = img
-        except:tbn = img
-        try:genre = d[ni]["genre"]
-        except:genre = ''
-        title =title +chr(10)+prog[:prog.find("[COLOR FF999999]")]
-        prog =chr(10)+prog
-        prog1 = str(prog[:prog.find("[COLOR FF999999]")]).strip()
-        if prog1 == "":
-            prog1 = title
-        if __addon__.getSetting('fanart') == 'false':
-            if __addon__.getSetting('disable') == 'false':
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-                try:li.setProperty('fanart_image', tbn.encode('utf-8'))
-                except:li.setProperty('fanart_image', tbn.encode('utf-8'))
-            else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-                li.setProperty('fanart_image', img)
-        else:
-            if __addon__.getSetting('disable') == 'false':
-                try:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, tbn.encode('utf-8'))
-                except:li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-            else:
-                li = xbmcgui.ListItem("[COLOR FFB77D00]" + title + "[/COLOR]", title, img, img)
-        startTime = time.localtime()#float(item['start'])
-        endTime = time.localtime()#item['end']
-        li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': endTime.tm_year, 'genre': genre, 'plot': prog} )
- ###################################           
-        uri = construct_request({
-                'func': 'play_ch_web',
-                'img':img.encode('utf-8'),
-                'title':prog1,
-                'file':link
-        })
-        commands = []
-        li.addContextMenuItems(commands, True)
-        xbmcplugin.addDirectoryItem(hos, uri, li)
-    xbmcplugin.endOfDirectory(hos)
-
 def play_ch_db(params):
+    xbmc.executebuiltin('Action(Stop)') 
     url = ''
     if params['file'] == '':
         db = DataBase(db_name, cookie='')
@@ -772,7 +812,7 @@ def play_ch_db(params):
             del db
             TSPlayer.end()
             xbmc.executebuiltin('Container.Refresh')
-            showMessage('Torrent', 'Stop')
+            #showMessage('Torrent', 'Stop')
             return
         #else:
             #TSPlayer.end()
@@ -820,38 +860,6 @@ def play_ch_db(params):
                     #showMessage('Torrent', 'Stop')
                     #return
   
-def play_ch_web(params):
-    http = GET('http://torrent-tv.ru/' + params['file'])
-    if http == None:
-        http = GET('http://1ttv.org/' + params['file'])
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
-    beautifulSoup = BeautifulSoup(http)
-    tget= beautifulSoup.find('div', attrs={'class':'tv-player'})
-    
-    m=re.search('http:(.+)"', str(tget))
-    if m:
-        torr_link= m.group(0).split('"')[0]
-        m=re.search('http://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+', torr_link)
-        TSplayer=tsengine()
-        out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
-        if out=='Ok':
-            TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-        TSplayer.end()
-        showMessage(message = 'Stop')
-    else:
-        m = re.search('load.*', str(tget))
-        ID = m.group(0).split('"')[1]
-        try:
-            TSplayer=tsengine()
-            out=TSplayer.load_torrent(ID,'PID',port=aceport)
-            if out=='Ok':
-                TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-            TSplayer.end()
-        except Exception, e:
-            showMessage(message = e)
-        showMessage(message = 'Stop')
 
 def GetParts():
     db = DataBase(db_name, cookie='')
@@ -863,7 +871,7 @@ def GetParts():
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
     for part in parts:
         li = xbmcgui.ListItem(part['name'])
-        li.addContextMenuItems(commands, True)
+        li.addContextMenuItems(commands)
         uri = construct_request({
             'func': 'GetChannelsDB',
             'group': part['id'],
@@ -884,7 +892,7 @@ def mainScreen(params):
     commands = []
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
     li = xbmcgui.ListItem('[COLOR FFB77D00]ИЗБРАННЫЕ[/COLOR]')
-    li.addContextMenuItems(commands, True)
+    li.addContextMenuItems(commands)
     uri = construct_request({
         'func': 'GetChannelsDB',
         'title': 'ИЗБРАННЫЕ',
@@ -957,7 +965,7 @@ def addon_main():
         
         db = DataBase(db_name, cookie='')        
         dbver = db.GetDBVer()
-        if db.GetDBVer() <> 5:
+        if db.GetDBVer() <> 6:
             del db
             os.remove(db_name)
 
