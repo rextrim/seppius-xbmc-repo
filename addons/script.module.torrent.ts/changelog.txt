@@ -1,2 +1,5 @@
+[B]Version 0.4.7[/B]
+-save to disk and play
+-autoconfig popup
 [B]Version 0.3.8[/B]
 - Fix for Cyrillic usernames (windows)
