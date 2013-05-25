@@ -352,24 +352,23 @@ class ASengine(xbmc.Player):
         while self.active or self.r.ad:
             
             if self.r.event and save:
-                try:
-                    print self.r.event
-                    comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename))
-                    print comm
-                    self._TSpush(comm)
-                    self.r.event=None
-                    while not os.path.exists(self.filename):
-                        print 'fcnk loop'
-                        xbmc.sleep(300)
-                    try: time=self.getTime()
-                    except: time=0
-                    i = xbmcgui.ListItem(self.title)
-                    i.setProperty('StartOffset', str(time))
-                    self.play(self.filename,i)
-                    self.active=False
-                    self.r.ad=False
-                except: 
-                    self.r.event=None
+                
+                print self.r.event
+                comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename))
+                print comm
+                self._TSpush(comm)
+                self.r.event=None
+                while not os.path.exists(self.filename):
+                    print 'fcnk loop'
+                    xbmc.sleep(300)
+                try: time=self.getTime()
+                except: time=0
+                i = xbmcgui.ListItem(self.title)
+                i.setProperty('StartOffset', str(time))
+                self.play(self.filename,i)
+                self.active=False
+                self.r.ad=False
+               
             if self.r.ad and not self.active:
                 self.progress.create(0,'Progress','Init','')
                 
