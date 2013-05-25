@@ -354,7 +354,7 @@ class ASengine(xbmc.Player):
             if self.r.event and save:
                 try:
                     print self.r.event
-                    comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename)
+                    comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename))
                     print comm
                     self._TSpush(comm)
                     self.r.event=None
