@@ -307,11 +307,12 @@ class ASengine(xbmc.Player):
         for k,v in self.files.iteritems():
             if v==self.ind: self.filename=k
         
-        if save and os.path.exists((Addon.getSetting('folder')+self.filename)):
-            time=0
-            i = xbmcgui.ListItem(title)
-            i.setProperty('StartOffset', str(time))
-            self.play((Addon.getSetting('folder')+self.filename),i)
+        if save:
+            if os.path.exists((Addon.getSetting('folder')+self.filename)):
+                time=0
+                i = xbmcgui.ListItem(title)
+                i.setProperty('StartOffset', str(time))
+                self.play((Addon.getSetting('folder')+self.filename),i)
         else:
             if not self.err:
                 self.progress.update( 0, "Play",'Start', "" )
