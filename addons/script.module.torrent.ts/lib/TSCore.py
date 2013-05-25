@@ -297,7 +297,7 @@ class ASengine(xbmc.Player):
                 flist=json.loads(self.filelist)
                 list=flist['files'][0]
                 self.files[urllib.unquote_plus(urllib.quote(list[0]))]=list[1]
-            print self.files
+
             self.progress.update(100,'Загрузка данных завершена')
             return 'Ok'
             
@@ -306,12 +306,15 @@ class ASengine(xbmc.Player):
         self.r.ind=index
         for k,v in self.files.iteritems():
             if v==self.ind: self.filename=k
-        
-        if save and os.path.exists((Addon.getSetting('folder')+self.filename)):
+        self.filename=Addon.getSetting('folder')+self.filename
+        try:
+            result=os.path.exists(self.filename)
+        except: result=False
+        if save and result:
             time=0
             i = xbmcgui.ListItem(title)
             i.setProperty('StartOffset', str(time))
-            self.play((Addon.getSetting('folder')+self.filename),i)
+            self.play(self.filename,i)
         else:
             if not self.err:
                 self.progress.update( 0, "Play",'Start', "" )
@@ -337,7 +340,6 @@ class ASengine(xbmc.Player):
                     self.progress.close()
                     self.title=title
                     lit= xbmcgui.ListItem(title, iconImage = thumb, thumbnailImage =thumb)
-                    print self.r.got_url
                     self.play(self.r.got_url,lit)
                     self.r.got_url=None
                     self.loop()
@@ -350,21 +352,24 @@ class ASengine(xbmc.Player):
         while self.active or self.r.ad:
             
             if self.r.event and save:
-                print self.r.event
-                comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(Addon.getSetting('folder')+self.filename))
-                print comm
-                self._TSpush(comm)
-                self.r.event=None
-                while not os.path.exists((Addon.getSetting('folder')+self.filename)):
-                    print 'fcnk loop'
-                    xbmc.sleep(300)
-                try: time=self.getTime()
-                except: time=0
-                i = xbmcgui.ListItem(self.title)
-                i.setProperty('StartOffset', str(time))
-                self.play((Addon.getSetting('folder')+self.filename),i)
-                self.active=False
-                self.r.ad=False
+                try:
+                    print self.r.event
+                    comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quoteself.filename)
+                    print comm
+                    self._TSpush(comm)
+                    self.r.event=None
+                    while not os.path.exists(self.filename):
+                        print 'fcnk loop'
+                        xbmc.sleep(300)
+                    try: time=self.getTime()
+                    except: time=0
+                    i = xbmcgui.ListItem(self.title)
+                    i.setProperty('StartOffset', str(time))
+                    self.play(self.filename,i)
+                    self.active=False
+                    self.r.ad=False
+                except: 
+                    self.r.event=None
             if self.r.ad and not self.active:
                 self.progress.create(0,'Progress','Init','')
                 
@@ -528,7 +533,7 @@ class _ASpull(threading.Thread):
         self.ind=None
         #self.params=[]
         self.temp=''
-        print 'Threads %s'%self.getName()
+
     def run(self):
         while self.active and not self.err:
             try:
@@ -588,8 +593,7 @@ class _ASpull(threading.Thread):
             if self.last_received.split(' ')[1]=='cansave':
                 self.event=self.last_received.split(' ')[2:4]
                 ind= self.event[0].split('=')[1]
-                print ind
-                print self.ind
+
                 if int(ind)!=int(self.ind): self.event=None
                 #self.events.append(self.event)
                 #print self.events
