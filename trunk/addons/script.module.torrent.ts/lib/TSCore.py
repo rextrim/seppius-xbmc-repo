@@ -420,7 +420,7 @@ class ASengine(xbmc.Player):
             self.r.join(500)
             #self.r=None
         print 'ts shuted up'
-        if os.path.exists(lock_file): os.remove(lock_file)
+        if os.path.exists(err_file): os.remove(err_file)
         if os.path.exists(lock_file): os.remove(lock_file)
         if self.activeplay and autoexit:
             if sys.platform == 'win32' or sys.platform == 'win64':
