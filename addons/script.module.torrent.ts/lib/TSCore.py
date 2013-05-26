@@ -421,6 +421,7 @@ class ASengine(xbmc.Player):
             #self.r=None
         print 'ts shuted up'
         if os.path.exists(lock_file): os.remove(lock_file)
+        if os.path.exists(lock_file): os.remove(lock_file)
         if self.activeplay and autoexit:
             if sys.platform == 'win32' or sys.platform == 'win64':
                 subprocess.Popen('taskkill /F /IM tsengine.exe /T')
