@@ -37,6 +37,7 @@ else: save=False
 if save and not Addon.getSetting('folder'): Addon.openSettings()
 
 lock_file = xbmc.translatePath('special://temp/'+ 'ts.lock')
+err_file = xbmc.translatePath('special://temp/'+ 'err.avi')
 aceport=62062
 
 class TSengine():
@@ -306,9 +307,9 @@ class ASengine(xbmc.Player):
         self.r.ind=index
         for k,v in self.files.iteritems():
             if v==self.ind: self.filename=k
-        self.filename=Addon.getSetting('folder')+self.filename
-        try:
-            result=os.path.exists(self.filename)
+        try: self.filename=Addon.getSetting('folder')+self.filename
+        except: self.filename=err_file
+        try: result=os.path.exists(self.filename)
         except: result=False
         if save and result:
             time=0
