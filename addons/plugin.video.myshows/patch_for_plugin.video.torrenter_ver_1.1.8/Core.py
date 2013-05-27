@@ -25,6 +25,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+import xbmcvfs
 import urllib
 import urllib2
 import re
@@ -60,17 +61,17 @@ class Core:
     )
     skinOptimizations = (
         {#Confluence
-            'list': 50,
-            'info': 50,
-            'wide': 51,
-            'icons': 500,
-        },
+         'list': 50,
+         'info': 50,
+         'wide': 51,
+         'icons': 500,
+         },
         {#Transperency!
-            'list': 50,
-            'info': 51,
-            'wide': 52,
-            'icons': 53,
-        }
+         'list': 50,
+         'info': 51,
+         'wide': 52,
+         'icons': 53,
+         }
     )
     print 'SYS ARGV: '+str(sys.argv)
 
@@ -80,18 +81,17 @@ class Core:
         else:
             self.userStorageDirectory = self.userStorageDirectory + 'Torrenter'
 
-    def drawItem(self, title, action, link = '', image=None, isFolder = True, contextMenu=None):
-        try:
-            listitem = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
-        except:
-            listitem = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage='')
+    def drawItem(self, title, action, link = '', image='', isFolder = True, contextMenu=None):
+        title=title.replace('720p', '[B]720p[/B]')
+        listitem = xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
         url = '%s?action=%s&url=%s' % (sys.argv[0], action, urllib.quote_plus(link))
         if contextMenu:
             listitem.addContextMenuItems(contextMenu, replaceItems=True)
         if isFolder:
             listitem.setProperty("Folder", "true")
+            listitem.setInfo(type = 'Video', infoLabels = {"Title":title, "plot":title})
         else:
-            listitem.setInfo(type = 'Video', infoLabels = {"Title":title})
+            listitem.setInfo(type = 'Video', infoLabels = {"Title":title, "plot":title})
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=url, listitem=listitem, isFolder=isFolder)
 
     def fetchData(self, url, referer = None):
@@ -114,6 +114,7 @@ class Core:
             return
 
     def lockView(self, viewId):
+        xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
         if 'true' == self.__settings__.getSetting("lock_view"):
             try:
                 xbmc.executebuiltin("Container.SetViewMode(%s)" % str(self.skinOptimizations[int(self.__settings__.getSetting("skin_optimization"))][viewId]))
@@ -123,13 +124,13 @@ class Core:
     def getParameters(self, parameterString):
         commands = {}
         splitCommands = parameterString[parameterString.find('?')+1:].split('&')
-        for command in splitCommands: 
+        for command in splitCommands:
             if (len(command) > 0):
                 splitCommand = command.split('=')
-                name = splitCommand[0]
-                try:value = splitCommand[1]
-                except:value=''
-                commands[name] = value
+                if (len(splitCommand) > 1):
+                    name = splitCommand[0]
+                    value = splitCommand[1]
+                    commands[name] = value
         return commands
 
     def unescape(self, string):
@@ -141,7 +142,7 @@ class Core:
         for (html, replacement) in self.stripPairs:
             string = re.sub(html, replacement, string)
         return string
-        
+
     def executeAction(self, params = {}):
         get = params.get
         if hasattr(self, get("action")):
@@ -266,13 +267,13 @@ class Core:
             else:
                 dialog = xbmcgui.Dialog()
                 if dialog.yesno(
-                    Localization.localize('Torrent Downloading'),
-                    Localization.localize('Do you want to STOP torrent downloading and seeding?'),
-                    Localization.localize('Preloaded: ') + str(downloadedSize / 1024 / 1024) + ' MB / ' + str(fullSize / 1024 / 1024) + ' MB'
+                        Localization.localize('Torrent Downloading'),
+                        Localization.localize('Do you want to STOP torrent downloading and seeding?'),
+                        Localization.localize('Preloaded: ') + str(downloadedSize / 1024 / 1024) + ' MB / ' + str(fullSize / 1024 / 1024) + ' MB'
                 ):
                     xbmc.executebuiltin("Notification(%s, %s)" % (Localization.localize('Information'), Localization.localize('Torrent downloading is stopped.')))
                     torrent.threadComplete = True
-            #self.addRate(torrent.getContentList()[contentId].path)
+                    #self.addRate(torrent.getContentList()[contentId].path)
         else:
             print self.__plugin__ + " Unexpected access to method playTorrent() without torrent content"
 
@@ -283,6 +284,7 @@ class Core:
         try: silent=get("silent")
         except: silent=None
         url = urllib.unquote_plus(get("url"))
+        self.__settings__.setSetting("lastTorrentUrl", url)
         classMatch = re.search('(\w+)::(.+)', url)
         if classMatch:
             searcher = classMatch.group(1)
@@ -334,8 +336,8 @@ class Core:
                 contentList = sorted(contentList, key=lambda x: x[0])
                 for title, identifier in contentList:
                     self.drawItem(title, 'playTorrent', identifier, isFolder=False)
-                #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_TITLE)
-                self.lockView('info')
+                    #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_TITLE)
+                self.lockView('wide')
                 xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     def cutFileNames(self, l):
@@ -520,6 +522,11 @@ class Core:
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     def recentMaterilas(self, params = {}):
+        xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
+        import Filters
+        filters = Filters.Filters()
+        filters.doModal()
+        return
         self.drawItem('RuTor.Org', 'recentRuTorOrg')
         self.drawItem('OpenSharing.Org', 'recentOpenSharingOrg')
         self.drawItem('NNM-Club.Ru', 'recentNNMClubRu')
@@ -533,7 +540,8 @@ class Core:
 
     def sectionMenu(self):
         self.drawItem(Localization.localize('< Search >'), 'search', image=self.ROOT + '/icons/search.png')
-        self.drawItem(Localization.localize('< Popular >'), 'getPopular', image=self.ROOT + '/icons/video.png')
+        '''self.drawItem(Localization.localize('< Popular >'), 'getPopular', image=self.ROOT + '/icons/video.png')
+        self.drawItem(Localization.localize('< Ratings >'), 'getRatings', image=self.ROOT + '/icons/video.png')        
         self.drawItem(Localization.localize('< Recent Materials >'), 'recentMaterilas', image=self.ROOT + '/icons/video.png')
         if self.__settings__.getSetting("auth"):
             self.drawItem(Localization.localize('< Bookmarks >'), 'getBookmarks', image=self.ROOT + '/icons/bookmarks.png')
@@ -541,7 +549,7 @@ class Core:
             self.drawItem(Localization.localize('< Logout >'), 'logoutUser', image=self.ROOT + '/icons/logout.png')
         else:
             self.drawItem(Localization.localize('< Login >'), 'loginUser', image=self.ROOT + '/icons/login.png')
-            self.drawItem(Localization.localize('< Register >'), 'registerUser', image=self.ROOT + '/icons/register.png')
+            self.drawItem(Localization.localize('< Register >'), 'registerUser', image=self.ROOT + '/icons/register.png')'''
         if 'true' == self.__settings__.getSetting("keep_files"):
             self.drawItem(Localization.localize('< Clear Storage >'), 'clearStorage', isFolder = True)
         self.lockView('list')
@@ -585,13 +593,13 @@ class Core:
         filesList = []
         if self.ROOT + os.sep + 'resources' + os.sep + 'searchers' not in sys.path:
             sys.path.insert(0, self.ROOT + os.sep + 'resources' + os.sep + 'searchers')
-        #try:
-        searcherObject = getattr(__import__(searcher), searcher)()
-        if searcherObject.isMagnetLinkSource and 'false' == self.__settings__.getSetting("use_magnet_links"):
-            return filesList
-        filesList = searcherObject.search(keyword)
-        #except Exception, e:
-            #print 'Unable to use searcher: ' + searcher + ' at ' + self.__plugin__ + ' searchWithSearcher(). Exception: ' + str(e)
+        try:
+            searcherObject = getattr(__import__(searcher), searcher)()
+            if searcherObject.isMagnetLinkSource and 'false' == self.__settings__.getSetting("use_magnet_links"):
+                return filesList
+            filesList = searcherObject.search(keyword)
+        except Exception, e:
+            print 'Unable to use searcher: ' + searcher + ' at ' + self.__plugin__ + ' searchWithSearcher(). Exception: ' + str(e)
         return filesList
 
     def jstr(self, s):
@@ -625,11 +633,11 @@ class Core:
                 return
         else:
             for (order, seeds, title, link, image) in filesList:
-                    contextMenu = [
-                        (Localization.localize('Add To Bookmarks'),
-                        'XBMC.RunPlugin(%s)' % ('%s?action=%s&url=%s&name=%s&seeds=%s&image=%s') % (sys.argv[0], 'addBookmark', urllib.quote_plus(link), urllib.quote_plus(title), seeds, urllib.quote_plus(image)))
-                    ]
-                    self.drawItem(title, 'openTorrent', link, image, contextMenu=contextMenu)
+                contextMenu = [
+                    (Localization.localize('Add To Bookmarks'),
+                     'XBMC.RunPlugin(%s)' % ('%s?action=%s&url=%s&name=%s&seeds=%s&image=%s') % (sys.argv[0], 'addBookmark', urllib.quote_plus(link), urllib.quote_plus(title), seeds, urllib.quote_plus(image)))
+                ]
+                self.drawItem(title, 'openTorrent', link, image, contextMenu=contextMenu)
         self.lockView('wide')
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
@@ -646,8 +654,7 @@ class Core:
         try:
             if not self.checkForAuth(response):
                 return
-        except: pass
-        return
+        except: return
 
     def getHistory(self, params = {}):
         filesList = []
@@ -657,40 +664,49 @@ class Core:
         for record in response:
             filesList.append((0, 0, str(record['name'].encode('utf-8', 'replace')), record['link'], ''))
         self.showFilesList(filesList)
-    
+
     def getBookmarks(self, params = {}):
         response = json.loads(self.fetchData(self.URL + '/bookmarks').encode('utf-8'))
         if not self.checkForAuth(response):
             return
         for record in response:
             contextMenu = [(
-                Localization.localize('Remove From Bookmarks'),
-                'XBMC.RunPlugin(%s)' % ('%s?action=%s&id=%s') % (sys.argv[0], 'removeBookmark', record['id'])
-            )]
+                               Localization.localize('Remove From Bookmarks'),
+                               'XBMC.RunPlugin(%s)' % ('%s?action=%s&id=%s') % (sys.argv[0], 'removeBookmark', record['id'])
+                           )]
             self.drawItem(str(record['name'].encode('utf-8', 'replace')), 'openTorrent', record['link'], record['image'], contextMenu=contextMenu)
         self.lockView('wide')
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     def removeBookmark(self, params = {}):
         get = params.get
-        response = json.loads(self.fetchData(self.URL + '/bookmarks/remove?id=%s' % (get("id"))).encode('utf-8'))
-        if not self.checkForAuth(response):
-            return
-        if 'removed' == response:
-            xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Item successfully removed from Bookmarks')))
-            xbmc.executebuiltin("Container.Refresh()")
-        else:
-            xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Bookmark not removed')))
+        if 0 < len(self.__settings__.getSetting("auth")):
+            response = json.loads(self.fetchData(self.URL + '/bookmarks/remove?id=%s' % (get("id"))).encode('utf-8'))
+            if not self.checkForAuth(response):
+                return
+            if 'removed' == response:
+                xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Item successfully removed from Bookmarks')))
+                xbmc.executebuiltin("Container.Refresh()")
+            else:
+                xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Bookmark not removed')))
 
     def addBookmark(self, params = {}):
         get = params.get
-        response = json.loads(self.fetchData(self.URL + '/bookmarks/add?link=%s&name=%s&seeds=%s&image=%s' % (get("url"), get('name'), get('seeds'), get('image'))).encode('utf-8'))
-        if not self.checkForAuth(response):
-            return
-        if 'added' == response:
-            xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Item successfully added to Bookmarks')))
-        else:
-            xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Bookmark not added')))
+        if 0 < len(self.__settings__.getSetting("auth")):
+            response = json.loads(self.fetchData(self.URL + '/bookmarks/add?link=%s&name=%s&seeds=%s&image=%s' % (get("url"), get('name'), get('seeds'), get('image'))).encode('utf-8'))
+            if not self.checkForAuth(response):
+                return
+            if 'added' == response:
+                xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Item successfully added to Bookmarks')))
+            else:
+                xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Bookmark'), Localization.localize('Bookmark not added')))
+
+    def getRatings(self, params = {}):
+        filesList = []
+        response = json.loads(self.fetchData(self.URL + '/rated').encode('utf-8'))
+        for record in response:
+            filesList.append((0, 0, '%s [%s: %s/ %s: %s]' % (str(record['name'].encode('utf-8', 'replace')), Localization.localize('Views'), str(record['cnt']), Localization.localize('Rating'), str(record['rating'])), record['link'], ''))
+        self.showFilesList(filesList)
 
     def addRate(self, name):
         #xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=False)
@@ -702,11 +718,13 @@ class Core:
         #xbmc.executebuiltin("Notification(%s, %s, 2500)" % ('Rating', str(rating.rate)))
         if 0 < len(self.__settings__.getSetting("auth")):
             response = json.loads(self.fetchData(self.URL + '/rating/add?link=%s&name=%s&rating=%s' % (urllib.quote_plus(self.__settings__.getSetting("lastTorrentUrl")), urllib.quote_plus(name), str(result))).encode('utf-8'))
-        if not self.checkForAuth(response):
-            return
+            if not self.checkForAuth(response):
+                return
 
     def search(self, params = {}):
         defaultKeyword = params.get('url')
+        if not defaultKeyword:
+            defaultKeyword = ''
         keyboard = xbmc.Keyboard(defaultKeyword, Localization.localize('Search Phrase') + ':')
         keyboard.doModal()
         query = keyboard.getText()

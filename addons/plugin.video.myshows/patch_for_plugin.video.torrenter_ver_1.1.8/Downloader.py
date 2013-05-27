@@ -30,6 +30,7 @@ import hashlib
 import re
 import xbmc
 import xbmcgui
+import xbmcvfs
 import Localization
 
 class Torrent:
@@ -44,15 +45,33 @@ class Torrent:
     session = None
     downloadThread = None
     threadComplete = False
+    lt = None
 
     def __init__(self, storageDirectory = '', torrentFile = '', torrentFilesDirectory = 'torrents'):
+        #http://www.rasterbar.com/products/libtorrent/manual.html
+        try:
+            import platform
+            if 'Linux' == platform.system():
+                if 'x86_64' == platform.machine():
+                    from python_libtorrent.linux_x86_64 import libtorrent
+                else:
+                    from python_libtorrent.linux_x86 import libtorrent
+            else:
+                from python_libtorrent.windows import libtorrent
+        except ImportError, v:
+            try:
+                import libtorrent
+            except ImportError, v:
+                raise ImportError("The script.module.libtorrent module is not installed, libtorrent not found or unsupported system used")
+        self.lt = libtorrent
+        del libtorrent
         self.torrentFilesDirectory = torrentFilesDirectory
         self.storageDirectory = storageDirectory
-        if not os.path.exists(self.storageDirectory + os.sep + self.torrentFilesDirectory):
-            os.makedirs(self.storageDirectory + os.sep + self.torrentFilesDirectory)
-        if os.path.exists(torrentFile):
+        if not xbmcvfs.exists(self.storageDirectory + os.sep + self.torrentFilesDirectory):
+            self._makedirs(self.storageDirectory + os.sep + self.torrentFilesDirectory)
+        if xbmcvfs.exists(torrentFile):
             self.torrentFile = torrentFile
-            self.torrentFileInfo = libtorrent.torrent_info(self.torrentFile)
+            self.torrentFileInfo = self.lt.torrent_info(self.torrentFile)
         elif re.match("^magnet\:.+$", torrentFile):
             self.magnetLink = torrentFile
         
@@ -73,36 +92,38 @@ class Torrent:
             except:
                 print 'Unable to save torrent file from "' + torrentUrl + '" to "' + torrentFile + '" in Torrent::saveTorrent'
                 return
-            if os.path.exists(torrentFile):
+            if xbmcvfs.exists(torrentFile):
                 try:
-                    self.torrentFileInfo = libtorrent.torrent_info(torrentFile)
+                    self.torrentFileInfo = self.lt.torrent_info(torrentFile)
                 except:
-                    os.remove(torrentFile)
+                    xbmcvfs.delete(torrentFile)
                     return
                 baseName = os.path.basename(self.getFilePath())
                 newFile = self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep + baseName + '.' + self.md5(torrentUrl) + '.torrent'
-                if os.path.exists(newFile):
-                    os.remove(newFile)
-                try:
-                    os.rename(torrentFile, newFile)
-                except:
-                    print 'Unable to rename torrent file from "' + torrentFile + '" to "' + newFile + '" in Torrent::renameTorrent'
-                    return
+                newFile = newFile.decode('utf-8').encode('ascii', 'ignore')
+                try:xbmcvfs.delete(newFile)
+                except:pass
+                if not xbmcvfs.exists(newFile):
+                    try:
+                        xbmcvfs.rename(torrentFile, newFile)
+                    except:
+                        print 'Unable to rename torrent file from "' + torrentFile + '" to "' + newFile + '" in Torrent::renameTorrent'
+                        return
                 self.torrentFile = newFile
-                self.torrentFileInfo = libtorrent.torrent_info(self.torrentFile)
+                self.torrentFileInfo = self.lt.torrent_info(self.torrentFile)
                 return self.torrentFile
 
     def getMagnetInfo(self):
         magnetSettings = {
             'save_path': self.storageDirectory,
-            'storage_mode': libtorrent.storage_mode_t(2),
+            'storage_mode': self.lt.storage_mode_t(2),
             'paused': True,
             'auto_managed': True,
             'duplicate_is_error': True
         }
         progressBar = xbmcgui.DialogProgress()
         progressBar.create(Localization.localize('Please Wait'), Localization.localize('Magnet-link is converting.'))
-        self.torrentHandle = libtorrent.add_magnet_uri(self.session, self.magnetLink, magnetSettings)
+        self.torrentHandle = self.lt.add_magnet_uri(self.session, self.magnetLink, magnetSettings)
         iterator = 0
         while not self.torrentHandle.has_metadata():
             time.sleep(0.1)
@@ -123,13 +144,13 @@ class Torrent:
         self.initSession()
         torrentInfo = self.getMagnetInfo()
         try:
-            torrentFile = libtorrent.create_torrent(torrentInfo)
+            torrentFile = self.lt.create_torrent(torrentInfo)
             baseName = os.path.basename(self.storageDirectory + os.sep + torrentInfo.files()[0].path).decode('utf-8').encode('ascii', 'ignore')
             self.torrentFile = self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep + baseName + '.torrent'
             torentFileHandler = open(self.torrentFile, "wb")
-            torentFileHandler.write(libtorrent.bencode(torrentFile.generate()))
+            torentFileHandler.write(self.lt.bencode(torrentFile.generate()))
             torentFileHandler.close()
-            self.torrentFileInfo = libtorrent.torrent_info(self.torrentFile)
+            self.torrentFileInfo = self.lt.torrent_info(self.torrentFile)
         except:
             xbmc.executebuiltin("Notification(%s, %s, 7500)" % (Localization.localize('Error'), Localization.localize('Your library out of date and can\'t save magnet-links.')))
             self.torrentFileInfo = torrentInfo
@@ -190,13 +211,13 @@ class Torrent:
             self.session.remove_torrent(self.torrentHandle)
         except:
             pass
-        self.session = libtorrent.session()
+        self.session = self.lt.session()
         self.session.start_dht()
         self.session.add_dht_router("router.bittorrent.com", 6881)
         self.session.add_dht_router("router.utorrent.com", 6881)
         self.session.add_dht_router("router.bitcomet.com", 6881)
         self.session.listen_on(6881, 6891)
-        self.session.set_alert_mask(libtorrent.alert.category_t.storage_notification)
+        self.session.set_alert_mask(self.lt.alert.category_t.storage_notification)
 
     def startSession(self, contentId = 0, seeding = True):
         self.initSession()
@@ -225,7 +246,7 @@ class Torrent:
         for filename in os.listdir(self.storageDirectory + os.sep + self.torrentFilesDirectory):
             currentFile = self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep + filename
             if re.match('^.+\.torrent$', currentFile):
-                info = libtorrent.torrent_info(currentFile)
+                info = self.lt.torrent_info(currentFile)
                 fileSettings = {
                     'ti': info,
                     'save_path': self.storageDirectory,
@@ -278,7 +299,7 @@ class Torrent:
         self.torrentHandle.read_piece(index)
         while True:
             part = self.session.pop_alert()
-            if isinstance(part, libtorrent.read_piece_alert):
+            if isinstance(part, self.lt.read_piece_alert):
                 if part.piece == index:
                     return part.buffer
                 else:
@@ -286,3 +307,17 @@ class Torrent:
                 break
             time.sleep(0.5)
             self.checkThread()
+
+    def _makedirs(self, _path):
+        success = False
+        if (xbmcvfs.exists(_path)):
+            return True
+        # temp path
+        tmppath = _path
+        # loop thru and create each folder
+        while (not xbmcvfs.exists(tmppath)):
+            success = xbmcvfs.mkdir(tmppath)
+            if not success:
+                tmppath = os.path.dirname(tmppath)
+        # call function until path exists
+        self._makedirs(_path)

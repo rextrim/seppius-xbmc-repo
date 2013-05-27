@@ -575,7 +575,7 @@ class PluginStatus():
         self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.3',['default.py','update.py']),
                 ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
-                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.4.3',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py',
+                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.8',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py',
                  'resources/searchers/NNMClubRu.py','resources/searchers/icons/bt-chat.com.png','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png','resources/searchers/RuTorOrg.py','resources/searchers/KrasfsRu.py'])]
         self.status={}
         for plug in self.patchfiles:
