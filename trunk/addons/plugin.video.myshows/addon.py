@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.6.4"
+__version__ = "1.6.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -79,7 +79,8 @@ class ExtraFunction(Main):
         self.handle()
 
 def Shows(mode):
-    syncshows=SyncXBMC()
+    try: syncshows=SyncXBMC()
+    except: syncshows=False
     #lockView('info')
     if mode==19:
         KB = xbmc.Keyboard()
@@ -137,7 +138,7 @@ def Shows(mode):
             info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(jdata[showId]['rating'])+'\r\n'
         except:info['plot']=''
         item.setInfo( type='Video', infoLabels=info )
-        item=syncshows.shows(jdata[showId]['title'], item, info)
+        if syncshows: item=syncshows.shows(jdata[showId]['title'], item, info)
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
@@ -286,8 +287,10 @@ def MyScanList():
         str_showId=str(x['showId'])
         str_seasonId=str(x['seasonId'])
         str_filename=unicode(x['filename'])
-        if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
-        else: show_title=jdata[str_showId]['title']
+        try:
+            if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
+            else: show_title=jdata[str_showId]['title']
+        except: show_title=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())['title']
         ifstat=myscan.isfilename(str_filename)
         if ifstat: title=TextBB('+', 'b')
         else: title=TextBB('-', 'b')
@@ -632,6 +635,7 @@ class SyncXBMC():
             if __settings__.getSetting("label")=='true':
                 idlist=[]
                 if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
+                    self.match['label']=self.match['label'].strip(os.path.dirname(self.match['label'])).encode('utf-8','ignore')
                     Debug('[doaction] Trying to find filename on myshows.ru: '+self.match['label'])
                     data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+urllib.quote_plus(self.match['label'])).get()
                     if data:
@@ -645,10 +649,10 @@ class SyncXBMC():
                     else:
                         self.match=filename2match(self.match['label'])
                         Debug('[doaction] [filename2match] '+unicode(self.match))
-            if not showId and 'showtitle' in self.match:
-                try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
-                except:showId=self.showtitle2showId(self.match['showtitle'])
-            if 'date' in self.match and not 'episode' in self.match:
+            if self.match and not showId and 'showtitle' in self.match:
+                try:showId=self.showtitle2showId(self.match['showtitle'].decode('utf-8','ignore'), self.match['tvdb_id'])
+                except:showId=self.showtitle2showId(self.match['showtitle'].decode('utf-8','ignore'))
+            if self.match and 'date' in self.match and not 'episode' in self.match:
                 id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
             if showId:
@@ -765,6 +769,7 @@ class SyncXBMC():
                     self.menu[i]['title']=info['title']
                     self.menu[i]['playcount']=0
                     self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
+                    self.menu[i]['VideoResolution']=720
                 item.setInfo( type='Video', infoLabels=self.menu[i] )
                 #Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
         return item
@@ -773,7 +778,7 @@ class SyncXBMC():
         from utilities import xbmcJsonRequest
         Debug('[Episodes Sync] Getting episodes from XBMC')
 
-        shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {'properties': ['title', 'originaltitle', 'genre', 'year', 'rating', 'plot', 'studio', 'mpaa', 'cast', 'imdbnumber', 'premiered', 'votes', 'fanart', 'thumbnail', 'episodeguide', 'playcount', 'season', 'episode']}, 'id': 0})
+        shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {'properties': ['title', 'originaltitle', 'genre', 'year', 'rating', 'plot', 'studio', 'mpaa', 'cast', 'imdbnumber', 'premiered', 'votes', 'fanart', 'thumbnail', 'episodeguide', 'playcount', 'season', 'episode', 'tag']}, 'id': 0})
 
         # sanity check, test for empty result
         if not shows:
