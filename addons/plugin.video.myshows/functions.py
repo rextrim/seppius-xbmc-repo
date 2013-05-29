@@ -147,7 +147,7 @@ def StripName(name, list, replace=' '):
 
 def auth():
     url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+md5(passwd).hexdigest()
-    headers = {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3', 'Content-Type':'application/x-www-form-urlencoded'}
+    headers = {'User-Agent':'XBMC', 'Content-Type':'application/x-www-form-urlencoded'}
     try:    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
     except urllib2.HTTPError as e:
         if e.code==403 or not login or login=='' or not passwd or passwd=='':
@@ -168,7 +168,7 @@ def makeapp(s):
     return urllib.quote_plus(json.dumps(s))
 
 def get_url(cookie, url):
-    headers = { 'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+    headers = { 'User-Agent':'XBMC',
                 'Content-Type':'application/x-www-form-urlencoded',
                 'Cookie':cookie}
     try:
@@ -205,7 +205,7 @@ def get_data(cookie, url, refresh=False):
         pass
 
 def post_url(cookie, url, post):
-    headers = { 'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3',
+    headers = { 'User-Agent':'XBMC',
                 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Connection':'keep-alive',
                 'Referer':'http://www.bt-chat.com/search.php?mode=simplesearch',
