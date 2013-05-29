@@ -58,7 +58,7 @@ class Main(Handler):
                        {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                        {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                        {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},])#{"title":"TEST","mode":"999"}])
+                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},{"title":"TEST","mode":"999"}])
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -650,8 +650,8 @@ class SyncXBMC():
                         self.match=filename2match(self.match['label'])
                         Debug('[doaction] [filename2match] '+unicode(self.match))
             if self.match and not showId and 'showtitle' in self.match:
-                try:showId=self.showtitle2showId(self.match['showtitle'].decode('utf-8','ignore'), self.match['tvdb_id'])
-                except:showId=self.showtitle2showId(self.match['showtitle'].decode('utf-8','ignore'))
+                try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
+                except:showId=self.showtitle2showId(self.match['showtitle'])
             if self.match and 'date' in self.match and not 'episode' in self.match:
                 id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
             Debug('[doaction] [showId] '+str(showId))
@@ -670,6 +670,8 @@ class SyncXBMC():
                     Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
+        try:showtitle=showtitle.decode('utf-8','ignore')
+        except:pass
         for showId in self.jdatashows:
             if showtitle==self.jdatashows[showId]['ruTitle'] or showtitle==self.jdatashows[showId]['title']:
                 return int(showId)
@@ -806,7 +808,7 @@ class SyncXBMC():
         return shows
 
 def Test():
-    rateMedia('7', '1199981', None)
+    SyncXBMC()
     pass
 
 params = get_params()
