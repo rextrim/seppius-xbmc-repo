@@ -34,10 +34,13 @@ if Addon.getSetting('autobuf')=='true': autobuf=True
 else: autobuf=False
 if Addon.getSetting('save')=='true': save=True
 else: save=False
-if save and not Addon.getSetting('folder'): Addon.openSettings()
+#if save and not Addon.getSetting('folder'): Addon.openSettings()
 
 lock_file = xbmc.translatePath('special://temp/'+ 'ts.lock')
 err_file = xbmc.translatePath('special://temp/'+ 'err.avi')
+if (sys.platform == 'win32') or (sys.platform == 'win64'):
+    lock_file = lock_file.decode('utf-8')
+    err_file = err_file.decode('utf-8')
 aceport=62062
 
 class TSengine():
@@ -57,6 +60,7 @@ class TSengine():
         f = file(lock_file, "w")
         f.close()
         self.error=None
+        if os.path.exists(err_file): os.remove(err_file)
     def load_torrent(self, torrent, mode, host=server_ip, port=aceport ):
         result=self.dvijitel.load_torrent(torrent, mode, host, port)
         if not result: self.error=True
@@ -74,12 +78,7 @@ class ASengine(xbmc.Player):
     
     def __init__(self):
         
-        if hasattr(sys.modules["__main__"], "dbglevel"):
-            self.dbglevel = sys.modules["__main__"].dbglevel
-            print 'new hasattr'
-        else:
-            self.dbglevel = 3
-            print 'old hasattr'
+
         
         self.progress = xbmcgui.DialogProgress()
         self.progress.create('AceStream', 'Initialization')
@@ -309,13 +308,26 @@ class ASengine(xbmc.Player):
             if v==self.ind: self.filename=k
         try: self.filename=Addon.getSetting('folder')+self.filename
         except: self.filename=err_file
+        self.filename=err_file
         try: result=os.path.exists(self.filename)
         except: result=False
-        if save and result:
+        if save and self.r.event:
+            try: self.progress.updater(0,"Сохраняю файл на диск",k)
+            except: self.progress.updater(0,"Сохраняю файл на диск","")
             time=0
+            comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename))
+            self._TSpush(comm)
+            self.r.event=None
+            while not os.path.exists(self.filename):
+                print 'fcnk loop'
+                xbmc.sleep(300)
+            #xbmc.sleep(1000)
+            print 'ready to play %s'%self.filename
             i = xbmcgui.ListItem(title)
+            print self.filename
             i.setProperty('StartOffset', str(time))
             self.play(self.filename,i)
+            self.progress.close()
         else:
             if not self.err:
                 self.progress.update( 0, "Play",'Start', "" )
@@ -323,20 +335,38 @@ class ASengine(xbmc.Player):
                 if self.mode!='PID': spons=' 0 0 0'
                 comm='START '+self.mode+ ' ' + self.url + ' '+ str(index) + spons
                 self._TSpush(comm)
-
-                while not self.r.got_url and not self.progress.iscanceled() and not self.r.err:
+                local=False
+                
+                while not self.r.got_url and not self.progress.iscanceled() and not self.r.err and not local:
                     
                     if self.r.last_com=='STATUS':
                         try:
                             if self.r.state: self.progress.update(self.r.progress,self.r.state,self.r.label,'')
                         except: pass
                         xbmc.sleep(1000)
-
+                    if save and self.r.event:
+                        try: self.progress.update(0,"Сохраняю файл на диск",k)
+                        except: self.progress.update(0,"Сохраняю файл на диск","")
+                        time=0
+                        comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename))
+                        self._TSpush(comm)
+                        self.r.event=None
+                        while not os.path.exists(self.filename):
+                            print 'fcnk loop'
+                            xbmc.sleep(300)
+                        #xbmc.sleep(1000)
+                        print 'ready to play %s'%self.filename
+                        i = xbmcgui.ListItem(title)
+                        print self.filename
+                        i.setProperty('StartOffset', str(time))
+                        self.play(self.filename,i)
+                        self.progress.close()
+                        local=True
                 if self.progress.iscanceled() or self.r.err: 
                     self.err=1
                     self.progress.close()
                     return False
-                else:
+                elif not local:
                     self.link=self.r.got_url
                     self.progress.close()
                     self.title=title
@@ -348,22 +378,24 @@ class ASengine(xbmc.Player):
 
     def loop(self):
         print 'start loop'
+
         visible=False
         pos=[0,25,50,75,100]
         while self.active or self.r.ad:
             
             if self.r.event and save:
                 
-                print self.r.event
                 comm='SAVE %s path=%s'%(self.r.event[0]+' '+self.r.event[1],urllib.quote(self.filename))
-                print comm
                 self._TSpush(comm)
                 self.r.event=None
                 while not os.path.exists(self.filename):
                     print 'fcnk loop'
                     xbmc.sleep(300)
+                xbmc.sleep(1000)
+                print 'ready to play %s'%self.filename
                 try: time=self.getTime()
                 except: time=0
+                
                 i = xbmcgui.ListItem(self.title)
                 i.setProperty('StartOffset', str(time))
                 self.play(self.filename,i)
@@ -420,7 +452,7 @@ class ASengine(xbmc.Player):
             self.r.join(500)
             #self.r=None
         print 'ts shuted up'
-        if os.path.exists(err_file): os.remove(err_file)
+        
         if os.path.exists(lock_file): os.remove(lock_file)
         if self.activeplay and autoexit:
             if sys.platform == 'win32' or sys.platform == 'win64':
@@ -469,11 +501,18 @@ class _ASpull(threading.Thread):
     def _com_received(self,text):
 
         comm=text.split(' ')[0]
+        self.label=' '
         try:
             if comm=="STATUS":
                 ss=re.compile('main:[a-z]+',re.S)
                 s1=re.findall(ss, text)[0]
                 st=s1.split(':')[1]
+                if st=='starting':
+                    self.state='Запускается'
+                    self.progress=0
+                if st=='loading':
+                    self.state='Загружается'
+                    self.progress=0
                 if st=='prebuf': 
                     self.state=language(1100)
                     self.progress=int(text.split(';')[1])+0.1
@@ -490,7 +529,6 @@ class _ASpull(threading.Thread):
                 if st=='check': 
                     self.state=language(1103)
                     self.progress=int(text.split(';')[1])
-                    self.label=None
                     self.speed=1
                 if st=='idle': 
                     self.state=language(1104)

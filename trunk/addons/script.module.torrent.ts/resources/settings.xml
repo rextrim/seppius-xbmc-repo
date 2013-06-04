@@ -7,10 +7,11 @@
 	
 	<setting id="prog" type="text" label="path to execute tsengine" default="" />
 	<setting id="save" type="bool" label="Сохранять скаченное на диск" default="false" />
-    <setting id="folder" type="folder" label="path to save"/>
+    
   </category>
 <category label="Пока не работают"> 
 	<setting id="autoexit" type="bool" label="2002" default="false" />
 	<setting id="autobuf" type="bool" label="2003" default="false" />
+    <setting id="folder" type="folder" label="path to save"/>
  </category>
 </settings>
