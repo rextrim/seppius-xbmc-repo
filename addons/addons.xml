@@ -895,6 +895,16 @@ Audio sources are
     </extension>
 </addon>
 
+<addon id="plugin.video.kinoxa-x.ru" name="[COLOR FF3EFF23]Kinoxa-X.ru[/COLOR]" version="0.2.1" provider-name="Silhouette">
+  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>KINOXA-X.RU у нас Вы можите смотреть кино онлайн</summary>
+    <description>Добро пожаловать в лучший онлайн кинотеатр KINOXA-X.RU у нас Вы можите смотреть кино онлайн. Выберите фильм любого жанра и наслаждайтесь просмотром</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.kiwi.kz" name="Kiwi.kz" version="1.0.1" provider-name="HD-Lab Team">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
