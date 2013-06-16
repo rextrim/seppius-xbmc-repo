@@ -100,6 +100,18 @@
             <texturenofocus>channels.png</texturenofocus>
             <onclick>Close</onclick>
           </control>
+          <control type="button" id="208">
+            <description>STANDARDP LAYER</description>
+            <posx>375</posx>
+            <posy>100</posy>
+            <width>30</width>
+            <height>30</height>
+            <onleft>207</onleft>
+            <onright>204</onright>
+            <texturefocus>fullscreenfocus.png</texturefocus>
+            <texturenofocus>fullscreen.png</texturenofocus>
+            <onclick>Action(FullScreen)</onclick>
+          </control>
           <control type="image" id="202">
             <posx>45</posx>
             <posy>35</posy>
