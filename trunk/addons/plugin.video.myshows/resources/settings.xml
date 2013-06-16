@@ -20,6 +20,7 @@
         <setting id="torrent_utorrent_port" type="number" label="50313" default="8080" />
         <setting id="torrent_utorrent_login" type="text" label="50315"  default="" />
         <setting id="torrent_utorrent_password" type="text" label="50316" default="" option="hidden" />
+        <setting id="torrenter_keyboard" type="bool" label="30024" default="false" />
     </category>
     <category label="30013">
         <setting id="scrobrate"   type="bool" label="30012" default="false"/>

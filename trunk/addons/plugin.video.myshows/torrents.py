@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.6.4"
+__version__ = "1.6.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -721,23 +721,36 @@ class AddSource(Source):
                 showMessage(__language__(30208), __language__(30249) % (str(i)))
             elif self.stype=='file':
                 dllist=sorted(Download().listfiles(id), key=lambda x: x[0])
-                dirlist=[x[0] for x in dllist]
+                #dirlist=[x[0] for x in dllist]
+                dirlist=[]
+                videolist=[]
                 cutlist=[]
-                if len(dirlist)>1: cutlist=cutFileNames(dirlist)
-                else: cutlist.extend(dirlist)
-                for s in dirlist:
-                    i=dirlist.index(s)
-                    cutlist[i]='['+str(dllist[i][1])+'%]['+dllist[i][3]+'] '+cutlist[i]
-                cutlist.append(unicode(__language__(30205)))
-                if not ind and ind!=0:
-                    if len(dirlist)>1:
-                        dialog = xbmcgui.Dialog()
-                        ret = dialog.select(__language__(30233), cutlist)
-                    else: ret=0
+                for x in dllist:
+                    dirlist.append(x[0])
+                    match=re.match('.avi|.mp4|.mkV|.flv|.mov|.vob|.wmv|.ogm|.asx|.mpg|mpeg|.avc|.vp3|.fli|.flc|.m4v', x[0][int(len(x[0]))-4:len(x[0])], re.I)
+                    if match:
+                        videolist.append(x[0])
+                #print str(videolist)
+                if len(videolist)==1:
+                    cutlist.extend(dirlist)
+                    ret=dirlist.index(videolist[0])
                 else:
-                    for s in dllist:
-                        if s[2]==ind: ret=dirlist.index(s[0])
-                if ret>-1 and ret<len(cutlist)-1:
+                    cutlist=cutFileNames(dirlist)
+                    for s in dirlist:
+                        i=dirlist.index(s)
+                        cutlist[i]='['+str(dllist[i][1])+'%]['+dllist[i][3]+'] '+cutlist[i]
+                    cutlist.append(unicode(__language__(30205)))
+                    if not ind and ind!=0:
+                        if len(dirlist)>1:
+                            dialog = xbmcgui.Dialog()
+                            ret = dialog.select(__language__(30233), cutlist)
+                            if ret==cutlist.index(unicode(__language__(30205))):
+                                return
+                        else: ret=0
+                    else:
+                        for s in dllist:
+                            if s[2]==ind: ret=dirlist.index(s[0])
+                if ret>-1:
                     self.filename=os.path.join(self.filename.decode('utf-8'),dirlist[ret])
                     if len(self.filename)>1:
                         try:

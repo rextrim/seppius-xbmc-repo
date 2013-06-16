@@ -58,7 +58,9 @@ class Main(Handler):
                        {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                        {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
                        {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"},{"title":"TEST","mode":"999"}])
+                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])
+        if __settings__.getSetting("debug")=='true':
+            self.menu.append({"title":"TEST","mode":"999"})
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
@@ -771,7 +773,7 @@ class SyncXBMC():
                     self.menu[i]['title']=info['title']
                     self.menu[i]['playcount']=0
                     self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
-                    self.menu[i]['VideoResolution']=720
+                    #self.menu[i]['VideoResolution']=720
                 item.setInfo( type='Video', infoLabels=self.menu[i] )
                 #Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
         return item

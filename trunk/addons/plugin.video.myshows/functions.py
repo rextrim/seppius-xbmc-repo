@@ -4,7 +4,6 @@ import urllib, urllib2, re, sys, socket, datetime, time, os, json
 import xbmcplugin, xbmcgui, xbmc, xbmcaddon, xbmcvfs
 from app import *
 
-
 try:
     from hashlib import md5
 except ImportError:
@@ -15,9 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-
-
-__version__ = "1.6.4"
+__version__ = "1.6.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
