@@ -722,16 +722,23 @@ class Core:
                 return
 
     def search(self, params = {}):
-        defaultKeyword = params.get('url')
-        if not defaultKeyword:
-            defaultKeyword = ''
-        keyboard = xbmc.Keyboard(defaultKeyword, Localization.localize('Search Phrase') + ':')
-        keyboard.doModal()
-        query = keyboard.getText()
-        if not query:
-            return
-        elif keyboard.isConfirmed():
-            params["url"] = urllib.quote_plus(query)
+        try:
+            myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
+            showKey=myshows_setting.getSetting("torrenter_keyboard")
+        except: showKey="true"
+        if showKey=="true":
+            defaultKeyword = params.get('url')
+            if not defaultKeyword:
+                defaultKeyword = ''
+            keyboard = xbmc.Keyboard(defaultKeyword, Localization.localize('Search Phrase') + ':')
+            keyboard.doModal()
+            query = keyboard.getText()
+            if not query:
+                return
+            elif keyboard.isConfirmed():
+                params["url"] = urllib.quote_plus(query)
+                self.openSection(params)
+        else:
             self.openSection(params)
 
     def loginUser(self, params = {}):
