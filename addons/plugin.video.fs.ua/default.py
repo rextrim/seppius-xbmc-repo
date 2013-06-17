@@ -72,9 +72,16 @@ headers  = {
 	'Accept-Encoding':'identity, *;q=0'
 }
 
-def GET(url, referer, post_params = None):
-	headers['Referer'] = referer
+def getFullUrl(url):
+        if not '://' in url:
+		url = httpSiteUrl + url
+        return url
 
+def GET(url, referer, post_params = None):
+	
+	headers['Referer'] = referer
+	url = getFullUrl(url)
+	
 	if post_params != None:
 		post_params = urllib.urlencode(post_params)
 		headers['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -629,15 +636,16 @@ def readdir(params):
 							'fallbackHref': fallbackHref
 						})
 					else:
-						uri = href
+						uri = getFullUrl(href)
 
 				xbmcplugin.addDirectoryItem(h, uri, li, isFolder)
 
 	xbmcplugin.endOfDirectory(h)
 
 def download(params):
+        fileUrl = getFullUrl(urllib.unquote_plus(params['file_url']))
 	download_params = {
-		'url': urllib.unquote_plus(params['file_url']),
+		'url': fileUrl,
 		'download_path': __settings__.getSetting('Download Path')
 	}
 	client = downloader.SimpleDownloader()
@@ -727,12 +735,12 @@ def playflv(params):
 		if playerLink == None or len(playerLink) == 0:
 			raise Exception('Flv search', 'link not found')
 
-		plfile = urllib.urlopen(str(playerLink[0]))
+		plfile = urllib.urlopen(getFullUrl(str(playerLink[0])))
 		fileUrl = plfile.geturl()
 	except:
 		fileUrl = urllib.unquote_plus(params['fallbackHref'])
 
-	i = xbmcgui.ListItem(path = fileUrl)
+	i = xbmcgui.ListItem(path = getFullUrl(fileUrl))
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 def play(params):
@@ -740,10 +748,10 @@ def play(params):
 	plfile = urllib.unquote_plus(params['file'])
 	headers['Referer'] = referer
 
-	plfile = urllib.urlopen(plfile)
+	plfile = urllib.urlopen(getFullUrl(plfile))
 	fileUrl = plfile.geturl()
 
-	i = xbmcgui.ListItem(path = fileUrl)
+	i = xbmcgui.ListItem(path = getFullUrl(fileUrl))
 	xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):
