@@ -211,8 +211,8 @@ def subcat(params):
 				})
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	else:
-		cats=content.findAll(href=re.compile('http://online.stepashka.com/%s'%params['sub']))
-	
+		# AKGDRG: old subcategory structure   cats=content.findAll(href=re.compile('http://online.stepashka.com/%s'%params['sub']))
+		cats=content.findAll(href=re.compile('/%s'%params['sub']))
 		list=[]
 		for line in cats:
 			title=None
