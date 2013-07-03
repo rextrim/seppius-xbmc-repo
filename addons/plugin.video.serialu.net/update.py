@@ -156,16 +156,10 @@ def Update_Serial_XML(mode):
 
 #--- get number of pages for selected category ---------------------------------
 def Get_Page_Number(url):
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
-
+    link = get_HTML(url)
     ret = 1
 
     match=re.compile('<div class="wp-pagenavi">(.+?)</div>', re.MULTILINE|re.DOTALL).findall(link)
-
     page=re.compile('<a href="(.+?)/page/(.+?)</a>', re.MULTILINE|re.DOTALL).findall(match[0])
 
     for rec in page:
@@ -204,12 +198,12 @@ def Get_Film_Info(url, xml_serials, xml_types, xml_genres, serial_found, dp):
         except:
             ser_name = ser.find("h2").find("a").text.strip() #i_name.replace(u'”', u'"').replace(u'“',u'"').replace(u'«',u'"').replace(u'»',u'"')
             search_mask = '<p><img class="m_pic" alt="'+ser_name+'" align="left" src="(.+?)" /></p>'
-            img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
+            img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(html)
             try:
                 i_image = img_alt[0]
             except:
                 search_mask = '<p><img class="m_pic" alt="'+ser_name+'"" align="left" src="(.+?)" /></p>'
-                img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
+                img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(html)
                 try:
                     i_image = img_alt[0]
                 except:
