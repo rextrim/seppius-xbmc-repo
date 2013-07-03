@@ -610,10 +610,10 @@ def PLAY():
     # -- assemble RTMP link
     video_url = par.url.split('|')[1]
 
-    v_host = video_url[:video_url.find('/mp4:')]
+    v_host = video_url[:video_url.find('/[')+1]
 
     v_quality = re.compile('\[(.+?)\]').findall(video_url)[0].split(',')
-    v_audio = re.compile('audioIndex={(.+?)}').findall(video_url)[0]
+    v_audio = re.compile('aindex={(.+?)}').findall(video_url)[0]
     if v_audio[0] == ';': v_audio = v_audio[1:]
     v_audio   = v_audio.split(';')
 
@@ -629,12 +629,15 @@ def PLAY():
     else:
         audio_id = 0
 
+    v_param = video_url[video_url.find('?'):video_url.find('{')]
+
     if Addon.getSetting('Ext_Player') == 'false':
-        video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=1 live=1'%(v_host, url, v_quality[0], v_audio[0], v_auth)
+        video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s%s%s swfVfy=1 live=1'%(v_host, url, v_quality[0], v_param, v_audio[0])
+        #video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=1 live=1'%(v_host, url, v_quality[0], v_audio[0], v_auth)
     else:
         rtmp = xbmc.translatePath(Addon.getSetting('RTMP'))
         vlc =  xbmc.translatePath(Addon.getSetting('VLC'))
-        video = '"%srtmpdump.exe" "%svlc.exe" "%s"  "%s" "mp4:%s?audioIndex=%s&%s"'%(rtmp, vlc, v_host, url, v_quality[0], v_audio[0], v_auth)
+        video = '"%srtmpdump.exe" "%svlc.exe" "%s"  "%s" "mp4:%s%s%s"'%(rtmp, vlc, v_host, url, v_quality[0], v_param, v_audio[0])
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
