@@ -127,8 +127,9 @@ def Update_Serial_XML(mode):
     serial_found = 0
 
     # get max page number for update
+    print Addon.getSetting('update_len')
     try:
-        max_page = (10,20,30,50,100)[int(Addon.getSetting('update_len'))]
+        max_page = (10,20,50,100,1000)[int(Addon.getSetting('update_len'))]
     except:
         max_page = 10
 
