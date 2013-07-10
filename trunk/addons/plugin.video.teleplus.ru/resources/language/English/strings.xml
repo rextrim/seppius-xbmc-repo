@@ -2,8 +2,8 @@
 <strings>
 	<string id="2000">Login for  www.teleplus.ru</string>
 	<string id="2001">Password for  www.teleplus.ru</string>
-	<string id="2002">Cannot to sign in</string>
-	<string id="2003">Check your login and password for http://teleplus.ru</string>
+	<string id="2002">Can not sign in</string>
+	<string id="2003">Sign up on http://teleplus.ru</string>
 	<string id="2004">Subscription has expired</string>
 	<string id="2005">Need to extend the subscription on http://teleplus.ru</string>
 </strings>
