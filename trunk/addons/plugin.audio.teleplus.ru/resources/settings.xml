@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-	<category label=”General”>
-	<setting id="username" type="text" label="2000" default="guest" />
-	<setting id="password" type="text" label="2001" option="hidden" default="guest" />
+	<category label=”Sing_in_on_www.teleplus.ru”>
+	<setting id="username" type="text" label="2000" default="" />
+	<setting id="password" type="text" label="2001" option="hidden" default="" />
 	</category>
 </settings>

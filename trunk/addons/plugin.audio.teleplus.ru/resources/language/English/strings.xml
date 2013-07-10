@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
-	<string id="2000">Login</string>
-	<string id="2001">Password</string>
+	<string id="2000">Login for  www.teleplus.ru</string>
+	<string id="2001">Password for  www.teleplus.ru</string>
 	<string id="2002">Cannot to sign in</string>
-	<string id="2003">Please check your username and password</string>
+	<string id="2003">Check your login and password for http://teleplus.ru</string>
 	<string id="2004">Subscription has expired</string>
-	<string id="2005">Necessary to extend the subscription</string>
+	<string id="2005">Need to extend the subscription on http://teleplus.ru</string>
 </strings>
