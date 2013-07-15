@@ -108,8 +108,8 @@
 
 <addon id="plugin.audio.moskva.fm"
        name="MOSKVA.FM"
-       version="0.0.7"
-       provider-name="HD-Lab Team">
+       version="0.2.0"
+       provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -120,7 +120,7 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary>MOSKVA.FM - песни на радио Москвы</summary>
-    <description>Не просто слушать радио Москвы, а выбирать композиции в соответствии с вашим вкусом или настроением. На сегодня в активе проекта MOSKVA.FM 57 радиостанций Москвы!</description>
+    <description>Слушайте радио Москвы. На сегодня в активе проекта MOSKVA.FM 53 радиостанций Москвы!</description>
   </extension>
 </addon>
 
@@ -197,6 +197,26 @@
   </extension>
 </addon>
 
+<addon id="plugin.audio.stepashka.com"
+       name="audio.stepashka.com"
+       version="0.0.1"
+       provider-name="akgdrg">
+    <requires>
+        <import addon="xbmc.python" version="1.0"/>
+        <import addon="script.module.beautifulsoup"/>
+
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="audio" library="default.py">
+        <provides>video</provides>
+    </extension>
+
+    <extension point="xbmc.addon.metadata">
+        <summary>Аудиоархивы stepashka.com</summary>
+        <description>Аудиоархивы stepashka.com</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.audio.svobodanews.ru"
        name="Svobodanews"
        version="1.0.7"
@@ -218,7 +238,7 @@
 
 <addon id="plugin.audio.teleplus.ru"
        name="[COLOR FF00FF00]Музыка ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.0"
+       version="1.0.3"
        provider-name="TelePlus.ru">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -230,7 +250,7 @@
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>TelePlus.ru</summary>
-    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 4000 фильмов и полмиллиона аудиотрэков по символической цене - 700 руб в месяц.</description>
+    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 5000 фильмов и полмиллиона аудиотрэков по символической цене - 199 руб в месяц.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -1411,8 +1431,8 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.teleplus.ru"
        name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
-       provider-name="TelPlus.ru">
+       version="1.0.3"
+       provider-name="TelePlus.ru">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -1423,7 +1443,7 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>TelePlus.ru</summary>
-    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 4000 фильмов и полмиллиона аудиотрэков по символической цене - 700 руб в месяц.</description>
+    <description>Онлайн-кинотеатр teleplus.ru – развлекательная концепция будущего. Он удачно соединяет в себе все достоинства обычного кинотеатра с экономией и домашним уютом. Более 5000 фильмов и полмиллиона аудиотрэков по символической цене - 199 руб в месяц.</description>
     <platform>all</platform>
   </extension>
 </addon>
