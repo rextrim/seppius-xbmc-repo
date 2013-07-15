@@ -220,7 +220,6 @@ def subcat(params):
 				li = xbmcgui.ListItem(title, addon_fanart, thumbnailImage = addon_icon)
 				li.setProperty('IsPlayable', 'false')
 				href = line['href']
-				
 				uri = construct_request({
 					'href': href,
 					'title':title,
@@ -287,10 +286,9 @@ def readCategory(params, postParams = None):
 				else:
 					sec=1
 					href = link.find('a')['href']
-
-					print 'link'+str(link)
+					#print 'link'+str(link)
 					fimg=link.findAll('img')[0]
-					print 'fimg:'+str(fimg)
+					#print 'fimg:'+str(fimg)
 					desc= str(link.find(id=re.compile("news-id-[0-9]+")))
 					pat=re.compile('<br />[^@]+<', re.S)
 					try: mfil = pat.findall(desc)[0].split('</div>')[1].replace('<br />','').replace('<br>','/n')
@@ -301,8 +299,8 @@ def readCategory(params, postParams = None):
 					except: pass
 					try:	
 						li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = fimg['src'])
-						print str('src: '+fimg['src'])
-					except: li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = addon_icon)	
+						#print str('src: '+fimg['src'])
+					except: li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = addon_icon)
 					li.setInfo(type='audio', infoLabels = {'plot':mfil})
 					li.setProperty('IsPlayable', 'false')
 					try:
@@ -417,7 +415,7 @@ def readFile(params):
 		pat=re.compile('[\w\d=.,+]+', re.S)
 		http = pat.findall(http)[0]
 		#print http
-		http= xppod.Decode(http)
+		http= xppod.Decode(http).replace('','')
 		#print http.encode('utf-8')
 		'''
 		print 'f1: '+str(f1)
@@ -437,7 +435,6 @@ def readFile(params):
 
 			#f1=http.rfind(']}')
 			#http=http[0:f1-1]
-			
 			jsdata=json.loads(http)
 		#print jsdata
 		has_sesons=False
