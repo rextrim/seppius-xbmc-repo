@@ -49,7 +49,7 @@ if os.path.exists(__addondir__) == False:
 	os.mkdir(__addondir__)
 
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
-siteUrl = 'fs.ua'
+siteUrl = 'fs.to'
 httpSiteUrl = 'http://' + siteUrl
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 
@@ -612,15 +612,16 @@ def readdir(params):
 					if params['isMusic'] == 'yes':
 						type = 'music'
 					li.setInfo(type = type, infoLabels={'title': title})
-					li.addContextMenuItems([
-						(
-							__language__( 40001 ), "XBMC.RunPlugin(%s)" % construct_request({
-								'mode': 'download',
-								'file_url': str(href.encode('utf-8')),
-								'file_name': htmlEntitiesDecode(title)
-							})
-						)
-					])
+                                        if not useFlv:
+					        li.addContextMenuItems([
+						        (
+							        __language__( 40001 ), "XBMC.RunPlugin(%s)" % construct_request({
+								        'mode': 'download',
+								        'file_url': str(href.encode('utf-8')),
+								        'file_name': htmlEntitiesDecode(title)
+							        })
+						        )
+					        ])
 
 					if type == 'music' or (__settings__.getSetting('Autoplay next') == 'true' and not useFlv):
 						uri = construct_request({
@@ -644,12 +645,13 @@ def readdir(params):
 
 def download(params):
         fileUrl = getFullUrl(urllib.unquote_plus(params['file_url']))
+        fileName = fileUrl.split('/')[-1]
 	download_params = {
 		'url': fileUrl,
 		'download_path': __settings__.getSetting('Download Path')
 	}
-	client = downloader.SimpleDownloader()
-	client.download(urllib.unquote_plus(params['file_name']), download_params)
+	client = downloader.SimpleDownloader()        
+	client.download(fileName, download_params)
 
 def runsearch(params):
 	skbd = xbmc.Keyboard()
@@ -718,7 +720,10 @@ def render_search_results(params):
 	xbmcplugin.endOfDirectory(h)
 
 def addto(params):
-	addToHref = httpSiteUrl + "/addto/" + params['section'] + '/' + params['id'] + "?json"
+        idRegexp = re.compile("([^-]+)")
+        itemId = idRegexp.findall(params['id'])[0]
+	addToHref = httpSiteUrl + "/addto/" + params['section'] + '/' + itemId + "?json"
+        print addToHref
 	GET(addToHref, httpSiteUrl)
 	showMessage('Result', "Toggled state in " + params['section'], 5000)
 
