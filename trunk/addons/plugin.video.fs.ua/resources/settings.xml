@@ -1,5 +1,6 @@
 <settings>
     <category label="General">
+        <setting id="Download Path" type="folder" label="Download Path"/>
 	<setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
 	<setting id="Autoplay next" type="bool" label="30004" default="false"/>
 	<setting id="Use flv files for playback" type="bool" label="30005" default="true" />
