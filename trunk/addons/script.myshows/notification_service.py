@@ -28,7 +28,6 @@ class NotificationService:
 
 	def _dispatch(self, data):
 		Debug("[Notification] Dispatch: %s" % data)
-		xbmc.sleep(500)
 		
 		# check if scrobbler thread is still alive
 		if not self._scrobbler.isAlive():
@@ -134,7 +133,7 @@ class myshowsPlayer(xbmc.Player):
 
 	# called when xbmc starts playing a file
 	def onPlayBackStarted(self):
-		xbmc.sleep(2000)
+		#xbmc.sleep(2000)
 		self.type = None
 		self.id = None
 		
