@@ -190,7 +190,7 @@ class myshowsPlayer(xbmc.Player):
 					try:data["label"]=result["item"]["label"]
 					except: return
 
-			elif self.type == "episode" or self.type == "movie":
+			elif self.type == "episode": # or self.type == "movie"
 				# get library id
 				self.id = result["item"]["id"]
 				data["id"] = self.id
