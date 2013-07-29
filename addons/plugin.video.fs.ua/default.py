@@ -369,7 +369,16 @@ def readfavorites(params):
 	xbmcplugin.endOfDirectory(h)
 
 def readcategory(params):
+	showUpdateInfo = __settings__.getSetting("Show update info") == "true"
 	categoryUrl = getUrlWithSortBy(urllib.unquote_plus(params['href']), params['section'])
+        delimiter = '?'
+        if '?' in categoryUrl: 
+                delimiter = '&'
+        viewMode = 'list'
+        if not showUpdateInfo:
+               viewMode = 'detailed'
+        categoryUrl = categoryUrl + delimiter + 'view=' + viewMode
+        
 	http = GET(categoryUrl, httpSiteUrl)
 	if http == None: return False
 	try:
@@ -377,9 +386,11 @@ def readcategory(params):
 	except:
 		params['filter'] = ''
 
-	showUpdateInfo = __settings__.getSetting("Show update info") == "true"
 	beautifulSoup = BeautifulSoup(http)
-	items = beautifulSoup.findAll('a', 'subject-link')
+        if showUpdateInfo:        
+        	items = beautifulSoup.findAll('div', 'b-poster-section')
+        else:
+                items = beautifulSoup.findAll('div', 'b-poster-section-detail')
 
 	if len(items) == 0:
 		showMessage('ОШИБКА', 'Неверная страница', 3000)
@@ -432,12 +443,14 @@ def readcategory(params):
 			href = None
 
 			img = item.find('img')
+                        link = item.find('a', 'subject-link')
 			if img != None:
 				cover = img['src']
 				title = img['alt']
-				href = httpSiteUrl + item['href']
+				href = httpSiteUrl + link['href']
 
 			if title != None:
+                                plot = ''
 				if showUpdateInfo:
 					additionalInfo = ''
 					numItem = item.find('b', 'num')
@@ -447,10 +460,22 @@ def readcategory(params):
 					if dateInfo != None:
 						additionalInfo += dateInfo.string.strip()
 					title += additionalInfo
-				li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+                                else:
+                                        plot = []
+                                        details = item.find('div', 'text').contents
+                                        for detail in details:
+                                                try:
+                                                        plot.append(detail.encode('utf-8'))
+                                                except:
+                                                        pass
+                                        plot = htmlEntitiesDecode("\n".join(plot))
+                                titleText = htmlEntitiesDecode(title)
+				li = xbmcgui.ListItem(titleText, iconImage = cover)
+                                if plot != '':
+                                        li.setInfo(type=params['section'], infoLabels={'title': titleText, 'plot': plot})
 				li.setProperty('IsPlayable', 'false')
 
-				id = str(item['href'].split('/')[-1])
+				id = str(link['href'].split('/')[-1])
 				li.addContextMenuItems([
 					(
 						__language__( 50001 ), "XBMC.RunPlugin(%s)" % construct_request({
@@ -723,7 +748,6 @@ def addto(params):
         idRegexp = re.compile("([^-]+)")
         itemId = idRegexp.findall(params['id'])[0]
 	addToHref = httpSiteUrl + "/addto/" + params['section'] + '/' + itemId + "?json"
-        print addToHref
 	GET(addToHref, httpSiteUrl)
 	showMessage('Result', "Toggled state in " + params['section'], 5000)
 
