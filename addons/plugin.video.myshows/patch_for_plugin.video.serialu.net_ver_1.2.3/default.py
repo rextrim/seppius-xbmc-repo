@@ -428,9 +428,6 @@ def Get_Serial(params):
     if url == None:
         return False
 
-
-
-
     #-- get serial play list & parameters  -------------------------------------
     xbmc.log("URL: "+url)
     html = get_HTML(url, None, 'http://serialu.net/media/uppod.swf')

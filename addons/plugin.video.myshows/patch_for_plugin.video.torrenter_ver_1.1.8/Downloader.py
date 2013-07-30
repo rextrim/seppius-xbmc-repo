@@ -183,7 +183,7 @@ class Torrent:
         return self.getContentList()[contentId].size
 
     def getFilePath(self, contentId = 0):
-        return self.storageDirectory + os.sep + self.getContentList()[contentId].path
+        return self.storageDirectory + os.sep + self.getContentList()[contentId].path.decode('utf8')
 
     def getContentList(self):
         return self.torrentFileInfo.files()
@@ -237,6 +237,7 @@ class Torrent:
         for i in range(self.startPart, self.startPart + self.partOffset):
             if i <= self.endPart:
                 self.torrentHandle.piece_priority(i, 7)
+        self.torrentHandle.piece_priority(self.endPart, 7)
         self.torrentHandle.set_sequential_download(True)
         thread.start_new_thread(self.downloadProcess, (contentId,))
         if seeding:# and None == self.magnetLink:
@@ -255,6 +256,16 @@ class Torrent:
                     'seed_mode': True,
                 }
                 self.session.add_torrent(fileSettings)
+
+    def fetchSeekBytes(self, bytes):
+        seekPartsOffset = self.startPart + bytes / self.torrentFileInfo.piece_length()
+        priorities = self.torrentHandle.piece_priorities()
+        status = self.torrentHandle.status()
+        if len(status.pieces) == 0:
+            return
+        if status.pieces[seekPartsOffset] == False:
+            self.checkThread()
+            self.torrentHandle.piece_priority(seekPartsOffset, 7)
 
     def fetchParts(self):
         priorities = self.torrentHandle.piece_priorities()

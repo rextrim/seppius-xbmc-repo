@@ -63,6 +63,10 @@ class RuTrackerOrg(SearcherABC.SearcherABC):
     ))
     '''
     def search(self, keyword):
+        try:do_login=int(time.time())-int(sys.modules[ "__main__" ].__settings__.getSetting("rutracker-auth-time"))
+        except: do_login=10001
+        if do_login>1000: cookie = self.login()
+        if cookie: sys.modules[ "__main__" ].__settings__.setSetting("rutracker-auth", cookie)
         filesList = []
         if not sys.modules[ "__main__" ].__settings__.getSetting("rutracker-auth"):
             cookie = self.login()
@@ -127,7 +131,7 @@ class RuTrackerOrg(SearcherABC.SearcherABC):
     def login(self):
         sys.modules[ "__main__" ].__settings__.setSetting("rutracker-auth-time", str(int(time.time())))
         pageContent = self.makeRequest('http://login.rutracker.org/forum/login.php')
-        captchaMatch = re.compile('(http://static\.rutracker\.org/captcha/\d+/\d+/[0-9a-f]+\.jpg\?\d+).+?name="cap_sid" value="(.+?)".+?name="(cap_code_[0-9a-f]+)"', re.DOTALL).search(pageContent)
+        captchaMatch = re.compile('(http://static\.rutracker\.org/captcha/\d+/\d+/[0-9a-f]+\.jpg\?\d+).+?name="cap_sid" value="(.+?)".+?name="(cap_code_[0-9a-f]+)"', re.DOTALL|re.MULTILINE).search(pageContent)
         data = {
             'login_password': 'torrenter',
             'login_username': 'torrenter-plugin',
