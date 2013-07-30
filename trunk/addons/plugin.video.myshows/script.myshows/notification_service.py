@@ -28,7 +28,6 @@ class NotificationService:
 
 	def _dispatch(self, data):
 		Debug("[Notification] Dispatch: %s" % data)
-		xbmc.sleep(500)
 		
 		# check if scrobbler thread is still alive
 		if not self._scrobbler.isAlive():
@@ -134,7 +133,7 @@ class myshowsPlayer(xbmc.Player):
 
 	# called when xbmc starts playing a file
 	def onPlayBackStarted(self):
-		xbmc.sleep(2000)
+		#xbmc.sleep(2000)
 		self.type = None
 		self.id = None
 		
@@ -191,7 +190,7 @@ class myshowsPlayer(xbmc.Player):
 					try:data["label"]=result["item"]["label"]
 					except: return
 
-			elif self.type == "episode" or self.type == "movie":
+			elif self.type == "episode": # or self.type == "movie"
 				# get library id
 				self.id = result["item"]["id"]
 				data["id"] = self.id

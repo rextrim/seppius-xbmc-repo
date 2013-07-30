@@ -61,17 +61,17 @@ class Core:
     )
     skinOptimizations = (
         {#Confluence
-         'list': 50,
-         'info': 50,
-         'wide': 51,
-         'icons': 500,
-         },
+            'list': 50,
+            'info': 50,
+            'wide': 51,
+            'icons': 500,
+        },
         {#Transperency!
-         'list': 50,
-         'info': 51,
-         'wide': 52,
-         'icons': 53,
-         }
+            'list': 50,
+            'info': 51,
+            'wide': 52,
+            'icons': 53,
+        }
     )
     print 'SYS ARGV: '+str(sys.argv)
 
@@ -156,7 +156,7 @@ class Core:
             fuckyou=True
         except: fuckyou=False
         if not fuckyou:
-            if os.path.exists(self.userStorageDirectory):
+            if xbmcvfs.exists(self.userStorageDirectory):
                 import shutil
                 shutil.rmtree(self.userStorageDirectory, ignore_errors=True)
             xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Storage'), Localization.localize('Storage was cleared')))
@@ -245,39 +245,59 @@ class Core:
             progressBar.update(0)
             progressBar.close()
 
-            '''import thread
-            thread.start_new_thread(self.serv, (torrent.getFilePath(contentId), ))
-            time.sleep(1)
-            xbmc.Player().play('http://127.0.0.1:51515/play.avi')
-            return'''
+            from Proxier import Proxier
+            import thread
+            proxier = Proxier()
+            thread.start_new_thread(proxier.server, (torrent.getFilePath(contentId), ))
+            #xbmc.Player().play('http://127.0.0.1:51515/play.avi')
+            #return
 
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
             listitem = xbmcgui.ListItem(torrent.getContentList()[contentId].path)
-            playlist.add('file:///' + torrent.getFilePath(contentId), listitem)
+            playlist.add('http://127.0.0.1:51515/%s.avi' % torrent.md5(torrent.getFilePath(contentId)), listitem)
             xbmc.Player().play(playlist)
             #self.addHistory(torrent.getContentList()[contentId].path)
+            bufferingBar = xbmcgui.DialogProgress()
             while 1 == xbmc.Player().isPlayingVideo():
                 torrent.fetchParts()
                 torrent.checkThread()
                 time.sleep(1)
+                if proxier.seekBytes > 0:
+                    torrent.fetchSeekBytes(proxier.seekBytes)
+                    proxier.seekBytes = 0
+                if proxier.buffering > 0:
+                    bufferingBar.create(Localization.localize('Please Wait'), Localization.localize('Buffering...'))
+                    bufferingBar.update(proxier.buffering / 60 * 100)
+                    if bufferingBar.iscanceled():
+                        bufferingBar.update(0)
+                        bufferingBar.close()
+                        torrent.threadComplete = True
+                        return
+                else:
+                    try:
+                        bufferingBar.update(0)
+                        bufferingBar.close()
+                    except:
+                        pass
+
             if 'false' == self.__settings__.getSetting("keep_files"):
                 torrent.threadComplete = True
                 self.clearStorage()
             else:
                 dialog = xbmcgui.Dialog()
                 if dialog.yesno(
-                        Localization.localize('Torrent Downloading'),
-                        Localization.localize('Do you want to STOP torrent downloading and seeding?'),
-                        Localization.localize('Preloaded: ') + str(downloadedSize / 1024 / 1024) + ' MB / ' + str(fullSize / 1024 / 1024) + ' MB'
+                    Localization.localize('Torrent Downloading'),
+                    Localization.localize('Do you want to STOP torrent downloading and seeding?'),
+                    Localization.localize('Preloaded: ') + str(downloadedSize / 1024 / 1024) + ' MB / ' + str(fullSize / 1024 / 1024) + ' MB'
                 ):
                     xbmc.executebuiltin("Notification(%s, %s)" % (Localization.localize('Information'), Localization.localize('Torrent downloading is stopped.')))
                     torrent.threadComplete = True
-                    #self.addRate(torrent.getContentList()[contentId].path)
+            #self.addRate(torrent.getContentList()[contentId].path)
         else:
             print self.__plugin__ + " Unexpected access to method playTorrent() without torrent content"
 
-    def openTorrent(self, params = {}): #myshows
+    def openTorrent(self, params = {}):
         get = params.get
         try: external=urllib.unquote_plus(get("external"))
         except: external=None
@@ -671,9 +691,9 @@ class Core:
             return
         for record in response:
             contextMenu = [(
-                               Localization.localize('Remove From Bookmarks'),
-                               'XBMC.RunPlugin(%s)' % ('%s?action=%s&id=%s') % (sys.argv[0], 'removeBookmark', record['id'])
-                           )]
+                Localization.localize('Remove From Bookmarks'),
+                'XBMC.RunPlugin(%s)' % ('%s?action=%s&id=%s') % (sys.argv[0], 'removeBookmark', record['id'])
+            )]
             self.drawItem(str(record['name'].encode('utf-8', 'replace')), 'openTorrent', record['link'], record['image'], contextMenu=contextMenu)
         self.lockView('wide')
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
@@ -726,7 +746,9 @@ class Core:
             myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
             showKey=myshows_setting.getSetting("torrenter_keyboard")
         except: showKey="true"
-        if showKey=="true":
+        try: external=urllib.unquote_plus(get("external"))
+        except: external=None
+        if showKey=="true" or not external:
             defaultKeyword = params.get('url')
             if not defaultKeyword:
                 defaultKeyword = ''

@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.6.5"
+__version__ = "1.6.7"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -617,6 +617,7 @@ class SyncXBMC():
     def __init__(self):
         #action='check'
         #title='{"tvshowid": 6, "episode": 14, "uniqueid": {"unknown": "4537122"}, "year": 0, "season": 6, "tvdb_id": "244991", "episodeid": 107, "showtitle": "\u0421\u0432\u0435\u0442\u043e\u0444\u043e\u0440", "label": "14 \u0441\u0435\u0440\u0438\u044f"}'
+        #title='{"label":"Californication [1x01] Pilot.mkv"}'
         self.menu=self.GetFromXBMC()
         #print self.xbmc_shows
         self.action=action

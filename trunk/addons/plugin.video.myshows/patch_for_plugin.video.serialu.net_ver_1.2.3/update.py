@@ -7,8 +7,6 @@ try:
     from hashlib import md5 as md5
 except:
     import md5
-    pass
-
 
 from datetime import date
 
@@ -19,7 +17,6 @@ try:
     f.close()
 except:
     ruspath=Addon.getAddonInfo('path').decode('utf-8').encode('cp1251')#myshows
-
 
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
@@ -136,8 +133,9 @@ def Update_Serial_XML(mode):
     serial_found = 0
 
     # get max page number for update
+    print Addon.getSetting('update_len')
     try:
-        max_page = (10,20,30,50,100)[int(Addon.getSetting('update_len'))]*10
+        max_page = (10,20,50,100,1000)[int(Addon.getSetting('update_len'))]
     except:
         max_page = 10
 
@@ -165,16 +163,10 @@ def Update_Serial_XML(mode):
 
 #--- get number of pages for selected category ---------------------------------
 def Get_Page_Number(url):
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3 Gecko/2008092417 Firefox/3.0.3')
-    response = urllib2.urlopen(req)
-    link=response.read()
-    response.close()
-
+    link = get_HTML(url)
     ret = 1
 
     match=re.compile('<div class="wp-pagenavi">(.+?)</div>', re.MULTILINE|re.DOTALL).findall(link)
-
     page=re.compile('<a href="(.+?)/page/(.+?)</a>', re.MULTILINE|re.DOTALL).findall(match[0])
 
     for rec in page:
@@ -213,12 +205,12 @@ def Get_Film_Info(url, xml_serials, xml_types, xml_genres, serial_found, dp):
         except:
             ser_name = ser.find("h2").find("a").text.strip() #i_name.replace(u'”', u'"').replace(u'“',u'"').replace(u'«',u'"').replace(u'»',u'"')
             search_mask = '<p><img class="m_pic" alt="'+ser_name+'" align="left" src="(.+?)" /></p>'
-            img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
+            img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(html)
             try:
                 i_image = img_alt[0]
             except:
                 search_mask = '<p><img class="m_pic" alt="'+ser_name+'"" align="left" src="(.+?)" /></p>'
-                img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(unicode(html, 'utf-8'))
+                img_alt = re.compile(search_mask, re.MULTILINE|re.DOTALL).findall(html)
                 try:
                     i_image = img_alt[0]
                 except:
