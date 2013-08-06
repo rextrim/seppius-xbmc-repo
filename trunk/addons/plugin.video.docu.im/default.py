@@ -159,7 +159,6 @@ def get_Filter( fname = None, url = None, type = None, page = None, genre = None
 
 #---------- get web page -------------------------------------------------------
 def get_HTML(url, post = None, ref = None):
-    print url
     request = urllib2.Request(url, post)
 
     host = urlparse.urlsplit(url).hostname
@@ -377,7 +376,7 @@ def Movie_List():
                         elif info[0].replace(' ','') == u'Режиссеры':
                             mi.director = info[1].replace(',', ', ').encode('utf-8')
                         elif info[0].replace(' ','') == u'Text':
-                            mi.text = info[1].encode('utf-8')
+                            mi.text = hpar.unescape(info[1]).encode('utf-8')
                         elif info[0].replace(' ','') == u'Год':
                             mi.year = int(info[1])
                    except:
@@ -414,7 +413,7 @@ def Movie_Detail_List():
         #-- get movie detail
         url  = par.url
         html = get_HTML(url).replace("<span class='heading'>", "|<span class='heading'>").replace('<p>', '|Text:<p>')
-        soup = BeautifulSoup(html, fromEncoding="utf-8")
+        soup = BeautifulSoup(html, fromEncoding="utf-8", convertEntities=BeautifulSoup.HTML_ENTITIES)
 
         rec = soup.find('div', {'class':'movie full clearfix'})
         mi.title    = rec.find('div', {'class':'title'}).text.encode('utf-8')
@@ -431,7 +430,7 @@ def Movie_Detail_List():
                 elif info[0].replace(' ','') == u'Режиссеры':
                     mi.director = info[1].replace(',', ', ').encode('utf-8')
                 elif info[0].replace(' ','') == u'Text':
-                    mi.text = info[1].encode('utf-8')
+                    mi.text = hpar.unescape(info[1]).encode('utf-8')
                 elif info[0].replace(' ','') == u'Год':
                     mi.year = int(info[1])
            except:
@@ -480,7 +479,7 @@ def Movie_Detail_List():
 
                     #i.setProperty('fanart_image', mi.img)
                     xbmcplugin.addDirectoryItem(h, u, i, False)
-            xbmcplugin.endOfDirectory(h)
+            #xbmcplugin.endOfDirectory(h)
         else:
             url  = 'http://docu.im/movie/player/%s/style.txt'%(movie_id)
             html = get_HTML(url)
@@ -488,19 +487,35 @@ def Movie_Detail_List():
 
             rec = demjson3.loads(info)
             rec = demjson3.loads(rec['pl'])
-
+            '''
             for t in rec['playlist']:
                 par.name    = '[COLOR FFC3FDB8]'+t['comment'].encode('utf-8')+'[/COLOR]'
                 par.url     = par.url+'|'+t['file']
-                '''
                 #-- add movie to the list ------------------------------------------
                 i = xbmcgui.ListItem(name, iconImage=par.img, thumbnailImage=par.img)
                 u = sys.argv[0] + '?mode=PLAY' + get_Filter(fname = mi.title, url = par.url+'|'+mi.url)
                 xbmcplugin.addDirectoryItem(h, u, i, False)
-                '''
-            PLAY()
+            '''
+            for t in rec['playlist']:
+                    name = '[COLOR FFC3FDB8]'+t['comment'].encode('utf-8')+'[/COLOR]'
+                    mi.url   = t['file']
 
-        #xbmcplugin.endOfDirectory(h)
+                    #-- add movie to the list ------------------------------------------
+                    i = xbmcgui.ListItem(name, iconImage=par.img, thumbnailImage=par.img)
+                    u = sys.argv[0] + '?mode=PLAY' + get_Filter(fname = mi.title, url = par.url+'|'+mi.url)
+
+                    i.setInfo(type='video', infoLabels={'title':       mi.title,
+                                                        'originaltitle': mi.alter,
+                                						'year':        mi.year,
+                                						'director':    mi.director,
+                                						'plot':        mi.text,
+                                						'country':     mi.country,
+                                						'genre':       mi.genre})
+
+                    #i.setProperty('fanart_image', mi.img)
+                    xbmcplugin.addDirectoryItem(h, u, i, False)
+
+        xbmcplugin.endOfDirectory(h)
 
 #---------- search movie list --------------------------------------------------
 def Search_List():
@@ -611,9 +626,16 @@ def PLAY():
     video_url = par.url.split('|')[1]
 
     v_host = video_url[:video_url.find('/[')+1]
+    if v_host == '':
+        v_host = video_url[:video_url.find('/docu')+1]
+
 
     v_quality = re.compile('\[(.+?)\]').findall(video_url)[0].split(',')
-    v_audio = re.compile('aindex={(.+?)}').findall(video_url)[0]
+    try:
+        v_audio = re.compile('aindex={(.+?)}').findall(video_url)[0]
+    except:
+        v_audio = re.compile('audioIndex={(.+?)}').findall(video_url)[0]
+
     if v_audio[0] == ';': v_audio = v_audio[1:]
     v_audio   = v_audio.split(';')
 
@@ -648,7 +670,6 @@ def unescape(text):
         text = hpar.unescape(text)
     except:
         text = hpar.unescape(text.decode('utf8'))
-
     try:
         text = unicode(text, 'utf-8')
     except:
