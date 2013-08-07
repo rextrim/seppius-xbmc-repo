@@ -291,7 +291,7 @@ def readCategory(params, postParams = None):
 					href = link.find('a')['href']
 
 					#print link
-					fimg=link.findAll('img')[1]
+					fimg=link.findAll('img')[0]
 					#print fimg
 					desc= str(link.find(id=re.compile("news-id-[0-9]+")))
 					pat=re.compile('<br />[^@]+<', re.S)
