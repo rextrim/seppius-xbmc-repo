@@ -118,7 +118,7 @@ def check_login():
 		if http == None: return False
 
 		beautifulSoup = BeautifulSoup(http)
-		userPanel = beautifulSoup.find('div', 'b-user-panel')
+		userPanel = beautifulSoup.find('div', 'b-header__user')
 
 		if userPanel == None:
 			os.remove(cookiepath)
