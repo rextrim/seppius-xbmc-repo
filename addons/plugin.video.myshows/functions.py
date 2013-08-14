@@ -486,7 +486,7 @@ def FileNamesPrepare(filename):
 
 def filename2match(filename):
     results={'label':filename}
-    urls=['(.+)s(\d+)e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)']
+    urls=['(.+)s(\d+)[\.]e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)']
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         if match:

@@ -418,7 +418,9 @@ class Source:
                     doit=False
                     x=FileNamesPrepare(fn)
                     self.episodeId=x[1]
-                    if not self.seasonId and x[0] or self.seasonId==x[0] or self.seasonId and not x[0]:
+                    if not self.seasonId and not x[0]:
+                        break
+                    else:
                         for id in jdata['episodes']:
                             if jdata['episodes'][id]['seasonNumber']==x[0] and jdata['episodes'][id]['episodeNumber']==x[1] \
                                 or not x[0] and jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==x[1]:
@@ -459,7 +461,9 @@ class Source:
                 doit=False
                 self.filename=os.path.join(filename, dirlist[cutlist.index(fn)])
                 self.episodeId=x[1]
-                if not self.seasonId and x[0] or self.seasonId==x[0]:
+                if not self.seasonId and not x[0]:
+                    break
+                else:
                     for id in jdata['episodes']:
                         if jdata['episodes'][id]['seasonNumber']==x[0] and jdata['episodes'][id]['episodeNumber']==x[1] \
                             or not x[0] and jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==x[1]:
