@@ -297,6 +297,17 @@ def getFavoriteCategories(params):
 		xbmcplugin.addDirectoryItem(h, uri, li, True)
 	xbmcplugin.endOfDirectory(h)
 
+def getPosterImage(src):
+	return getImage(src, '1')
+
+def getThumbnailImage(src):
+	return getImage(src, '6')
+
+def getImage(src, quality):
+	src = src.split('/')
+	src[-2] = quality
+	return '/'.join(src)
+
 def readfavorites(params):
 	href = httpSiteUrl + "/myfavourites.aspx?ajax&section=" + params['section'] + "&subsection=" + params['subsection'] + "&rows=1&curpage=" + params['page'] + "&action=get_list&setrows=3&page=" + params['type']
 	favoritesUrl = urllib.unquote_plus(href)
@@ -327,7 +338,7 @@ def readfavorites(params):
 			if re.search('audio', href):
 				isMusic = "yes"
 
-			li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+			li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = getThumbnailImage(cover), thumbnailImage = getPosterImage(cover))
 			li.setProperty('IsPlayable', 'false')
 
 			id = item['href'].split('/')[-1]
@@ -470,7 +481,7 @@ def readcategory(params):
                                                         pass
                                         plot = htmlEntitiesDecode("\n".join(plot))
                                 titleText = htmlEntitiesDecode(title)
-				li = xbmcgui.ListItem(titleText, iconImage = cover)
+				li = xbmcgui.ListItem(titleText, iconImage = getThumbnailImage(cover), thumbnailImage = getPosterImage(cover))
                                 if plot != '':
                                         li.setInfo(type=params['section'], infoLabels={'title': titleText, 'plot': plot})
 				li.setProperty('IsPlayable', 'false')
@@ -619,7 +630,7 @@ def readdir(params):
 				uri = None
 				
 				if isFolder:
-					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = getThumbnailImage(cover), thumbnailImage = getPosterImage(cover))
 					li.setProperty('IsPlayable', 'false')
 
 					uri = construct_request({
@@ -631,7 +642,7 @@ def readdir(params):
 						'isMusic': params['isMusic']
 					})
 				else:
-					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover, path = href)
+					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = getThumbnailImage(cover), thumbnailImage = getPosterImage(cover), path = href)
 					li.setProperty('IsPlayable', 'true')
 					type = 'video'
 					if params['isMusic'] == 'yes':
@@ -713,7 +724,7 @@ def render_search_results(params):
 				cover = item.find('img')['src']
 
 				if title != None:
-					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = cover)
+					li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = getThumbnailImage(cover), thumbnailImage = getPosterImage(cover))
 					li.setProperty('IsPlayable', 'false')
 
 					isMusic = 'no'
