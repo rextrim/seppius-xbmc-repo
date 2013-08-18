@@ -199,7 +199,7 @@
 
 <addon id="plugin.audio.stepashka.com"
        name="audio.stepashka.com"
-       version="0.0.2"
+       version="0.0.3"
        provider-name="akgdrg">
     <requires>
         <import addon="xbmc.python" version="1.0"/>

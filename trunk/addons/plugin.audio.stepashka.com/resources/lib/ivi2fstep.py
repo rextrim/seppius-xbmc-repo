@@ -160,7 +160,7 @@ def mainScreen(params):
 		'func': 'readCategory'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
-	li = xbmcgui.ListItem('Музык' , addon_icon, thumbnailImage = addon_icon)
+	li = xbmcgui.ListItem('Музыка' , addon_icon, thumbnailImage = addon_icon)
 	uri = construct_request({
 	'sub':'m',
 	'func': 'subcat'
