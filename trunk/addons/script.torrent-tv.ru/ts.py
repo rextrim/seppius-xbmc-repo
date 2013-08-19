@@ -195,7 +195,7 @@ class TSengine(xbmc.Player):
             self.end()
             return
         
-        reqk = defines.GET("http://test1.ru/get_key.php?key=" + msg.getParams()['key']);
+        reqk = defines.GET("http://api.torrent-tv.ru/xbmc_get_key.php?key=" + msg.getParams()['key']);
         
         self.thr.msg = TSMessage()
         LogToXBMC('Send READY')
