@@ -43,19 +43,7 @@ class MyThread(threading.Thread):
     def stop(self):
         pass
 
-def GET(target, post=None, cookie = None):
-    try:
-        print target
-        req = urllib2.Request(url = target, data = post)
-        req.add_header('User-Agent', 'XBMC (script.torrent-tv.ru)')
-        if cookie:
-            req.add_header('Cookie', 'PHPSESSID=%s' % cookie)
-        resp = urllib2.urlopen(req)
-        http = resp.read()
-        resp.close()
-        return http
-    except Exception, e:
-        xbmc.log( 'GET EXCEPT [%s]' % (e), 4 )
+
 
 class WMainForm(xbmcgui.WindowXML):
     CANCEL_DIALOG  = ( 9, 10, 11, 92, 216, 247, 257, 275, 61467, 61448, )
@@ -104,7 +92,7 @@ class WMainForm(xbmcgui.WindowXML):
         self.translation = []
 
     def getChannels(self, param):
-        data = GET('http://xbmc.torrent-tv.ru/alltranslation.php?session=%s&type=%s' % (self.session, param), cookie = self.session)
+        data = defines.GET('http://xbmc.torrent-tv.ru/alltranslation.php?session=%s&type=%s' % (self.session, param), cookie = self.session)
         jdata = json.loads(data)
         if jdata['success'] == 0:
             print jdata['error']
@@ -136,7 +124,7 @@ class WMainForm(xbmcgui.WindowXML):
                 self.category[WMainForm.CHN_TYPE_FAVOURITE].append(li)
 
     def getEpg(self, param):
-       data = GET('http://xbmc.torrent-tv.ru/get_epg.php?session=%s&channel_id=%s' % (self.session, param), cookie = self.session)
+       data = defines.GET('http://xbmc.torrent-tv.ru/get_epg.php?session=%s&channel_id=%s' % (self.session, param), cookie = self.session)
        jdata = json.loads(data)
        if jdata['success'] == 0:
           print jdata['error']
@@ -156,7 +144,7 @@ class WMainForm(xbmcgui.WindowXML):
             self.txt_progress = self.getControl(107)
             self.progress = self.getControl(WMainForm.PROGRESS_BAR)
             self.showStatus("Авторизация")
-            data = GET('http://xbmc.torrent-tv.ru/auth.php?username=%s&password=%s' % (defines.ADDON.getSetting('login'), defines.ADDON.getSetting('password')))
+            data = defines.GET('http://xbmc.torrent-tv.ru/auth.php?username=%s&password=%s' % (defines.ADDON.getSetting('login'), defines.ADDON.getSetting('password')))
             jdata = json.loads(data)
             if jdata['success'] == 0:
                 print jdata['error']

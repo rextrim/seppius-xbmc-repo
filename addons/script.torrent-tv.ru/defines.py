@@ -1,6 +1,8 @@
 ﻿import xbmcaddon
 import xbmc
 import sys
+import urllib2
+import urllib
 
 ADDON = xbmcaddon.Addon( id = 'script.torrent-tv.ru' )
 ADDON_ICON	 = ADDON.getAddonInfo('icon')
@@ -17,3 +19,16 @@ def showMessage(message = '', heading='Torrent-TV.RU', times = 3000):
         try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % (heading, message, times))
         except Exception, e:
             xbmc.log( 'showMessage: exec failed [%s]' % 3 )
+
+def GET(target, post=None, cookie = None):
+    try:
+        req = urllib2.Request(url = target, data = post)
+        req.add_header('User-Agent', 'XBMC (script.torrent-tv.ru)')
+        if cookie:
+            req.add_header('Cookie', 'PHPSESSID=%s' % cookie)
+        resp = urllib2.urlopen(req)
+        http = resp.read()
+        resp.close()
+        return http
+    except Exception, e:
+        xbmc.log( 'GET EXCEPT [%s]' % (e), 4 )
