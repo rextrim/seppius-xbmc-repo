@@ -134,7 +134,7 @@ class MyPlayer(xbmcgui.WindowXML):
 
         if sys.platform == 'win32' or sys.platform == 'win64':
             LogToXBMC("Закрыть TS");
-            subprocess.Popen('taskkill /F /IM tsengine.exe /T')
+            subprocess.Popen('taskkill /F /IM ace_engine.exe /T')
             self.TSPlayer = None
 
     def onAction(self, action):

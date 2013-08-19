@@ -95,22 +95,17 @@ class TSengine(xbmc.Player):
                     import _winreg
                     t = None
                     path = ''
+                    
                     try:
-                        t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\TorrentStream')
+                        LogToXBMC('ACEStream')
+                        t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\ACEStream')
                         self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
                         LogToXBMC(self.ts_path.encode('utf-8'))
-                        path= self.ts_path.replace('tsengine.exe','')
-                    except:
-                        try:
-                            LogToXBMC('ACEStream')
-                            t = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, 'Software\\ACEStream')
-                            self.ts_path =  _winreg.QueryValueEx(t , 'EnginePath')[0]
-                            LogToXBMC(self.ts_path.encode('utf-8'))
-                            path= self.ts_path.replace('ace_engine.exe','')
-                            LogToXBMC(path.encode('utf-8'))
-                        except Exception, e:
-                            LogToXBMC('Error Opening acestream.port %s' % e)
-                            return
+                        path= self.ts_path.replace('ace_engine.exe','')
+                        LogToXBMC(path.encode('utf-8'))
+                    except Exception, e:
+                        LogToXBMC('Error Opening acestream.port %s' % e)
+                        return
                         
                     
                     _winreg.CloseKey(t)
@@ -180,28 +175,31 @@ class TSengine(xbmc.Player):
         self.thr.owner = self
         self.thr.start()
         # Общаемся
-        self.sendCommand('HELLOBG version=3')
+        self.sendCommand('HELLOBG version=4')
         self.Wait(TSMessage.HELLOTS)
         msg = self.thr.getTSMessage()
         print msg.getType()
-        if msg.getType() == TSMessage.HELLOTS:
-            if msg.getParams().has_key('version') and msg.getParams()['version'].find('2.0') == -1:
+        if msg.getType() == TSMessage.HELLOTS and msg.getParams().has_key('key'):
+            if msg.getParams().has_key('version') and msg.getParams()['version'].find('2.1') == -1:
                 strerr = 'Unsupport TS version %s' % msg.getParams()['version']
                 if self.parent: self.parent.showStatus("Не поддерживаемая версия TS")
                 self.last_error = strerr
                 LogToXBMC('init: %s' % strerr, 2)
                 self.thr.msg = TSMessage()
                 self.end()
-                return
+                return         
         else:
             self.last_error = 'Incorrect msg from TS'
             if self.parent: self.parent.showStatus("Неверный ответ от TS. Операция прервана")
             LogToXBMC('Incorrect msg from TS %s' % msg.getType(), 2)
             self.end()
             return
+        
+        reqk = defines.GET("http://test1.ru/get_key.php?key=" + msg.getParams()['key']);
+        
         self.thr.msg = TSMessage()
         LogToXBMC('Send READY')
-        self.sendCommand('READY')
+        self.sendCommand('READY key=' + reqk);
         self.Wait(TSMessage.AUTH)
         msg = self.thr.getTSMessage()
         if msg.getType() == TSMessage.AUTH:
@@ -574,8 +572,9 @@ class SockThread(threading.Thread):
         if _msg == TSMessage.HELLOTS:
             self.msg = TSMessage()
             self.msg.setType(TSMessage.HELLOTS)
-            if posparam > -1:
-                _prm = strmsg[posparam+1:].split('=')
+            prms = strmsg[posparam+1:].split(" ")
+            for prm in prms:
+                _prm = prm.split('=')
                 self.msg.setParams({_prm[0]: _prm[1]})
         elif _msg == TSMessage.AUTH:
             self.msg = TSMessage()
@@ -625,7 +624,8 @@ class SockThread(threading.Thread):
             _strparams = strmsg[posparam+1:].split(' ')
             _params = {}
             if _strparams.__len__() >= 2:
-                _params['url'] = _strparams[0]
+                print '%s' % _strparams
+                _params['url'] = _strparams[0].split("=")[1].replace("%3A", ":")
                 prms = _strparams[1:]
                 for prm in prms:
                     sprm = prm.split('=')
