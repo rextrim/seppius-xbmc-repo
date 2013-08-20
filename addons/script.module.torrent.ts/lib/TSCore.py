@@ -35,7 +35,7 @@ else: autobuf=False
 if Addon.getSetting('save')=='true': save=True
 else: save=False
 #if save and not Addon.getSetting('folder'): Addon.openSettings()
-
+pkey='n51LvQoTlJzNGaFxseRK-uvnvX-sD4Vm5Axwmc4UcoD-jruxmKsuJaH0eVgE'
 lock_file = xbmc.translatePath('special://temp/'+ 'ts.lock')
 err_file = xbmc.translatePath('special://temp/'+ 'err.avi')
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
@@ -183,12 +183,22 @@ class ASengine(xbmc.Player):
 
         while not self.r.version and not self.progress.iscanceled():
             time.sleep(0.3)
+        ready='READY'
+        if self.r.key:
+            print "key is %s"%self.r.key
+            import hashlib
+            sha1 = hashlib.sha1()
+            
+            sha1.update(self.r.key+pkey)
+            key=sha1.hexdigest()
+            pk=pkey.split('-')[0]
+            key="%s-%s"%(pk,key)
+            ready='READY key=%s'% key
         if self.progress.iscanceled():
             self.err=1
             self.progress.close()
             return False	
-        comm='READY'
-        self._TSpush(comm)
+        self._TSpush(ready)
         Addon.setSetting('aceport',str(aceport))
         return True
     
@@ -570,6 +580,7 @@ class _ASpull(threading.Thread):
         self.event=None
         self.events=[]
         self.ind=None
+        self.key=None
         #self.params=[]
         self.temp=''
 
@@ -641,6 +652,9 @@ class _ASpull(threading.Thread):
         elif self.last_com=='HELLOTS': 
             try: self.version=self.last_received.split(' ')[1].split('=')[1]
             except: self.version='1.0.6'
+            try: self.key=self.last_received.split(' ')[2].split('=')[1]
+            except: self.key=None
+            print self.key
         elif self.last_com=='LOADRESP': 
             fil = self.last_received
             ll= fil[fil.find('{'):len(fil)]
