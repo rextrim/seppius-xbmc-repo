@@ -114,8 +114,10 @@ def get_random_number():
     return str(random.randint(0, 0x7fffffff))
 
 import Cookie, cookielib
-
-cook_file = xbmc.translatePath('special://temp/'+ 'anidub.cookies')
+if sys.platform == 'win32' or sys.platform == 'win64':
+	cook_file = xbmc.translatePath('special://temp/'+ 'anidub.cookies').decode('utf-8')
+else: 
+	cook_file = xbmc.translatePath('special://temp/'+ 'anidub.cookies')
 
 def GET(target, post=None):
 	target=target.replace('//page','/page')
@@ -340,7 +342,7 @@ def mainScreen(params):
 		li = xbmcgui.ListItem("Избранное", iconImage = addon_icon, thumbnailImage = addon_icon)
 		uri = construct_request({
 			'func': 'mainScreen',
-			'url': 'https://online.anidub.com/favorites/'
+			'url': 'http://online.anidub.com/favorites/'
 		})
 		li.setProperty('fanart_image', addon_fanart)
 		xbmcplugin.addDirectoryItem(hos, uri, li, True)
@@ -382,7 +384,7 @@ def mainScreen(params):
 						title = str( m.group(0)[:-4])
 						#print '/alst'
 				except: url=''
-			print links
+			#print links
 			try:
 				img= links.find('img')['data-original']
 			except:
@@ -520,7 +522,7 @@ def get_anime(params):
 			try:
 				lnk=list['value'].split('|')[0]
 			except: lnk=list['value']
-			print lnk
+			#print lnk
 			links= beautifulSoup.find('div', attrs={'class': 'poster_img'})
 			img= links.find('img')['src']
 			listitem=xbmcgui.ListItem(list.string,img,img)
@@ -568,7 +570,7 @@ def play_anime(params):
 	track_page_view('','event','5(Video*Play)')
 	try: img=params['img']
 	except: img=addon_icon
-	print params['m_path']
+	#print params['m_path']
 	http= GET(params['m_path'])
 	#print http
 	soup = BeautifulSoup(http, fromEncoding="windows-1251")
