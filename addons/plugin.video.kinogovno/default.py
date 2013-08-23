@@ -39,14 +39,13 @@ def INDEX(url, feedType):
 	link=getURL(url.replace( " ", "%20" ))
 	
 	beautifulSoup = BeautifulSoup(link)
-	news_titles = beautifulSoup.findAll('a', {'class': 'news_head'})
+	news_titles = beautifulSoup.findAll('a', 'news_head')
 	news = beautifulSoup.findAll('div', 'news_text')
 	
 	titleSearch = re.compile('trailers#\d+?">([^<]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
 	
 	thumbnailsSearch = re.compile(r'flashvars="image=([\w\d:/\.%-]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
 	filesSearch = re.compile(r'&amp;file=([\w\d:/\.%-]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
-	mainTitleSearch = re.compile(r'class="news_head">([^<]+)',re.IGNORECASE + re.DOTALL + re.MULTILINE)
 	qualityLinksSearch = re.compile(r'<a href="([^"]+)" class="link_11" title="([^"]+)"',re.IGNORECASE + re.DOTALL + re.MULTILINE)
 
 	c = 0
@@ -59,8 +58,7 @@ def INDEX(url, feedType):
 				
 				postTitle = ''
 				try:
-					postTitles = mainTitleSearch.findall(str(news_titles[c]))
-					postTitle = re.sub('(^\s+|\s+$)', '', postTitles[0])
+					postTitle = news_titles[c].find('span').contents[0].encode('utf8')
 				except:
 					pass
 
