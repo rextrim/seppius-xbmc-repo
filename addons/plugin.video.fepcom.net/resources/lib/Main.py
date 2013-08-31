@@ -255,6 +255,29 @@ class MainScreen(xbmcgui.WindowXML):
         self.PLAY()
 
   def onAction(self, action):
+
+    if self.getFocusId() == 201:
+        #-- next page
+        if int(action.getButtonCode()) == 61569 and int(self.getFocus().getSelectedItem().getProperty('ID')) == 1:
+            if self.page < self.max_page:
+                self.page = self.page+1
+                if self.page == self.max_page:
+                    self.win.setProperty('Page', 'Last')
+                else:
+                    self.win.setProperty('Page', 'Between')
+                self.Reload_Serial()
+
+        #-- previous page
+        if int(action.getButtonCode()) == 61568 and int(self.getFocus().getSelectedItem().getProperty('ID')) == 20:
+            if self.page > 1:
+                self.page = self.page-1
+                if self.page == 1:
+                    self.win.setProperty('Page', 'First')
+                else:
+                    self.win.setProperty('Page', 'Between')
+                self.Reload_Serial()
+                self.getFocus().selectItem(19)
+
     if action == 10:
         if self.mode == 'Movie':
             self.getControl(131).setLabel('Выход')
@@ -267,6 +290,7 @@ class MainScreen(xbmcgui.WindowXML):
         else:
             global Update_flag
             Update_flag = 'OFF'
+
     xbmcgui.WindowXML.onAction(self, action)
 
   #----- Serial ----------------------------------------------------------------
@@ -290,6 +314,7 @@ class MainScreen(xbmcgui.WindowXML):
     self.getControl(SERIAL_NUM).setLabel('[COLOR=FF33CC00]'+str(serial_count)+'[/COLOR]')
     self.getControl(143).setLabel('[COLOR=FF809AAD]'+str(self.page)+'/'+str(self.max_page)+'[/COLOR]')
     #-- set serial list
+    cnt = 1
     for rec in list:
         name = rec['name']
         item = xbmcgui.ListItem(name, thumbnailImage = rec['img'])
@@ -330,7 +355,10 @@ class MainScreen(xbmcgui.WindowXML):
         item.setProperty('serial_img',      rec['img'])
         item.setProperty('serial_url',      rec['url'])
         item.setProperty('serial_descr',    u'[CR]'.join(descr))
+        item.setProperty('ID',    str(cnt))
         serial_list.addItem(item)
+
+        cnt += 1
     #---
     self.win.setProperty('Mode', self.mode)
     xbmc.sleep(500)
@@ -521,19 +549,14 @@ class MainScreen(xbmcgui.WindowXML):
   #------ process rubric -----------------------------------------------------------
   def Update_Rubric(self, url, i_rubric, data):
     global Update_flag
-
-    print i_rubric.encode('utf-8')
-
     #-- get total pages at website
     total_pages = self.get_Number_of_Pages(url)
-    print total_pages
     #-- get number of loaded pages for rubric
     loaded_pages = data.get_Info(i_rubric)
     print loaded_pages
 
     page = 1
     while page <= max(2, total_pages-loaded_pages) and Update_flag == 'ON':
-        print page
         self.getControl(901).setLabel(str(page)+'/'+str(max(2, total_pages-loaded_pages)))
         page_url = url+'/page/'+str(page)+'/'
         html = self.Auth.get_HTML(page_url)
