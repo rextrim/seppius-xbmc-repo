@@ -119,6 +119,7 @@ def showMessage(heading, message, times = 3000, pics = addon_icon):
 
 def GET(target, post=None):
 	#print target
+	#print 'request:'+str(post)
 	try:
 		req = urllib2.Request(url = target, data = post)
 		req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
@@ -135,7 +136,8 @@ def GET(target, post=None):
 		xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
 		#showMessage('HTTP ERROR', e, 5000)
 		try:
-			req = urllib2.Request(url = 'http://online.stepashka.com/'+target, data = post)
+			req = urllib2.Request(url = 'http://online.stepashka.com'+target, data = post)
+			#print 'request:'+str(post)
 			req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
 			#req.add_header('Host',	'online.stepashka.com')
 			req.add_header('Accept', '*/*')
@@ -145,14 +147,13 @@ def GET(target, post=None):
 			CE = resp.headers.get('content-encoding')
 			http = resp.read()
 			resp.close()
+			#print 'rsponse:'+str(http)
 			return http
 		except Exception, e:
 			xbmc.log( '[%s]: GET EXCEPT [%s]' % (addon_id, e), 4 )
 			showMessage('HTTP ERROR', e, 5000)
-		
 
 def mainScreen(params):
-	
 	li = xbmcgui.ListItem('Последние добавления', addon_fanart, thumbnailImage = addon_icon)
 	li.setProperty('IsPlayable', 'false')
 	uri = construct_request({
@@ -228,7 +229,6 @@ def subcat(params):
 					'title':title,
 					'func': 'readCategory'
 				})
-
 				if href not in list:
 					xbmcplugin.addDirectoryItem(hos, uri, li, True)
 					list.append(href)
@@ -303,7 +303,7 @@ def readCategory(params, postParams = None):
 					except: pass
 					try:	
 						li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = fimg['src'])
-					except: li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = addon_icon)	
+					except: li = xbmcgui.ListItem('%s' % title, addon_icon, thumbnailImage = addon_icon)
 					li.setInfo(type='video', infoLabels = {'plot':mfil})
 					li.setProperty('IsPlayable', 'false')
 					try:
@@ -333,15 +333,10 @@ def readCategory(params, postParams = None):
 			showMessage('ОШИБКА', 'Неверная страница', 3000)
 			return False
 		else:
-
 			total= int(dataRows[::-1][0].string)
-
-			
 			for h in dataRows1.findAll('span'):
 				try: current = int(h.string)
 				except: pass
-			
-
 			if current<total:
 				li = xbmcgui.ListItem('[COLOR=FF00FF00]Перейти на страницу %s[/COLOR]' % (current+1), addon_icon, thumbnailImage = addon_icon)
 				uri = construct_request({
@@ -366,32 +361,37 @@ def readCategory(params, postParams = None):
 
 def readFile(params):
 	http = GET(params['href'])
-	#print http
+	#print 'http'+str(http)
 	if http == None: return False
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('param', attrs={'name': 'flashvars'})
 	#print content
 	findfile=str(content)
-	#print findfile
+	#print 'findfile'+findfile
 	pat=re.compile('le=.+"', re.S)
 	pat_pl=re.compile('pl=.+"', re.S)
+	pat_st=re.compile('st=.+"', re.S)
 	mfil = pat.findall(findfile)
 	pfil = pat_pl.findall(findfile)
+	stfile = pat_st.findall(findfile)
+	#print 'pfil'+pfil
 	flname=None
 	if mfil: 
-		#print mfil[0][3:-1]
-		flname=xppod.Decode(mfil[0][3:-1])
-		#print flname
+		#print 'mfile30:'+mfil[0][3:-1]
+		flname=mfil[0][3:-1]
+		#flname=xppod.Decode(mfil[0][3:-1])
+		#print 'flname:'+flname
 	if pfil: 
 		#print pfil[0][3:-1]
-		flname=xppod.Decode(pfil[0][3:-1])
-		#print flname
-	if not flname: return False
-	vurl=findfile.split('&')
-	for ur in vurl:	findfile=ur
-	vurl=findfile.split('"')
-	lurl=vurl[0]
-	#print 'lurl'+lurl
+		#flname=xppod.Decode(pfil[0][3:-1])
+		#print 'mfile30:'+pfil[0][3:-1]
+		flname=pfil[0][3:-1]
+	if stfile: 
+		#print pfil[0][3:-1]
+		#flname=xppod.Decode(pfil[0][3:-1])
+		#print 'mfile30:'+stfile[0][3:-1]
+		flname=stfile[0][3:-1]
+		#print 'flname:'+flname
 	if mfil: 
 		#print 'play file ' + mfil[0]
 		try:	
@@ -406,50 +406,33 @@ def readFile(params):
 			})
 		#print 'uri for addDir: '+uri
 		xbmcplugin.addDirectoryItem(hos, uri, li, False)
-	else: 
+	elif pfil: 
 		#print 'playlist in ' + lurl.split('=')[1]
 		http=flname
-		#print 'after xppod: '+http
+		#print 'after xppod: '+str(http)
 		http = GET(http)
-		#print 'http pl='+http
+		#print 'http pl='+str(http)
 		f=http.find('{')
 		f1=0
 		f1=http.rfind('}]}]}{');
 		pat=re.compile('[\w\d=.,+]+', re.S)
 		http = pat.findall(http)[0]
-		#print http
+		#print 'http' + http
 		http= xppod.Decode(http)
-		#print http.encode('utf-8')
-		'''
-		print 'f1: '+str(f1)
-		if f1 == -1:
-			#print 'f1=0'
-			http=http[f:len(http)]
-		else:
-			#print 'f<>0'
-			http=http[f:f1+5]
-		http=http.replace('}]}]}{','}]}]')
-		#print 'http after replace: '+http
-		print http
-		'''
+		#print 'http after xpod:' + str(http.encode('utf-8'))
 		try:
 			jsdata=json.loads(str(http),'iso-8859-1')
 		except:
-
-			#f1=http.rfind(']}')
-			#http=http[0:f1-1]
-			
 			jsdata=json.loads(http)
-		#print jsdata
 		has_sesons=False
+		#print 'json data:' + str(jsdata)
 		playlist = jsdata['playlist']
-		#print playlist
+		#print 'playlist' + str(playlist.encode('utf-8'))
 		for file in playlist:
-			tt= file['comment']
+			#print 'file: '+str(file.encode('utf-8'))
+			tt= 'aaa'
 			tt=tt.encode("latin-1","ignore")
 			l=''
-			#for n in tt: l=l+ str(ord(n))+','
-			#print l
 			try:
 				li = xbmcgui.ListItem(tt, addon_icon, thumbnailImage = params['src'])
 				li.setProperty('IsPlayable', 'true')
@@ -457,17 +440,19 @@ def readFile(params):
 					'func': 'play',
 					'file': file['file']
 					})
+				#print 'uri for addDir: '+ str(uri)
 				xbmcplugin.addDirectoryItem(hos, uri, li, False)
 			except: pass
 			try:
 				for t in file['playlist']:
-				#print t
+					#print t
 					li = xbmcgui.ListItem(t['comment'].encode("latin-1","ignore"), addon_icon, thumbnailImage = params['src'])
 					li.setProperty('IsPlayable', 'true')
 					uri = construct_request({
 						'func': 'play',
 						'file': t['file']
 						})
+					#print 'uri for addDir: '+ str(uri)
 					has_sesons=True
 					xbmcplugin.addDirectoryItem(hos, uri, li, False)
 				if has_sesons==False:
@@ -477,8 +462,100 @@ def readFile(params):
 						'func': 'play',
 						'file': file['file']
 						})
+					#print 'uri for addDir: '+ str(uri)
 					xbmcplugin.addDirectoryItem(hos, uri, li, False)
 			except: pass
+	else:
+		#print 'stfile'
+		#print 'playlist in ' + lurl.split('=')[1]
+		http=flname
+		#print 'after xppod: '+str(http)
+		http = GET(http)
+		#print 'http pl='+str(http)
+		pat=re.compile('[\w\d=.,+]+', re.S)
+		http = pat.findall(http)[0]
+		#print 'http' + http
+		http= xppod.Decode(http)
+		#print 'http after xpod:' + str(http.encode('utf-8'))
+		try:
+			jsdata=json.loads(str(http),'iso-8859-1')
+		except:
+			jsdata=json.loads(http)
+		has_sesons=False
+		#print 'json data:' + str(jsdata)
+		if 'pl' in jsdata:
+			playlist = jsdata['pl'].replace('\'','"')
+			playlist = json.loads(playlist, 'utf-8')
+			playlist = playlist['playlist']
+			for file in playlist:
+				if 'file' in file:
+					try:
+						#print 'file: '+str(file['file'])
+						tt= file['comment'].encode('latin-1',"ignore"),
+						l=''
+						li = xbmcgui.ListItem(tt, addon_icon, thumbnailImage = params['src'])
+						li.setProperty('IsPlayable', 'true')
+						uri = construct_request({
+							'func': 'play',
+							'file': file['file']
+							})
+						#print 'uri for addDir: '+ str(uri)
+						xbmcplugin.addDirectoryItem(hos, uri, li, False)
+					except: pass
+				else:
+					try:
+						for t in file['playlist']:
+							#print t
+							if 'file' in t:
+								li = xbmcgui.ListItem(t['comment'].encode('latin-1',"ignore"), addon_icon, thumbnailImage = params['src'])
+								li.setProperty('IsPlayable', 'true')
+								uri = construct_request({
+									'func': 'play',
+									'file': t['file']
+									})
+								#print 'uri for addDir: '+ str(uri)
+								has_sesons=True
+								xbmcplugin.addDirectoryItem(hos, uri, li, False)
+							else:
+								for t2 in t['playlist']:
+									#print t2
+									li = xbmcgui.ListItem(t2['comment'].encode('latin-1',"ignore"), addon_icon, thumbnailImage = params['src'])
+									li.setProperty('IsPlayable', 'true')
+									uri = construct_request({
+										'func': 'play',
+										'file': t2['file']
+										})
+									#print 'uri for addDir: '+ str(uri)
+									has_sesons=True
+									xbmcplugin.addDirectoryItem(hos, uri, li, False)
+									if has_sesons==False:
+										li = xbmcgui.ListItem(t['comment'].encode('latin-1',"ignore"), addon_icon, thumbnailImage = params['src'])
+										li.setProperty('IsPlayable', 'true')
+										uri = construct_request({
+											'func': 'play',
+											'file': t['file']
+											})
+										#print 'uri for addDir: '+ str(uri)
+										xbmcplugin.addDirectoryItem(hos, uri, li, False)
+						if has_sesons==False:
+							li = xbmcgui.ListItem(file['comment'].encode('latin-1',"ignore"), addon_icon, thumbnailImage = params['src'])
+							li.setProperty('IsPlayable', 'true')
+							uri = construct_request({
+								'func': 'play',
+								'file': file['file']
+								})
+							#print 'uri for addDir: '+ str(uri)
+							xbmcplugin.addDirectoryItem(hos, uri, li, False)
+					except: pass
+		else:
+			li = xbmcgui.ListItem(params['title'], addon_icon, thumbnailImage = params['src'])
+			li.setProperty('IsPlayable', 'true')
+			uri = construct_request({
+				'func': 'play',
+				'file': jsdata['file']
+				})
+			#print 'uri for addDir: '+ str(uri)
+			xbmcplugin.addDirectoryItem(hos, uri, li, False)
 	xbmcplugin.endOfDirectory(hos)
 
 	
