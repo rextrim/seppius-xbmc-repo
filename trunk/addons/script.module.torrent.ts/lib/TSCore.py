@@ -163,7 +163,7 @@ class ASengine(xbmc.Player):
             try: 
                 subprocess.Popen(Addon.getSetting('prog'))
             except: 
-                _tsMessage('AceStream','TSEngine not Installed')
+                print 'TSEngine not Installed'
                 return None
         
         return 1            
@@ -479,30 +479,31 @@ class ASengine(xbmc.Player):
         self._TSpush(comm)
         self.activeplay=True
     def onPlayBackResumed( self ):
-        comm='EVENT play'
-        self._TSpush(comm)
+        #comm='EVENT play'
+        #self._TSpush(comm)
         self.paused = False
     def onPlayBackEnded( self ):
-        comm='EVENT stop'
-        self._TSpush(comm)
+        #comm='EVENT stop'
+        #self._TSpush(comm)
         comm='PLAYBACK '+self.link.replace('\r','').replace('\n','')+' 100'
         self._TSpush(comm)
         self.active = False
         #if not self.r.ad:
         self.end()
     def onPlayBackStopped( self ):
-        comm='EVENT stop'
-        self._TSpush(comm)
+        #comm='EVENT stop'
+        #self._TSpush(comm)
         self.active = False
         self.r.ad = False
         self.end()
     def onPlayBackPaused( self ):
-        comm='EVENT pause'
-        self._TSpush(comm)
+        #comm='EVENT pause'
+        #self._TSpush(comm)
         self.paused=True
     def onPlayBackSeek(self, time, seekOffset):
-        comm='EVENT seek position=%s'%(int(time/1000))
-        self._TSpush(comm)        
+        #comm='EVENT seek position=%s'%(int(time/1000))
+        #self._TSpush(comm)    
+        pass
     def __del__(self):
         pass
         
