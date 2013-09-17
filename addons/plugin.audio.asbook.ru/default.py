@@ -247,7 +247,10 @@ def Book_List(params):
                 b_name_f = '[COLOR FF00FFF0]"'+b_name+'"[/COLOR]'
         #---
         b_url   = rec.find('div', {'class':'title'}).find('a')['href']
-        b_img   = rec.find('img')['src']
+        try:
+            b_img   = rec.find('img')['src']
+        except:
+            b_img = icon
         b_descr = '' #unescape(rec.find('div', {'class':'post_text clearfix'}).text).encode('utf-8')
 
         i = xbmcgui.ListItem(b_name_f, iconImage=b_img, thumbnailImage=b_img)
@@ -296,8 +299,20 @@ def Book_Info(params):
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
     b_name      = urllib.unquote(soup.find('h1', {'class':'fulltitle'}).text)
-    b_score     = str(int(int(soup.find('li' ,{'class':'current-rating'}).text)/160.00))
-    b_img       = soup.find('div', {'class':'fullstory'}).find('img')['src']
+    b_score     = str(int(float(soup.find('li' ,{'class':'current-rating'}).text)/160.00))
+
+    try:
+        b_img       = soup.find('div', {'class':'fullstory'}).find('img')['src']
+    except:
+        try:
+            b_img = re.compile('\<img (.+?)\/>').findall(html)
+            for e in b_img:
+                if 'title=' in e:
+                    b_img = re.compile('src=\"(.+?)\"').findall(e)[0]
+                    break
+        except:
+            b_img = icon
+
     b_descr     = urllib.unquote(soup.find('div', {'class':'tab_content tab_descr'}).find('div', {'class':'text'}).text)
 
     for rec in soup.find('table', {'class':'data'}).findAll('td'):
@@ -414,7 +429,6 @@ def PLAY(params):
     playlist = json.loads(html)
     for rec in playlist['playlist']:
         n += 1
-        print '***  '+str(n)+'  '+rec['file']
         if track <= n:
             s_name = rec['comment'].encode('utf-8')
             s_url  = rec['file']+'|'+urllib.urlencode(header)
