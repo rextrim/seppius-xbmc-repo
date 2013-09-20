@@ -105,5 +105,12 @@ dc={
 "иллюзион+" : "d1800",
 "моя планета" : "d181",
 "совершенно секретно" : "d182",
-"sony sci fi" : "d101"
+"sony sci fi" : "d101",
+"nano tv" : "russkij_illusion",
+"русский иллюзион" : "russkij_illusion",
+"tdk" : "tdk",
+"пятница" : "pyatnitsa",
+"отр" : "otr",
+"x sport" : "xsport",
+"история" : "istoriya"
 }

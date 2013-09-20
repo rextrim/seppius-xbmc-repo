@@ -59,3 +59,5 @@ Channel sorting via CHANNELMAPPING_ORIG.txt and CHANNELMAPPING_USER.txt mapping 
 New icons
 [B]0.9.7[/B]
 New icon for Sony Sci-Fi
+[B]0.9.8[/B]
+Several new icons
