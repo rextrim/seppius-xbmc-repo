@@ -415,11 +415,13 @@ def readFile(params):
 		f=http.find('{')
 		f1=0
 		f1=http.rfind('}]}]}{');
-		pat=re.compile('[\w\d=.,+]+', re.S)
-		http = pat.findall(http)[0]
 		#print 'http' + http
-		http= xppod.Decode(http)
-		#print 'http after xpod:' + str(http.encode('utf-8'))
+		try:
+			http= xppod.Decode(http)
+		except:
+			pat=re.compile('[\w\d=.,+]+', re.S)
+			http = pat.findall(http)[0]
+			#print 'http after xpod:' + str(http.encode('utf-8'))
 		try:
 			jsdata=json.loads(str(http),'iso-8859-1')
 		except:
@@ -472,11 +474,13 @@ def readFile(params):
 		#print 'after xppod: '+str(http)
 		http = GET(http)
 		#print 'http pl='+str(http)
-		pat=re.compile('[\w\d=.,+]+', re.S)
-		http = pat.findall(http)[0]
-		#print 'http' + http
-		http= xppod.Decode(http)
-		#print 'http after xpod:' + str(http.encode('utf-8'))
+		#print 'http2' + http
+		try:
+			http= xppod.Decode(http)
+			#print 'http after xpod:' + str(http.encode('utf-8'))
+		except:
+			pat=re.compile('[\w\d=.,+]+', re.S)
+			http = pat.findall(http)[0]
 		try:
 			jsdata=json.loads(str(http),'iso-8859-1')
 		except:
