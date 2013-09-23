@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Writer (c) 2013, Silhouette, E-mail: 
-# Rev. 0.3.0
+# Rev. 0.3.2
 
 
 import urllib,urllib2,re,sys
@@ -131,7 +131,7 @@ def KNX_list(url, page, type):
                 i = i + 1
             else:
               try:
-                  unis_res.append({'title':  title, 'url': href, 'image': img, 'plugin': 'plugin.video.kinoxa-x.ru'})
+                unis_res.append({'title':  title, 'url': href, 'image': img, 'plugin': 'plugin.video.kinoxa-x.ru'})
               except: pass
 
     if type == 'unis':
@@ -152,6 +152,16 @@ def KNX_list(url, page, type):
       xbmcplugin.endOfDirectory(pluginhandle) 
 
 
+def KNX_show(url):
+    dbg_log('-KNX_show:' + '\n')
+    dbg_log('- url:'+  url + '\n')
+    
+    item = xbmcgui.ListItem('Play Video')
+    uri = sys.argv[0] + '?mode=play&url=' + urllib.quote_plus(url)
+    item.setProperty('IsPlayable', 'true')
+    xbmcplugin.addDirectoryItem(pluginhandle, uri, item, False)  
+    dbg_log('- uri:'+  uri + '\n')    
+    xbmcplugin.endOfDirectory(pluginhandle) 
 
 def KNX_list2(url, page):
     dbg_log('-KNX_list:' + '\n')
@@ -208,18 +218,28 @@ def KNX_play(url):
     
     http = get_url(url)
     iframes = re.compile('<iframe src="(.*?)"').findall(http)
-    
-    if len(iframes):
+    print iframes
+    if len(iframes) > 1:
         http = get_url(iframes[1])
-        flvs = re.compile('src="http(.*?)"').findall(http)
-        hrefs = re.compile('<a href="(.*?)">').findall(http)
-
-        if len(flvs):
-            item = xbmcgui.ListItem(path = "http" + flvs[0])
-            xbmcplugin.setResolvedUrl(pluginhandle, True, item)
-        elif len(hrefs):
-            item = xbmcgui.ListItem(path = "http" + hrefs[0])
-            xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+    elif len(iframes):
+        http = get_url(iframes[0])
+    else:
+        return
+        
+    flvs = re.compile('src="http(.*?)"').findall(http)
+    hrefs = re.compile('<a href="(.*?)">').findall(http)
+    print flvs
+    print hrefs
+    
+    if len(flvs) > 1:
+        item = xbmcgui.ListItem(path = "http" + flvs[1])
+        xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+    elif len(flvs):
+        item = xbmcgui.ListItem(path = "http" + flvs[0])
+        xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+    elif len(hrefs):
+        item = xbmcgui.ListItem(path = hrefs[0])
+        xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
 def KNX_ctlg(url):
     dbg_log('-KNX_ctlg:' + '\n')
@@ -348,6 +368,7 @@ if mode == '': KNX_list(url, page, type)
 elif mode == 'ctlg': KNX_ctlg(url)
 elif mode == 'play': KNX_play(url)
 elif mode == 'find': KNX_find()
+elif mode == 'show': KNX_show(url)
 elif mode == 'search': 
     url = find_pg + uni2enc(gettranslit(keyword)) + fdpg_pg
     KNX_list(url, '1', 'unis')
