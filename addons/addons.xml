@@ -489,6 +489,25 @@ Audio sources are
   </extension>
 </addon>
 
+<addon id="plugin.video.cScVOD"
+       name="[COLOR FF00FF00]cScVOD[/COLOR]"
+       version="1.0.0beta"
+       provider-name="CSC">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>cScVOD</summary>
+    <description>
+Плагин сделаный командой CSC для плейлистов типа nStreamVOD
+    </description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.cccp.tv"
        name="CCCP TV"
        version="1.0.5"
