@@ -51,9 +51,18 @@ except:
         from ElementTree  import Element, SubElement, ElementTree
         import xppod
 
+#--- init web connection ---
+fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'cookies.txt'))
+
 import HTMLParser
 hpar = HTMLParser.HTMLParser()
 
+cj = cookielib.MozillaCookieJar(fcookies)
+hr  = urllib2.HTTPCookieProcessor(cj)
+opener = urllib2.build_opener(hr)
+urllib2.install_opener(opener)
+
+#---
 h = int(sys.argv[1])
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
@@ -73,7 +82,7 @@ def get_HTML(url, post = None, ref = None):
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
     request.add_header('Referer', ref)
-    request.add_header('Cookie', 'MG_6532=1')
+    #request.add_header('Cookie', 'MG_6532=1')
 
     ret = 502
     idx = 5
