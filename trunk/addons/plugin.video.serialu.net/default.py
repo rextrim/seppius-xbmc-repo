@@ -433,7 +433,8 @@ def Get_Play_List(pl_url, pos, img):
                 if 'http' in par.split(':')[1]:
                     s_url = par.split(':')[1]+':'+par.split(':')[2]
                 else:
-                    s_url = xppod.Decode(par.split(':')[1]).split(' or ')[0]
+                    s_url = xppod.Decode(par.split(':')[1]).split(' or ')
+                    s_url = s_url[len(s_url)-1]
         s_num += 1
 
         if s_num >= pos :
@@ -462,10 +463,10 @@ def PLAY(params):
     # -- play only selected item
     else:
         if url.find('http:') == -1:
-                url = xppod.Decode(url)
+                url = xppod.Decode(url).split(' or ')
+                url = url[len(url)-1]
 
         i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
-        #xbmc.Player().play(url, i)
         xbmcplugin.setResolvedUrl(h, True, i)
 
     # -- save view history -----------------------------------------------------
@@ -476,7 +477,6 @@ def Save_Last_Serial_Info(tag, serial, serial_url, img, part):
     # get max history lenght
     try:
         max_history = (1, 5, 10, 20, 30, 50)[int(Addon.getSetting('history_len'))]
-        #xbmc.log("*** HISTORY LEN: "+ str(max_history))
         if max_history > 99:
             max_history = 99
     except:
