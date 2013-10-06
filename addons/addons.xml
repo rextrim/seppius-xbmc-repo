@@ -1450,7 +1450,7 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>Сериалы (serialu.net)</summary>
-    <description>Русские и зарубежные сериалы предоставляемые сайтом serialu.net.</description>
+    <description>Русские и зарубежные сериалы предоставляемые сайтом serialu.net. </description>
     <platform>all</platform>
   </extension>
 </addon>
