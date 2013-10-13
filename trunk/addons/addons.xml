@@ -1601,27 +1601,6 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.test"
-       name="[COLOR FF00FF00]*** TEST ***[/COLOR]"
-       version="1.0.0"
-       provider-name="Silen">
-  <requires>
-    <import addon="xbmc.python" version="1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>TEST</summary>
-    <description>XBMC test plugin
-</description>
-    <platform>all</platform>
-    <broken>Test of disabling plugin</broken>
-  </extension>
-</addon>
-
 <addon id="plugin.video.torrent.gnu"
        name="torrent.gnu"
        version="0.2.9"
