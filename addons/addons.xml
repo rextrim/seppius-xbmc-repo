@@ -1618,8 +1618,8 @@ RuTube - отличная стартовая площадка для незав�
     <description>XBMC test plugin
 </description>
     <platform>all</platform>
+    <broken>Test of disabling plugin</broken>
   </extension>
-<broken>Test of disabling plugin</broken>
 </addon>
 
 <addon id="plugin.video.torrent.gnu"
