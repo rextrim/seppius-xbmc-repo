@@ -125,7 +125,7 @@ def get_HTML(url, post = None, ref = None):
 def Get_URL(par):
     # http://my-hit.ru/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&search_string=%EA%E8%ED&x=0&y=0
 
-    url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=1&search_string=%EA%E8%ED'
+    url = 'http://my-hit.org/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=1&search_string=%EA%E8%ED'
 
     #-- year
     if par.year <> '':
@@ -279,12 +279,12 @@ def Movie_List(params):
             #-- get movie info
             if not mov.find('img'): continue #-- if not movie go forward
             #-- image
-            mi.img = 'http://my-hit.ru' + mov.find('img')['src']
+            mi.img = 'http://my-hit.org' + mov.find('img')['src']
             #-- check if onlain view is available
             mi.url = '*'
             for lnk in mov.findAll('a'):
                 if lnk.text == u'Фильм онлайн &raquo;':
-                    mi.url = 'http://my-hit.ru' + lnk['href']
+                    mi.url = 'http://my-hit.org' + lnk['href']
             #-- title
             title = mov.findNext('tr')
             mi.title = unescape(title.find('a').text).encode('utf-8')
@@ -366,7 +366,7 @@ def Search_List(params):
             return False
 
         #== get movie list =====================================================
-        url = 'http://my-hit.ru/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&result_perpage=1000&search_string=%s&x=0&y=0'%urllib.quote(par.search.decode('utf-8').encode('cp1251'))
+        url = 'http://my-hit.org/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&result_perpage=1000&search_string=%s&x=0&y=0'%urllib.quote(par.search.decode('utf-8').encode('cp1251'))
         print url
         html = get_HTML(url)
 
@@ -385,9 +385,9 @@ def Search_List(params):
                     flag = 1
                 elif flag==1:
                     m_url  = rec.find('a')['href']
-                    m_url = 'http://my-hit.ru/film/'+m_url.split('&id=')[1]+'/online'
+                    m_url = 'http://my-hit.org/film/'+m_url.split('&id=')[1]+'/online'
 
-                    m_img  = 'http://my-hit.ru'+rec.find('img')['src']
+                    m_img  = 'http://my-hit.org'+rec.find('img')['src']
                     m_text = unescape(rec.text).encode('utf-8')
                     flag = 0
                     list.append({'name':m_name, 'url':m_url, 'img':m_img, 'text':m_text})
@@ -423,7 +423,7 @@ def Genre_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
+    url = 'http://my-hit.org/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
@@ -455,7 +455,7 @@ def Year_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
+    url = 'http://my-hit.org/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
@@ -488,7 +488,7 @@ def Alphabet_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://my-hit.ru/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
+    url = 'http://my-hit.org/index.php?module=video&func=film_list&fsave=1&fsort=film_displayname&fask=0'
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
