@@ -1089,8 +1089,8 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.my-hit.ru"
-       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]my-hit.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
+       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]my-hit.org[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.4"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -1104,6 +1104,7 @@ Audio sources are
     <summary>my-hit.ru</summary>
     <description>Фильмы онлайн, наш кино портал.</description>
     <platform>all</platform>
+    <website>http://xbmc.ru/forum/showthread.php?t=1415</website>
   </extension>
 </addon>
 
