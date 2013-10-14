@@ -128,7 +128,7 @@
 			</RegExp>
 			<!-- premier year -->
 			<RegExp input="$$1" output="\1" dest="14">
-				<expression>href=&quot;/level/80/film/\d+/&quot;[^&gt;]*&gt;[^&lt;]*([0-9]{4})&lt;/a&gt;</expression>
+				<expression>href=&quot;/film/[0-9]+/dates/&quot;[^&gt;]*&gt;[^&lt;]*([0-9]{4})&lt;/a&gt;</expression>
 			</RegExp>
 			<!-- количество голосов на imdb id -->
 			<RegExp input="$$1" output="\1 " dest="15">
