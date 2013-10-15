@@ -45,6 +45,8 @@ __status__ = "Production"
 __settings__ = xbmcaddon.Addon(id='plugin.video.fs.ua')
 __language__ = __settings__.getLocalizedString
 __addondir__ =xbmc.translatePath(__settings__.getAddonInfo('profile'))
+__addondir__ = __addondir__.decode(sys.getfilesystemencoding())
+
 if os.path.exists(__addondir__) == False:
 	os.mkdir(__addondir__)
 
