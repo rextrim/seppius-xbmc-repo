@@ -110,11 +110,9 @@ def get_URL(url):
         f = urllib2.urlopen(request)
     except IOError, e:
         if hasattr(e, 'reason'):
-            print 'Err 1'
-            #xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+            xbmc.log('We failed to reach a server. Reason: '+ e.reason)
         elif hasattr(e, 'code'):
-            print 'Err 2'
-            #xbmc.log('The server couldn\'t fulfill the request. Error code: '+ str(e.code))
+            xbmc.log('The server couldn\'t fulfill the request. Error code: '+ str(e.code))
 
     html = f.read()
 
@@ -262,7 +260,7 @@ def Book_List(params):
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
         #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         i.setInfo(type='music', infoLabels={    'title':       b_name,
-                        						'plot':        b_descr,
+                        						#'plot':        b_descr,
                         						'genre':       par.genre})
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #except:
@@ -357,7 +355,6 @@ def Book_Info(params):
                         						'genre':       b_genre,
                                                 'rating':      b_score})
         i.setProperty('fanart_image', b_img)
-        i.setProperty('IsPlayable', 'true')
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
@@ -397,7 +394,6 @@ def Genre_List(params):
         u = sys.argv[0] + '?mode='+mode
         #-- filter parameters
         u += '&genre=%s'%urllib.quote_plus(genre)
-        #u += '&bcount=%s'%urllib.quote_plus(bcount)
         u += '&url=%s'%urllib.quote_plus(url)
         u += '&page=%s'%urllib.quote_plus('1')
         u += '&pcount=%s'%urllib.quote_plus('0')
@@ -435,7 +431,7 @@ def PLAY(params):
 
             i = xbmcgui.ListItem(s_name, path = urllib.unquote(s_url), thumbnailImage=img)
             i.setInfo(type='music', infoLabels={    'title' :     s_name,
-                                                    'track':      str(n)})
+                                                    'tracknumber':      str(n)})
             pl.add(s_url, i)
 
     xbmc.Player().play(pl)
