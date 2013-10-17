@@ -734,7 +734,7 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.8.6"
+       version="1.8.7"
        provider-name="x86demon">
   <requires>
     <import addon="xbmc.python" version="2.0"/>

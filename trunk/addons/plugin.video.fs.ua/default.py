@@ -51,7 +51,7 @@ if os.path.exists(__addondir__) == False:
 	os.mkdir(__addondir__)
 
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
-siteUrl = 'fs.to'
+siteUrl = 'sdf.to'
 httpSiteUrl = 'http://' + siteUrl
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 
@@ -120,7 +120,7 @@ def check_login():
 		if http == None: return False
 
 		beautifulSoup = BeautifulSoup(http)
-		userPanel = beautifulSoup.find('div', 'b-header__user')
+		userPanel = beautifulSoup.find('div', 'b-header__user-panel')
 
 		if userPanel == None:
 			os.remove(cookiepath)
@@ -132,7 +132,7 @@ def check_login():
 			})
 
 			loginSoup = BeautifulSoup(loginResponse)
-			userPanel = loginSoup.find('div', 'b-user-panel')
+			userPanel = loginSoup.find('div', 'b-header__user-panel')
 			if userPanel == None:
 				showMessage('Login', 'Check login and password', 3000)
 			else:
