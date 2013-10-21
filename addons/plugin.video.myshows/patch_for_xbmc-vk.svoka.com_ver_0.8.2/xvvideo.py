@@ -109,6 +109,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
                 else:
                     listitem = xbmcgui.ListItem(n, "", self.params.get("thumb"), self.params.get("thumb"), path=a)
                     listitem.setProperty('IsPlayable', 'true')
+                    listitem.setInfo(type = "video", infoLabels = {'title': self.params.get("title")})
                     xbmcplugin.addDirectoryItem(self.handle, a, listitem)
             if external=='1':
                 myshows_items.append(unicode(myshows_lang(30406)))
@@ -140,7 +141,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
                     xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=VIDEO_DOWNLOAD, thumb=self.params.get("thumb"), v=base64.encodestring(a).strip()), listitem, False)
 
     def Do_SEARCH_RESULT_DOWNLOAD(self):
-        vf = GetVideoFiles("http://vk.com/video"  + self.params["v"])
+        vf = GetVideoFiles("http://vkontakte.ru/video"  + self.params["v"])
         if vf:
             for a in vf:
                 listitem = xbmcgui.ListItem(__language__(30035) + " " + a[a.rfind("/")+1:], "", self.params.get("thumb"), self.params.get("thumb"))
@@ -194,7 +195,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
         listItem = xbmcgui.ListItem(__language__(30042))
         xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=GROUPS) , listItem, True)
 
-        self.friendsEntry()
+        self.friendsEntry("video")
         # listItem = xbmcgui.ListItem(__language__(30020))
         # xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_SHOWS_LIST) , listItem, True)
 
@@ -306,5 +307,3 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
 
     def Do_MY_SHOWS_LIST(self):
         pass
-
-

@@ -182,6 +182,10 @@
         <string id="30289">Выберите шоу:</string>
         <string id="30290">Автоматическая отметка при просмотре в XBMC</string>
         <string id="30291">Все трекеры в Torrenter</string>
+        <string id="30292">Путь µTorrent</string>
+        <string id="30293">Изменить сетевую папку?</string>
+        <string id="30294">Выберите сетевую папку µTorrent:</string>
+        <string id="30295">Проиграть из XBMC</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>

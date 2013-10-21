@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.6.7"
+__version__ = "1.7.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -83,6 +83,7 @@ class ExtraFunction(Main):
 def Shows(mode):
     try: syncshows=SyncXBMC()
     except: syncshows=False
+    xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     #lockView('info')
     if mode==19:
         KB = xbmc.Keyboard()
@@ -149,29 +150,44 @@ def Shows(mode):
 
 def Seasons(showId):
     data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
-    seasons=[]
+    try: syncshows=SyncXBMC()
+    except: syncshows=False
+    seasons, epdict=[], {}
     jdata = json.loads(data.get())
     for id in jdata['episodes']:
         seasonNumber=jdata['episodes'][id]['seasonNumber']
         if seasonNumber not in seasons:
             seasons.append(seasonNumber)
+            epdict[str(jdata['episodes'][id]['seasonNumber'])]=str(jdata['episodes'][id]['id'])
+        else:
+            epdict[str(jdata['episodes'][id]['seasonNumber'])]=epdict[str(jdata['episodes'][id]['seasonNumber'])]+','+str(jdata['episodes'][id]['id'])
     seasons.sort()
+    watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
+    if len(str(watched_data))>5:
+        watched_jdata = json.loads(watched_data.get())
+        epdict=sortcomma(epdict, watched_jdata)
     for sNumber in seasons:
         pre=prefix(showId=int(showId), seasonId=int(sNumber))
         title=pre+__language__(30138)+' '+str(sNumber)
         stringdata={"showId":int(showId), "seasonId":int(sNumber), "episodeId":None, "id":None}
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str(showId) + '&seasonNumber=' + str(sNumber) + '&mode=25'
         item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage='')
-        item.setInfo( type='Video', infoLabels={'Title': title, 'playcount': 0} )
+        if syncshows: item=syncshows.episodes(jdata['title'], item)
+        if epdict[str(sNumber)]=='': playcount=1
+        else: playcount=0
+        item.setInfo( type='Video', infoLabels={'Title': title, 'playcount': playcount} )
         refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Episodes(showId, seasonNumber):
         #lockView('info')
+        xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
         watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
         jdata = json.loads(data.get())
+        try: syncshows=SyncXBMC()
+        except: syncshows=False
         try:watched_jdata = json.loads(watched_data.get())
         except: watched_jdata=[]
 
@@ -181,7 +197,8 @@ def Episodes(showId, seasonNumber):
                     playcount=1
                 else:
                     playcount=0
-                pre=prefix(showId=int(showId),seasonId=jdata['episodes'][id]['seasonNumber'], id=int(id))
+                pre=prefix(showId=int(showId),seasonId=jdata['episodes'][id]['seasonNumber'], id=int(id), stype=None, episodeNumber=jdata['episodes'][id]['episodeNumber'])
+                if not pre and syncshows.episode(jdata['title'], jdata['episodes'][id]['seasonNumber'], jdata['episodes'][id]['episodeNumber']): pre='[B][XBMC][/B]'
                 title=pre+jdata['episodes'][id]['title']+' ['+jdata['episodes'][id]['airDate']+']'
                 item = xbmcgui.ListItem('%s. %s' % (str(jdata['episodes'][id]['episodeNumber']), title), iconImage=str(jdata['episodes'][id]['image']), thumbnailImage=str(jdata['episodes'][id]['image']))
                 item.setInfo( type='Video', infoLabels={'Title': title,
@@ -196,6 +213,7 @@ def Episodes(showId, seasonNumber):
                                                         'code': jdata['imdbId'],
                                                         'aired': jdata['episodes'][id]['airDate'],
                                                         'votes': jdata['voted']} )
+                if syncshows: item=syncshows.episodes(jdata['title'], item)
                 stringdata={"showId":int(showId), "episodeId":jdata['episodes'][id]['episodeNumber'], "id":int(id), "seasonId":jdata['episodes'][id]['seasonNumber']}
                 sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&seasonNumber='+seasonNumber+'&showId='+showId+'&episodeId='+str(jdata['episodes'][id]['episodeNumber'])+'&id=' + str(id) + '&playcount=' + str(playcount) + '&mode=30'
                 refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
@@ -779,6 +797,24 @@ class SyncXBMC():
                 #Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
         return item
 
+    def episodes(self, title, item):
+        if not self.menu:
+            return item
+        for i in range(len(self.menu)):
+            if title in self.menu[i]['title']:
+                item.setProperty('fanart_image', self.menu[i]['fanart'])
+        return item
+
+    def episode(self, title, seasonId, episodeNumber):
+        if not self.menu:
+            return False
+        for i in range(len(self.menu)):
+            if title in self.menu[i]['title']:
+                for episode in self.menu[i]['episodes']:
+                    if episode['episode']==episodeNumber and episode['season']==seasonId:
+                        return True
+        return False
+
     def GetFromXBMC(self):
         from utilities import xbmcJsonRequest
         Debug('[Episodes Sync] Getting episodes from XBMC')
@@ -801,7 +837,7 @@ class SyncXBMC():
         for show in shows:
             show['episodes'] = []
 
-            episodes = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetEpisodes', 'params': {'tvshowid': show['tvshowid'], 'properties': ['season', 'episode', 'playcount', 'uniqueid']}, 'id': 0})
+            episodes = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetEpisodes', 'params': {'tvshowid': show['tvshowid'], 'properties': ['season', 'episode', 'playcount', 'uniqueid', 'file']}, 'id': 0})
             if 'episodes' in episodes:
                 episodes = episodes['episodes']
 

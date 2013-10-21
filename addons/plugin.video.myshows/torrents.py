@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.6.7"
+__version__ = "1.7.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -263,11 +263,13 @@ class Source:
             getdict=TorrentDB().get(self.showId, self.id, self.seasonId, invert_bool(self.id))
             try:Debug('FILENAME IN GETFILEANEM FROM GETDICT '+getdict['filename'].decode('utf-8'))
             except:pass
-            try: return getdict['filename'].decode('utf-8')
+            try:
+                return getdict['filename'].decode('utf-8')
             except:
                 try:
                     return getdict['filename']
-                except: return None
+                except:
+                    return None
 
     def gettype(self):
         stype=None
@@ -302,9 +304,10 @@ class Source:
                         else:
                             stype='torrent'
                     return stype
-
             else:
-                return None
+                if xbmcEpisode(self.showId, self.seasonId, self.episodeId):
+                    stype='xbmc'
+                return stype
 
     def addsource(self):
         try:
@@ -666,6 +669,7 @@ class Serialu(Source):
 
 class AddSource(Source):
     def handle(self):
+        if self.stype=='xbmc': self.stype=None
         if not self.stype:
             if self.id:
                 myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242),__language__(30255), __language__(30273), __language__(30274), __language__(30243)]
@@ -721,14 +725,24 @@ class AddSource(Source):
             else: self.stype='multifile'
 
             if self.stype=='multifile':
+                if __settings__.getSetting("torrent_utorrent_host") not in ['127.0.0.1', 'localhost']:
+                    dialog = xbmcgui.Dialog()
+                    torrent_replacement=__settings__.getSetting("torrent_replacement")
+                    ok=False
+                    if torrent_replacement not in ['', None]:
+                        ok=dialog.yesno(__language__(30292),__language__(30293), torrent_replacement)
+                    if torrent_replacement in ['', None] or ok:
+                        torrent_replacement=dialog.browse(0, __language__(30294), 'video')
+                        __settings__.setSetting("torrent_replacement", torrent_replacement)
+                    if torrent_replacement and torrent_replacement!='':
+                        self.filename=os.path.join(torrent_replacement.decode('utf-8'),os.path.basename(self.filename))
+                    else: return
                 i=self.addmultifile()
                 showMessage(__language__(30208), __language__(30249) % (str(i)))
             elif self.stype=='file':
                 dllist=sorted(Download().listfiles(id), key=lambda x: x[0])
                 #dirlist=[x[0] for x in dllist]
-                dirlist=[]
-                videolist=[]
-                cutlist=[]
+                dirlist,videolist,cutlist=[],[],[]
                 for x in dllist:
                     dirlist.append(x[0])
                     match=re.match('.avi|.mp4|.mkV|.flv|.mov|.vob|.wmv|.ogm|.asx|.mpg|mpeg|.avc|.vp3|.fli|.flc|.m4v', x[0][int(len(x[0]))-4:len(x[0])], re.I)
@@ -755,7 +769,20 @@ class AddSource(Source):
                         for s in dllist:
                             if s[2]==ind: ret=dirlist.index(s[0])
                 if ret>-1:
-                    self.filename=os.path.join(self.filename.decode('utf-8'),dirlist[ret])
+                    if __settings__.getSetting("torrent_utorrent_host") in ['127.0.0.1', 'localhost']:
+                        self.filename=os.path.join(self.filename.decode('utf-8'),dirlist[ret])
+                    else:
+                        dialog = xbmcgui.Dialog()
+                        torrent_replacement=__settings__.getSetting("torrent_replacement")
+                        ok=False
+                        if torrent_replacement not in ['', None]:
+                            ok=dialog.yesno(__language__(30292),__language__(30293), torrent_replacement)
+                        if torrent_replacement in ['', None] or ok:
+                            torrent_replacement=dialog.browse(0, __language__(30294), 'video')
+                            __settings__.setSetting("torrent_replacement", torrent_replacement)
+                        if torrent_replacement and torrent_replacement!='':
+                            self.filename=os.path.join(torrent_replacement.decode('utf-8'),dirlist[ret])
+                        else: return
                     if len(self.filename)>1:
                         try:
                             self.addsource()
@@ -782,7 +809,7 @@ class AddSource(Source):
 class PlaySource(Source):
     def handle(self):
         if not self.filename:
-            if len(TorrentDB().get_all(True, self.showId, self.seasonId))>0:
+            if len(TorrentDB().get_all(True, self.showId, self.seasonId))>0 or self.stype=='xbmc':
                 ShowAllSources()
             else:
                 AddSource()
@@ -868,6 +895,9 @@ class AskPlay(Source):
 
 class PlayFile(Source):
     def handle(self):
+        if self.stype=='xbmc':
+            self.stype='file'
+            self.filename=xbmcEpisode(self.showId, self.seasonId, self.episodeId)['file']
         if self.stype=='file' or self.stype=='vk-file':
             xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
         elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
@@ -908,8 +938,12 @@ class PlayFile(Source):
 
 class ShowAllSources(Source):
     def handle(self):
-        myshows_files=[unicode(__language__(30232))]
-        myshows_titles=[unicode(__language__(30232))]
+        if self.stype=='xbmc':
+            myshows_files= [unicode(__language__(30295)), unicode(__language__(30232))]
+            myshows_titles=[unicode(__language__(30295)), unicode(__language__(30232))]
+        else:
+            myshows_files= [unicode(__language__(30232))]
+            myshows_titles=[unicode(__language__(30232))]
         getlist=TorrentDB().get_all(True, self.showId, self.seasonId)
         for k in getlist:
             myshows_files.append(makeapp(k))
@@ -922,6 +956,7 @@ class ShowAllSources(Source):
         dialog = xbmcgui.Dialog()
         i = dialog.select(__language__(30235), myshows_titles)
         if i==myshows_files.index(unicode(__language__(30232))): AddSource()
+        elif i==myshows_files.index(unicode(__language__(30295))): PlayFile()
         elif i==-1 or i==myshows_files.index(unicode(__language__(30205))): return False
         else: PlayFile(myshows_files[i])
 
@@ -985,6 +1020,7 @@ class TorrenterSearch():
 
         if self.stype in ['rutracker','nnm','kz'] or self.stype=='torrenterall' and not self.id:
             dialog_items=[u'%s Сезон %s' % (rt, s),
+                          u'%s %s 720p' % (t, s),
                           u'%s Сезон %s 720p' % (rt, s),
                           u'%s %s' % (t, s),
                           u'%s Сезон %s' % (rt, int_xx(s)),
@@ -1036,23 +1072,46 @@ def chooseDir(urls, path=None):
                     files.append(url)
         return files
 
-def prefix(showId=None, seasonId=None, id=None, stype=None):
+def prefix(showId=None, seasonId=None, id=None, stype=None, episodeNumber=None):
     if not stype:
         if showId:
             getdict=TorrentDB().get(showId=showId, seasonId=seasonId, id=id, noid=True, noseasonId=invert_bool(seasonId))
             try: stype=getdict['stype']
-            except: return ''
+            except: pass
         else:
             getlist=TorrentDB().get_all(False, showId, seasonId)
             for k in getlist:
                 if id and k['id']==id or not id and seasonId and k['seasonId']==seasonId:
                     stype=k['stype']
-    stypes=['json', 'vk-file', 'url-file', 'btchat', 'dir', 'file', 'torrent', 'multifile', 'multitorrent','serialu-file','serialu','rutracker','tpb','nnm','kz', 'torrenter']
-    prefixes=['JS', 'VK', 'UF', 'BT', 'D', 'F', 'T', 'MF', 'MT','SF','SU','RU','PB','NN','KZ','TR']
+        if not stype and episodeNumber: #XBMC
+            #if xbmcEpisode(showId, seasonId, episodeNumber):
+            #    stype='xbmc'
+            return ''
+    stypes=['json', 'vk-file', 'url-file', 'btchat', 'dir', 'file', 'torrent', 'multifile', 'multitorrent','serialu-file','serialu','rutracker','tpb','nnm','kz', 'torrenter','xbmc']
+    prefixes=['JS', 'VK', 'UF', 'BT', 'D', 'F', 'T', 'MF', 'MT','SF','SU','RU','PB','NN','KZ','TR','XBMC']
     prefix=None
-    for i in stypes:
-        if stype==i:
-            prefix=('[B][%s][/B] ' %(prefixes[stypes.index(i)]))
-            break
+    if stype:
+        prefix=('[B][%s][/B] ' %(prefixes[stypes.index(stype)]))
     if not prefix: prefix=''
     return prefix
+
+def xbmcEpisode(showId, seasonId, episodeNumber):
+    from utilities import xbmcJsonRequest
+    title=id2title(showId, None, norus=True)[0]
+    shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {'properties': ['title']}, 'id': 0})
+    if not shows:
+        Debug('[Prefix] xbmc json request was empty.')
+        return
+    if 'tvshows' in shows:
+        shows = shows['tvshows']
+    else:
+        Debug("[Prefix] Key 'tvshows' not found")
+        return
+    for show in shows:
+        if show['title']==title.decode('utf-8'):
+            episodes = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetEpisodes', 'params': {'tvshowid': show['tvshowid'], 'season': seasonId, 'properties': ['episode', 'file']}, 'id': 0})
+            if 'episodes' in episodes:
+                episodes = episodes['episodes']
+                for episode in episodes:
+                    if episode['episode']==episodeNumber:
+                        return episode
