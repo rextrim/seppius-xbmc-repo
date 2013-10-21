@@ -22,7 +22,7 @@ import SearcherABC
 import Localization
 import urllib
 import re
-import sys, json
+import sys, urllib2
 
 class ThePirateBaySe(SearcherABC.SearcherABC):
 
@@ -61,28 +61,28 @@ class ThePirateBaySe(SearcherABC.SearcherABC):
     '''
     def search(self, keyword):
         filesList = []
-        url = "http://apify.ifc0nfig.com/tpb/search?id=%s" % (urllib.quote_plus(keyword))
-        try:response = self.makeRequest(url)
-        except:return filesList
+        url = "http://thepiratebay.sx/search/%s/0/99/200" % (urllib.quote_plus(keyword))
+        #try:response = self.makeRequest(url)
+        #except:return filesList
+        request = urllib2.Request(url)
+        try:
+            results = urllib2.urlopen(request)
+        except urllib2.URLError, e:
+            print "Pirate Bay: did not respond"
+            return
+        response = results.read()
         if None != response and 0 < len(response):
-            dat=re.compile('{(.+?)}').findall(response)
-            for data in dat:
-                try:
-                    jdat=json.loads('{'+data+'}')
-                    title=jdat['name'].encode('utf-8')
-                    link=jdat['magnet'].encode('utf-8')
-                    seeds=str(jdat['seeders']).encode('utf-8')
-                    leechers=str(jdat['leechers']).encode('utf-8')
-                    torrentTitle = "%s [S\L: %s\%s]" % (title, leechers, seeds)
-                    image = sys.modules[ "__main__"].__root__ + self.searchIcon
-                    if not re.match('^https?\://.+', link) and not re.match('^magnet\:.+', link):
-                        link = re.search('^(https?\://.+?)/.+', url).group(1) + link
-                    filesList.append((
-                        int(int(self.sourceWeight) * int(seeds)),
-                        int(seeds),
-                        self.unescape(self.stripHtml(torrentTitle)),
-                        self.__class__.__name__ + '::' + link,
-                        image,
-                    ))
-                except: continue
+            dat=re.compile(r'<div class="detName">.+?">(.+?)</a>.+?<a href="(.+?)".+?<td align="right">(\d+?)</td>.+?<td align="right">(\d+?)</td>', re.DOTALL).findall(response)
+            for (title, link, leechers, seeds) in dat:
+                torrentTitle = "%s [S\L: %s\%s]" % (title, leechers, seeds)
+                image = sys.modules[ "__main__"].__root__ + self.searchIcon
+                if not re.match('^https?\://.+', link) and not re.match('^magnet\:.+', link):
+                    link = re.search('^(https?\://.+?)/.+', url).group(1) + link
+                filesList.append((
+                    int(int(self.sourceWeight) * int(seeds)),
+                    int(seeds),
+                    self.unescape(self.stripHtml(torrentTitle)),
+                    self.__class__.__name__ + '::' + link,
+                    image,
+                ))
         return filesList

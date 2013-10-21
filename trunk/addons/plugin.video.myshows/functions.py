@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.6.7"
+__version__ = "1.7.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -34,6 +34,16 @@ refresh_always=__settings__.getSetting("refresh_always")
 striplist=['the', 'tonight', 'show', 'with', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 debug = __settings__.getSetting("debug")
 
+def sortcomma(dict, json):
+    for x in dict:
+        y=dict[x].split(',')
+        dict[x]=''
+        for i in y:
+            if i not in json:
+                dict[x]=dict[x]+','+i
+        if len(dict[x])>0: dict[x]=dict[x][1:len(dict[x])]
+    return dict
+
 def Debug(msg, force = False):
     if(debug == 'true' or force):
         try:
@@ -46,11 +56,11 @@ def showMessage(heading, message, times = 10000, forced=False):
     if debug=='true' or notification=='true' or forced:
         xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8'), unicode(message).encode('utf-8'), times, icon))
 
-def id2title(showId, id=None):
+def id2title(showId, id=None, norus=False):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
     if jload:
         jdata = json.loads(jload)
-        if ruName=='true' and jdata['ruTitle']:
+        if ruName=='true' and jdata['ruTitle'] and not norus:
             title=jdata['ruTitle']
         else:
             title=jdata['title']
@@ -486,12 +496,13 @@ def FileNamesPrepare(filename):
 
 def filename2match(filename):
     results={'label':filename}
-    urls=['(.+)s(\d+)[\.]e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)']
+    urls=['(.+)s(\d+)e(\d+)','(.+)s(\d+)\.e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)']
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
+        #print str(results)
         if match:
             results['showtitle'], results['season'], results['episode']=match[0]
-            results['showtitle']=results['showtitle'].replace('.',' ').strip()
+            results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip()
             Debug('[filename2match] '+str(results))
             return results
     urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})']
@@ -513,7 +524,7 @@ def jstr(s):
     elif not unicode(s).isnumeric(): s='"%s"'%(s)
     return str(s)
 
-def lockView(viewId):
+def lockView(viewId='list'):
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     skinOptimizations = (
         { 'list': 50, 'info': 504,'wide': 51,'icons': 500, }, #Confluence
@@ -572,8 +583,8 @@ class PluginStatus():
         self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.3',['default.py','update.py']),
                 ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
-                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.8',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py','resources/searchers/BTchatCom.py',
-                 'resources/searchers/NNMClubRu.py','resources/searchers/icons/bt-chat.com.png','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png','resources/searchers/RuTorOrg.py','resources/searchers/KrasfsRu.py'])]
+                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.8',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
+                 'resources/searchers/NNMClubRu.py','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png','resources/searchers/RuTorOrg.py','resources/searchers/KrasfsRu.py'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])

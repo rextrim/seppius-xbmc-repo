@@ -206,11 +206,15 @@
         <string id="30289">Choose the show:</string>
         <string id="30290">Automatic scrobber for MyShows.ru</string>
         <string id="30291">Full Torrenter Search</string>
-    __language__(30291)
+        <string id="30292">µTorrent path</string>
+        <string id="30293">Would you like to change remote directory?</string>
+        <string id="30294">Choose new µTorrent remote directory:</string>
+        <string id="30295">Play XBMC Source</string>
 
-        <string id="30292">Status:</string>
-        <string id="30293">Scanning:</string>
-
+        <string id="30296">Install patch</string>
+        <string id="30297">µTorrent Browser</string>
+        <string id="30298">NNM-Club.Ru Distribution (need patch plugin.video.torrenter)</string>
+        <string id="30299">Choose the show:</string>
 
 ///Context menus
         <string id="30300">Mark as Watching</string>
