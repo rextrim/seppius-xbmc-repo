@@ -747,7 +747,7 @@ class Core:
             myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
             showKey=myshows_setting.getSetting("torrenter_keyboard")
         except: showKey="true"
-        if showKey=="true" or defaultKeyword in ['', None]:
+        if showKey=="true" or defaultKeyword=='' or not defaultKeyword:
             if not defaultKeyword:
                 defaultKeyword = ''
             keyboard = xbmc.Keyboard(defaultKeyword, Localization.localize('Search Phrase') + ':')
