@@ -753,21 +753,24 @@ class AddSource(Source):
                     cutlist.extend(dirlist)
                     ret=dirlist.index(videolist[0])
                 else:
-                    cutlist=cutFileNames(dirlist)
-                    for s in dirlist:
-                        i=dirlist.index(s)
-                        cutlist[i]='['+str(dllist[i][1])+'%]['+dllist[i][3]+'] '+cutlist[i]
-                    cutlist.append(unicode(__language__(30205)))
-                    if not ind and ind!=0:
-                        if len(dirlist)>1:
-                            dialog = xbmcgui.Dialog()
-                            ret = dialog.select(__language__(30233), cutlist)
-                            if ret==cutlist.index(unicode(__language__(30205))):
-                                return
-                        else: ret=0
+                    if len(dirlist)>1:
+                        cutlist=cutFileNames(dirlist)
+                        for s in dirlist:
+                            i=dirlist.index(s)
+                            cutlist[i]='['+str(dllist[i][1])+'%]['+dllist[i][3]+'] '+cutlist[i]
+                        cutlist.append(unicode(__language__(30205)))
+                        if not ind and ind!=0:
+                            if len(dirlist)>1:
+                                dialog = xbmcgui.Dialog()
+                                ret = dialog.select(__language__(30233), cutlist)
+                                if ret==cutlist.index(unicode(__language__(30205))):
+                                    return
+                            else: ret=0
+                        else:
+                            for s in dllist:
+                                if s[2]==ind: ret=dirlist.index(s[0])
                     else:
-                        for s in dllist:
-                            if s[2]==ind: ret=dirlist.index(s[0])
+                        xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode('Failed! Didn\'t get any filenames!'))#LANG
                 if ret>-1:
                     if __settings__.getSetting("torrent_utorrent_host") in ['127.0.0.1', 'localhost']:
                         self.filename=os.path.join(self.filename.decode('utf-8'),dirlist[ret])
