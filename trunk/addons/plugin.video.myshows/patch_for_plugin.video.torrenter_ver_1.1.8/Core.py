@@ -742,14 +742,12 @@ class Core:
                 return
 
     def search(self, params = {}):
+        defaultKeyword = params.get('url')
         try:
             myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
             showKey=myshows_setting.getSetting("torrenter_keyboard")
         except: showKey="true"
-        try: external=urllib.unquote_plus(get("external"))
-        except: external=None
-        if showKey=="true" or not external:
-            defaultKeyword = params.get('url')
+        if showKey=="true" or defaultKeyword in ['', None]:
             if not defaultKeyword:
                 defaultKeyword = ''
             keyboard = xbmc.Keyboard(defaultKeyword, Localization.localize('Search Phrase') + ':')
