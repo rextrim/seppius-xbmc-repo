@@ -58,10 +58,10 @@ class Torrent:
                     from python_libtorrent.linux_x86 import libtorrent
             else:
                 from python_libtorrent.windows import libtorrent
-        except ImportError, v:
+        except:
             try:
                 import libtorrent
-            except ImportError, v:
+            except:
                 raise ImportError("The script.module.libtorrent module is not installed, libtorrent not found or unsupported system used")
         self.lt = libtorrent
         del libtorrent
@@ -196,7 +196,8 @@ class Torrent:
 
     def md5(self, string):
         hasher = hashlib.md5()
-        hasher.update(string)
+        try:hasher.update(string)
+        except:hasher.update(string.encode('utf-8','ignore'))
         return hasher.hexdigest()
 
     def downloadProcess(self, contentId):

@@ -1,8 +1,8 @@
 ﻿#-*- coding: utf-8 -*-
 '''
     Torrenter plugin for XBMC
-    Copyright (C) 2011 Vadim Skorba
-	vadim.skorba@gmail.com
+    Copyright (C) 2012 Vadim Skorba
+    vadim.skorba@gmail.com
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,15 +22,15 @@ import sys
 
 language = ('en', 'ru')[int(sys.modules[ "__main__" ].__settings__.getSetting("language"))]
 dictionary = {
-	'ru': {
-		'Seeds searching.': 'Идёт поиск сидов.',
-		'Please Wait': 'Подождите',
-		'Information': 'Информация',
-		'Torrent downloading is stopped.': 'Загрузка торрента прекращена.',
-		'< Search >': '< Поиск >',
-		'Seeds': 'Сиды',
-		'Peers': 'Пиры',
-		'Materials are loading now.': 'Идёт загрузка материалов.',
+    'ru': {
+        'Seeds searching.': 'Идёт поиск сидов.',
+        'Please Wait': 'Подождите',
+        'Information': 'Информация',
+        'Torrent downloading is stopped.': 'Загрузка торрента прекращена.',
+        '< Search >': '< Поиск >',
+        'Seeds': 'Сиды',
+        'Peers': 'Пиры',
+        'Materials are loading now.': 'Идёт загрузка материалов.',
         'Search Phrase': 'Фраза для поиска',
         'Magnet-link is converting.': 'Идёт преобразование magnet-ссылки.',
         'Error': 'Ошибка',
@@ -69,7 +69,14 @@ dictionary = {
         'Views': 'Просмотров',
         'Uploading': 'Раздача',
         'Downloading': 'Закачка',
-	},
+        'Input symbols from CAPTCHA image:': 'Введите символы с картинки CAPTCHA:',
+        'Please, rate watched video:': 'Пожалуйста, оцените просмотренное видео:',
+        'Bad': 'Плохо',
+        'So-So': 'Такое...',
+        'Good': 'Отлично',
+        '< Ratings >': '< Оценки >',
+        'Rating': 'Оценка',
+    },
 }
 
 def localize(text):

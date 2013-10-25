@@ -19,13 +19,12 @@
 '''
 
 import SearcherABC
-import Localization
 import urllib
 import re
-import sys, json
+import sys
+import Localization
 
-
-class RuTorOrg(SearcherABC.SearcherABC):
+class KrasfsRu(SearcherABC.SearcherABC):
     
     '''
     Weight of source with this searcher provided.
@@ -38,7 +37,7 @@ class RuTorOrg(SearcherABC.SearcherABC):
     Relative (from root directory of plugin) path to image
     will shown as source image at result listing
     '''
-    searchIcon = '/resources/searchers/icons/rutor.org.png'
+    searchIcon = '/resources/searchers/icons/krasfs.ru.png'
 
     '''
     Flag indicates is this source - magnet links source or not.
@@ -47,7 +46,7 @@ class RuTorOrg(SearcherABC.SearcherABC):
     '''
     @property
     def isMagnetLinkSource(self):
-        return True
+        return False
 
     '''
     Main method should be implemented for search process.
@@ -62,17 +61,16 @@ class RuTorOrg(SearcherABC.SearcherABC):
     '''
     def search(self, keyword):
         filesList = []
-        url = "http://playble.ru/data/1.php?q=%s&section=video" % (urllib.quote_plus(keyword))
-        response = self.makeRequest(url)
-        try: jdata=json.loads(response)
-        except: return
-        if None != response and 0 < len(jdata['results']):
-            for data in jdata['results']:
-                seeds=int(data['seeds'])
-                title=data['title'].encode('utf-8', 'ignore')
-                torrentTitle = "%s [%s: %s]" % (title, Localization.localize('Seeds'), seeds)
+        response = self.makeRequest(
+            'http://www.krasfs.ru/',
+            {'query': keyword, 'checkbox_tor': 'on', 'submit': ''},
+        )
+        if None != response and 0 < len(response):
+            seeds = 1
+            for (link, title) in re.compile('<a target=_blank href=(/index\.php\?hash=[0-9a-f]+)>\s(.+?)</a> </td> <td align=center>', re.DOTALL).findall(response):
+                torrentTitle = "%s [%s: %s]" % (title, Localization.localize('Seeds'), '?')
                 image = sys.modules[ "__main__"].__root__ + self.searchIcon
-                link=data['magnet']
+                link = 'http://www.krasfs.ru' + link
                 filesList.append((
                     int(int(self.sourceWeight) * int(seeds)),
                     int(seeds),
@@ -81,4 +79,3 @@ class RuTorOrg(SearcherABC.SearcherABC):
                     image,
                 ))
         return filesList
-

@@ -451,8 +451,8 @@ def cutFileNames(l):
 
     newl=l
     l=[]
-    Debug('[cutFileNames] [start] '+unicode(start))
-    Debug('[cutFileNames] [end] '+unicode(end))
+    Debug('[cutFileNames] [start] '+start)
+    Debug('[cutFileNames] [end] '+end)
     for fl in newl:
         if fl[0:len(start)]==start: fl=fl[len(start):]
         if fl[len(fl)-len(end):]==end: fl=fl[0:len(fl)-len(end)]
@@ -660,7 +660,7 @@ class PluginStatus():
               {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
               {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
               {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
-              {"title":__language__(30145)                  ,"mode":"61",   "argv":{'action':'about'}}]
+              {"title":__language__(30145) + " (v. " +__version__ +")"  ,"mode":"61",   "argv":{'action':'about'}}]
 
         for i in menu:
             link=Link(i['mode'], i['argv'])

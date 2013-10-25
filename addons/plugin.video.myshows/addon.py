@@ -23,7 +23,6 @@ passwd=__settings__.getSetting("password")
 ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
-btchat_auth=__settings__.getSetting("btchat_auth")
 socket.setdefaulttimeout(60)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
@@ -428,29 +427,29 @@ def ShowList(action):
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def FriendsNews():
+    data= Data(cookie_auth, 'http://api.myshows.ru/profile/').get()
+    jfr, avatars=json.loads(data), {}
+    for i in jfr["friends"]:
+        avatars[i["login"]]=i["avatar"]+"0"
     get_data= get_url(cookie_auth, 'http://api.myshows.ru/profile/news/')
-    dat=re.compile('{"episodeId(.+?)"}').findall(get_data)
-
-    for data in dat:
-        jdata=json.loads('{"episodeId'+data+'"}')
-
-        if jdata['gender']=='m': title_str=__language__(30117)
-        else: title_str=__language__(30118)
-
-        if jdata['episodeId']>0:
-            title=__language__(30119) % (jdata['login'], title_str, str(jdata['episode']), jdata['show'])
-        else:
-            title=__language__(30120) % (jdata['login'], title_str, str(jdata['episodes']), jdata['show'])
-
-        item = xbmcgui.ListItem(title, iconImage='', thumbnailImage='')
-        item.setInfo( type='Video', infoLabels={'Title': title,
-                                                'tvshowtitle': jdata['title'] })
-
-        refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
-        sys_url = sys.argv[0] + '?showId=' + str(jdata['showId'])+'&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
-        sys_url=sys.argv[0] + '?action=' + jdata['login'] + '&mode=41'
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+    jx=json.loads(get_data)
+    for u in jx:
+        for jdata in jx[u]:
+            if jdata['gender']=='m': title_str=__language__(30117)
+            else: title_str=__language__(30118)
+            if jdata['episodeId']>0:
+                title=__language__(30119) % (jdata['login'], title_str, str(jdata['episode']), jdata['show'])
+            else:
+                title=__language__(30120) % (jdata['login'], title_str, str(jdata['episodes']), jdata['show'])
+            try:item = xbmcgui.ListItem(title, iconImage=avatars[jdata["login"]], thumbnailImage=avatars[jdata["login"]])
+            except:item = xbmcgui.ListItem(title, iconImage='', thumbnailImage='')
+            item.setInfo( type='Video', infoLabels={'Title': title,
+                                                    'tvshowtitle': jdata['title'] })
+            refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
+            sys_url = sys.argv[0] + '?showId=' + str(jdata['showId'])+'&mode=20'
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            sys_url=sys.argv[0] + '?action=' + jdata['login'] + '&mode=41'
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Profile(action, sort='profile'):
     data= Data(cookie_auth, 'http://api.myshows.ru/profile/'+action).get()
