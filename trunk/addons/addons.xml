@@ -1110,7 +1110,7 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="MyShows.ru"
-       version="1.7.0"
+       version="1.7.1"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
@@ -1660,7 +1660,7 @@ RuTube - отличная стартовая площадка для незав�
     </extension>
 </addon>
 
-<addon id="plugin.video.torrenter" name="Torrenter" version="1.0.5.4" provider-name="vadim.skorba@gmail.com">
+<addon id="plugin.video.torrenter" name="Torrenter" version="1.2.6" provider-name="vadim.skorba@gmail.com">
     <requires>
         <import addon="xbmc.python" version="2.0"/>
     </requires>
@@ -1668,9 +1668,9 @@ RuTube - отличная стартовая площадка для незав�
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.repository" name="Torrenter Repository">
-        <info compressed="false">http://torrenter.googlecode.com/hg/addons.xml</info>
-        <checksum>http://torrenter.googlecode.com/hg/addons.xml.md5</checksum>
-        <datadir zip="false">http://torrenter.googlecode.com/hg/</datadir>
+        <info compressed="false">https://api.bitbucket.org/1.0/repositories/vadimskorba/torrenter/raw/default/addons.xml</info>
+        <checksum>https://api.bitbucket.org/1.0/repositories/vadimskorba/torrenter/raw/default/addons.xml.md5</checksum>
+        <datadir zip="true">https://api.bitbucket.org/1.0/repositories/vadimskorba/torrenter/raw/default/</datadir>
     </extension>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>

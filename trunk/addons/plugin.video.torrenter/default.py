@@ -1,8 +1,8 @@
 ﻿#-*- coding: utf-8 -*-
 '''
     Torrenter plugin for XBMC
-    Copyright (C) 2011 Vadim Skorba
-	vadim.skorba@gmail.com
+    Copyright (C) 2012 Vadim Skorba
+    vadim.skorba@gmail.com
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@ __plugin__ = __settings__.getAddonInfo('name') + " v." + __version__
 __root__ = __settings__.getAddonInfo('path')
 
 if (__name__ == "__main__" ):
-	print __plugin__
-	import Core
-	core = Core.Core()
-	if (not sys.argv[2]):
-		core.sectionMenu()
-	else:
-		params = core.getParameters(sys.argv[2])
-		core.executeAction(params)
+    print __plugin__
+    import Core
+    core = Core.Core()
+    if (not sys.argv[2]):
+        core.sectionMenu()
+    else:
+        params = core.getParameters(sys.argv[2])
+        core.executeAction(params)
