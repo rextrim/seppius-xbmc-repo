@@ -6,6 +6,7 @@ import threading
 import xbmcaddon    
 import xbmc
 import time
+import json
 
 import defines
 
@@ -94,22 +95,35 @@ class MyPlayer(xbmcgui.WindowXML):
         if not self.TSPlayer :
             LogToXBMC('InitTS')
             self.TSPlayer = tsengine(parent = self.parent)
-            #self.TSPlayer.connectToTS()
-        #self.TSPlayer.connectToTS()
+
         self.li = li
         LogToXBMC('Load Torrent')
-        #if li.getProperty('url_type') == 'torrent':
-        #    self.TSPlayer.load_torrent(li.getProperty('url'),'TORRENT')
-        #else:
-        #    self.TSPlayer.load_torrent(li.getProperty('url'), 'PID')
-
-        #if self.TSPlayer.last_error:
-        #    self.hide()
-        mode = 'PID'
-        if li.getProperty('url_type') == 'torrent':
-            mode = 'TORRENT'
+        
+        self.parent.showStatus("Получение ссылки...")
+        data = None
+        print li.getProperty("type")
+        print li.getProperty("id")
+        if (li.getProperty("type") == "channel"):
+            data = defines.GET("http://api.torrent-tv.ru/v2_get_stream.php?session=%s&channel_id=%s&typeresult=json" % (self.parent.session, li.getProperty("id")));
+        elif (li.getProperty("type") == "record"):
+            data = defines.GET("http://api.torrent-tv.ru/v2_arc_getstream.php?session=%s&record_id=%s&typeresult=json" % (self.parent.session, li.getProperty("id")));
+        else:
+            self.parent.showStatus("Неизвестный тип контента")
+            return
+        if not data:
+            self.parent.showStatus("Неизвестный тип контента")
+            return
+        jdata = json.loads(data);
+        print jdata
+        if jdata["success"] == 0:
+            self.parent.showStatus(data["error"])
+            return
+        
+        url = jdata["source"]
+        mode = jdata["type"].upper()
+        self.parent.hideStatus()
         LogToXBMC('Play torrent')
-        self.TSPlayer.play_url_ind(0,li.getLabel(), li.getProperty('icon'), li.getProperty('icon'), torrent = li.getProperty('url'), mode = mode)
+        self.TSPlayer.play_url_ind(0,li.getLabel(), li.getProperty('icon'), li.getProperty('icon'), torrent = url, mode = mode)
         
     def hide(self):
         pass

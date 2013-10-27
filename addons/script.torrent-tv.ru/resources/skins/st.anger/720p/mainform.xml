@@ -13,7 +13,7 @@
 	<animation effect="fade" time="250">WindowClose</animation>
 	<onload condition="Control.IsVisible(1)">Control.SetFocus(1,1)</onload>
 	<controls>
-    <control type="group" id = "104">
+    <control type="group">
       <destiption>Wallpaper</destiption>
       <control type="image">
         <description>Normal Default Background Image</description>
@@ -41,7 +41,8 @@
           <height>560</height>
           <texture border="40">window.png</texture>
         </control>
-        <control type="group">
+        <control type="group" id="101">
+          <!-- Главное меню -->
           <description>Title</description>
           <control type="label">
             <desctiption>Time</desctiption>
@@ -67,7 +68,7 @@
             <aligny>center</aligny>
             <label>Каналы</label>
             <onright>103</onright>
-            <onleft>103</onleft>
+            <onleft>104</onleft>
             <ondown>50</ondown>
             <onfocus>SendClick(12345,102)</onfocus>
           </control>
@@ -85,10 +86,29 @@
             <align>center</align>
             <aligny>center</aligny>
             <label>Трансляции</label>
-            <onright>102</onright>
+            <onright>104</onright>
             <onleft>102</onleft>
             <ondown>50</ondown>
             <onfocus>SendClick(12345,103)</onfocus>
+          </control>
+          <control type="button" id = "104">
+            <description>from</description>
+            <posx>305</posx>
+            <posy>10</posy>
+            <width>130</width>
+            <height>20</height>
+            <font>font10</font>
+            <size>10</size>
+            <textcolor>FF99D8FF</textcolor>
+            <texturefocus>tabfocus.png</texturefocus>
+            <!--<texturenofocus>tabnofocus.png</texturenofocus>-->
+            <align>center</align>
+            <aligny>center</aligny>
+            <label>Архив</label>
+            <onright>102</onright>
+            <onleft>103</onleft>
+            <ondown>50</ondown>
+            <onfocus>SendClick(12345,104)</onfocus>
           </control>
         </control>
         
