@@ -12,11 +12,11 @@ ADDON_ICON	 = ADDON.getAddonInfo('icon')
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
     ADDON_PATH = ADDON_PATH.decode('utf-8')
 
-def showMessage(message = '', heading='Torrent-TV.RU', times = 3000):
+def showMessage(message = '', heading='Torrent-TV.RU', times = 6789):
     try: 
-        xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % (heading.encode('utf-8'), message.encode('utf-8'), times))
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, %s)' % (heading.encode('utf-8'), message.encode('utf-8'), times, ADDON_ICON))
     except Exception, e:
-        try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % (heading, message, times))
+        try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, %s)' % (heading, message, times, ADDON_ICON))
         except Exception, e:
             xbmc.log( 'showMessage: exec failed [%s]' % 3 )
 
