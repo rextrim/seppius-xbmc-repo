@@ -113,11 +113,19 @@ class WMainForm(xbmcgui.WindowXML):
                 ch['logo'] = ''
             else:
                 ch['logo'] = 'http://torrent-tv.ru/uploads/' + ch['logo']
-            li = xbmcgui.ListItem(ch['name'], ch['id'], ch['logo'], ch['logo'])
+            
+            chname = ch["name"]
+            if ch["access_user"] == "no":
+                chname = "[COLOR FF646464]%s[/COLOR]" % chname
+            
+            li = xbmcgui.ListItem(chname, ch['id'], ch['logo'], ch['logo'])
             li.setProperty('epg_cdn_id', '%s' % ch['epg_id'])
             li.setProperty('icon', ch['logo'])
             li.setProperty("type", "channel")
             li.setProperty("id", ch["id"])
+            li.setProperty("access_translation", ch["access_translation"])
+            li.setProperty("access_user", ch["access_user"])
+            
             if param == 'channel':
                 li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
                 self.category[ch['group']]["channels"].append(li)
@@ -298,7 +306,17 @@ class WMainForm(xbmcgui.WindowXML):
                 if not find:
                     self.fillRecords(self.archive[0], datefrm.date)
                     return
-
+            
+            if selItem.getProperty("access_user") == "no":
+                access = selItem.getProperty("access_translation")
+                if access == "registred":
+                   defines.showMessage("Трансляция доступна для зарегестрированных пользователей")
+                elif access == "vip":
+                   defines.showMessage("Трансляция доступна для VIP пользователей")
+                else:
+                   defines.showMessage("На данный момент трансляция не доступна")
+                return
+			    
             buf = xbmcgui.ListItem(selItem.getLabel())
             buf.setProperty('epg_cdn_id', selItem.getProperty('epg_cdn_id'))
             buf.setProperty('icon', selItem.getProperty('icon'))

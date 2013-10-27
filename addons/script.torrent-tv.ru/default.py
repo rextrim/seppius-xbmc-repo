@@ -12,9 +12,13 @@ import mainform
 
 if __name__ == '__main__':
     if not defines.ADDON.getSetting('skin'):
-        defines.ADDON.setSetting('skin', 'st.anger')
+       defines.ADDON.setSetting('skin', 'st.anger')
     if defines.ADDON.getSetting("skin") == "default":
-    	defines.ADDON.setSetting("skin", "st.anger")
+       defines.ADDON.setSetting("skin", "st.anger")
+    if not defines.ADDON.getSetting("login"):
+       defines.ADDON.setSetting("login", "anonymous")
+       defines.ADDON.setSetting("password", "anonymous")
+       
     w = mainform.WMainForm("mainform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
     
     w.doModal()
