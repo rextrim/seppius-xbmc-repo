@@ -113,7 +113,7 @@ class TSengine(xbmc.Player):
                     self.pfile= os.path.join( path,'acestream.port')
                     LogToXBMC('Пытаюсь открыть acestream.port %s' % self.pfile.encode('utf-8'))
                     if not os.path.exists(self.pfile):
-                        LogToXBMC('Запуск TS')
+                        LogToXBMC('Запуск TS path:%s' % self.pfile)
                         if self.parent: self.parent.showStatus("Запуск TS")
                         a = 0
                         self.startTS(self.ts_path)
@@ -141,8 +141,7 @@ class TSengine(xbmc.Player):
                 import subprocess
                 try:
                     if self.parent: self.parent.showStatus("Запуск TS")
-
-                    proc = subprocess.Popen("acestreamengine-client-gtk")
+                    proc = subprocess.Popen(["acestreamengine","--client-console"])
                     i = 0
                     while True:
                         try:
@@ -153,6 +152,7 @@ class TSengine(xbmc.Player):
                             if self.parent: self.parent.showStatus("Запуск TS %s" % i)
                             self.sock.connect((self.server_ip, self.aceport))
                             if self.parent: self.parent.hideStatus()
+                            xbmc.sleep(1000)
                             break
                         except Exception, e:
                             LogToXBMC("Подключение не удалось %s" % e)
@@ -170,6 +170,7 @@ class TSengine(xbmc.Player):
                     LogToXBMC('Cannot start TS', 1)
                     return
         print 'Все ок'
+        self.trys = 0
         self.thr = SockThread(self.sock)
         self.thr.state_method = self.showState
         self.thr.owner = self
@@ -232,6 +233,7 @@ class TSengine(xbmc.Player):
         self.pfile = ''
         self.paused = False
         self.closed = False
+        self.trys = 0
        
         LogToXBMC(defines.ADDON.getSetting('ip_addr'))
         if defines.ADDON.getSetting('ip_addr'):
@@ -267,6 +269,9 @@ class TSengine(xbmc.Player):
             self.sock.send(cmd + '\r\n')
         except Exception, e:
             try:
+                self.trys = self.trys + 1
+                if self.trys >= 3:
+                    return
                 self.connectToTS()
                 self.sendCommand(cmd)
             except Exception, e:
@@ -383,7 +388,7 @@ class TSengine(xbmc.Player):
                 if not _params.has_key('url'):
                     if self.parent: self.parent.showStatus("Неверный ответ от TS. Операция прервана")
                     raise Exception('Incorrect msg from TS %s' % msg.getType())
-                self.play_url = _params['url']
+
                 self.amalker = _params.has_key('ad') and not _params.has_key('interruptable')
                 LogToXBMC('Преобразование ссылки')
                 self.link = _params['url'].replace('127.0.0.1', self.server_ip).replace('6878', self.webport)
@@ -623,6 +628,7 @@ class SockThread(threading.Thread):
             self.msg = TSMessage()
             _strparams = strmsg[posparam+1:].split(' ')
             _params = {}
+            LogToXBMC(strmsg)
             if _strparams.__len__() >= 2:
                 print '%s' % _strparams
                 _params['url'] = _strparams[0].split("=")[1].replace("%3A", ":")
@@ -632,7 +638,7 @@ class SockThread(threading.Thread):
                     _params[sprm[0]] = sprm[1]
                     
             else:
-                _params['url'] = _strparams[0]
+                _params['url'] = _strparams[0].split("=")[1].replace("%3A", ":")
             self.msg.setType(TSMessage.START)
             self.msg.setParams(_params)
         elif _msg == TSMessage.PAUSE:

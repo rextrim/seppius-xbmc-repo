@@ -12,8 +12,9 @@ import mainform
 
 if __name__ == '__main__':
     if not defines.ADDON.getSetting('skin'):
-        defines.ADDON.setSetting('skin', 'default')
-    
+        defines.ADDON.setSetting('skin', 'st.anger')
+    if defines.ADDON.getSetting("skin") == "default":
+    	defines.ADDON.setSetting("skin", "st.anger")
     w = mainform.WMainForm("mainform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
     
     w.doModal()
