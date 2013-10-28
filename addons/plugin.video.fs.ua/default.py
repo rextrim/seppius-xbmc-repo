@@ -51,7 +51,7 @@ if os.path.exists(__addondir__) == False:
 	os.mkdir(__addondir__)
 
 icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''), 'icon.png'))
-siteUrl = 'sdf.to'
+siteUrl = 'brb.to'
 httpSiteUrl = 'http://' + siteUrl
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 
