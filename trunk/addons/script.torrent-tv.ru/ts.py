@@ -113,7 +113,7 @@ class TSengine(xbmc.Player):
                     self.pfile= os.path.join( path,'acestream.port')
                     LogToXBMC('Пытаюсь открыть acestream.port %s' % self.pfile.encode('utf-8'))
                     if not os.path.exists(self.pfile):
-                        LogToXBMC('Запуск TS path:%s' % self.pfile)
+                        LogToXBMC('Запуск TS path:%s' % self.pfile.encode("utf-8"))
                         if self.parent: self.parent.showStatus("Запуск TS")
                         a = 0
                         self.startTS(self.ts_path)
