@@ -16,6 +16,7 @@
     <description>ULTIMATV.NET - На нашем сайте вы можете смотреть ТВ в режиме онлайн.
 </description>
     <platform>all</platform>
+    <broken>Сайт перешел на P2P вещание. Плагин не работает.</broken>
   </extension>
 </addon>
 
