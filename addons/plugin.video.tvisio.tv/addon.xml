@@ -15,7 +15,7 @@
     <summary>Онлайн ТВ + Архив (tvisio.tv)</summary>
     <description>Русское телевидение онлайн.</description>
     <platform>all</platform>
-    <broken>Сайт перешел на P2P вещание. Плагин не работает.</broken>
+    <broken>Сайт закрыт. Плагин не работает.</broken>
   </extension>
 </addon>
 
