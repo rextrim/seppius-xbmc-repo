@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.0"
+__version__ = "1.7.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -64,10 +64,17 @@ def id2title(showId, id=None, norus=False):
             title=jdata['ruTitle']
         else:
             title=jdata['title']
+        Debug('[id2title]: '+ title)
         if id:
             return title.encode('utf-8'), jdata['episodes'][id]['title'].encode('utf-8')
         else:
             return title.encode('utf-8'), None
+
+def id2date(showId, id):
+    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    if jload:
+        jdata = json.loads(jload)
+        if str(id) in jdata["episodes"]: return jdata["episodes"][str(id)]["airDate"]
 
 def date2SE(showId, date):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
@@ -254,6 +261,9 @@ def invert_bool(var):
     if bool(var): var=False
     else:  var=True
     return var
+
+def getSettingAsBool(setting):
+    return __settings__.getSetting(setting).lower() == "true"
 
 class CacheDB:
     def __init__(self, url):

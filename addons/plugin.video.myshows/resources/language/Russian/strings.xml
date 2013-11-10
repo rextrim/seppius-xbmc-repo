@@ -25,6 +25,8 @@
         <string id="30022">Отмечать только если поставили оценку</string>
         <string id="30023">Минимальный процент просмотра</string>
         <string id="30024">Показывать клавиатуру Torrenter</string>
+        <string id="30025">Спрашивать о замене пути к папке µTorrent (for remote)</string>
+        <string id="30026">Замена пути</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
