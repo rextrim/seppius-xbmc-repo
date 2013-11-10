@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.7.0"
+__version__ = "1.7.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -576,7 +576,7 @@ class DownloadSource(Source):
 
             if success:
                 self.filename=self.getfilename()
-                id=chooseHASH()
+                id=chooseHASH(self.showId, self.id, self.seasonId, self.episodeId)
                 if id:
                     if self.id: DeleteSource()
                     Download().setprio(id[0], self.ind)
@@ -596,17 +596,41 @@ class DownloadSource(Source):
                 downloadCmd = "open"
             os.system(downloadCmd + " " + self.filename)
 
-def chooseHASH():
-    dialog_items=[]
+def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None):
+    dialog_items,dialog_items_clean=[], []
     dialog_files=[]
     hash=None
     dat=Download().list()
     for data in dat:
-        Debug(str((data['id'], data['dir'].encode('utf-8'))))
+        Debug('[chooseHASH]: '+str((data['id'], data['dir'].encode('utf-8'))))
         dialog_files.append((data['id'], data['dir'].encode('utf-8')))
         dialog_items.append('['+str(data['progress'])+'%] '+data['name'])
-    dialog = xbmcgui.Dialog()
-    ret = dialog.select(unicode(__language__(30272)), dialog_items)
+        dialog_items_clean.append(data['name'])
+    if showId: title=id2title(showId, None, True)[0]
+    if title:
+        items, files, match, count=[],[],0,0
+        for d_item in dialog_items_clean:
+            d_fileindex=dialog_items_clean.index(d_item)
+            f2m=filename2match(d_item)
+            if f2m and re.search(title,f2m['showtitle']):
+                items.append(dialog_items[d_fileindex])
+                files.append(dialog_files[d_fileindex])
+                if 'date' in f2m and id2date(showId, id)==f2m['date'] or \
+                'season' in f2m and 'episode' in f2m and int(f2m['season'])==seasonId and int(f2m['episode'])==episodeId:
+                    count+=1
+                    match=d_fileindex
+        if count==1:
+            return dialog_files[match]
+        if len(items)>1:
+            items.append(unicode(__language__(30205)))
+            ret = xbmcgui.Dialog().select(unicode(__language__(30272)), items)
+            if ret>-1 and ret<len(files):
+                hash=files[ret]
+                return hash
+        elif len(items)==1:
+            hash=files[0]
+            return hash
+    ret = xbmcgui.Dialog().select(unicode(__language__(30272)), dialog_items)
     if ret>-1 and ret<len(dialog_files): hash=dialog_files[ret]
     return hash
 
@@ -717,7 +741,7 @@ class AddSource(Source):
             self.uTorrentAdd()
 
     def uTorrentAdd(self, id=None, ind=None):
-        if not id: id, self.filename=chooseHASH()
+        if not id: id, self.filename=chooseHASH(self.showId, self.id, self.seasonId, self.episodeId)
         else: id, self.filename=id
 
         if len(self.filename)>1:
@@ -729,7 +753,7 @@ class AddSource(Source):
                     dialog = xbmcgui.Dialog()
                     torrent_replacement=__settings__.getSetting("torrent_replacement")
                     ok=False
-                    if torrent_replacement not in ['', None]:
+                    if torrent_replacement not in ['', None] and getSettingAsBool("torrent_replacement_ask"):
                         ok=dialog.yesno(__language__(30292),__language__(30293), torrent_replacement)
                     if torrent_replacement in ['', None] or ok:
                         torrent_replacement=dialog.browse(0, __language__(30294), 'video')
@@ -778,13 +802,20 @@ class AddSource(Source):
                         dialog = xbmcgui.Dialog()
                         torrent_replacement=__settings__.getSetting("torrent_replacement")
                         ok=False
-                        if torrent_replacement not in ['', None]:
+                        if torrent_replacement not in ['', None] and getSettingAsBool("torrent_replacement_ask"):
                             ok=dialog.yesno(__language__(30292),__language__(30293), torrent_replacement)
                         if torrent_replacement in ['', None] or ok:
                             torrent_replacement=dialog.browse(0, __language__(30294), 'video')
                             __settings__.setSetting("torrent_replacement", torrent_replacement)
                         if torrent_replacement and torrent_replacement!='':
-                            self.filename=os.path.join(torrent_replacement.decode('utf-8'),dirlist[ret])
+                            items=Download().listdirs()
+                            if __settings__.getSetting("torrent_save")=='0':
+                                dirid=xbmcgui.Dialog().select(__language__(30248), items[0])
+                                if dirid==-1: return
+                                dirname=items[1][dirid]
+                            else: dirname=__settings__.getSetting("torrent_dir")
+                            Debug('[uTorrentAdd]: dirname is "'+dirname+'"')
+                            self.filename=os.path.join(self.filename.decode('utf-8').replace('\\\\','\\').replace(dirname.decode('utf-8'), torrent_replacement.decode('utf-8')),dirlist[ret])
                         else: return
                     if len(self.filename)>1:
                         try:

@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.7.0"
+__version__ = "1.7.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -31,7 +31,7 @@ forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
 striplist=['the', 'tonight', 'show', 'with', '(2005)', '(2009)', '(2012)', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
-
+Debug('[SYS ARGV]: '+str(urllib.unquote_plus(sys.argv[2]))[1:])
 
 check_login = re.search('='+login+';', cookie_auth)
 if not check_login:
@@ -163,8 +163,9 @@ def Seasons(showId):
     seasons.sort()
     watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
     if len(str(watched_data))>5:
-        watched_jdata = json.loads(watched_data.get())
-        epdict=sortcomma(epdict, watched_jdata)
+        try:watched_jdata = json.loads(watched_data.get())
+        except: watched_jdata=None
+        if watched_jdata: epdict=sortcomma(epdict, watched_jdata)
     for sNumber in seasons:
         pre=prefix(showId=int(showId), seasonId=int(sNumber))
         title=pre+__language__(30138)+' '+str(sNumber)
@@ -846,7 +847,9 @@ class SyncXBMC():
         return shows
 
 def Test():
-    SyncXBMC()
+    #SyncXBMC()
+    RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
+    xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
     pass
 
 params = get_params()
