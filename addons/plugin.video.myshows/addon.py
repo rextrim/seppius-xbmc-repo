@@ -162,10 +162,9 @@ def Seasons(showId):
             epdict[str(jdata['episodes'][id]['seasonNumber'])]=epdict[str(jdata['episodes'][id]['seasonNumber'])]+','+str(jdata['episodes'][id]['id'])
     seasons.sort()
     watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
-    if len(str(watched_data))>5:
-        try:watched_jdata = json.loads(watched_data.get())
-        except: watched_jdata=None
-        if watched_jdata: epdict=sortcomma(epdict, watched_jdata)
+    try:watched_jdata = json.loads(watched_data.get())
+    except: watched_jdata=None
+    if watched_jdata: epdict=sortcomma(epdict, watched_jdata)
     for sNumber in seasons:
         pre=prefix(showId=int(showId), seasonId=int(sNumber))
         title=pre+__language__(30138)+' '+str(sNumber)
@@ -176,7 +175,7 @@ def Seasons(showId):
         if epdict[str(sNumber)]=='': playcount=1
         else: playcount=0
         item.setInfo( type='Video', infoLabels={'Title': title, 'playcount': playcount} )
-        refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
+        refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
