@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.2"
+__version__ = "1.7.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -325,6 +325,8 @@ class Data():
         self.refresh=False
         if refresh_url:
             CacheDB(unicode(refresh_url)).delete()
+            if re.search('profile', refresh_url):
+                CacheDB(unicode('http://api.myshows.ru/profile/episodes/unwatched/')).delete()
         self.url=url
         if self.filename:
             if not xbmcvfs.exists(self.filename) \

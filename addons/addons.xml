@@ -1110,7 +1110,7 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="MyShows.ru"
-       version="1.7.2"
+       version="1.7.3"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
