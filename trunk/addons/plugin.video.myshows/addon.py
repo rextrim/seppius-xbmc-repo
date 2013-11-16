@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.7.2"
+__version__ = "1.7.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -987,7 +987,9 @@ elif mode == 3010:
     if not sort:AskPlay()
     elif sort=='activate':
         xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (jdata['showId']))
-        if not jdata['id']:
+        if action=='download':
+            DownloadSource()
+        elif not jdata['id']:
             ScanSource().scanone()
 elif mode == 3011:
     Source().addjson()

@@ -71,7 +71,7 @@ class NNMClubRu(SearcherABC.SearcherABC):
                 title=data['title'].encode('utf-8', 'ignore')
                 torrentTitle = "%s [%s: %s]" % (title, Localization.localize('Seeds'), seeds)
                 image = sys.modules[ "__main__"].__root__ + self.searchIcon
-                link='http://nnm-club.ru/forum/download.php?id='+re.search('(\d+)$', data['fast_download']).group(1)+'&'+re.search('(\d+)$', data['download']).group(1)
+                link='http://nnm-club.me/forum/download.php?id='+re.search('(\d+)$', data['fast_download']).group(1)+'&'+re.search('(\d+)$', data['download']).group(1)
                 filesList.append((
                     int(int(self.sourceWeight) * int(seeds)),
                     int(seeds),
@@ -88,7 +88,7 @@ class NNMClubRu(SearcherABC.SearcherABC):
         if do_login>1000: cookie = self.login()
         if cookie: sys.modules[ "__main__" ].__settings__.setSetting("nnm-auth", cookie)
 
-        referer = 'http://nnm-club.ru/forum/viewtopic.php?t=' + re.search('(\d+)$', url).group(1)
+        referer = 'http://nnm-club.me/forum/viewtopic.php?t=' + re.search('(\d+)$', url).group(1)
         #print url
         cookie = sys.modules[ "__main__" ].__settings__.getSetting("nnm-auth") + ';'
         localFileName = tempfile.gettempdir() + os.path.sep + self.md5(url)
@@ -103,7 +103,7 @@ class NNMClubRu(SearcherABC.SearcherABC):
 
     def login(self):
         sys.modules[ "__main__" ].__settings__.setSetting("nnm-auth-time", str(int(time.time())))
-        pageContent = self.makeRequest('http://nnm-club.ru/forum/login.php')
+        pageContent = self.makeRequest('http://nnm-club.me/forum/login.php')
         captchaMatch = re.compile('(http://static\.nnm\.org/captcha/\d+/\d+/[0-9a-f]+\.jpg\?\d+).+?name="cap_sid" value="(.+?)".+?name="(cap_code_[0-9a-f]+)"', re.DOTALL).search(pageContent)
         data = {
             'password': 'torrenter',
@@ -120,7 +120,7 @@ class NNMClubRu(SearcherABC.SearcherABC):
             else:
                 return False
         self.makeRequest(
-            'http://nnm-club.ru/forum/login.php',
+            'http://nnm-club.me/forum/login.php',
             data
         )
         for cookie in self.cookieJar:
