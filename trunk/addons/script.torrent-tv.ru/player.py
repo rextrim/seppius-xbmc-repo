@@ -120,7 +120,7 @@ class MyPlayer(xbmcgui.WindowXML):
             return
         
         url = jdata["source"]
-        mode = jdata["type"].upper()
+        mode = jdata["type"].upper().replace("CONTENTID","PID")
         self.parent.hideStatus()
         LogToXBMC('Play torrent')
         self.TSPlayer.play_url_ind(0,li.getLabel(), li.getProperty('icon'), li.getProperty('icon'), torrent = url, mode = mode)
