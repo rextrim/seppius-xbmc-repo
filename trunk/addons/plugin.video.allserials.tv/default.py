@@ -23,6 +23,9 @@ import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
 import urlparse
 
+from StringIO import StringIO
+import gzip
+
 import demjson3 as json
 
 import subprocess, ConfigParser
@@ -60,6 +63,7 @@ def get_HTML(url, post = None, ref = None, get_url = False):
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host',   host)
     request.add_header('Accept', '*/*')
+    request.add_header('Accept-Encoding',	'gzip, deflate')
     request.add_header('Accept-Language', 'ru-RU')
     request.add_header('Referer',             ref)
 
@@ -74,6 +78,9 @@ def get_HTML(url, post = None, ref = None, get_url = False):
     if get_url == True:
         html = f.geturl()
     else:
+        if f.info().get('Content-Encoding') == 'gzip':
+            buf = StringIO( f.read())
+            f = gzip.GzipFile(fileobj=buf)
         html = f.read()
 
     return html
@@ -212,7 +219,6 @@ def Movie_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
-
     # show search dialog
     if par.search == 'Y':
         skbd = xbmc.Keyboard()
@@ -228,7 +234,13 @@ def Movie_List(params):
         url = 'http://allserials.tv/ajax/serials/get-filter/'+par.genre+'/'+par.country+'/0/name'
 
     #== get movie list =====================================================
+    print '-------------------------'
+    print url
+    print '-------------------------'
+
     html = get_HTML(url)
+    print html
+
     soup = BeautifulSoup(html, fromEncoding="utf-8")
 
     # -- parsing web page --------------------------------------------------

@@ -375,7 +375,7 @@ Audio sources are
 
 <addon id="plugin.video.LostFilm"
        name="LostFilm"
-       version="0.3.8"
+       version="0.3.9"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
@@ -432,10 +432,10 @@ Audio sources are
 
 <addon id="plugin.video.allserials.tv"
        name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]allserials.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.5"
+       version="1.0.6"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
