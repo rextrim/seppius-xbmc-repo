@@ -49,6 +49,7 @@ cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
 
 
+
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
     PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
 
@@ -140,7 +141,7 @@ def GET(target, post=None):
 def showMessage(message = '', heading='TorrentTV', times = 3000, pics = addon_icon):
     try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
     except Exception, e:
-        xbmc.log( '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
+        #xbmc.log( '[%s]: showMessage: Transcoding UTF-8 failed [%s]' % (addon_id, e), 2 )
         try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading, message, times, pics))
         except Exception, e:
             xbmc.log( '[%s]: showMessage: exec failed [%s]' % (addon_id, e), 3 )
@@ -207,25 +208,34 @@ def GetScript(params):
 
 dx={
 "1+1": "620",
+"100 ТВ": "382vsetv",
 "2+2": "583",
 "24 Док": "16",
 "24 Техно": "710",
+"24 Украина": "298vsetv",
 "2x2": "323",
 "365 Дней": "250",
 "5 канал (Украина)": "586",
 "8 канал": "217",
+"ab moteurs": "127vsetv",
+"Amedia 1": "895vsetv",
+"Amedia Premium": "896vsetv",
 "Amazing Life": "658",
+"Amedia 2": "918",
 "Animal Planet": "365",
 "Animal Planet HD": "990",
 "A-One": "680",
-#"A-ONE UA": "680",
+"A-ONE UA": "772vsetv",
 "AXN Sci-Fi": "516",
 "SONY Sci-Fi": "516",
+"Sony Sci-Fi": "516",
 "BBC World News": "828",
 "Bridge TV": "151",
+"Business": "386vsetv",
 "Cartoon Network": "601",
 "CBS Drama": "911",
 "CBS Reality": "912",
+"CNN International": "47vsetv",
 "Comedy TV": "51",
 "C Music": "319",
 "Da Vinci Learning": "410",
@@ -235,6 +245,7 @@ dx={
 "Discovery Science": "409",
 "Discovery World": "437",
 "Investigation Discovery Europe": "19",
+"Daring TV": "696vsetv",
 "Discovery HD Showcase": "111",
 "Discowery HD Showcase": "111",
 "Discovery Showcase HD": "111",
@@ -258,16 +269,24 @@ dx={
 "Fox HD": "659",
 "Fox Life": "615",
 "FOX life HD": "464",
+"FOX Life HD": "464",
+"Fox Life HD": "464",
 "France 24": "187",
 "France24": "187",
 "Galaxy TV": "924",
 "Gulli": "810",
+"GLAS": "457vsetv",
 "HD Life": "415",
 "HD Спорт": "429",
 "HD СПОРТ": "429",
+"History Channel": "902vsetv",
+"Hustler TV": "666vsetv",
 "ICTV": "709",
 "JimJam": "494",
 "Kids co": "598",
+"KidsCo": "598",
+"Lale": "911vsetv",
+"Look TV": "726vsetv",
 "Maxxi-TV": "228",
 "MCM Top": "533",
 "MGM": "608",
@@ -276,16 +295,20 @@ dx={
 "Motor TV": "531",
 "Motors TV": "531",
 "Motors Tv": "531",
+"MTV Russia": "1021",
+"MTV Россия": "1021",
+"MTV Ukraina": "353vsetv",
 "MTV Dance": "332",
 "MTV Hits UK": "849",
 "MTV Rocks": "388",
-"MTV Russia": "557",
 "MTV live HD": "382",
 "MTV Live HD": "382",
-"Music Box UA": "25",
+"Music Box UA": "417vsetv",
 "Music Box": "642",
 "Russian Music Box": "25",
 "myZen.tv HD": "141",
+"MyZen TV HD": "141",
+"NBA TV": "790vsetv",
 "Nat Geo Wild": "807",
 "Nat Geo Wild HD": "807",
 "National Geographic": "102",
@@ -297,38 +320,65 @@ dx={
 "Ocean-TV": "55",
 "O-TV": "167",
 "Outdoor HD": "322",
+"Outdoor Channel": "322",
 "Paramount Comedy": "920",
+"Playboy TV": "663vsetv",
+"Private Spice": "143vsetv",
 "QTV": "280",
+"Real Estate-TV": "481vsetv",
 "RTVi": "76",
 "RU TV": "258",
+"Ru Music": "388vsetv",
 "Rusong TV": "591",
 "Russian Travel Guide": "648",
+"SHOPping-TV (Ukraine)": "810vsetv",
 "SET": "311",
 "SET HD": "311",
 "S.E.T": "311",
 "Sony Turbo": "935",
 "Smile of Child": "789",
+"Star TV Ukraine": "513vsetv",
 "STV": "165",
 "Style TV": "119",
 "Style tv": "119",
+"Teen TV": "448vsetv",
 "TiJi": "555",
 "TLC": "425",
+"TLC Europe": "777vsetv",
 "Tonis": "627",
+"Tonis HD": "627",
 "TVCI": "435",
+"TV Rus": "799vsetv",
 "TV 1000": "127",
+"TV1000": "127",
 "TV 1000 Action East": "125",
 "TV 1000 Русское кино": "267",
+"TV1000 Megahit HD": "816vsetv",
+"TV1000 Premium HD": "814vsetv",
+"TV1000 Comedy HD": "818vsetv",
+"Travel Channel": "88vsetv",
+"Travel Channel HD": "690vsetv",
+"Travel+ adventure": "832vsetv",
 "TV XXI (TV21)": "309",
 #"Ukrainian Fashion": "939",
 "Universal Channel": "213",
+"Ukrainian Fashion": "773vsetv",
 "VH1": "491",
 "VH1 Classic": "156",
 "Viasat Explorer": "521",
 "Viasat History": "277",
 "Viasat Nature East": "765",
 "Viasat Sport": "455",
+"VIASAT Sport Baltic": "504vsetv",
+"Viasat Sport Baltic": "504vsetv",
+"Sport Baltic": "504vsetv",
+"Viasat Nature-History HD": "716vsetv",
+"Viasat Nature/History HD": "716vsetv",
 "World Fashion": "346",
+"XSPORT": "748vsetv",
+"XXL": "664vsetv",
 "Zee TV": "626",
+"Zoom": "1009",
 "Авто плюс": "153",
 "Агро тв": "11",
 "Амедиа": "918",
@@ -337,8 +387,14 @@ dx={
 "Беларусь 24": "851",
 "Боец": "454",
 "Бойцовский клуб": "986",
+"БТБ": "877vsetv",
+"БСТ": "272vsetv",
 "Вопросы и ответы": "333",
 "Время": "669",
+"ВТВ": "139vsetv",
+"Гамма": "479vsetv",
+"Глас": "294vsetv",
+"Гумор ТБ": "505vsetv",
 "Детский": "66",
 "Детский мир": "747",
 "Дождь": "384",
@@ -346,10 +402,12 @@ dx={
 "Дом кино": "834",
 "Домашние животные": "520",
 "Домашний": "304",
+"Домашний магазин": "695vsetv",
 "Драйв ТВ": "505",
 "Еврокино": "352",
 "ЕДА": "931",
 "Еда": "931",
+"Еда ТВ": "931",
 "ЕДА HD": "930",
 "Живи": "113",
 "Звезда": "405",
@@ -364,22 +422,32 @@ dx={
 "Зоо ТВ": "273",
 "Зоопарк": "367",
 "Иллюзион+": "123",
+"Искушение": "754vsetv",
 "Индия": "798",
 "Интер": "677",
 "Интер+": "808",
 "Интересное ТВ": "24",
+"Израиль плюс": "532vsetv",
+"История": "879vsetv",
 "К1": "453",
+"К2": "20vsetv",
 "Карусель": "740",
 "Кинопоказ": "22",
 "Комедия ТВ": "821",
+"Комсомольская правда": "852",
 "Кто есть кто": "769",
 "Кто Есть Кто": "769",
+"КРТ": "149vsetv",
+"Киевская Русь": "149vsetv",
 "Кухня ТВ": "614",
+"Культура Украина": "285vsetv",
 "КХЛ ТВ": "481",
 "КХЛ HD": "481",
 "Ля-минор": "257",
 "М1": "632",
+"М2": "445vsetv",
 "Мега": "788",
+"Меню ТВ": "348vsetv",
 "Мир": "726",
 "Мир сериала": "145",
 "Мир Сериала": "145",
@@ -390,14 +458,21 @@ dx={
 "Москва доверие": "655",
 "Музыка Первого": "715",
 "Мужской": "82",
+"Малятко ТВ": "606vsetv",
+"Моя дитина": "761vsetv",
 "Мать и дитя": "618",
 "Мать и Дитя": "618",
 "Мультимания": "31",
+"Муз ТВ": "808vsetv",
+"Надия": "871vsetv",
+"Надiа": "871vsetv",
 "Нано ТВ": "35",
 "Наука 2.0": "723",
 "Наше любимое кино": "477",
+"НЛО ТВ": "843vsetv",
 "Новый канал": "128",
 "Ностальгия": "783",
+"Ночной клуб": "455vsetv",
 "НСТ": "518",
 "НТВ": "162",
 "НТВ Мир": "422",
@@ -412,9 +487,11 @@ dx={
 "НТВ+ Премьера": "566",
 "НТВ+ Баскетбол": "697",
 "НТВ+ Наш футбол": "499",
+"НТВ+ Наш футбол HD": "889vsetv",
 "НТВ+ Спорт": "134",
 "НТВ+СПОРТ": "134",
 "НТВ+ Спорт Онлайн": "183",
+"НТВ+ Спорт онлайн": "183",
 "НТВ+ Спорт Союз": "306",
 "НТВ+ Спорт плюс": "377",
 "НТВ+ Теннис": "358",
@@ -427,6 +504,9 @@ dx={
 "О2 ТВ": "777",
 "Оружие": "376",
 "ОСТ": "926",
+"ОТР": "880vsetv",
+"ОНТ Украина": "111vsetv",
+"Открытый Мир": "692vsetv",
 "Охота и рыбалка": "617",
 "Охотник и рыболов": "132",
 "Парк развлечений": "37",
@@ -441,15 +521,23 @@ dx={
 "Первый образовательный": "774",
 "Перец": "511",
 "Пиксель ТВ": "940",
+"ПлюсПлюс": "24vsetv",
+"Погода ТВ": "759vsetv",
 "Подмосковье": "161",
 "Про все": "458",
+"Pro Все": "458",
+"Про Все": "458",
+"Право ТВ": "861vsetv",
 "Просвещение": "685",
 "Психология 21": "434",
 "Пятый канал": "427",
+"Пятница": "1003",
+"Рада Украина": "823vsetv",
 "Раз ТВ": "363",
 "РАЗ ТВ": "363",
 "РБК": "743",
 "РЕН ТВ": "689",
+"РЕН ТВ (+7)": "572vsetv",
 "РЖД": "509",
 "Ретро ТВ": "6",
 "Россия 1": "711",
@@ -459,27 +547,41 @@ dx={
 "РОССИЯ HD": "984",
 "Россия HD": "984",
 "РТР-Планета": "143",
+"РТР Планета": "143",
 "Русский Бестселлер": "994",
 "Русский иллюзион": "53",
 "Русский роман": "401",
 "Русский экстрим": "406",
+"Русская ночь": "296vsetv",
 "Сарафан ТВ": "663",
 "Сарафан": "663",
+"Сонце": "874vsetv",
 "Спас": "447",
 "Спас ТВ": "447",
 "Спорт 1": "181",
 "Спорт 1 HD": "554",
+"Спорт 1 (Украина)": "270vsetv",
+"Спорт 2 (Украина)": "309vsetv",
 "Совершенно секретно": "275",
 "Союз": "349",
 "СТБ": "670",
-"СТС": "166",
+"СТС": "79",
 "Страна": "284",
 "ТБН": "576",
+"Тбн": "576",
+#"ТБН": "694vsetv",
+"ТНВ-Татарстан": "145vsetv",
+"ТНВ-ТАТАРСТАН": "145vsetv",
+"ТВ-Центр-Международное": "435",
+"ТВ Центр Международный": "435",
 "ТДК": "776",
 "ТВ 3": "698",
+"ТВ 3 (+3)": "845vsetv",
 "TBi": "650",
 "ТВЦ": "649",
 "ТНТ": "353",
+"ТНТ Bravo Молдова": "737vsetv",
+"тнт+4": "557vsetv",
 "Тонус ТВ": "637",
 "Тонус-ТВ": "637",
 "Телекафе": "173",
@@ -487,11 +589,14 @@ dx={
 "Телепутешествия HD": "331",
 "ТЕТ": "479",
 "ТРК Украина": "326",
+"ТРК Киев": "75vsetv",
 "Ukraine": "326",
 "ТРО Союза": "730",
 "ТРО": "730",
 "Успех": "547",
 "Усадьба": "779",
+"Унiан": "740vsetv",
+"УТР": "689vsetv",
 "Феникс+ Кино": "686",
 "Футбол": "328",
 "Футбол (украина)": "666",
@@ -503,69 +608,8 @@ dx={
 "Юмор ТВ": "412",
 "Юмор тв": "412",
 "Юмор BOX": "412",
-"Эгоист ТВ": "431",
-"TV1000 Megahit HD": "816vsetv",
-"TV1000 Premium HD": "814vsetv",
-"TV1000 Comedy HD": "818vsetv",
-"Малятко ТВ": "606vsetv",
-"Моя дитина": "761vsetv",
-"ПлюсПлюс": "24vsetv",
-"A-ONE UA": "772vsetv",
-"Ru Music": "388vsetv",
-"Star TV Ukraine": "513vsetv",
-"М2": "445vsetv",
-"Муз ТВ": "808vsetv",
-"NBA TV": "790vsetv",
-"Спорт 1 (Украина)": "270vsetv",
-"Спорт 2 (Украина)": "309vsetv",
-"Гамма": "479vsetv",
-"К2": "20vsetv",
-"КРТ": "149vsetv",
-"Культура Украина": "285vsetv",
-"УТР": "689vsetv",
-"Унiан": "740vsetv",
-"Travel Channel": "88vsetv",
-"Travel Channel HD": "690vsetv",
-"Travel+ adventure": "832vsetv",
-"Право ТВ": "861vsetv",
 "Эко-ТВ": "685vsetv",
-"24 Украина": "298vsetv",
-"Business": "386vsetv",
-"CNN International": "47vsetv",
-"Погода ТВ": "759vsetv",
-"Рада Украина": "823vsetv",
-"Real Estate-TV": "481vsetv",
-"SHOPping-TV (Ukraine)": "810vsetv",
-"Teen TV": "448vsetv",
-"Ukrainian Fashion": "773vsetv",
-"ВТВ": "139vsetv",
-"Меню ТВ": "348vsetv",
-"НЛО ТВ": "843vsetv",
-"Daring TV": "696vsetv",
-"Hustler TV": "666vsetv",
-"Playboy TV": "663vsetv",
-"Private Spice": "143vsetv",
-"XXL": "664vsetv",
-"Искушение": "754vsetv",
-"Ночной клуб": "455vsetv",
-"Русская ночь": "296vsetv",
-"Глас": "294vsetv",
-"100 ТВ": "382vsetv",
-"БСТ": "272vsetv",
-"GLAS": "457vsetv",
-"Израиль плюс": "532vsetv",
-"ОНТ Украина": "111vsetv",
-"ТРК Киев": "75vsetv",
-"ab moteurs": "127vsetv",
-"Look TV": "726vsetv",
-"Сонце": "874vsetv",
-"ТНТ Bravo Молдова": "737vsetv",
-"тнт+4": "557vsetv",
-"VIASAT Sport Baltic": "504vsetv",
-"Гумор ТБ": "505vsetv",
-"Открытый Мир": "692vsetv",
-"TV Rus": "799vsetv",
-"MTV Ukraina": "353vsetv",
+"Эгоист ТВ": "431",
 }
 
 #####################################       
@@ -678,12 +722,15 @@ def GetChannelsDB (params):
             'func': 'DelFavouriteChannel',
             'id': ch['id']
         })
+        deldb = construct_request({
+            'func': 'DelDB',
+        })
         commands = []
-        #commands.append(('Телепрограмма', 'XBMC.RunPlugin(%s?func=GetScript&id=%s&title=%s)' % (sys.argv[0], ch['id'], ch['name']),))
         if params['group'] != 'favourite':
             commands.append(('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (favouriteuri),))
         commands.append(('[COLOR FFCC3333]Удалить[/COLOR][COLOR FFB77D00] из "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (delfavouriteuri),))
         commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
+        commands.append(('Удалить БД каналов', 'XBMC.RunPlugin(%s)' % (deldb),))
         li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
@@ -708,6 +755,19 @@ def DelFavouriteChannel(params):
     db.DelFavouriteChannel(params['id'])
     showMessage(message = 'Канал удален')
     xbmc.executebuiltin("Container.Refresh")
+    del db
+
+def DelDB(params):
+    db = DataBase(db_name, cookie)
+    #db.RemoveDB()
+    rem = db.RemoveDB()
+    if rem == 0:
+        xbmc.executebuiltin("Container.Refresh")
+        showMessage(message = 'База каналов удалена')
+    elif rem == 1:
+        showMessage(message = 'Не удалось удалить базу каналов')
+    else:
+        showMessage(message = 'База каналов уже удалена')    
     del db
     
 def GetChannelsWeb(params):
@@ -803,11 +863,34 @@ def GetChannelsWeb(params):
     xbmcplugin.endOfDirectory(hos)
 
 def play_ch_db(params):
-    xbmc.executebuiltin('Action(Stop)') 
+    xbmc.executebuiltin('Action(Stop)')
+    try:
+        page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + str(params['id']), data)
+        if page == None:
+            page = GET('http://1ttv.org/torrent-online.php?translation=' + str(params['id']), data)
+            if page == None:
+                showMessage('Torrent TV', 'Сайты не отвечают')
+                return
+        res = re.compile('DateTime = ".*"')
+        res.findall(page)
+        if res:
+            DateTime = res.findall(page)[0].replace('DateTime = ', '').replace('"', '')
+            php = GET('http://www.torrent-tv.ru/calendar.php?date=' + str(int(time.time()))+'453&datetime='+str(DateTime), data)
+        else:
+            print "ERROR getting DateTime"
+    except Exception, e:
+        print 'play_ch_db ERROR: %s' % e
     url = ''
     if params['file'] == '':
+        cookie = ''
+        if os.path.exists(cookiefile):
+            fgetcook = open(cookiefile, 'r')
+            cookie = fgetcook.read()
+            del fgetcook
+        if not cookie:
+            cookie = ''
         db = DataBase(db_name, cookie)
-        url = db.GetUrlsStream(params['id'])
+        url = db.GetUrlsStream(params['id'])            
         if url.__len__() == 0:
             showMessage('Ошибка получения ссылки')
             return
@@ -822,7 +905,7 @@ def play_ch_db(params):
             out = TSPlayer.load_torrent(url,'TORRENT',port=aceport)
         if out == 'Ok':
             TSPlayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-            db = DataBase(db_name, cookie)
+            db = DataBase(db_name, cookie='')
             db.IncChannel(params['id'])
             del db
             TSPlayer.end()
@@ -914,9 +997,13 @@ def GetParts():
     parts = db.GetParts(adult = adult)
     refreshuri = construct_request({
         'func': 'Refreshuri'
-    })    
+    })
+    deldb = construct_request({
+        'func': 'DelDB',
+    })
     commands = []
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
+    commands.append(('Удалить БД каналов', 'XBMC.RunPlugin(%s)' % (deldb),))
     for part in parts:
         li = xbmcgui.ListItem(part['name'])
         li.addContextMenuItems(commands)
@@ -937,9 +1024,13 @@ def Refreshuri(params):
 def mainScreen(params):
     refreshuri = construct_request({
         'func': 'Refreshuri'
-    })    
+    })
+    deldb = construct_request({
+        'func': 'DelDB',
+    })
     commands = []
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
+    commands.append(('Удалить БД каналов', 'XBMC.RunPlugin(%s)' % (deldb),))
     li = xbmcgui.ListItem('[COLOR FFB77D00]ИЗБРАННЫЕ[/COLOR]')
     li.addContextMenuItems(commands)
     uri = construct_request({
@@ -999,7 +1090,7 @@ def mainScreen(params):
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
     GetParts()
     xbmcplugin.endOfDirectory(hos)
-   
+        
 from urllib import unquote, quote, quote_plus
 
 def get_params(paramstring):
@@ -1065,21 +1156,6 @@ def addon_main():
         func = None
         xbmc.log( '[%s]: Primary input' % addon_id, 1 )
 
-        
-        #latest = {'title': 'Последние просмотренные', 'group': 'latest'}
-        #favourite = {'title': 'ИЗБРАННЫЕ', 'group': 'favourite'}
-        #if autostart == "1":
-            #mainScreen(params)
-            #xbmc.executebuiltin('Container.Refresh')
-            #GetChannelsDB(latest)
-            #xbmc.executebuiltin('Container.Refresh')
-        #elif autostart == "2":
-            #mainScreen(params)
-            #xbmc.executebuiltin('Container.Refresh')
-            #xbmc.setResolvedUrl()
-            #GetChannelsDB(favourite)
-            #xbmc.executebuiltin('Container.Refresh')
-        #else:
         mainScreen(params)
     if func != None:
         try:
