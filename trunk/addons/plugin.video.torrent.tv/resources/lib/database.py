@@ -43,18 +43,43 @@ AddChannels = {
     "Discovery HD Showcase": {"group_id": "6", "hd": 1, "adult": 0},
     "Discowery HD Showcase": {"group_id": "6", "hd": 1, "adult": 0},
     "Discovery Showcase HD": {"group_id": "6", "hd": 1, "adult": 0},
-    "ТНТ": {"group_id": "8", "hd": 0, "adult": 0}}
+    "Animal Planet HD": {"group_id": "6", "hd": 1, "adult": 0},
+    "Animal Planet": {"group_id": "6", "hd": 0, "adult": 0},
+    "ТНТ": {"group_id": "8", "hd": 0, "adult": 0},
+    "1+1": {"group_id": "5", "hd": 0, "adult": 0},
+    "2+2": {"group_id": "5", "hd": 0, "adult": 0},
+    "ICTV": {"group_id": "5", "hd": 0, "adult": 0},
+    "Новый канал": {"group_id": "5", "hd": 0, "adult": 0},
+    "СТБ": {"group_id": "5", "hd": 0, "adult": 0},
+    "ТРК Украина": {"group_id": "5", "hd": 0, "adult": 0},
+    "Viasat Explorer": {"group_id": "6", "hd": 0, "adult": 0},
+    "Viasat History": {"group_id": "6", "hd": 0, "adult": 0},
+    "Viasat Nature East": {"group_id": "6", "hd": 0, "adult": 0},
+    "Viasat Sport": {"group_id": "4", "hd": 0, "adult": 0},
+    "Viasat Nature-History HD": {"group_id": "6", "hd": 1, "adult": 0},
+    "Da Vinci Learning": {"group_id": "6", "hd": 0, "adult": 0},
+    "TV 1000 Action East": {"group_id": "3", "hd": 0, "adult": 0},
+    "TV 1000 Русское кино": {"group_id": "3", "hd": 0, "adult": 0},
+    "TV1000": {"group_id": "3", "hd": 0, "adult": 0},
+    "TV1000 Comedy HD": {"group_id": "3", "hd": 1, "adult": 0},
+    "TV1000 Megahit HD": {"group_id": "3", "hd": 1, "adult": 0},
+    "TV1000 Premium HD": {"group_id": "3", "hd": 1, "adult": 0},
+    "Gulli": {"group_id": "1", "hd": 0, "adult": 0},
+    "Зоо ТВ": {"group_id": "6", "hd": 0, "adult": 0},
+    "Кинопоказ": {"group_id": "3", "hd": 0, "adult": 0},
+    "Футбол (украина)": {"group_id": "4", "hd": 0, "adult": 0},
+    "Футбол+ (украина)": {"group_id": "4", "hd": 0, "adult": 0}}
 
 AddURL = {
     "458": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_2+2.acelive",
     "720": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_Viasat%20Sport.acelive"}
 
-def GET(target, post=None, cookie = ""):
+def GET(target, post=None, cookie = None):
     pass
     try:
         req = urllib2.Request(url = target, data = post)
         req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-        if cookie != "":
+        if cookie:
             req.add_header('Cookie', cookie)
             
         resp = urllib2.urlopen(req, timeout=10000)
@@ -191,6 +216,23 @@ class DataBase:
 
             con.commit()
             cur.close()
+
+    def RemoveDB(self):
+        print 'remove channels db'
+        if os.path.exists(self.db_name):
+            try:
+                os.remove(self.db_name)
+                return 0
+            except:
+                try:
+                    xbmc.sleep(250)
+                    os.remove(self.db_name)
+                    return True
+                except Exception, e:
+                    print 'Не удалось удалить старую базу каналов: '+ str(e)
+                    return 1
+        else:
+            return 2
             
     def Connect(self):
         pass
@@ -228,16 +270,16 @@ class DataBase:
         for ch in res:
             torr_link = ''
             try:
-                page = GET('http://torrent-tv.ru/' + ch[1])
+                page = GET('http://torrent-tv.ru/' + ch[1], cookie=self.cookie)
                 if page == None:
-                    page = GET('http://1ttv.org/' + ch[1])
+                    page = GET('http://1ttv.org/' + ch[1], cookie=self.cookie)
                     if page == None:
                         showMessage('Torrent TV', 'Сайты не отвечают')
                 try:
                     torr_link = AddURL[str(ch[0])]
                 except:
                     beautifulSoup = BeautifulSoup(page)
-                    tget = beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
+                    tget = beautifulSoup.find('div', attrs={'class':'tv-player'})
                     m=re.search('http:(.+)"', str(tget))
                     if m:
                         torr_link= m.group(0).split('"')[0]
@@ -271,15 +313,15 @@ class DataBase:
             return torr_link[0]
         else:
             try:
-                page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + id)
+                page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + id, cookie=self.cookie)
                 if page == None:
-                    page = GET('http://1ttv.org/torrent-online.php?translation=' + id)
+                    page = GET('http://1ttv.org/torrent-online.php?translation=' + id, cookie=self.cookie)
                     if page == None:
                         showMessage('Torrent TV', 'Сайты не отвечают')
                 try: torr_link = AddURL[id]
                 except:
                     beautifulSoup = BeautifulSoup(page)
-                    tget = beautifulSoup.find('div', attrs={'class':'tv-player-wrapper'})
+                    tget = beautifulSoup.find('div', attrs={'class':'tv-player'})
                     m=re.search('http:(.+)"', str(tget))
                     if m:
                         torr_link= m.group(0).split('"')[0]
@@ -439,7 +481,6 @@ class DataBase:
 
                     chdict.append({'id': ch['href'][31:], 'name': ch.string, 'url': ch['href'], 'adult': access, 'group_id': gr['href'][17:], 'sheduleurl': '', 'imgurl': '', 'hd': hd})
                     chstr = chstr + ch['href'][31:] + ","
-                    
             chs = beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
             for ch in chs:
                 try:
@@ -452,7 +493,6 @@ class DataBase:
                     except Exception, e:
                         print e
                 except: pass
-                
             grstr = grstr[:grstr.count(grstr)-2]
             chstr = chstr[:chstr.count(chstr)-2]
 
@@ -475,12 +515,11 @@ class DataBase:
             for line in bdgrres:
                 bdgr.append('%s' % line[0])
             newgr = filter(lambda gr: not (gr['id'] in bdgr), grdict)
-            self.cursor.execute('SELECT id, urlstream FROM channels')
+            self.cursor.execute('SELECT id, name, urlstream FROM channels')
             bdchres = self.cursor.fetchall()
             for line in bdchres:
-                bdch.append('%s' % line[0])
-                
-            newch = filter(lambda ch: not (ch['id'] in bdch), chdict)
+                bdch.append('%s' % (unicode(line[0])+line[1]))
+            newch = filter(lambda ch: not ((unicode(ch['id'])+unicode(ch['name'])) in bdch), chdict)
             self.lock.acquire()
             try:
                 for gr in newgr:
@@ -492,7 +531,11 @@ class DataBase:
                         self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
                             ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
                         )
-                    except:pass
+                        self.connection.commit()
+                    except Exception, e:
+                        td = datetime.date.today()
+                        self.cursor.execute('UPDATE channels SET name = "%s", url = "%s", adult = "%s", group_id = "%s", sheduleurl = "%s", addsdate = "%s", imgurl = "%s", hd = "%s" WHERE id = "%s"' % (ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], ch['id']))
+                        self.connection.commit()
                 self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
                 self.connection.commit()
                 self.lock.release()

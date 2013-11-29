@@ -13,6 +13,7 @@ import base64
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.raketa.tv' )
 addon_icon     = __addon__.getAddonInfo('icon')
 addon_id        = __addon__.getAddonInfo('id')
+playlist = __addon__.getSetting('playlist')
 
 def showMessage(message = '', heading='RaketaTV', times = 3000, pics = addon_icon):
     try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
@@ -35,20 +36,6 @@ except ImportError:
             xbmc.log( '[%s]: Error import simplejson. Uses module demjson3' % addon_id, 3 )
         except ImportError:
             xbmc.log( '[%s]: Error import demjson3. Sorry.' % addon_id, 4 )
-
-AddChannels = {
-    "Discovery Channel": {"group_id": "6", "hd": 0, "adult": 0},
-    "Discovery Science": {"group_id": "6", "hd": 0, "adult": 0},
-    "Discovery World": {"group_id": "6", "hd": 0, "adult": 0},
-    "Investigation Discovery Europe": {"group_id": "6", "hd": 0, "adult": 0},
-    "Discovery HD Showcase": {"group_id": "6", "hd": 1, "adult": 0},
-    "Discowery HD Showcase": {"group_id": "6", "hd": 1, "adult": 0},
-    "Discovery Showcase HD": {"group_id": "6", "hd": 1, "adult": 0},
-    "ТНТ": {"group_id": "8", "hd": 0, "adult": 0}}
-
-AddURL = {
-    "458": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_2+2.acelive",
-    "720": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_Viasat%20Sport.acelive"}
 
 def GET(target, post=None, cookie = ""):
     pass
@@ -192,7 +179,24 @@ class DataBase:
 
             con.commit()
             cur.close()
-            
+
+    def RemoveDB(self):
+        print 'remove channels db'
+        if os.path.exists(self.db_name):
+            try:
+                os.remove(self.db_name)
+                return 0
+            except:
+                try:
+                    xbmc.sleep(250)
+                    os.remove(self.db_name)
+                    return True
+                except Exception, e:
+                    print 'Не удалось удалить старую базу каналов: '+ str(e)
+                    return 1
+        else:
+            return 2
+  
     def Connect(self):
         pass
         self.connection = db.connect(database=self.db_name)
@@ -399,83 +403,98 @@ class DataBase:
         self.Disconnect()
 
     def UpdateDB(self):
-        data = GET('http://raketa-tv.com/player/JSON/channels_vip_list.json')
-        data = json.loads(data)
-        grdict = []
-        chdict = []
-        grstr = ""
-        chstr = ""
-        for group in data['types']:
-            if group['id'] != "203":
-                grdict.append({'id': group['id'], 'name': group['title'], 'url': '', 'adult': 0})
-                grstr = grstr + group['id'] + ","
-        for ch in data['channels']:
-            if ch['category_id'] == "203":category_id == "205"
-            else:category_id = ch['category_id']
-            chdict.append({'id': ch['number'], 'name': ch['title'], 'url': '', 'adult': 0, 'group_id': category_id, 'sheduleurl': '', 'imgurl': ch['icon'], 'hd': ch['hd'], 'urlstream': base64.urlsafe_b64decode(ch['id'].replace('?', 'L').replace('|', 'M').encode('utf-8'))})
-            chstr = chstr + ch['number'] + ","
-        grstr = grstr[:grstr.__len__()-1]
-        chstr = chstr[:chstr.__len__()-1]
-        self.lock.acquire()
-        self.Connect()
         try:
-            self.cursor.execute('DELETE FROM groups WHERE id NOT IN (%s)' % grstr)
-            self.cursor.execute('DELETE FROM channels WHERE id NOT IN (%s)' % chstr)
-            self.connection.commit()
-            self.lock.release()
-            #return
-        except Exception, e:
-            print '[DataBase.UpdateDB] Error: %s' % e
-            self.lock.release()
-            self.last_error = e
-            return
+            self.Connect()
+            import time
+            if playlist == "0":
+                data = GET('http://raketa-tv.com/player/JSON/channels_list.json')
+            elif playlist == "1":
+                data = GET('http://raketa-tv.com/player/JSON/channels_authorized_list.json')
+            elif playlist == "2":
+                data = GET('http://raketa-tv.com/player/JSON/channels_vip_list.json')
+            data = json.loads(data)
+            grdict = []
+            chdict = []
+            grstr = ""
+            chstr = ""
+            for group in data['types']:
+                if group['id'] != "203":
+                    grdict.append({'id': group['id'], 'name': group['title'], 'url': '', 'adult': 0})
+                    grstr = grstr + group['id'] + ","
+            for ch in data['channels']:
+                if ch['category_id'] == "203":category_id == "205"
+                else:category_id = ch['category_id']
+                chdict.append({'id': ch['number'], 'name': ch['title'], 'url': '', 'adult': 0, 'group_id': category_id, 'sheduleurl': '', 'imgurl': ch['icon'], 'hd': ch['hd'], 'urlstream': base64.urlsafe_b64decode(ch['id'].replace('?', 'L').replace('|', 'M').encode('utf-8'))})
+                chstr = chstr + ch['number'] + ","
+            grstr = grstr[:grstr.__len__()-1]
+            chstr = chstr[:chstr.__len__()-1]
+            self.lock.acquire()
+            #self.Connect()
+            try:
+                self.cursor.execute('DELETE FROM groups WHERE id NOT IN (%s)' % grstr)
+                self.cursor.execute('DELETE FROM channels WHERE id NOT IN (%s)' % chstr)
+                self.connection.commit()
+                self.lock.release()
+                #return
+            except Exception, e:
+                print '[DataBase.UpdateDB_1] Error: %s' % e
+                self.lock.release()
+                self.last_error = e
+                return
+                    
+            self.cursor.execute('SELECT id FROM groups')
+            bdgrres = self.cursor.fetchall()
+            bdgr = []
+            bdch = []
+            for line in bdgrres:
+                bdgr.append('%s' % line[0])
+            newgr = filter(lambda gr: not (gr['id'] in bdgr), grdict)
+            self.cursor.execute('SELECT id, name, urlstream FROM channels')
+            bdchres = self.cursor.fetchall()
+            for line in bdchres:
+                bdch.append('%s' % (unicode(line[0])+line[1]))
+            newch = filter(lambda ch: not ((unicode(ch['id'])+unicode(ch['name'])) in bdch), chdict)
+            self.lock.acquire()
+            try:
+                for gr in newgr:
+                    self.cursor.execute('INSERT INTO groups (id, name, url, adult) VALUES ("%s", "%s", "%s", "%d");' % (gr['id'], gr['name'], gr['url'], gr['adult']))
                 
-        self.cursor.execute('SELECT id FROM groups')
-        bdgrres = self.cursor.fetchall()
-        bdgr = []
-        bdch = []
-        for line in bdgrres:
-            bdgr.append('%s' % line[0])
-        newgr = filter(lambda gr: not (gr['id'] in bdgr), grdict)
-        self.cursor.execute('SELECT id, urlstream FROM channels')
-        bdchres = self.cursor.fetchall()
-        for line in bdchres:
-            bdch.append('%s' % line[0])
-                
-        newch = filter(lambda ch: not (ch['id'] in bdch), chdict)
-        self.lock.acquire()
-        try:
-            for gr in newgr:
-                self.cursor.execute('INSERT INTO groups (id, name, url, adult) VALUES ("%s", "%s", "%s", "%d");' % (gr['id'], gr['name'], gr['url'], gr['adult']))
-            
-            for ch in newch:
-                try:
-                    td = datetime.date.today()
-                    self.cursor.execute('INSERT INTO channels (id, name, urlstream, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
-                        ch['id'], ch['name'], ch['urlstream'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
-                    )
-                except:pass
-            self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
-            self.connection.commit()
-        except Exception, e:
-            print '[DataBase.UpdateDB] Error: %s' % e
-            self.lock.release()
-            self.last_error = e
+                for ch in newch:
+                    try:
+                        td = datetime.date.today()
+                        self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
+                            ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
+                        )
+                        self.connection.commit()
+                    except Exception, e:
+                        td = datetime.date.today()
+                        self.cursor.execute('UPDATE channels SET name = "%s", url = "%s", adult = "%s", group_id = "%s", sheduleurl = "%s", addsdate = "%s", imgurl = "%s", hd = "%s" WHERE id = "%s"' % (ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], ch['id']))
+                        self.connection.commit()
+                self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
+                self.connection.commit()
+                self.lock.release()
+            except Exception, e:
+                print '[DataBase.UpdateDB_2] Error: %s' % e
+                self.lock.release()
+                self.last_error = e
 
-        try:
-            for ch in chdict:
-                try:
-                    td = datetime.date.today()
-                    self.cursor.execute('UPDATE channels SET urlstream = "%s" WHERE id = "%s"' % (
-                        ch['urlstream'], ch['id'])
-                    )
-                except:pass
-            self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
-            self.connection.commit()
-            self.lock.release()
+            try:
+                for ch in chdict:
+                    try:
+                        td = datetime.date.today()
+                        self.cursor.execute('UPDATE channels SET urlstream = "%s" WHERE id = "%s"' % (
+                            ch['urlstream'], ch['id'])
+                        )
+                    except:pass
+                self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
+                self.connection.commit()
+                #self.lock.release()
+            except Exception, e:
+                print '[DataBase.UpdateDB_3] Error: %s' % e
+                self.last_error = e
+                return
         except Exception, e:
-            print '[DataBase.UpdateDB] Error: %s' % e
-            self.lock.release()
             self.last_error = e
-            return
-        
+            xbmc.log('ERROR [DataBase]: %s' % e)
+
+            

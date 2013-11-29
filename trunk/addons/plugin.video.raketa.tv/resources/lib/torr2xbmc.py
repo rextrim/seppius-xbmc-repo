@@ -20,6 +20,7 @@ import base64
 import time
 from database import DataBase
 import cookielib
+import webbrowser
 hos = int(sys.argv[1])
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.raketa.tv' )
@@ -43,6 +44,7 @@ prog_b = __addon__.getSetting('prog_b')
 prog_str = __addon__.getSetting('prog_str')
 ch_i = __addon__.getSetting("ch_i")
 prog_i = __addon__.getSetting('prog_i')
+playlist = __addon__.getSetting('playlist')
 
 aceport=62062
 cookie = ""
@@ -56,7 +58,13 @@ if (sys.platform == 'win32') or (sys.platform == 'win64'):
     
 PROGRAM_SOURCE_PATH = os.path.join( PLUGIN_DATA_PATH , "%s_inter-tv.zip"  % datetime.date.today().strftime("%W") )
     
-db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase.db')
+if playlist == "0":
+    db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase.db')
+elif playlist == "1":
+    db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase_a.db')
+elif playlist == "2":
+    db_name = os.path.join(PLUGIN_DATA_PATH, 'tvbase_vip.db')
+    
 cookiefile = os.path.join(PLUGIN_DATA_PATH, 'cookie.txt')
 xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 
@@ -131,6 +139,7 @@ def GetCookie(target, post=None):
         resp1 = urllib2.urlopen('http://raketa-tv.com/connect')
         http1=resp1.read()
         resp1.close()
+        #print http1
         beautifulSoup = BeautifulSoup(http1)
         channels=beautifulSoup.findAll('input', attrs={'type': 'hidden'})
         ct=""
@@ -140,12 +149,19 @@ def GetCookie(target, post=None):
             '_csrf_token' : ct,
             '_username' : login,
             '_password' : passw,
-            '_submit' : 1
+            '_remember_me' : 'on',
+            '_submit' : '%D0%92%D0%BE%D0%B9%D1%82%D0%B8'
         })
+        #print "target---- "+target
         req = urllib2.Request(url = target, data = post)
         req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
         resp = urllib2.urlopen(req)
+        #print "ct4--- "+str(ct)
         http=resp.read()
+        #req1 = urllib2.Request(url = 'http://raketa-tv.com/watch', data = post)
+        #req1.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+        #resp1 = urllib2.urlopen('http://raketa-tv.com/watch')
+        #print http
         if not http.find('Вход') > 1:
             showMessage('Raketa TV', 'Успешная авторизация', 10000)
             for cookie in cj:
@@ -163,7 +179,7 @@ def UpdCookie():
     if os.path.exists(cookiefile):
         os.remove(cookiefile)
     out = open(cookiefile, 'w')
-    co = GetCookie('http://raketa-tv.com/login_check', None)
+    co = GetCookie('https://raketa-tv.com/login_check', None)
     if co == None:
         showMessage('Raketa TV', 'Ошибка подключения')
         return None
@@ -301,6 +317,7 @@ dx={
 "National Geographic": "102",
 "National Geographic HD": "389",
 "News One": "247",
+"NEWS ONE": "247",
 "Nick Jr.": "917",
 "nick jr.": "917",
 "Nickelodeon": "567",
@@ -309,6 +326,7 @@ dx={
 "nickelodeon HD": "423",
 "Ocean-TV": "55",
 "O-TV": "167",
+"OTV": "167",
 "Outdoor HD": "322",
 "Paramount Comedy": "920",
 "QTV": "280",
@@ -322,6 +340,8 @@ dx={
 "S.E.T": "311",
 "Sony Turbo": "935",
 "sony turbo": "935",
+"SONY Sci-Fi": "516",
+"Sony Sci-Fi": "516",
 "Smile of Child": "789",
 "Улыбка Ребенка": "789",
 "STV": "165",
@@ -353,6 +373,8 @@ dx={
 "World Fashion": "346",
 "World Fashion Channel": "346",
 "Zee TV": "626",
+"Zoo TV": "273",
+"Zoom": "1009",
 "Авто плюс": "153",
 "Авто Плюс": "153",
 "Агро тв": "11",
@@ -401,6 +423,7 @@ dx={
 "Интересное ТВ": "24",
 "К1": "453",
 "K 1 Украина": "453",
+"K1 Украина": "453",
 "Карусель": "740",
 "Кинопоказ": "22",
 "Комедия ТВ": "821",
@@ -499,6 +522,7 @@ dx={
 "Про все": "458",
 "Просвещение": "685",
 "Психология 21": "434",
+"Пятница": "1003",
 "Пятый канал": "427",
 "Пятый Канал": "427",
 "Раз ТВ": "363",
@@ -537,7 +561,7 @@ dx={
 "Союз": "349",
 "СТБ": "670",
 "СТБ Украина": "670",
-"СТС": "166",
+"СТС": "79",
 "Страна": "284",
 "ТБН": "576",
 "ТДК": "776",
@@ -562,6 +586,7 @@ dx={
 "Успех": "547",
 "Усадьба": "779",
 "Феникс+ Кино": "686",
+"Феникс Кино Плюс": "686",
 "Футбол": "328",
 "Телеканал Футбол": "328",
 "Футбол (украина)": "666",
@@ -602,6 +627,7 @@ dx={
 "Travel Channel": "88vsetv",
 "Travel Channel HD": "690vsetv",
 "Travel Adventure": "832vsetv",
+"TravelAdventure": "832vsetv",
 "Право ТВ": "861vsetv",
 "Эко-ТВ": "685vsetv",
 "24 Украина": "298vsetv",
@@ -639,6 +665,9 @@ dx={
 "VIASAT Sport Baltic": "504vsetv",
 "Гумор ТБ": "505vsetv",
 "Открытый Мир": "692vsetv",
+"100 ТВ": "382vsetv",
+"100ТВ": "382vsetv",
+"Viasat Nature HD \ History HD": "716vsetv",
 "MTV Ukraina": "353vsetv",
 "MTV Ukraine": "353vsetv",
 }
@@ -755,11 +784,15 @@ def GetChannelsDB (params):
             'func': 'DelFavouriteChannel',
             'id': ch['id']
         })
+        deldb = construct_request({
+            'func': 'DelDB',
+        })
         commands = []
         if params['group'] != 'favourite':
             commands.append(('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (favouriteuri),))
         commands.append(('[COLOR FFCC3333]Удалить[/COLOR][COLOR FFB77D00] из "ИЗБРАННЫЕ"[/COLOR]', 'XBMC.RunPlugin(%s)' % (delfavouriteuri),))
         commands.append(('Удалить канал', 'XBMC.RunPlugin(%s)' % (deluri),))
+        commands.append(('Удалить БД каналов', 'XBMC.RunPlugin(%s)' % (deldb),))
         li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
@@ -786,9 +819,22 @@ def DelFavouriteChannel(params):
     showMessage(message = 'Канал удален')
     xbmc.executebuiltin("Container.Refresh")
     del db
-    
+
+def DelDB(params):
+    db = DataBase(db_name, cookie)
+    #db.RemoveDB()
+    rem = db.RemoveDB()
+    if rem == 0:
+        xbmc.executebuiltin("Container.Refresh")
+        showMessage(message = 'База каналов удалена')
+    elif rem == 1:
+        showMessage(message = 'Не удалось удалить базу каналов')
+    else:
+        showMessage(message = 'База каналов уже удалена')    
+    del db
+
 def play_ch_db(params):
-    xbmc.executebuiltin('Action(Stop)') 
+    xbmc.executebuiltin('Action(Stop)')
     url = ''
     if params['file'] == '':
         db = DataBase(db_name, cookie='')
@@ -866,9 +912,13 @@ def GetParts():
     parts = db.GetParts(adult = adult)
     refreshuri = construct_request({
         'func': 'Refreshuri'
-    })    
+    })
+    deldb = construct_request({
+        'func': 'DelDB',
+    })
     commands = []
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
+    commands.append(('Удалить БД каналов', 'XBMC.RunPlugin(%s)' % (deldb),))
     for part in parts:
         li = xbmcgui.ListItem(part['name'])
         li.addContextMenuItems(commands)
@@ -879,18 +929,24 @@ def GetParts():
         xbmcplugin.addDirectoryItem(hos, uri, li, True)
 
 def Refreshuri(params):
+    db = DataBase(db_name, cookie)
     showMessage('Raketa TV', 'Производится обновление плейлиста')
     db = DataBase(db_name, cookie='')
     db.UpdateDB()
     xbmc.executebuiltin('Container.Refresh')
     showMessage('Raketa TV', 'Обновление плейлиста выполнено')
+    del db
 
 def mainScreen(params):
     refreshuri = construct_request({
         'func': 'Refreshuri'
-    })    
+    })
+    deldb = construct_request({
+        'func': 'DelDB',
+    })
     commands = []
     commands.append(('Обновить список каналов', 'XBMC.RunPlugin(%s)' % (refreshuri),))
+    commands.append(('Удалить БД каналов', 'XBMC.RunPlugin(%s)' % (deldb),))
     li = xbmcgui.ListItem('[COLOR FFB77D00]ИЗБРАННЫЕ[/COLOR]')
     li.addContextMenuItems(commands)
     uri = construct_request({

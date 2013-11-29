@@ -20,6 +20,6 @@
 		<setting id="ch_i" type="bool" label="Выделить курсивом канал" default="false"/>
 		<setting id="prog_i" type="bool" label="Выделить курсивом программу" default="false"/>
 		<setting id="prog_str" type="bool" label="Канал и программа в одну строку" default="false"/>
-		<!--setting id="autostart" type="enum" values="Нет|Последние просмотренные|Избранные" label="Автозапуск категории" default="Нет" /-->
+		<setting id="autostart" type="enum" values="Нет|Последние просмотренные|Избранные" label="Автозапуск категории" default="Нет" />
 	</category>
 </settings>

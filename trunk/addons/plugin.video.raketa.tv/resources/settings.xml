@@ -2,7 +2,10 @@
 <settings>
 	<category label="Настройки">
 		<setting id="port_path" type="file" label="Местонахождение файла acestream.port" default="" />
+		<!--setting id="login" type="text" label="Логин" default="" /-->
+		<!--setting id="password" type="text" label="Пароль" option="hidden" default="" /-->
 		<setting id="logopack" type="bool" label="Использовать внешние лого" default="false"/>
+		<setting id="playlist" type="enum" values="Неавторизированный|Авторизированный|VIP" label="Выбор плейлиста" default="Неавторизированный"/>
 	</category>
 	<category label="Настройки программы">
 		<setting id="fanart" type="bool" label="Скрыть фоновую картинку" default="false"/>
@@ -16,6 +19,5 @@
 		<setting id="ch_i" type="bool" label="Выделить курсивом канал" default="false"/>
 		<setting id="prog_i" type="bool" label="Выделить курсивом программу" default="false"/>
 		<setting id="prog_str" type="bool" label="Канал и программа в одну строку" default="false"/>
-		<!--setting id="autostart" type="enum" values="Нет|Последние просмотренные|Избранные" label="Автозапуск категории" default="Нет" /-->
 	</category>
 </settings>
