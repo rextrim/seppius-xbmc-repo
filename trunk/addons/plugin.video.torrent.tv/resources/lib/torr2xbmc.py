@@ -44,6 +44,7 @@ prog_b = __addon__.getSetting('prog_b')
 prog_str = __addon__.getSetting('prog_str')
 ch_i = __addon__.getSetting("ch_i")
 prog_i = __addon__.getSetting('prog_i')
+archive = __addon__.getSetting('archive')
 aceport=62062
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
@@ -301,6 +302,7 @@ dx={
 "MTV Dance": "332",
 "MTV Hits UK": "849",
 "MTV Rocks": "388",
+"MTV Music": "430",
 "MTV live HD": "382",
 "MTV Live HD": "382",
 "Music Box UA": "417vsetv",
@@ -788,7 +790,7 @@ def GetChannelsWeb(params):
         link =ch.find('a')['href']
         title= ch.find('strong').string.encode('utf-8').replace('\n', '').strip()
         img='http://torrent-tv.ru/'+ch.find('img')['src']
-        if __addon__.getSetting('logopack'):
+        if __addon__.getSetting('logopack') == "true":
             logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
             logo_src = os.path.join(logo_path, ch.find('strong').string.replace('\n', '').replace('  ', '') + '.png')
             if os.path.exists(logo_src):
@@ -862,6 +864,106 @@ def GetChannelsWeb(params):
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
 
+def GetArchive(params):
+    #date = datetime.datetime.now().timetuple()
+    #title = str(date.tm_mday) + '-' + str(date.tm_mon) + '-'  + str(date.tm_year)
+    http = GET('http://torrent-tv.ru/' + params['file'])#+'?data='+title)
+    if http == None:
+        http = GET('http://1ttv.org/' + params['file'])
+        if http == None:
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
+    beautifulSoup = BeautifulSoup(http)
+    channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
+    for ch in channels:
+        link =ch.find('a')['href']
+        title= ch.find('strong').string.encode('utf-8').replace('\n', '').strip()
+        img='http://torrent-tv.ru/'+ch.find('img')['src']
+        if __addon__.getSetting('logopack') == "true":
+            logo_path = os.path.join(PLUGIN_DATA_PATH, 'logo')
+            logo_src = os.path.join(logo_path, ch.find('strong').string.replace('\n', '').replace('  ', '') + '.png')
+            if os.path.exists(logo_src):
+                img = logo_src
+        if ch_b == "true":
+            if ch_i == "true": title = "[I][B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B][/I]"
+            else: title = "[B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B]"
+        else:
+            if ch_i == "true": title = "[I][COLOR FF"+ch_color+"]" + title + "[/COLOR][/I]"
+            else: title = "[COLOR FF"+ch_color+"]" + title + "[/COLOR]"
+        li = xbmcgui.ListItem(title, title, img, img)
+        startTime = time.localtime()
+        endTime = time.localtime()
+        li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': endTime.tm_year})
+        uri = construct_request({
+                'func': 'getArchiveCalendar',
+                'img':img.encode('utf-8'),
+                'title':title,
+                'file':link
+        })
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+
+def getArchiveCalendar(params):
+    res = re.compile('&data=.*')
+    res.findall(params['file'])
+    if res:
+        date_site = res.findall(params['file'])[0].replace('&data=', '')
+        #print date_site
+        dt = datetime.datetime.fromtimestamp(time.mktime(time.strptime(date_site, '%d-%m-%Y')))
+        #print dt
+    for i in range(int(archive)):
+        #date = datetime.datetime.now() - datetime.timedelta(days=i)
+        date = dt - datetime.timedelta(days=i)
+        date = date.timetuple()
+        title = str(date.tm_mday) + '-' + str(date.tm_mon) + '-'  + str(date.tm_year)
+        li = xbmcgui.ListItem(title)
+        uri = construct_request({
+            'func': 'getArchiveDate',
+            'date': title,
+            'file': params['file'],
+            'img': params['img'],
+        })
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+    
+def getArchiveDate(params):
+    date = datetime.datetime.now().timetuple()
+    title = str(date.tm_mday) + '-' + str(date.tm_mon) + '-'  + str(date.tm_year)
+    http = GET('http://torrent-tv.ru/' + params['file'].replace(title,params['date']))
+    if http == None:
+        http = GET('http://1ttv.org/' + params['file'].replace(title,params['date']))
+        if http == None:
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
+    beautifulSoup = BeautifulSoup(http)
+    channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels'})
+    search = channels[0].findAll('p')
+    for ch in search:
+        if not ch.find('strong'): continue
+        link =str(ch.find('a')['href']).replace('\n', '').strip()
+        title= str(ch.find('a').string.encode('utf-8').replace('\n', '')).strip()
+        time_title = str(ch.find('strong')).replace('&ndash;', '').replace('\n', '').replace('<strong>', '').replace('</strong>', '').strip()
+        img = params['img']
+        if prog_b == "true":
+            if prog_i == "true": title = "[I][B][COLOR FF"+prog_color+"]" + time_title + ' - ' + title + "[/COLOR][/B][/I]"
+            else: title = "[B][COLOR FF"+prog_color+"]" + time_title + ' - ' + title + "[/COLOR][/B]"
+        else:
+            if prog_i == "true": title = "[I][COLOR FF"+prog_color+"]" + time_title + ' - ' + title + "[/COLOR][/I]"
+            else: title = "[COLOR FF"+prog_color+"]" + time_title + ' - ' + title + "[/COLOR]"
+        li = xbmcgui.ListItem(title, title, img, img)
+        startTime = time.localtime()
+        endTime = time.localtime()
+        li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': endTime.tm_year})
+        uri = construct_request({
+                'func': 'play_ch_web',
+                'img':img,
+                'title':title,
+                'file':link
+        })
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+
+    
 def play_ch_db(params):
     xbmc.executebuiltin('Action(Stop)')
     try:
@@ -910,35 +1012,15 @@ def play_ch_db(params):
             del db
             TSPlayer.end()
             xbmc.executebuiltin('Container.Refresh')
-            #showMessage('Torrent', 'Stop')
             return
         else:
-            #TSPlayer.end()
-            #url = ''
-            #if params['file'] == '':
             db = DataBase(db_name, cookie)
             showMessage('Torrent', 'Обновление торрент-ссылки')
             url = db.UpdateUrlsStream([params['id']])
-            #newlink = UpdateChannelsDB(params['id'])
-            #print 'newlink---'+str(newlink)
-            #pos = xbmc.getInfoLabel('Container.Position')
-            #print 'pos---'+str(pos)
             xbmc.executebuiltin('Container.Refresh')
             return
-            #xbmcgui.ListItem.
-            #print 'UpdateChannelsDB----' + str(url[0]['urlstream'])
-            #if url.__len__() == 0:
-                #showMessage('Ошибка получения ссылки')
-                #return
             url = url[0]['urlstream']
-            #print 'url---'+str(url)
-                #del db
-            #else:
-                #url = params['file']
-                #showMessage('Torrent', 'Обновление торрент-ссылки')
-                #time.sleep(20)
             if url != '':
-                #TSPlayer = tsengine()
                 out = None
                 if url.find('http://') == -1:
                     print 'TS PID---'+str(url)
@@ -954,7 +1036,6 @@ def play_ch_db(params):
                     db.IncChannel(params['id'])
                     del db
                     TSPlayer.end()
-                    #showMessage('Torrent', 'Stop')
                     return
   
 def play_ch_web(params):
@@ -1085,6 +1166,15 @@ def mainScreen(params):
         'func': 'GetChannelsWeb',
         'title': 'Трансляции',
         'file': 'translations.php'
+    })
+    li.addContextMenuItems(commands)
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('[COLOR FF6495ED]Архив[/COLOR]')
+    li.addContextMenuItems(commands)
+    uri = construct_request({
+        'func': 'GetArchive',
+        'title': 'Архив',
+        'file': 'tv-archive.php'
     })
     li.addContextMenuItems(commands)
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
