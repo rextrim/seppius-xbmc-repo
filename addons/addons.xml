@@ -1154,8 +1154,8 @@ Audio sources are
 
 <addon id="plugin.video.nowfilms.ru"
        name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FF00FFFF]Now[/COLOR][COLOR FFFF0040]Films.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.6"
-       provider-name="Silen, akgdrg">
+       version="1.0.7"
+       provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
   </requires>
@@ -1165,7 +1165,7 @@ Audio sources are
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>my-hit.ru</summary>
+    <summary>NowFilms.ru</summary>
     <description>Медиапортал [COLOR FF00FFFF]Now[/COLOR][COLOR FFFF0040]Films.ru[/COLOR] - фильмы, сериалы.</description>
     <platform>all</platform>
   </extension>
