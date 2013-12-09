@@ -8,5 +8,7 @@
         <setting label="30651" type="lsep"/>
     	<setting id="use_page" type="bool"  label="Разбивать список на страницы"    default="true"/>
 	<setting id="page_size" type="slider" label="Кол-во сериалов на странице" default="20" range="5,5,100" option="int"/>
+	<setting label="30651" type="lsep"/>
+    	<setting id="xbmc_keyboard" type="bool"  label="Использовать XBMC клавиатуру"    default="false"/>
 
 </settings>

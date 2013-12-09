@@ -178,8 +178,13 @@ class MainScreen(xbmcgui.WindowXML):
 
     if controlId == 151: #-- Search by serial name
       try:
+          #-- if standard XBMC keyboard is selected
+          if self.Auth.Addon.getSetting('xbmc_keyboard') == 'true':
+            kb = xbmc.Keyboard()
+            kb.setHeading('Поиск по имени сериала')
+          else:
+            kb = RussianKeyboard.Keyboard(self.Auth.Addon, self.search, 'Поиск по имени сериала')
 
-          kb = RussianKeyboard.Keyboard(self.Auth.Addon, self.search, 'Поиск по имени сериала')
           kb.doModal()
           if kb.isConfirmed():
             text = kb.getText()
