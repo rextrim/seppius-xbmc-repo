@@ -82,7 +82,15 @@ class Info:
 def get_HTML(url, post = None, ref = None):
     request = urllib2.Request(url, post)
 
-    host = urlparse.urlsplit(url).hostname
+    try:
+        host = urlparse.urlsplit(url).hostname
+        if host==None:
+            host = url.replace('http://', '').split('/')[0]
+            if host==None:
+                host = 'nowfilms.ru'
+    except:
+        host = 'nowfilms.ru'
+
     if ref==None:
         ref='http://'+host
 
@@ -446,7 +454,7 @@ def Get_PlayList(url, name):
 				video = rec.split('=',1)[1]
 			#if rec.split('=',1)[0] == 'st':
 				#video = rec.split('=',1)[1]
-		if video <> '': 
+		if video <> '':
 			if video[-3:] == 'txt':
 				html = get_HTML(video)
 				html = html.replace('\n', '')
@@ -481,6 +489,9 @@ def Genre_List(params):
         if rec.text == u'Фильмы онлайн':
             break
         url      = rec['href']
+        if url[0]=='/':
+            url = 'http://nowfilms.ru'+url
+
         name     = rec.text.encode('utf-8')
 
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
