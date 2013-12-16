@@ -26,7 +26,7 @@ sys.path.append(os.path.join(addon.getAddonInfo('path'), 'resources', 'lib'))
 
 PLUGIN_ID = 'plugin.video.SHURA.TV'
 
-__settings__ = xbmcaddon.Addon(id=PLUGIN_ID)
+__settings__ = xbmcaddon.Addon()
 
 import iptv
 import datetime, time
