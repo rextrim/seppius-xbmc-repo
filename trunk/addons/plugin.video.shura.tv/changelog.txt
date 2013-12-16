@@ -63,3 +63,5 @@ New icon for Sony Sci-Fi
 Several new icons
 [B]0.9.9[/B]
 Added option in settings to choose server UK or GER
+[B]1.0.0[/B]
+Updated addon to fullfill the reuirements for XBMC 13: "Dependencies not met" error during update
