@@ -1497,7 +1497,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.shura.tv"
        name="Shura.TV"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="AKGDRG">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1508,9 +1508,10 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
+	<platform>all</platform>
+    <license>GPL 2.0</license>
     <summary>Онлайн-телевидение SHURA.TV</summary>
     <description>Онлайн-телевидение SHURA.TV: 100 русскоязычных каналов от 0 евро в месяц. EPG + Aрхив</description>
-    <platform>all</platform>
   </extension>
 </addon>
 
