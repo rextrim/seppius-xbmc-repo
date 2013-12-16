@@ -143,7 +143,6 @@ def Get_Parameters(params):
 
 # ----- search on site --------------------------------------------------------
 def get_Search_HTML(search_str):
-    print search_str
     url = 'http://nowfilms.ru/index.php?do=search'
     str = search_str.decode('utf-8').encode('windows-1251')
 
@@ -293,7 +292,6 @@ def Movie_List(params):
             for rec in soup.findAll('div', {'class':'full'}):
                 if rec.find('div', {'class':'full2'}).find('a'):
                     mi.url = rec.find('div', {'class':'full2'}).find('a')['href']
-                    print mi.url
                     if '/music/' in mi.url or '/play/' in mi.url or '/soft/' in mi.url:
                         continue
 
@@ -431,14 +429,12 @@ def Source_List(params):
     xbmcplugin.endOfDirectory(h)
 
 def Get_PlayList(url, name):
-	print url
-
 	html = get_HTML(url)
+	print url
 
 	list = []
 	# -- parsing web page --------------------------------------------------
 	soup = BeautifulSoup(html, fromEncoding="windows-1251")
-	#xbmc.log('[NOWFILMS.RU html=]'+str(soup))
 	# -- get movie info
 	allResults = soup.findAll('param', attrs={'name': 'flashvars'})
 
@@ -467,7 +463,7 @@ def Get_PlayList(url, name):
 						for rec1 in rec['playlist']:
 							list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
 					except:
-						list.append({'name': rec['comment'], 'url': rec['file']})
+						list.append({'name': rec['comment'].replace('<br>',' '), 'url': rec['file']})
 			else:
 				list.append({'name': name, 'url': video})
 
@@ -528,16 +524,16 @@ def Type_List(params):
 
     for rec in soup.find("div", {"class":"header_menu"}).findAll('a', {"href":re.compile("/films|/dokumentalnyy|/multfilm|/anime|/serial")}):
         if rec.text <> u'Видео':
-            name = rec.text.encode('utf-8')
-            url  = rec['href']
+			name = rec.text.encode('utf-8')
+			url  = rec['href']
 
-            i = xbmcgui.ListItem('[COLOR FFFFCC33]'+name+'[/COLOR]', iconImage=icon, thumbnailImage=icon)
-            u = sys.argv[0] + '?mode=MOVIE'
-            u += '&name=%s'%urllib.quote_plus(name)
+			i = xbmcgui.ListItem('[COLOR FFFFCC33]'+name+'[/COLOR]', iconImage=icon, thumbnailImage=icon)
+			u = sys.argv[0] + '?mode=MOVIE'
+			u += '&name=%s'%urllib.quote_plus(name)
             #-- filter parameters
-            u += '&page=%s'%urllib.quote_plus('1')
-            u += '&url=%s'%urllib.quote_plus(url)
-            xbmcplugin.addDirectoryItem(h, u, i, True)
+			u += '&page=%s'%urllib.quote_plus('1')
+			u += '&url=%s'%urllib.quote_plus(url)
+			xbmcplugin.addDirectoryItem(h, u, i, True)
 
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.endOfDirectory(h)
@@ -609,11 +605,37 @@ def get_params(paramstring):
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
+
+def Initialize():
+
+    url = 'http://nowfilms.ru/index.php'
+    html = get_HTML(url)
+
+    login       = Addon.getSetting('Login')
+    password    = Addon.getSetting('Password')
+
+	#if login == None:
+	#	return
+
+    values = {
+          'login'	      :  'submit',
+          'login_name'	  :  login,
+          'login_password':  password
+        }
+
+    post = urllib.urlencode(values)
+    html = get_HTML(url, post)
+
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
 # get cookies from last session
 cj = cookielib.MozillaCookieJar(fcookies)
+try:
+	cj.load(fcookies, True, True)
+except:
+	pass
+
 hr  = urllib2.HTTPCookieProcessor(cj)
 opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
@@ -626,6 +648,7 @@ mode = None
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
+	Initialize()
 	Type_List(params)
 
 if mode == 'MOVIE':
@@ -633,10 +656,10 @@ if mode == 'MOVIE':
 if mode == 'SOURCE':
 	Source_List(params)
 elif mode == 'GENRES':
-    Genre_List(params)
+	Genre_List(params)
 elif mode == 'EMPTY':
-    Empty()
+	Empty()
 elif mode == 'PLAY':
 	PLAY(params)
 
-
+cj.save(fcookies, True, True)
