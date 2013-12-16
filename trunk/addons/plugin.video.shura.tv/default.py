@@ -432,7 +432,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 						except Exception, e:
 							xbmc.log('[SHURA.TV] exception i prepare EPG' + str(e))
 						archive_days=' Архив='.decode('utf-8')
-						archive_days= archive_days + str(int(channel['archive'])/24) +' дня'.decode('utf-8')
+						archive_days= archive_days + str(int(channel['archive'])/24) +' дней'.decode('utf-8')
 						label = '%s[B] %s[/B] %s %s' % ('', channel['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') + ', '+str(int(played)), '%,'+ archive_days)
 						iconimage=gettbn(formating(channel['name']))
 						item=xbmcgui.ListItem(channel['name'], iconImage = iconimage, thumbnailImage = iconimage)
@@ -522,7 +522,7 @@ else:
 	SID = None
 	SID_NAME = None
 
-PLUGIN_CORE = iptv.shura(OTT, __settings__.getSetting('stream_type'))
+PLUGIN_CORE = iptv.shura(OTT, __settings__.getSetting('stream_type'), __settings__.getSetting('server'))
 
 dc={"1 канал" : "001", "1+1" : "002"}
 try:
