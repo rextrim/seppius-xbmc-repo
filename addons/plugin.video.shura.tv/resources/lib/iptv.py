@@ -97,7 +97,7 @@ else:
 		
 class shura:
 	
-	def __init__(self, OTT, StreamType, addonid = ''):
+	def __init__(self, OTT, StreamType, ServerName, addonid = ''):
 		
 		if not addonid:
 			addonid = os.path.basename(__file__)
@@ -111,6 +111,10 @@ class shura:
 		self.last_settings = None
 		self.auto_timezone = False
 		self.StreamType= StreamType
+		if ServerName=='UK':
+			self.ServerName=1
+		else:
+			self.ServerName=3
 		
 		self.last_list = None
 		self.last_epg = {}
@@ -165,7 +169,7 @@ class shura:
 	
 	def getChannelsList(self):
 		
-		url = 'http://pl.tvshka.net/?uid='+self.OTT +'&type=xml'
+		url = 'http://pl.tvshka.net/?uid='+self.OTT +'&srv='+str(self.ServerName)+'&type=xml'
 		xbmc.log('requested url='+url)
 		
 		req = urllib2.Request(url, data = None)

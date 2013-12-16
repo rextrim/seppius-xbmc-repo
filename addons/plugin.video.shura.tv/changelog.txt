@@ -61,3 +61,5 @@ New icons
 New icon for Sony Sci-Fi
 [B]0.9.8[/B]
 Several new icons
+[B]0.9.9[/B]
+Added option in settings to choose server UK or GER

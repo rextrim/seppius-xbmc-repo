@@ -7,5 +7,6 @@
 		<setting id="autorefresh_rate" type="enum" values="0|1|2|3|5|10|20|30|60" label="30027" default="10" />
 		<setting id="always_refresh" type="bool" label="30028" default="true" />
 		<setting id="stream_type" type="enum" values="Standard|HLS" label="30029" default="Standard" />
+		<setting id="server" type="enum" values="UK|GER" label="30030" default="UK" />
 	</category>
 </settings>
