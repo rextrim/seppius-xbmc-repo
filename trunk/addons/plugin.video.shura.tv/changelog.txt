@@ -67,3 +67,5 @@ Added option in settings to choose server UK or GER
 Updated addon to fullfill the reuirements for XBMC 13: "Dependencies not met" error during update
 [B]1.0.1-1.0.2[/B]
 Further updates to be XBMC Addon Version 2.1.0 compatible.
+[B]1.0.3[/B]
+Added logos by Skott
