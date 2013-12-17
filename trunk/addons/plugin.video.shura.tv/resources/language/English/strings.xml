@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
-	<string id="30000">English</string>
 	<string id="30001">OTT</string>
 	<string id="30002">Password</string>
 	<string id="30003">not received data</string>
@@ -30,8 +29,8 @@
 	<string id="30027">Channels list auto-refresh rate</string>
 	<string id="30028">Force channels list to be refreshed</string>
 	<string id="30029">Stream type Standard or HLS</string>
-	<string id="30030">Colorize channels groups</string>
-	<string id="30031">Hide time field</string>
+	<string id="30030">Stream server</string>
+	<string id="30031">Add only one item to XBMC playlist</string>
 	<string id="30032">start time of the current programm</string>
 	<string id="30033">start time of the next programm</string>
 	<string id="30034">duration of the current programm</string>
