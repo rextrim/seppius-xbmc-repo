@@ -69,3 +69,6 @@ Updated addon to fullfill the reuirements for XBMC 13: "Dependencies not met" er
 Further updates to be XBMC Addon Version 2.1.0 compatible.
 [B]1.0.3[/B]
 Added logos by Skott
+[B]1.0.4[/B]
+Added settings option to choose whether to add one item to playlist or all (live tv play: add all channels to playlist or only the one chosen)
+Language fix for setting options

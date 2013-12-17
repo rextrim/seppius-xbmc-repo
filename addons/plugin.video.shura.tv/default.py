@@ -267,8 +267,9 @@ def OpenPage(plugin, num):
 	myPlayer=xbmc.PLAYER_CORE_AUTO
 	
 	counter = 0
-	
-	for i in range(num,len(Lgl)):
+	AddOnlyOneFile = __settings__.getSetting('AddOnlyOneChannelToPlaylist')
+	if AddOnlyOneFile=='true':
+		i=num
 		thumb2 = gettbn(formating(Lgl[i]['name']))
 		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 		
@@ -311,46 +312,90 @@ def OpenPage(plugin, num):
 			item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
 
 		playlist.add(url=Lgl[i]['url'], listitem=item)
-
-	for i in range(num):
-		
-		thumb2 = gettbn(formating(Lgl[i]['name']))
-		item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
-		epg = PLUGIN_CORE.getLastEPG(Lgl[i]['url'], Lgl[i]['id'])
-		if epg==None or len(epg) <=0:
-			epg = PLUGIN_CORE.getCurrentEPG(Lgl[i]['url'], Lgl[i]['id'])
-		epg_start = 0
-		epg_end = 0
-		timerange = '-'
-		CurrentEPG=''
-		played = 0
-		try:
-			#epg = epg[0]
+	else:
+		for i in range(num,len(Lgl)):
+			thumb2 = gettbn(formating(Lgl[i]['name']))
+			item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
 			
-			if float(epg[0]['start_time']) + float(epg[0]['duration']) < float(time.time()) :
+			
+			epg = PLUGIN_CORE.getLastEPG(Lgl[i]['url'], Lgl[i]['id'])
+			if epg==None or len(epg) <=0:
 				epg = PLUGIN_CORE.getCurrentEPG(Lgl[i]['url'], Lgl[i]['id'])
-			CurrentEPG = epg[0]['name'].encode('utf-8')
+			epg_start = 0
+			epg_end = 0
+			timerange = '-'
+			CurrentEPG=''
+			played = 0
+			try:
+				#epg = epg[0]
+				
+				if float(epg[0]['start_time']) + float(epg[0]['duration']) < float(time.time()) :
+					#xbmc.log('[SHURA.TV] current epg of channel ' + channel['id']+ ' must be refreshed')
+					epg = PLUGIN_CORE.getCurrentEPG(Lgl[i]['url'], Lgl[i]['id'])
+				
+				CurrentEPG = epg[0]['name'].encode('utf-8')
 
-			if "start_time" in epg[0]:
-				epg_start = datetime.datetime.fromtimestamp(epg[0]['start_time']).strftime('%H:%M')
-				if "duration" in epg[0]:
-					epg_end = datetime.datetime.fromtimestamp(epg[0]['start_time'] + epg[0]['duration']).strftime('%H:%M')
-				timerange = '%s - %s ' % (epg_start , epg_end)
+				if "start_time" in epg[0]:
+					epg_start = datetime.datetime.fromtimestamp(epg[0]['start_time']).strftime('%H:%M')
+					if "duration" in epg[0]:
+						epg_end = datetime.datetime.fromtimestamp(epg[0]['start_time'] + epg[0]['duration']).strftime('%H:%M')
+					timerange = '%s - %s ' % (epg_start , epg_end)
 
-		except Exception, e:
-			xbmc.log('[SHURA.TV] exception i prepare EPG' + str(e))
-		label = '%s[B] %s[/B] %s %s' % ('', Lgl[i]['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') , '')
-		if epg <> None:
-			item.setInfo(type='video', infoLabels={'title': epg[0]['name'].encode('utf-8')})
-			item.setInfo(type='video', infoLabels={'plot': epg[0]['name'].encode('utf-8')})
-			item.setInfo(type='video', infoLabels={'StartTime': epg_start})
-			item.setInfo(type='video', infoLabels={'EndTime': epg_end})
-			item.setInfo(type='video', infoLabels={'duration': str(epg[0]['duration']/60)})
-			if len(epg) >1:
-				item.setInfo(type='video', infoLabels={'Studio': str(datetime.datetime.fromtimestamp(epg[1]['start_time']).strftime('%H:%M'))+'-'+str(datetime.datetime.fromtimestamp(epg[1]['start_time']+epg[1]['duration']).strftime('%H:%M'))+':'+epg[1]['name'].encode('utf-8')})
-		else:
-			item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
-		playlist.add(url=Lgl[i]['url'], listitem=item)
+			except Exception, e:
+				xbmc.log('[SHURA.TV] exception i prepare EPG' + str(e))
+			label = '%s[B] %s[/B] %s %s' % ('', Lgl[i]['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') , '')
+			if epg <> None:
+				item.setInfo(type='video', infoLabels={'title': epg[0]['name'].encode('utf-8')})
+				item.setInfo(type='video', infoLabels={'plot': epg[0]['name'].encode('utf-8')})
+				item.setInfo(type='video', infoLabels={'StartTime': epg_start})
+				item.setInfo(type='video', infoLabels={'EndTime': epg_end})
+				item.setInfo(type='video', infoLabels={'duration': str(epg[0]['duration']/60)})
+				if len(epg) >1:
+					item.setInfo(type='video', infoLabels={'Studio': str(datetime.datetime.fromtimestamp(epg[1]['start_time']).strftime('%H:%M'))+'-'+str(datetime.datetime.fromtimestamp(epg[1]['start_time']+epg[1]['duration']).strftime('%H:%M'))+':'+epg[1]['name'].encode('utf-8')})
+			else:
+				item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
+
+			playlist.add(url=Lgl[i]['url'], listitem=item)
+
+		for i in range(num):
+			
+			thumb2 = gettbn(formating(Lgl[i]['name']))
+			item = xbmcgui.ListItem(Lgl[i]['name'], iconImage = thumb2, thumbnailImage = thumb2)
+			epg = PLUGIN_CORE.getLastEPG(Lgl[i]['url'], Lgl[i]['id'])
+			if epg==None or len(epg) <=0:
+				epg = PLUGIN_CORE.getCurrentEPG(Lgl[i]['url'], Lgl[i]['id'])
+			epg_start = 0
+			epg_end = 0
+			timerange = '-'
+			CurrentEPG=''
+			played = 0
+			try:
+				#epg = epg[0]
+				
+				if float(epg[0]['start_time']) + float(epg[0]['duration']) < float(time.time()) :
+					epg = PLUGIN_CORE.getCurrentEPG(Lgl[i]['url'], Lgl[i]['id'])
+				CurrentEPG = epg[0]['name'].encode('utf-8')
+
+				if "start_time" in epg[0]:
+					epg_start = datetime.datetime.fromtimestamp(epg[0]['start_time']).strftime('%H:%M')
+					if "duration" in epg[0]:
+						epg_end = datetime.datetime.fromtimestamp(epg[0]['start_time'] + epg[0]['duration']).strftime('%H:%M')
+					timerange = '%s - %s ' % (epg_start , epg_end)
+
+			except Exception, e:
+				xbmc.log('[SHURA.TV] exception i prepare EPG' + str(e))
+			label = '%s[B] %s[/B] %s %s' % ('', Lgl[i]['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') , '')
+			if epg <> None:
+				item.setInfo(type='video', infoLabels={'title': epg[0]['name'].encode('utf-8')})
+				item.setInfo(type='video', infoLabels={'plot': epg[0]['name'].encode('utf-8')})
+				item.setInfo(type='video', infoLabels={'StartTime': epg_start})
+				item.setInfo(type='video', infoLabels={'EndTime': epg_end})
+				item.setInfo(type='video', infoLabels={'duration': str(epg[0]['duration']/60)})
+				if len(epg) >1:
+					item.setInfo(type='video', infoLabels={'Studio': str(datetime.datetime.fromtimestamp(epg[1]['start_time']).strftime('%H:%M'))+'-'+str(datetime.datetime.fromtimestamp(epg[1]['start_time']+epg[1]['duration']).strftime('%H:%M'))+':'+epg[1]['name'].encode('utf-8')})
+			else:
+				item.setInfo(type="Video", infoLabels={"Title": Lgl[i]['name']})
+			playlist.add(url=Lgl[i]['url'], listitem=item)
 		
 	xbmc.Player(myPlayer).play(playlist)#(url, item) 
 
