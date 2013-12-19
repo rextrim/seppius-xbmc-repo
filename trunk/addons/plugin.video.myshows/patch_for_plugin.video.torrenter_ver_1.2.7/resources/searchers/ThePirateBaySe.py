@@ -22,10 +22,10 @@ import SearcherABC
 import Localization
 import urllib
 import re
-import sys, tempfile, os.path
+import sys, urllib2
 
-class Kino_ZalTv(SearcherABC.SearcherABC):
-    
+class ThePirateBaySe(SearcherABC.SearcherABC):
+
     '''
     Weight of source with this searcher provided.
     Will be multiplied on default weight.
@@ -37,7 +37,7 @@ class Kino_ZalTv(SearcherABC.SearcherABC):
     Relative (from root directory of plugin) path to image
     will shown as source image at result listing
     '''
-    searchIcon = '/resources/searchers/icons/kino-zal.tv.png'
+    searchIcon = '/resources/searchers/icons/thepiratebay.se.png'
 
     '''
     Flag indicates is this source - magnet links source or not.
@@ -46,7 +46,7 @@ class Kino_ZalTv(SearcherABC.SearcherABC):
     '''
     @property
     def isMagnetLinkSource(self):
-        return False
+        return True
 
     '''
     Main method should be implemented for search process.
@@ -61,18 +61,23 @@ class Kino_ZalTv(SearcherABC.SearcherABC):
     '''
     def search(self, keyword):
         filesList = []
-        data = {
-            'action': 'search',
-            'word': keyword,
-            }
-        response = self.makeRequest('http://kino-zal.tv/search',data)
-        if None != response and 0 < len(response) and re.search("seed\.gif", response):
-            for (link, title, title2, title3, seeds) in re.compile("<a href=\"(.+?)\".+?><b.+?>(.+?)</b>.+?<td class=\"centro td90 sizer\".+?>(.+?)</td>.+?<td nowrap class=\"centro sizer td95\">(.+?)</td>.+?<span class=\"seedor\".+?>(.+?)</span>", re.DOTALL|re.MULTILINE).findall(response):
-                title=('%s %s %s' %(title, title2, title3)).replace('<br>','')
-                #if len(title)>100:
-                #    title=title[:100]+'<br>'+title[100:]
-                torrentTitle = "%s [%s: %s]" % (title, Localization.localize('Seeds'), seeds)
+        url = "http://thepiratebay.se/search/%s/0/99/200" % (urllib.quote_plus(keyword))
+        #try:response = self.makeRequest(url)
+        #except:return filesList
+        request = urllib2.Request(url)
+        try:
+            results = urllib2.urlopen(request)
+        except urllib2.URLError, e:
+            print "Pirate Bay: did not respond"
+            return []
+        response = results.read()
+        if None != response and 0 < len(response):
+            dat=re.compile(r'<div class="detName">.+?">(.+?)</a>.+?<a href="(.+?)".+?<td align="right">(\d+?)</td>.+?<td align="right">(\d+?)</td>', re.DOTALL).findall(response)
+            for (title, link, leechers, seeds) in dat:
+                torrentTitle = "%s [S\L: %s\%s]" % (title, seeds, leechers)
                 image = sys.modules[ "__main__"].__root__ + self.searchIcon
+                if not re.match('^https?\://.+', link) and not re.match('^magnet\:.+', link):
+                    link = re.search('^(https?\://.+?)/.+', url).group(1) + link
                 filesList.append((
                     int(int(self.sourceWeight) * int(seeds)),
                     int(seeds),
@@ -81,19 +86,3 @@ class Kino_ZalTv(SearcherABC.SearcherABC):
                     image,
                 ))
         return filesList
-
-    def getTorrentFile(self, url):
-        referer = url
-        print url
-        html=self.makeRequest(url)
-        dl_id=re.search("<a href=\"http://kino-zal.tv/download.php\?id=(\d+)\">", html, re.DOTALL).group(1)
-        url='http://kino-zal.tv/download.php?id='+str(dl_id)
-        localFileName = tempfile.gettempdir() + os.path.sep + self.md5(url)
-        content = self.makeRequest(
-            url,
-            headers=[('Referer', referer)]
-        )
-        localFile = open(localFileName, 'wb+')
-        localFile.write(content)
-        localFile.close()
-        return 'file:///' + localFileName

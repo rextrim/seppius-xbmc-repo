@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.3"
+__version__ = "1.7.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -435,6 +435,12 @@ def cutFileNames(l):
     d = Differ()
     i=-1
 
+    ##  need more tests
+    newl=[]
+    for li in l: newl.append(li.replace('.',' ').replace('_',' ').lower().strip())
+    l=newl
+    ###
+
     text1 = str(l[0])
     text2 = str(l[1])
 
@@ -591,12 +597,11 @@ def uTorrentBrowser():
 
 class PluginStatus():
     def __init__(self):
-
         self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.3',['default.py','update.py']),
                 ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
-                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.1.8',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
-                 'resources/searchers/NNMClubRu.py','resources/searchers/Kino_ZalTv.py','resources/searchers/icons/kino-zal.tv.png','resources/searchers/RuTorOrg.py','resources/searchers/KrasfsRu.py'])]
+                ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.2.7',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
+                 'resources/searchers/NNMClubRu.py'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])
@@ -732,3 +737,8 @@ class PluginStatus():
         if not plugstatus: showMessage(__language__(30286), __language__(30208))
         else: showMessage(__language__(30286), __language__(30206), forced=True)
 
+def saveCheckPoint():
+    __settings__.setSetting("checkpoint", str(sys.argv[2]))
+
+def gotoCheckPoint():
+    xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/%s)' % (__settings__.getSetting("checkpoint")))
