@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.7.3"
+__version__ = "1.7.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -767,7 +767,7 @@ class AddSource(Source):
                         torrent_replacement=dialog.browse(0, __language__(30294), 'video')
                         __settings__.setSetting("torrent_replacement", torrent_replacement)
                     if torrent_replacement and torrent_replacement!='':
-                        self.filename=os.path.join(torrent_replacement.decode('utf-8'),os.path.basename(self.filename))
+                        self.filename=os.path.join(torrent_replacement,os.path.basename(self.filename))
                     else: return
                 i=self.addmultifile()
                 showMessage(__language__(30208), __language__(30249) % (str(i)))
@@ -805,7 +805,7 @@ class AddSource(Source):
                         xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode('Failed! Didn\'t get any filenames!'))#LANG
                 if ret>-1:
                     if __settings__.getSetting("torrent_utorrent_host") in ['127.0.0.1', 'localhost']:
-                        self.filename=os.path.join(self.filename.decode('utf-8'),dirlist[ret])
+                        self.filename=os.path.join(self.filename,dirlist[ret])
                     else:
                         dialog = xbmcgui.Dialog()
                         torrent_replacement=__settings__.getSetting("torrent_replacement")
@@ -997,8 +997,10 @@ class ShowAllSources(Source):
         myshows_titles.append(unicode(__language__(30205)))
         dialog = xbmcgui.Dialog()
         i = dialog.select(__language__(30235), myshows_titles)
+        try:
+            if i==myshows_files.index(unicode(__language__(30295))): PlayFile()
+        except: pass
         if i==myshows_files.index(unicode(__language__(30232))): AddSource()
-        elif i==myshows_files.index(unicode(__language__(30295))): PlayFile()
         elif i==-1 or i==myshows_files.index(unicode(__language__(30205))): return False
         else: PlayFile(myshows_files[i])
 

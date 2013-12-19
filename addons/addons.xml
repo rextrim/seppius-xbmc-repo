@@ -1109,8 +1109,8 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.myshows"
-       name="MyShows.ru"
-       version="1.7.3"
+       name="[COLOR FFFFFFFF][/COLOR][COLOR FF00AAFF]MyShows.ru[/COLOR]"
+       version="1.7.4"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.0"/>

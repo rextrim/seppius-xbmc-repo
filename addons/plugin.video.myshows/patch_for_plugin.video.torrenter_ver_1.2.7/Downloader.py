@@ -18,10 +18,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-#http://www.rasterbar.com/products/libtorrent/manual.html
-import warnings
-warnings.filterwarnings('ignore', category=RuntimeWarning)
-import libtorrent
 import time
 import thread
 import os
@@ -49,7 +45,7 @@ class Torrent:
 
     def __init__(self, storageDirectory = '', torrentFile = '', torrentFilesDirectory = 'torrents'):
         #http://www.rasterbar.com/products/libtorrent/manual.html
-        try:
+        '''try:
             import platform
             if 'Linux' == platform.system():
                 if 'x86_64' == platform.machine():
@@ -58,11 +54,29 @@ class Torrent:
                     from python_libtorrent.linux_x86 import libtorrent
             else:
                 from python_libtorrent.windows import libtorrent
-        except:
+        except ImportError, v:
             try:
                 import libtorrent
-            except:
-                raise ImportError("The script.module.libtorrent module is not installed, libtorrent not found or unsupported system used")
+            except ImportError, v:
+                raise ImportError("The script.module.libtorrent module is not installed, libtorrent not found or unsupported system used")'''
+        try:
+            from python_libtorrent.linux_x86_64 import libtorrent
+        except:
+            pass
+        try:
+            from python_libtorrent.linux_x86 import libtorrent
+        except:
+            pass
+        try:
+            from python_libtorrent.windows import libtorrent
+        except:
+            pass
+        try:
+            import libtorrent
+        except:
+            pass
+        '''except ImportError, v:
+            raise ImportError("The script.module.libtorrent module is not installed, libtorrent not found or unsupported system used")'''
         self.lt = libtorrent
         del libtorrent
         self.torrentFilesDirectory = torrentFilesDirectory

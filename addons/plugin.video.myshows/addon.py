@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.7.3"
+__version__ = "1.7.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -82,6 +82,7 @@ class ExtraFunction(Main):
 def Shows(mode):
     try: syncshows=SyncXBMC()
     except: syncshows=False
+    saveCheckPoint()
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     #lockView('info')
     if mode==19:
@@ -151,6 +152,7 @@ def Seasons(showId):
     data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
     try: syncshows=SyncXBMC()
     except: syncshows=False
+    saveCheckPoint()
     seasons, epdict=[], {}
     jdata = json.loads(data.get())
     for id in jdata['episodes']:
@@ -187,6 +189,7 @@ def Episodes(showId, seasonNumber):
         jdata = json.loads(data.get())
         try: syncshows=SyncXBMC()
         except: syncshows=False
+        saveCheckPoint()
         try:watched_jdata = json.loads(watched_data.get())
         except: watched_jdata=[]
 
@@ -324,6 +327,7 @@ def MyScanList():
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
 
 def TopShows(action):
+    saveCheckPoint()
     if action=='all':
         item = xbmcgui.ListItem(TextBB(__language__(30109), 'b'), iconImage='DefaultFolder.png', thumbnailImage='')
         item.setInfo( type='Video', infoLabels={'Title': 'Male Top'} )
@@ -357,6 +361,7 @@ def TopShows(action):
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def EpisodeList(action):
+    saveCheckPoint()
     item = xbmcgui.ListItem(' '+__language__(30114), iconImage='DefaultFolder.png', thumbnailImage='')
     item.setInfo( type='Video', infoLabels={'Title': __language__(30114), 'date': today_str()} )
     xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str(sys.argv[0] + '?action='+action+'&sort=shows&mode='+str(mode)), listitem=item, isFolder=True)
@@ -986,7 +991,8 @@ elif mode == 3010:
     jdata=get_apps(stringdata)
     if not sort:AskPlay()
     elif sort=='activate':
-        xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (jdata['showId']))
+        #xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (jdata['showId']))
+        gotoCheckPoint()
         if action=='download':
             DownloadSource()
         elif not jdata['id']:
@@ -995,6 +1001,8 @@ elif mode == 3011:
     Source().addjson()
 elif mode == 3012:
     Serialu().add()
+elif mode == 3013:
+    gotoCheckPoint()
 elif mode == 3020:
     PlayFile()
 elif mode == 3090:

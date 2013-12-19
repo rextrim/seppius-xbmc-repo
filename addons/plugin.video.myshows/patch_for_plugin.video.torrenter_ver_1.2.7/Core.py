@@ -124,7 +124,7 @@ class Core:
     def getParameters(self, parameterString):
         commands = {}
         splitCommands = parameterString[parameterString.find('?')+1:].split('&')
-        for command in splitCommands:
+        for command in splitCommands: 
             if (len(command) > 0):
                 splitCommand = command.split('=')
                 if (len(splitCommand) > 1):
@@ -142,7 +142,7 @@ class Core:
         for (html, replacement) in self.stripPairs:
             string = re.sub(html, replacement, string)
         return string
-
+        
     def executeAction(self, params = {}):
         get = params.get
         if hasattr(self, get("action")):
@@ -160,43 +160,6 @@ class Core:
                 import shutil
                 shutil.rmtree(self.userStorageDirectory, ignore_errors=True)
             xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Storage'), Localization.localize('Storage was cleared')))
-
-    # dev state
-    def serv(self, path):
-        import socket
-        import thread
-        HOST = '127.0.0.1'
-        PORT = 51515
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.settimeout(10)
-        s.bind((HOST, PORT))
-        s.listen(1)
-        while 1:
-            conn, addr = s.accept()
-            data = conn.recv(1024)
-            print 'streaming ' + path
-            print data
-            thread.start_new_thread(self.strm, (conn, path, ))
-        return
-
-    # dev state
-    def strm(self, conn, path):
-        fp = open(path, "rb")
-        conn.send("HTTP/1.1 200 OK\r\nContent-Type: video/mp4\r\n")
-        conn.send("\r\n")
-        while True:
-            chunk = fp.read(1024)
-            if chunk:
-                try:
-                    conn.send(chunk)
-                except socket.error, e:
-                    conn.close()
-                    break
-            else:
-                break
-        conn.close()
-        fp.close()
 
     def calculateIterator(self, current, full):
         if (100 * 1024 * 1024) > full:#<100Mb
@@ -248,22 +211,23 @@ class Core:
             from Proxier import Proxier
             import thread
             proxier = Proxier()
-            thread.start_new_thread(proxier.server, (torrent.getFilePath(contentId), ))
+            #thread.start_new_thread(proxier.server, (torrent.getFilePath(contentId), ))
             #xbmc.Player().play('http://127.0.0.1:51515/play.avi')
             #return
 
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
             listitem = xbmcgui.ListItem(torrent.getContentList()[contentId].path)
-            playlist.add('http://127.0.0.1:51515/%s.avi' % torrent.md5(torrent.getFilePath(contentId)), listitem)
+            playlist.add('file:///' + torrent.getFilePath(contentId), listitem)
+            #playlist.add('http://127.0.0.1:51515/%s.avi' % torrent.md5(torrent.getFilePath(contentId)), listitem)
             xbmc.Player().play(playlist)
             #self.addHistory(torrent.getContentList()[contentId].path)
-            bufferingBar = xbmcgui.DialogProgress()
+            #bufferingBar = xbmcgui.DialogProgress()
             while 1 == xbmc.Player().isPlayingVideo():
                 torrent.fetchParts()
                 torrent.checkThread()
                 time.sleep(1)
-                if proxier.seekBytes > 0:
+                '''if proxier.seekBytes > 0:
                     torrent.fetchSeekBytes(proxier.seekBytes)
                     proxier.seekBytes = 0
                 if proxier.buffering > 0:
@@ -279,8 +243,8 @@ class Core:
                         bufferingBar.update(0)
                         bufferingBar.close()
                     except:
-                        pass
-
+                        pass'''
+                    
             if 'false' == self.__settings__.getSetting("keep_files"):
                 torrent.threadComplete = True
                 self.clearStorage()
@@ -356,8 +320,7 @@ class Core:
                 contentList = sorted(contentList, key=lambda x: x[0])
                 for title, identifier in contentList:
                     self.drawItem(title, 'playTorrent', identifier, isFolder=False)
-                    #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_TITLE)
-                self.lockView('wide')
+                self.lockView('info')
                 xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
     def cutFileNames(self, l):
@@ -420,7 +383,6 @@ class Core:
             try:
                 title = item.getElementsByTagName('title')[0].firstChild.data.encode('utf-8', 'replace')
                 description = item.getElementsByTagName('description')[0].firstChild.data.encode('utf-8', 'replace')
-                #seeds = re.search("<span class=\"s\">(\d+)</span>", description).group(1)
                 image = re.search("<img src=\"(.+?)\" alt=\"\" />", description).group(1)
                 self.drawItem(title, 'openSection', title, image)
             except:
@@ -575,7 +537,7 @@ class Core:
         self.lockView('list')
         xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
 
-    def openSection(self, params = {}): #myshows
+    def openSection(self, params = {}):
         get = params.get
         url = urllib.unquote_plus(get("url"))
         try: external=urllib.unquote_plus(get("external"))
@@ -637,7 +599,8 @@ class Core:
             try:
                 s=json.loads(json.loads(urllib.unquote_plus(get("sdata"))))
                 if len(filesList)<1:
-                    xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
+                    xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
+                    xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=3013')
                     return
                 myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
                 myshows_lang=myshows_setting.getLocalizedString
@@ -646,16 +609,15 @@ class Core:
                     xbmc.executebuiltin('XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&action=download&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId'])))))
                 else:
                     for (order, seeds, title, link, image) in filesList:
-                        #print '{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))
                         contextMenu = [
                             (myshows_lang(30409),
                              'XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId']))))),
                             (myshows_lang(30400) ,
-                             'XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
+                             'XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=3013')
                         ]
                         self.drawItem(title, 'openTorrent', link, image, contextMenu=contextMenu)
             except:
-                xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=20&showId=%s' % (self.jstr(s['showId'])))
+                xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=3013')
                 return
         else:
             for (order, seeds, title, link, image) in filesList:
@@ -690,7 +652,7 @@ class Core:
         for record in response:
             filesList.append((0, 0, str(record['name'].encode('utf-8', 'replace')), record['link'], ''))
         self.showFilesList(filesList)
-
+    
     def getBookmarks(self, params = {}):
         response = json.loads(self.fetchData(self.URL + '/bookmarks').encode('utf-8'))
         if not self.checkForAuth(response):
