@@ -72,3 +72,5 @@ Added logos by Skott
 [B]1.0.4[/B]
 Added settings option to choose whether to add one item to playlist or all (live tv play: add all channels to playlist or only the one chosen)
 Language fix for setting options
+[B]1.0.5[/B]
+Updated keymaps. Now possible to seekInTime by pressing right/left-keys (+1/-1min), up/down-keys (+3/-3min). To use this functionality you have to copy the keymaps.xml from shura.tv addon dir to userdata/keymaps dir.

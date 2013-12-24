@@ -227,7 +227,7 @@ def Archive(plugin, feed, host):
 			
 			item.setLabel(label)
 			item.setIconImage(os.path.join(addon.getAddonInfo('path'), 'resources', 'icons', 'play-stop.png'))
-			#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
+			item.setInfo( type='video', infoLabels={'title': CurrentEPG, 'plotoutline': '', 'plot': '', 'genre': '', 'duration': weekepg[i]['duration'],  'StartTime': weekepg[i]['start_time'], 'EndTime': weekepg[i]['start_time'] + weekepg[i]['duration']})
 						
 			item.setProperty('IsPlayable', 'false')
 			urlArchive = '%s~%s/%s/?archive=%s' % (host.split('~')[0], PLUGIN_CORE.OTT,  feed, weekepg[i]['start_time'])
@@ -250,8 +250,7 @@ def Archive(plugin, feed, host):
 			
 			item.setLabel(label)
 			item.setIconImage(os.path.join(addon.getAddonInfo('path'), 'resources', 'icons', 'play.png'))
-			#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
-						
+			item.setInfo( type='video', infoLabels={'title': CurrentEPG, 'plotoutline': '', 'plot': '', 'genre': '', 'duration': archItems['duration'],  'StartTime': archItems['start_time'], 'EndTime': archItems['start_time'] + archItems['duration']})
 			item.setProperty('IsPlayable', 'true')
 			urlArchive = '%s~%s/%s/?archive=%s' % (host.split('~')[0], PLUGIN_CORE.OTT,  feed, archItems['start_time'])
 			xbmcplugin.addDirectoryItem(handle,urlArchive,item, False, 0)

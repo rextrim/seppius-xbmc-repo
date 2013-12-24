@@ -38,6 +38,10 @@
   <FullscreenVideo>
     <keyboard>
       <pagedown>XBMC.RunScript(special://home/addons/plugin.video.shura.tv/pagedownfix.py)</pagedown>
+	  <left>XBMC.RunScript(special://home/addons/plugin.video.shura.tv/OneMinBack.py)</left>
+      <right>XBMC.RunScript(special://home/addons/plugin.video.shura.tv/OneMinForward.py)</right>
+      <up>XBMC.RunScript(special://home/addons/plugin.video.shura.tv/ThreeMinBack.py)</up>
+      <down>XBMC.RunScript(special://home/addons/plugin.video.shura.tv/ThreeMinForward.py)</down>
     </keyboard>
   </FullscreenVideo>
 </keymap>
