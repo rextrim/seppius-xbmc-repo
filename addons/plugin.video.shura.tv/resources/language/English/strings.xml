@@ -31,10 +31,10 @@
 	<string id="30029">Stream type Standard or HLS</string>
 	<string id="30030">Stream server</string>
 	<string id="30031">Add only one item to XBMC playlist</string>
-	<string id="30032">start time of the current programm</string>
-	<string id="30033">start time of the next programm</string>
-	<string id="30034">duration of the current programm</string>
-	<string id="30035">time left before the next programm</string>
+	<string id="30032">Small step forward (right key) in min</string>
+	<string id="30033">Small step backward (left key) in min</string>
+	<string id="30034">Big step forward (up key) in min</string>
+	<string id="30035">Big step backward (down key) in min</string>
 	<string id="30036">Display</string>
 	<string id="30037">Add to favourites</string>
 	<string id="30038">Remove from favourites</string>
@@ -45,6 +45,7 @@
 	<string id="30043">Auto detect current timezone</string>
 	<string id="31001">General settings</string>
 	<string id="31002">Channels list</string>
+	<string id="31003">Player</string>
 	<string id="34001">Streaming server</string>
 	<string id="34002">Timeshift</string>
 	<string id="34003">Timezone</string>

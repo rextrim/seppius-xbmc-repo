@@ -2,6 +2,9 @@
 #/*
 import string, xbmc, xbmcgui, xbmcplugin, os, xbmcaddon
 
+addon = xbmcaddon.Addon(id='plugin.video.shura.tv')
+step = addon.getSetting('SmallStepForward')
+
 myPlayer=xbmc.PLAYER_CORE_AUTO
 try:
 	item=xbmcgui.ListItem('', '', '', '')
@@ -11,7 +14,9 @@ try:
 	#xbmc.log('url='+archiveurl)
 	archivetime=xbmc.Player(myPlayer).getPlayingFile().split('=')[1]
 	#xbmc.log('time1='+str(archivetime))
-	archivetime=int(archivetime)+60
+	playedtime=xbmc.Player(myPlayer).getTime()
+	#xbmc.log('played time='+str(playedtime)+',step='+str(step*60))
+	archivetime=int(archivetime)+int(playedtime)+int(step)*60
 	#xbmc.log('time2='+str(archivetime))
 	item.setInfo(type="Video", infoLabels={"Title": archiveName})
 	url=archiveurl+'='+str(archivetime)

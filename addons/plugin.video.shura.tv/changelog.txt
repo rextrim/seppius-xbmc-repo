@@ -74,3 +74,7 @@ Added settings option to choose whether to add one item to playlist or all (live
 Language fix for setting options
 [B]1.0.5[/B]
 Updated keymaps. Now possible to seekInTime by pressing right/left-keys (+1/-1min), up/down-keys (+3/-3min). To use this functionality you have to copy the keymaps.xml from shura.tv addon dir to userdata/keymaps dir.
+[B]1.0.6[/B]
+-Keymaps fixed up/down.
+-Now possible to set seek time for small/big step in settings of addon. To use this functionality you have to copy the keymaps.xml from shura.tv addon dir to userdata/keymaps dir.
+-Added description for current program item /epg item / archive item
