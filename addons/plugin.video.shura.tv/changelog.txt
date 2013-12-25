@@ -78,3 +78,5 @@ Updated keymaps. Now possible to seekInTime by pressing right/left-keys (+1/-1mi
 -Keymaps fixed up/down.
 -Now possible to set seek time for small/big step in settings of addon. To use this functionality you have to copy the keymaps.xml from shura.tv addon dir to userdata/keymaps dir.
 -Added description for current program item /epg item / archive item
+[B]1.0.7[/B]
+-Keymaps updated to support othe addons by using default xbmc functionality of the keys.
