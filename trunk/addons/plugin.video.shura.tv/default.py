@@ -214,6 +214,7 @@ def Archive(plugin, feed, host):
 		for i in range(len(weekepg)-1,-1,-1):
 			#xbmc.log('[SHURA.TV] first archive2=' +weekepg[i]['name'].encode('utf-8'))
 			CurrentEPG = weekepg[i]['name'].encode('utf-8')
+			Description= weekepg[i]['text'].encode('utf-8')
 			epg_start = 0
 			epg_end = 0
 			timerange = '-'
@@ -227,7 +228,7 @@ def Archive(plugin, feed, host):
 			
 			item.setLabel(label)
 			item.setIconImage(os.path.join(addon.getAddonInfo('path'), 'resources', 'icons', 'play-stop.png'))
-			item.setInfo( type='video', infoLabels={'title': CurrentEPG, 'plotoutline': '', 'plot': '', 'genre': '', 'duration': weekepg[i]['duration'],  'StartTime': weekepg[i]['start_time'], 'EndTime': weekepg[i]['start_time'] + weekepg[i]['duration']})
+			item.setInfo( type='video', infoLabels={'title': CurrentEPG, 'plotoutline': '', 'plot': Description, 'genre': '', 'duration': weekepg[i]['duration'],  'StartTime': weekepg[i]['start_time'], 'EndTime': weekepg[i]['start_time'] + weekepg[i]['duration']})
 						
 			item.setProperty('IsPlayable', 'false')
 			urlArchive = '%s~%s/%s/?archive=%s' % (host.split('~')[0], PLUGIN_CORE.OTT,  feed, weekepg[i]['start_time'])
@@ -237,6 +238,8 @@ def Archive(plugin, feed, host):
 		for archItems in arch:
 			#xbmc.log('[SHURA.TV] first archive2=' +archItems['name'].encode('utf-8'))
 			CurrentEPG = archItems['name'].encode('utf-8')
+			Description= archItems['text'].encode('utf-8')
+			#xbmc.log('[SHURA.TV] Description='+Description)
 			epg_start = 0
 			epg_end = 0
 			timerange = '-'
@@ -250,7 +253,7 @@ def Archive(plugin, feed, host):
 			
 			item.setLabel(label)
 			item.setIconImage(os.path.join(addon.getAddonInfo('path'), 'resources', 'icons', 'play.png'))
-			item.setInfo( type='video', infoLabels={'title': CurrentEPG, 'plotoutline': '', 'plot': '', 'genre': '', 'duration': archItems['duration'],  'StartTime': archItems['start_time'], 'EndTime': archItems['start_time'] + archItems['duration']})
+			item.setInfo( type='video', infoLabels={'title': CurrentEPG, 'plotoutline': '', 'plot': Description, 'genre': '', 'duration': archItems['duration'],  'StartTime': archItems['start_time'], 'EndTime': archItems['start_time'] + archItems['duration']})
 			item.setProperty('IsPlayable', 'true')
 			urlArchive = '%s~%s/%s/?archive=%s' % (host.split('~')[0], PLUGIN_CORE.OTT,  feed, archItems['start_time'])
 			xbmcplugin.addDirectoryItem(handle,urlArchive,item, False, 0)
@@ -456,7 +459,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 								epg = epg[0]
 
 							CurrentEPG = epg['name'].encode('utf-8')
-
+							Description = epg['text'].encode('utf-8')
 							if "start_time" in epg:
 								epg_start = datetime.datetime.fromtimestamp(epg['start_time']).strftime('%H:%M')
 								if "duration" in epg:
@@ -483,7 +486,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 						item.setLabel(label)
 						#item.setIconImage(iconimage)
 						
-						#item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': '', 'genre': '', 'duration': datetime.datetime.fromtimestamp(epg['duration']).strftime('%H:%M'),  'overlay': overlay, 'ChannelNumber': str(channel['id']), 'ChannelName': channel['name'], 'StartTime': epg_start, 'EndTime': epg_end, 'rating': ''})
+						item.setInfo( type='video', infoLabels={'title': channel['name'], 'plotoutline': '', 'plot': Description})
 						#xbmc.log('[SHURA.TV] 2')
 						item.setProperty('IsPlayable', 'false')
 						
