@@ -23,5 +23,6 @@ try:
 	#xbmc.log('url2='+url)
 	xbmc.Player(myPlayer).play(url,listitem=item)
 except:
-	xbmc.log('[SHURA.TV] exception in OneMinForward.py')
+	xbmc.log('[SHURA.TV] exception in OneMinForward.py use default function for this key')
+	xbmc.executebuiltin('PlayerControl(SmallSkipForward)')
 #xbmc.log('[PageDownFixExceputed]')
