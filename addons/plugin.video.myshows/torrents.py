@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.7.4"
+__version__ = "1.7.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')

@@ -14,13 +14,11 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.4"
+__version__ = "1.7.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
-login=__settings__.getSetting("username")
-passwd=__settings__.getSetting("password")
 ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
@@ -160,14 +158,20 @@ def StripName(name, list, replace=' '):
     return name.strip()
 
 def auth():
+    login=__settings__.getSetting("username")
+    passwd=__settings__.getSetting("password")
     url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+md5(passwd).hexdigest()
     headers = {'User-Agent':'XBMC', 'Content-Type':'application/x-www-form-urlencoded'}
     try:    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
     except urllib2.HTTPError as e:
+        Debug('[auth]: url - '+str(url)+'; HTTPError - '+str(e)+' ;e -'+str(e.code), True)
         if e.code==403 or not login or login=='' or not passwd or passwd=='':
-            dialog = xbmcgui.Dialog()
-            dialog.ok( __language__(30201), __language__(30201), __language__(30202))
-            __settings__.openSettings()
+            if int(time.time())-int(__settings__.getSetting("lastlogin"))>3600*1000:
+                __settings__.setSetting( "lastlogin", str(time.time()) )
+                dialog = xbmcgui.Dialog()
+                ok=dialog.yesno( __language__(30201), __language__(30201), __language__(30202))
+                if ok:
+                    __settings__.openSettings()
         return False
     cookie_src = conn.info().get('Set-Cookie')
     cookie_str = re.sub(r'(expires=.*?;\s|path=\/;\s|domain=\.myshows\.ru(?:,\s)?)', '', cookie_src)
@@ -175,6 +179,7 @@ def auth():
     su_pass =  cookie_str.split("=")[-1].split(";")[0].strip()
     cookie='SiteUser[login]='+login+'; SiteUser[password]='+su_pass+'; PHPSESSID='+session
     __settings__.setSetting( "cookie_auth", cookie )
+    __settings__.setSetting( "lastlogin", str(time.time()) )
     conn.close()
     return cookie
 
@@ -566,7 +571,21 @@ def uTorrentBrowser():
         if action=='context':
             xbmc.executebuiltin("Action(ContextMenu)")
             return
-        if ind or ind==0:Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
+        if (ind or ind==0) and action in ('0','3'):Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
+        elif (ind or ind==0) and action=='play':
+            p,dllist,i,folder,filename=Download().list(),Download().listfiles(hash),0,None,None
+            for data in p:
+                if data['id']==hash:
+                    folder=data['dir']
+                    break
+            for data in dllist:
+                if data[2]==int(ind):
+                    filename=data[0]
+                    break
+            if __settings__.getSetting("torrent_utorrent_host") not in ['127.0.0.1', 'localhost']:
+               folder=folder.replace(__settings__.getSetting("torrent_dir"),__settings__.getSetting("torrent_replacement"))
+            filename=os.path.join(folder,filename)
+            xbmc.executebuiltin('xbmc.PlayMedia("'+filename.encode('utf-8')+'")')
         else: Download().action('action=%s&hash=%s' % (action, hash))
         xbmc.executebuiltin('Container.Refresh')
         return
@@ -574,11 +593,14 @@ def uTorrentBrowser():
     menu=[]
     if not hash:
         for data in Download().list():
-            menu.append({"title":'['+str(data['progress'])+'%] '+data['name'], "mode":"52", "argv":{'hash':str(data['id'])}})
+            status=" "
+            if data['status'] in ('seed_pending','stopped'): status=TextBB(' [||] ','b')
+            elif data['status'] in ('seeding','downloading'): status=TextBB(' [>] ','b')
+            menu.append({"title":'['+str(data['progress'])+'%]'+status+data['name'], "mode":"52", "argv":{'hash':str(data['id'])}})
     else:
         dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
         for s in dllist:
-            menu.append({"title":'['+str(s[1])+'%] '+s[0], "mode":"52", "argv":{'hash':hash,'ind':str(s[2]),'action':'context'}})
+            menu.append({"title":'['+str(s[1])+'%]'+'['+str(s[3])+'] '+s[0], "mode":"52", "argv":{'hash':hash,'ind':str(s[2]),'action':'context'}})
 
     for i in menu:
         link=Link(i['mode'], i['argv'])
@@ -588,7 +610,7 @@ def uTorrentBrowser():
             actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),]
             folder=True
         else:
-            actions=[('3', __language__(30281)),('0', __language__(30282))]
+            actions=[('3', __language__(30281)),('0', __language__(30282)),('play', __language__(30227))] #lang
             folder=False
         for a,title in actions:
             i['argv']['action']=a
@@ -617,13 +639,6 @@ class PluginStatus():
             from TSCore import TSengine as tsengine
             TSstatus=unicode(__language__(30267))
         except: TSstatus=unicode(__language__(30259))
-
-        try:
-            import warnings
-            warnings.filterwarnings('ignore', category=RuntimeWarning)
-            import libtorrent
-        except:
-            self.torrenterstatus='LibTorrent '+unicode(__language__(30259))
 
         from torrents import TorrentDB
         from net import Download
