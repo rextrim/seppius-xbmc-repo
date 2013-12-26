@@ -293,16 +293,16 @@ class Core:
                 myshows_files=[]
                 contentList = []
                 for contentId, contentFile in enumerate(torrent.getContentList()):
-                    fileTitle = "%s" % (contentFile.path)#In MB
+                    fileTitle = "[%s MB][%s]%s " % ( contentFile.size / 1024 / 1024, contentFile.path[len(contentFile.path)-3:], contentFile.path)#In MB
                     contentList.append((self.unescape(fileTitle), str(contentId)))
                 contentList = sorted(contentList, key=lambda x: x[0])
                 for title, identifier in contentList:
-                    #self.drawItem(title, 'playTorrent', identifier, isFolder=False)
-                    myshows_items.append(title)
-                    myshows_files.append('plugin://plugin.video.torrenter/?action=playTorrent&url='+identifier)
+                    if re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', title, re.I | re.DOTALL):
+                        myshows_items.append(title)
+                        myshows_files.append('plugin://plugin.video.torrenter/?action=playTorrent&url='+identifier)
                 if len(myshows_items)>1:myshows_items=self.cutFileNames(myshows_items)
                 myshows_items.append(unicode(myshows_lang(30400)))
-                myshows_files.append('plugin://plugin.video.myshows/?mode=203&stringdata='+get("sdata"))
+                myshows_files.append('')
                 dialog = xbmcgui.Dialog()
                 if len(myshows_items)==2: ret=0
                 else:ret = dialog.select(unicode(myshows_lang(30401)), myshows_items)

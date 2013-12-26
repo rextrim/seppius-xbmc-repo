@@ -13,13 +13,12 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.7.4"
+__version__ = "1.7.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
 login=__settings__.getSetting("username")
-passwd=__settings__.getSetting("password")
 ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
@@ -72,6 +71,7 @@ class Main(Handler):
 
 class ExtraFunction(Main):
     def __init__(self):
+        self.menu=[]
         self.menu.extend([{"title":__language__(30136),"mode":"50"},
                           {"title":__language__(30137),"mode":"60"},
                           {"title":__language__(30146),"mode":"61"},
@@ -592,7 +592,7 @@ def Favorite(id, refresh_url):
 def ContextMenuItems(sys_url, refresh_url, ifstat=None):
     myshows_dict=[]
     #Debug('[ContextMenuItems] '+unicode(sys.argv))
-    if mode >= 10 and mode <=19 or mode in (40,100) or sort and mode in (27,28):
+    if mode >= 10 and mode <=19 or mode==100 or sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30300)+'|:|'+sys_url+'0&action=watching'+refresh_url,
               __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
@@ -609,6 +609,10 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30310)+'|:|'+sys_url+'201',
               __language__(30228)+'|:|'+sys_url+'7',
               __language__(30314)+'|:|'+sys_url+'8',]
+    elif mode==40:
+        menu=[__language__(30300)+'|:|'+sys_url+'0&action=watching'+refresh_url,
+              __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
+              __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url]
     elif mode==25 or not sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
@@ -991,7 +995,6 @@ elif mode == 3010:
     jdata=get_apps(stringdata)
     if not sort:AskPlay()
     elif sort=='activate':
-        #xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=20&showId=%s)' % (jdata['showId']))
         gotoCheckPoint()
         if action=='download':
             DownloadSource()
