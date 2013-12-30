@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*
 #/*
 # *      Copyright (C) 2010-2012 AKGDRG <akgdrg@gmail.com>
 # *
@@ -450,6 +451,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 						timerange = '-'
 						CurrentEPG=''
 						played = 0
+						Description =''
 						#xbmc.log('[SHURA.TV] 1')
 						try:
 							epg = epg[0]
