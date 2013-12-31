@@ -24,8 +24,13 @@ import base64
 
 from xml.dom import minidom
 
-from vkparsers import GetVideoFiles
+from vkparsers import GetVideoFilesAPI
 from xbmcvkui import XBMCVkUI_VKSearch_Base,SEARCH, PrepareString
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 
 __settings__ = xbmcaddon.Addon(id='xbmc-vk.svoka.com')
@@ -38,8 +43,6 @@ SEARCH_RESULT_DOWNLOAD = "SEARCH_RESULT_DOWNLOAD"
 VIDEO_DOWNLOAD = "VIDEO_DOWNLOAD"
 GROUP_VIDEO = "GROUP_VIDEO"
 GROUPS = "GROUPS"
-FRIENDS = "FRIENDS"
-FRIEND_VIDEO = "FRIEND_VIDEO"
 NEXT_PAGE = "NEXT_PAGE"
 # ALBUM_VIDEO = "ALBUM_VIDEO"
 
@@ -47,9 +50,8 @@ NEXT_PAGE = "NEXT_PAGE"
 
 class XVKVideo(XBMCVkUI_VKSearch_Base):
 
-    per_page = 50
-
     def __init__(self, *params):
+        self.per_page = 50
         self.histId = None
         self.apiName = "video.search"
         self.locale = {"newSearch":__language__(30005), "history": __language__(30007), "input":__language__(30003)}
@@ -66,26 +68,30 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
 
     def ProcessFoundEntry(self, a):
         duration = str(datetime.timedelta(seconds=int(a["duration"])))
-        title =   duration + " - " + PrepareString(a["title"])
-        videos = str(a["owner_id"])+"_"+str(a.get("id") or a.get("vid"))
+        title = duration + " - " + PrepareString(a["title"])
+        videos = base64.encodestring(json.dumps(a["files"]))
         thumb = a.get("thumb") or a.get("image")
         listItem = xbmcgui.ListItem(title, a["description"], thumb, thumb)
         listItem.setInfo(type = "Video", infoLabels = {
             "title"     : title
             ,"duration" : duration
-            ,"tagline" : a["description"]
+            ,"tagline"  : a["description"]
             } )
-        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SEARCH_RESULT, thumb=thumb, v=videos),
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SEARCH_RESULT, thumb=thumb, v=videos, title=a["title"].encode('utf-8')),
                                     listItem, True)
 
     def Do_SEARCH_RESULT(self):
-        vf = GetVideoFiles("http://vkontakte.ru/video"  + self.params["v"])
+        vf = GetVideoFilesAPI(self.params["v"])
         if vf:
             for a in vf:
                 n = a[a.rfind("/")+1:]
                 if a.startswith("http"):
                     n = __language__(30039) + " " + n
-                listitem = xbmcgui.ListItem(n, "", self.params.get("thumb"), self.params.get("thumb"))
+                else:
+                    n = "YouTube: " + n
+                listitem = xbmcgui.ListItem(n, "", self.params.get("thumb"), self.params.get("thumb"), path=a)
+                listitem.setProperty('IsPlayable', 'true')
+                listitem.setInfo(type = "video", infoLabels = {'title': self.params.get("title")})                
                 xbmcplugin.addDirectoryItem(self.handle, a, listitem)
         if vf and __settings__.getSetting("ShowDownload"):        
             for a in vf:
@@ -94,7 +100,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
                     xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=VIDEO_DOWNLOAD, thumb=self.params.get("thumb"), v=base64.encodestring(a).strip()), listitem, False)
 
     def Do_SEARCH_RESULT_DOWNLOAD(self):
-        vf = GetVideoFiles("http://vkontakte.ru/video"  + self.params["v"])
+        vf = GetVideoFilesAPI(self.params["v"])
         if vf:
             for a in vf:
                 listitem = xbmcgui.ListItem(__language__(30035) + " " + a[a.rfind("/")+1:], "", self.params.get("thumb"), self.params.get("thumb"))
@@ -112,45 +118,19 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
         url = base64.decodestring(self.params["v"])
         os.system(downloadCmd + " " + url)
         
-        # dest = __settings__.getSetting('downloads')
-        # n = 0
-        # while not len(dest):
-        #     xbmc.executebuiltin('XBMC.Notification("%s", "%s", 7)' % (__language__(30037),__language__(30038)))
-        #     __settings__.openSettings()
-        #     dest = __settings__.getSetting('downloads')
-        #     n+=1
-        #     if n>3 and not len(dest):
-        #         return
-        # import SimpleDownloader as downloader
-        # downloader = downloader.SimpleDownloader()
-        # url = base64.decodestring(self.params["v"])
-        # user_keyboard = xbmc.Keyboard()
-        # user_keyboard.setHeading(__language__(30036))
-        # user_keyboard.setHiddenInput(False)
-        # user_keyboard.setDefault(url[url.rfind('/')+1:])
-        # user_keyboard.doModal()
-        # if (user_keyboard.isConfirmed()):
-        #     fn = user_keyboard.getText();
-        #     ext = url[url.rfind('.'):]
-        #     if fn[-len(ext):] != ext:
-        #         fn += ext
-        #     params = { "url": url, "download_path": dest }
-        #     downloader.download(fn, params)
 
     def Do_HOME(self):
         XBMCVkUI_VKSearch_Base.Do_HOME(self)
         listItem = xbmcgui.ListItem(__language__(30010))
-        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=TOP_DOWNLOADS) , listItem, True)
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=TOP_DOWNLOADS), listItem, True)
         listItem = xbmcgui.ListItem(__language__(30011))
-        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SERIES) , listItem, True)
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SERIES), listItem, True)
         listItem = xbmcgui.ListItem(__language__(30012))
-        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_VIDEOS) , listItem, True)
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_VIDEOS), listItem, True)
         listItem = xbmcgui.ListItem(__language__(30042))
-        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=GROUPS) , listItem, True)
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=GROUPS), listItem, True)
 
-        # uncoment two bottom lines after you add  add permisions to retrive friends. Test befor release.
-        # listItem = xbmcgui.ListItem(__language__(30043))
-        # xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=FRIENDS) , listItem, True)
+        self.friendsEntry("video")
         # listItem = xbmcgui.ListItem(__language__(30020))
         # xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_SHOWS_LIST) , listItem, True)
 
@@ -171,7 +151,10 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
         if len(v[1:]) >= self.per_page:
             page = int(page); page += 1
             listItem = xbmcgui.ListItem(__language__(30044)%(page+1))
-            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=page, gid=gid) , listItem, True)
+            if gid:
+                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=page, gid=gid) , listItem, True)
+            else:
+                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=page, uid=uid) , listItem, True)
 
     def Do_GROUP_VIDEO(self):
         gid = self.params["gid"]
@@ -183,15 +166,14 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
                 listItem = xbmcgui.ListItem(__language__(30044)%2)
                 xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1, gid=gid) , listItem, True)
 
-    def Do_FRIEND_VIDEO(self):
-        uid = self.params["uid"]
+    def processFriendEntry(self, uid):
         v = self.api.call('video.get', uid=uid, count=200)
         if v:
             for a in v[1:]:
                 self.ProcessFoundEntry(a)
             if len(v[1:]) >= self.per_page:
                 listItem = xbmcgui.ListItem(__language__(30044)%2)
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1, gid=gid) , listItem, True)
+                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1, uid=uid), listItem, True)
 
     def Do_GROUPS(self):
         resp = self.api.call('groups.get',extended=1)
@@ -200,50 +182,38 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
             listItem = xbmcgui.ListItem(group['name'], "", group['photo_big'])
             xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=GROUP_VIDEO, gid=group['gid'], thumb=group['photo_medium'])  , listItem, True)
 
-    def Do_FRIENDS(self):
-        resp = self.api.call('friends.get',fields='uid,first_name,last_name,photo,nickname')
-        friends = resp[1:]
-        for friend in friends:
-            name = "%s %s (%s)" % (friend['last_name'], friend['first_name'], friend['nickname'])
-            listItem = xbmcgui.ListItem(name, "", friend['photo'])
-            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=FRIEND_VIDEO, uid=friend['uid'], thumb=friend['photo'])  , listItem, True)
 
     def Do_SERIES(self):
-        html = urllib.urlopen("http://kinobaza.tv/series").read()
-        r = re.compile(r'<img width="207" src="(.*?)" alt="(.*?)" class="poster-pic" />.*?<a href="http://kinobaza.tv/film/(.*?)/.*?span class="english">(.*?)</span>', re.DOTALL)
-        res = r.findall(html)
-        for thumb, ru, id, en in res:
-            listItem = xbmcgui.ListItem(PrepareString(ru), en, thumb, thumb)
-            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SEASONS,id=id, thumb=thumb), listItem, True)
+        series = json.load(urllib.urlopen("http://api.myshows.ru/shows/top/all/"))
+        for s in series:
+            thumb = s.get('image') or ""
+            names = (PrepareString(s.get('title') or ""), PrepareString(s.get('ruTitle') or ""))
+            if all(names):
+                listItem = xbmcgui.ListItem(" / ".join(names), str(s.get('year') or ""), thumb, thumb)
+            else:
+                listItem = xbmcgui.ListItem(names[0] or names[1], str(s.get('year') or ""), thumb, thumb)
+            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SEASON_SERIES, id=s['id']), listItem, True)
 
-    def Do_SEASONS(self):
-        srl = minidom.parse(urllib.urlopen("http://kinobaza.tv/film/%s?format=xml" % self.params["id"]))
-        n = 1
-        for e in srl.getElementsByTagName("season"):
-            episodes = len(e.getElementsByTagName("episode"))
-            thumb = self.params["thumb"]
-            listItem = xbmcgui.ListItem(__language__(30014) % (n,episodes), "", thumb, thumb)
-            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SEASON_SERIES, thumb=thumb,
-                                                                 id = self.params["id"], season = n), listItem, True)
-            n += 1
 
     def Do_SEASON_SERIES(self):
-        srl = minidom.parse(urllib.urlopen("http://kinobaza.tv/film/%s?format=xml" % self.params["id"]))
-        film = srl.getElementsByTagName("film")[0]
-        season = srl.getElementsByTagName("season")[int(self.params["season"])-1]
-        season_num = season.attributes["number"].value
-        for e in season.getElementsByTagName("episode"):
-            if not(e.attributes["description"].value or e.attributes["name"].value or e.attributes["original_name"].value):
-                continue
-            n = e.attributes["number"].value
-            thumb = self.params["thumb"]
-            title = e.attributes["name"].value or e.attributes["original_name"].value
-            desc = e.attributes["description"].value
-            title = __language__(30015) % n + (title and (u": " + title))
-            listItem =  xbmcgui.ListItem(PrepareString(title), desc, thumb, thumb)
-            q = "%s  %s   %s" % (film.attributes["name"].value,season_num, n)
+        show = json.load(urllib.urlopen("http://api.myshows.ru/shows/" + self.params["id"]))
+        film = PrepareString(show.get('ruTitle') or "") or PrepareString(show.get('title') or "")
+        episodes = show['episodes']
+        thumb = show.get('image')
+        srt = []
+        for eid in episodes:
+            e = episodes[eid]
+            title = e["title"]
+            desc = e["airDate"] or ""
+            title = __language__(30014) % (e['seasonNumber'], e['episodeNumber']) + (title and (u": " + title))
+            et = e.get('image') or thumb
+            listItem = xbmcgui.ListItem(PrepareString(title), desc, et, et)
+            q = "%s  %s  %s" % (film, e['seasonNumber'], e['episodeNumber'])
             q = q.encode('utf-8')
-            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=SEARCH, query=q), listItem, True)
+            srt.append((int(e['seasonNumber'])*1000 + int(e['episodeNumber']) , self.GetURL(mode=SEARCH, query=q), listItem))
+        for el in sorted(srt):
+            _, q, i = el
+            xbmcplugin.addDirectoryItem(self.handle, q, i, True)
 
     def Do_MY_VIDEOS(self):
         v = self.api.call("video.get", count=self.per_page)
@@ -252,7 +222,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
                 self.ProcessFoundEntry(a)
             if len(v[1:]) >= self.per_page:
                 listItem = xbmcgui.ListItem(__language__(30044)%2)
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1) , listItem, True)
+                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1), listItem, True)
 
     def Do_TOP_DOWNLOADS(self):
         html = urllib.urlopen("http://kinobaza.tv/ratings/top-downloadable").read()
