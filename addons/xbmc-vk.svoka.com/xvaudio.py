@@ -33,7 +33,7 @@ __language__ = __settings__.getLocalizedString
 saved_search_file = os.path.join(xbmc.translatePath('special://temp/').decode('utf-8'), u'vk-search.sess')
 
 #modes
-ALBUM,MY_MUSIC,HYPED_ARTISTS = "ALBUM,MY_MUSIC,HYPED_ARTISTS".split(',')
+ALBUM,MY_MUSIC,HYPED_ARTISTS,RECOMENDED_MUSIC,POPULAR_MUSIC = "ALBUM,MY_MUSIC,HYPED_ARTISTS,RECOMENDED_MUSIC,POPULAR_MUSIC".split(',')
 
 from xml.dom import minidom
 
@@ -50,6 +50,16 @@ class XVKAudio(XBMCVkUI_VKSearch_Base):
         xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_MUSIC) , listItem, True)
         listItem = xbmcgui.ListItem(__language__(30016))
         xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=HYPED_ARTISTS) , listItem, True)
+        listItem = xbmcgui.ListItem(__language__(30023))
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=RECOMENDED_MUSIC) , listItem, True)
+        listItem = xbmcgui.ListItem(__language__(30024))
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=POPULAR_MUSIC) , listItem, True)
+        self.friendsEntry("music")
+
+    def processFriendEntry(self, uid):
+        for a in self.api.call("audio.get", uid=uid):
+            self.AddAudioEntry(a)
+
 
     def Do_HYPED_ARTISTS(self):
         srl = minidom.parse(urllib.urlopen("http://ws.audioscrobbler.com/2.0/?method=chart.gethypedartists&api_key=42db3eb160b603b55f8886e8c4e9a8f4"))
@@ -79,7 +89,13 @@ class XVKAudio(XBMCVkUI_VKSearch_Base):
         for a in self.api.call("audio.get"):
             self.AddAudioEntry(a)
 
+    def Do_RECOMENDED_MUSIC(self):
+        for a in self.api.call("audio.getRecommendations", count=500):
+            self.AddAudioEntry(a)
 
+    def Do_POPULAR_MUSIC(self):
+        for a in self.api.call("audio.getPopular", count=500):
+            self.AddAudioEntry(a)
 
     def AddAudioEntry(self, a):
         title = a.get("artist")
@@ -87,6 +103,14 @@ class XVKAudio(XBMCVkUI_VKSearch_Base):
             title += u" : "
         title += a.get("title")
         d = unicode(datetime.timedelta(seconds=int(a["duration"])))
-        title = d + u" - " + title
-        listItem = xbmcgui.ListItem(PrepareString(title) )
-        xbmcplugin.addDirectoryItem(self.handle, a["url"] , listItem, False)
+        listTitle = d + u" - " + title
+        listitem = xbmcgui.ListItem(PrepareString(listTitle))
+        print "\n\n\n\n\n\n\n\n"+str(a)+"\n\n\n\n\n"
+        listitem.setInfo(type='Music', infoLabels={'url': a["url"],
+                                                   'title': a.get("title") or "",
+                                                   'artist': a.get("artist") or "",
+                                                   'album': a.get("artist") or "",
+                                                   'duration': a.get('duration') or 0})
+        listitem.setProperty('mimetype', 'audio/mpeg')
+
+        xbmcplugin.addDirectoryItem(self.handle, a["url"], listitem, False)
