@@ -18,12 +18,8 @@
 __author__ = 'Volodymyr Shcherban'
 
 
-import xbmcgui, xbmc, xbmcplugin, xbmcaddon, datetime, os, urllib, re, sys, time
+import xbmcgui, xbmc, xbmcplugin, xbmcaddon, datetime, os, urllib, re, sys
 import base64
-try:
-    from sqlite3 import dbapi2 as sqlite
-except:
-    from pysqlite2 import dbapi2 as sqlite
 
 
 from xml.dom import minidom
@@ -195,7 +191,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
         listItem = xbmcgui.ListItem(__language__(30042))
         xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=GROUPS) , listItem, True)
 
-        self.friendsEntry("video")
+        self.friendsEntry()
         # listItem = xbmcgui.ListItem(__language__(30020))
         # xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_SHOWS_LIST) , listItem, True)
 

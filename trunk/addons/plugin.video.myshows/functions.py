@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.5"
+__version__ = "1.7.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -165,13 +165,15 @@ def auth():
     try:    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
     except urllib2.HTTPError as e:
         Debug('[auth]: url - '+str(url)+'; HTTPError - '+str(e)+' ;e -'+str(e.code), True)
-        if e.code==403 or not login or login=='' or not passwd or passwd=='':
-            if int(time.time())-int(__settings__.getSetting("lastlogin"))>3600*1000:
-                __settings__.setSetting( "lastlogin", str(time.time()) )
+        if e.code in (403,404) or not login or login=='' or not passwd or passwd=='':
+            if __settings__.getSetting("lastlogin")=='' or int(time.time())-int(__settings__.getSetting("lastlogin"))>60*1000:
+                __settings__.setSetting( "lastlogin", str(round(time.time())) )
                 dialog = xbmcgui.Dialog()
                 ok=dialog.yesno( __language__(30201), __language__(30201), __language__(30202))
                 if ok:
                     __settings__.openSettings()
+            else:
+                showMessage('HTTP - '+str(e.code), __language__(30201))
         return False
     cookie_src = conn.info().get('Set-Cookie')
     cookie_str = re.sub(r'(expires=.*?;\s|path=\/;\s|domain=\.myshows\.ru(?:,\s)?)', '', cookie_src)
@@ -179,7 +181,7 @@ def auth():
     su_pass =  cookie_str.split("=")[-1].split(";")[0].strip()
     cookie='SiteUser[login]='+login+'; SiteUser[password]='+su_pass+'; PHPSESSID='+session
     __settings__.setSetting( "cookie_auth", cookie )
-    __settings__.setSetting( "lastlogin", str(time.time()) )
+    __settings__.setSetting( "lastlogin", str(round(time.time())) )
     conn.close()
     return cookie
 
@@ -619,20 +621,18 @@ def uTorrentBrowser():
 
 class PluginStatus():
     def __init__(self):
-        self.patchfiles=[('serialustatus','plugin.video.serialu.net','patch_for_plugin.video.serialu.net_ver_1.2.3',['default.py','update.py']),
-                ('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
-                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_0.8.2',['xbmcvkui.py','xvvideo.py']),
+        self.patchfiles=[('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
+                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_1.0.2',['xbmcvkui.py','xvvideo.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.2.7',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
                  'resources/searchers/NNMClubRu.py'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])
 
-        self.serialustatus=self.status['serialustatus']
         self.vkstatus=self.status['vkstatus']
         self.torrenterstatus=self.status['torrenterstatus']
         self.myshows=self.status['myshows']
-        self.search={'serialustatus':'serialu.net', 'vkstatus':'VK-xbmc', 'torrenterstatus':'Torrenter', 'myshows':'MyShows.ru (Service)'}
+        self.search={'vkstatus':'VK-xbmc', 'torrenterstatus':'Torrenter', 'myshows':'MyShows.ru (Service)'}
 
     def menu(self):
         try:
@@ -656,8 +656,6 @@ class PluginStatus():
         if action:
             if action=='vkstatus':
                 text=self.vkstatus
-            elif action=='serialustatus':
-                text=self.serialustatus
             elif action=='torrenterstatus':
                 text=self.torrenterstatus
                 text2='Python-LibTorrent and Torrenter at http://xbmc.ru/'
@@ -688,7 +686,6 @@ class PluginStatus():
         menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
               {"title":'MyShows.ru (Service): %s' % self.myshows       ,"mode":"61",    "argv":{'action':'myshows',},},
               {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
-              {"title":__language__(30144) % self.serialustatus  ,"mode":"61",   "argv":{'action':'serialustatus'}},
               {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
               {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
               {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
