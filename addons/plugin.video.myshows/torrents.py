@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.7.5"
+__version__ = "1.7.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -187,7 +187,7 @@ class ScanDB(TorrentDB):
 
     def get_all(self):
         self._connect()
-        stypelist=['multifile', 'multitorrent','serialu','rutracker','nnm','kz']
+        stypelist=['multifile', 'multitorrent','rutracker','nnm','kz']
         self.where=' where stype="unrealstuff"'
         for stype in stypelist:
             self.where+=' OR stype="'+str(stype)+'"'
@@ -704,11 +704,11 @@ class AddSource(Source):
         if self.stype=='xbmc': self.stype=None
         if not self.stype:
             if self.id:
-                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242),__language__(30255), __language__(30273), __language__(30274), __language__(30243)]
-                myshows_items=['torrenterall','file', 'vk-file', 'btchat', 'torrent', 'serialu', 'tpb', 'utorrent', None]
+                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242), __language__(30273), __language__(30274), __language__(30243)]
+                myshows_items=['torrenterall','file', 'vk-file', 'btchat', 'torrent', 'tpb', 'utorrent', None]
             else:
-                myshows_titles=[__language__(30291),__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246),__language__(30255), __language__(30274), __language__(30243)]
-                myshows_items=['torrenterall', 'dir', 'rutracker' , 'nnm', 'torrent', 'multifile', 'multitorrent','serialu', 'utorrent', None]
+                myshows_titles=[__language__(30291),__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246), __language__(30274), __language__(30243)]
+                myshows_items=['torrenterall', 'dir', 'rutracker' , 'nnm', 'torrent', 'multifile', 'multitorrent', 'utorrent', None]
             dialog = xbmcgui.Dialog()
             i = dialog.select(__language__(30235), myshows_titles)
             if i>-1: stype=myshows_items[i]
