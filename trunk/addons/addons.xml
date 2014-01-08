@@ -696,7 +696,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.fepcom.net"
-       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]fepcom.net[/COLOR]+[COLOR FF00FF00])[/COLOR]" version="2.0.1"
+       name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]fepcom.net[/COLOR]+[COLOR FF00FF00])[/COLOR]" version="2.0.2"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.0"/>
