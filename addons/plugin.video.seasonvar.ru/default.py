@@ -628,6 +628,14 @@ def Run_Java(SWF_code):
         except:
             fcode = get_HTML(url, post)
 
+        try:
+            print '----------------------'
+            print SWF_code
+            print fcode
+            print '----------------------'
+        except:
+            pass
+
         return fcode
 
     #-- local PhantomJS service
@@ -685,6 +693,10 @@ def Test(params):
     xbmcplugin.endOfDirectory(h)
 
 def Check_SWF():
+    #-- remote PhantomJS service
+    if Addon.getSetting('External_PhantomJS') == 'true':
+        return True
+
     if Addon.getSetting('SWF_Path') == '':
         swf_path = os.path.join(Addon.getAddonInfo('path'), r'resources', r'swf')
     else:
