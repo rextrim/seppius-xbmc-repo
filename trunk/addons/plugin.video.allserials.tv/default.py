@@ -234,13 +234,7 @@ def Movie_List(params):
         url = 'http://allserials.tv/ajax/serials/get-filter/'+par.genre+'/'+par.country+'/0/name'
 
     #== get movie list =====================================================
-    print '-------------------------'
-    print url
-    print '-------------------------'
-
     html = get_HTML(url)
-    print html
-
     soup = BeautifulSoup(html, fromEncoding="utf-8")
 
     # -- parsing web page --------------------------------------------------
@@ -412,7 +406,8 @@ def Get_Movie_Info(url):
     try:
         for rec in urllib.unquote_plus(main_rec.find('object', {'id':'videoplayer'}).find('param', {'name':'flashvars'})['value'].encode('utf-8')).split('&'):
             if rec.split('=')[0] == 'pl':
-                mi.pl_url = rec.split('=')[1]
+                mi.pl_url = rec.split('=',1)[1]
+
 
                 #-- check if playlist should be decode
                 if mi.pl_url[:4] != 'http':
@@ -548,6 +543,7 @@ def Get_PlayList(url):
         return []
 
     html = get_HTML(url)
+
     try:
         pl = json.loads(html)
     except:
