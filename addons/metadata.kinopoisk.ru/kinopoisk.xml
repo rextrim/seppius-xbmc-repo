@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="WINDOWS-1251"?>
-<scraper date="2013-10-14" framework="1.1">
+<scraper date="2014-01-09" framework="1.1">
 	<NfoUrl dest="3">
 		<RegExp input="$$1" output="&lt;url&gt;\1|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;" dest="3">
 			<expression noclean="1">(http://www\.kinopoisk\.ru/level/1/film/[0-9]*/)</expression>
@@ -215,8 +215,8 @@
 				<expression>(/film/(\d+)/cast/)</expression>
 			</RegExp>
 			<!--POSTERS Берем с кинопоиска сначала картинку с титульной, потом обложки, потом просто постеры -->
-			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;thumb preview=&quot;\2&quot;&gt;\1&lt;/thumb&gt;" dest="5+">
-				<expression>class=&quot;popupBigImage&quot;.*?(http://.*?[.]jpg).*?(http://.*?[.]jpg)</expression>
+			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;thumb preview=&quot;\2&quot;&gt;\3\1&lt;/thumb&gt;" dest="5+">
+				<expression>class=&quot;popupBigImage&quot;.*?&apos;(/images/.*?jpg)&apos;.*?((http://.*?)/.*?[.]jpg)</expression>
 			</RegExp>
 			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;url cache=&quot;kinopoisk-coverurl-\2&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru/film/\2/covers/&lt;/url&gt;&lt;url cache=&quot;kinopoisk-posters-\2&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
 				<expression>(/film/(\d+)/posters)</expression>
