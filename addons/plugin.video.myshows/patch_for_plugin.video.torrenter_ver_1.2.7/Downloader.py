@@ -114,7 +114,8 @@ class Torrent:
                     return
                 baseName = os.path.basename(self.getFilePath())
                 newFile = self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep + baseName + '.' + self.md5(torrentUrl) + '.torrent'
-                newFile = newFile.decode('utf-8').encode('ascii', 'ignore')
+                try:newFile.decode('utf-8', 'ignore').encode('ascii', 'ignore')
+                except:newFile = newFile.encode('ascii', 'ignore')
                 try:xbmcvfs.delete(newFile)
                 except:pass
                 if not xbmcvfs.exists(newFile):
