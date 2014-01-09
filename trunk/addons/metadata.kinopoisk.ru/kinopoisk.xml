@@ -216,7 +216,7 @@
 			</RegExp>
 			<!--POSTERS Ѕерем с кинопоиска сначала картинку с титульной, потом обложки, потом просто постеры -->
 			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;thumb preview=&quot;\2&quot;&gt;\3\1&lt;/thumb&gt;" dest="5+">
-				<expression>class=&quot;popupBigImage&quot;.*?&apos;(/images/.*?jpg)&apos;.*?((http://.*?)/.*?[.]jpg)</expression>
+				<expression>class=&quot;popupBigImage&quot;[^&gt;]*&apos;(/images/[^&gt;]*jpg)&apos;[^&gt;]*&gt;[^&gt;]*((http://[^/&gt;]*)/[^&gt;]*[.]jpg)</expression>
 			</RegExp>
 			<RegExp conditional="posters_from_kinopoisk" input="$$1" output="&lt;url cache=&quot;kinopoisk-coverurl-\2&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru/film/\2/covers/&lt;/url&gt;&lt;url cache=&quot;kinopoisk-posters-\2&quot; function=&quot;GMP&quot;&gt;http://www.kinopoisk.ru\1&lt;/url&gt;" dest="5+">
 				<expression>(/film/(\d+)/posters)</expression>
