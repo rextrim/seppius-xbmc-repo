@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.6"
+__version__ = "1.7.6a"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -643,6 +643,7 @@ class PluginStatus():
         from torrents import TorrentDB
         from net import Download
 
+        socket.setdefaulttimeout(3)
         if Download().action('action=getsettings'):
             utorrentstatus=unicode(__language__(30147))
         else:

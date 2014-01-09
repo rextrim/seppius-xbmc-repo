@@ -25,7 +25,7 @@ try:
 except:
     libmode=False
 
-__version__ = "1.7.6"
+__version__ = "1.7.6a"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -285,7 +285,7 @@ class Source:
                     return stype
                 except:
                     self.stypes=[r'json', r'vk-file', r'url-file', r'btchat', r'rutracker',r'tpb',r'nnm',r'kz', 'smb', 'torrenter']
-                    self.fnames=['{.*?}', 'http://.*?vk\.com.*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
+                    self.fnames=['{.*?}', 'http://.*?vk\.(com|me).*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
                     self.i=-1
                     for fn in self.fnames:
                         self.i+=1
