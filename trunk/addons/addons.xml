@@ -734,10 +734,10 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.8.8"
+       version="1.8.9"
        provider-name="x86demon">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1"/>
     <import addon="script.module.beautifulsoup"/>
     <import addon="script.module.simplejson"/>
     <import addon="script.module.simple.downloader"/>
