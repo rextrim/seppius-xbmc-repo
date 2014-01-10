@@ -26,7 +26,7 @@ import os
 import cookielib
 import socket
 
-import simplejson as json
+# import simplejson as json
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
@@ -47,6 +47,7 @@ __status__ = "Production"
 __settings__ = xbmcaddon.Addon(id='plugin.video.fs.ua')
 __language__ = __settings__.getLocalizedString
 __addondir__ = xbmc.translatePath(__settings__.getAddonInfo('profile'))
+print __addondir__
 __addondir__ = __addondir__.decode(sys.getfilesystemencoding())
 
 if os.path.exists(__addondir__) == False:
@@ -294,7 +295,7 @@ def getFavoriteCategories(params):
     if len(favSections) == 0:
         showMessage('ОШИБКА', 'В избранном пусто', 3000)
         return False
-    sectionRegexp = re.compile("\s*{\s*section:\s*'([^']+)")
+    sectionRegexp = re.compile("\s*\{\s*section:\s*'([^']+)")
     subsectionRegexp = re.compile("subsection:\s*'([^']+)")
     for favSection in favSections:
         rel = favSection.find('a', 'b-add')['rel'].encode('utf-8')
@@ -336,7 +337,7 @@ def readfavorites(params):
     http = GET(favoritesUrl, httpSiteUrl)
     if http == None: return False
 
-    data = json.loads(str(http))
+    data = {} #json.loads(str(http))
     http = data['content'].encode('utf-8')
 
     beautifulSoup = BeautifulSoup(http)
