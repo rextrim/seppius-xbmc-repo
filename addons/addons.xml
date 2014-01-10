@@ -734,32 +734,34 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.8.9"
+       version="1.8.10"
        provider-name="x86demon">
-  <requires>
-    <import addon="xbmc.python" version="2.1"/>
-    <import addon="script.module.beautifulsoup"/>
-    <import addon="script.module.simplejson"/>
-    <import addon="script.module.simple.downloader"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="audio, video"
-             library="default.py">
-    <provides>audio video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>
-РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+    <requires>
+        <import addon="xbmc.python" version="2.1"/>
+        <import addon="script.module.beautifulsoup"/>
+        <import addon="script.module.simplejson"/>
+        <!--<import addon="script.module.simple.downloader"/>-->
+    </requires>
+    <extension point="xbmc.python.pluginsource"
+               provides="audio, video"
+               library="default.py">
+        <provides>audio video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>
+            РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
 
-На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
-    </summary>
-    <description>
-РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+            На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные
+            файлы, любимые видеоклипы и сериалы.
+        </summary>
+        <description>
+            РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
 
-На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные файлы, любимые видеоклипы и сериалы.
-    </description>
-    <platform>all</platform>
-  </extension>
+            На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные
+            файлы, любимые видеоклипы и сериалы.
+        </description>
+        <platform>all</platform>
+    </extension>
 </addon>
 
 <addon id="plugin.video.galileo-online.ru"
