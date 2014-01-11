@@ -328,6 +328,12 @@ def getImage(src, quality):
     return '/'.join(src)
 
 
+def fix_string(string):
+    if isinstance(string, unicode):
+        return string.encode('utf8')
+    return string
+
+
 def readfavorites(params):
     href = httpSiteUrl + "/myfavourites.aspx?ajax&section=" + params['section'] \
            + "&subsection=" + params['subsection'] \
@@ -340,7 +346,7 @@ def readfavorites(params):
         return False
 
     data = json.loads(str(http))
-    http = data['content'].encode('utf-8')
+    http = fix_string(data['content'])
 
     beautifulSoup = BeautifulSoup(http)
     itemsContainer = beautifulSoup.find('div', 'b-posters')
@@ -357,7 +363,7 @@ def readfavorites(params):
             cover = coverRegexp.findall(str(item['style']))[0]
             title = []
             for string in item.find('span').stripped_strings:
-                title.append(string.encode('utf8'))
+                title.append(fix_string(string))
             title = ' / '.join(title)
             href = httpSiteUrl + item['href']
 
@@ -506,7 +512,7 @@ def readcategory(params):
                     details = item.find('div', 'text').contents
                     for detail in details:
                         try:
-                            plot.append(detail.encode('utf-8'))
+                            plot.append(fix_string(detail))
                         except:
                             pass
                     plot = "\n".join(plot)
@@ -555,7 +561,7 @@ def readcategory(params):
         li = xbmcgui.ListItem('[NEXT PAGE >]')
         li.setProperty('IsPlayable', 'false')
         uri = construct_request({
-            'href': httpSiteUrl + nextPageLink['href'].encode('utf-8'),
+            'href': httpSiteUrl + fix_string(nextPageLink['href']),
             'mode': 'readcategory',
             'section': params['section'],
             'filter': params['filter'],
@@ -582,7 +588,7 @@ def getGenreList(params):
             li = xbmcgui.ListItem(item.string)
             li.setProperty('IsPlayable', 'false')
             uri = construct_request({
-                'href': httpSiteUrl + item['href'].encode('utf-8'),
+                'href': httpSiteUrl + fix_string(item['href']),
                 'mode': 'readcategory',
                 'section': params['section'],
                 'filter': '',
@@ -635,15 +641,17 @@ def readdir(params):
                 if isFolder:
                     titleB = linkItem.find('b')
                     if titleB is None:
-                        title = linkItem.string.encode('utf8')
+                        title = fix_string(linkItem.string)
                     else:
-                        title = titleB.string.encode('utf8')
+                        title = fix_string(titleB.string)
                     quality = item.find_all('span', 'material-size')
                     if len(quality) > 1:
-                        title = title + " [" + quality[0].string.encode('utf8') + "]"
+                        title = title + " [" + fix_string(quality[0].string) + "]"
                 else:
                     try:
-                        title = playLink.find('span', playLinkClass + '-filename-text').string.encode('utf8')
+                        title = fix_string(
+                            playLink.find('span', playLinkClass + '-filename-text').string
+                        )
                     except:
                         pass
 
@@ -687,7 +695,7 @@ def readdir(params):
                             (
                             __language__(40001), "XBMC.RunPlugin(%s)" % construct_request({
                                 'mode': 'download',
-                                'file_url': str(href.encode('utf-8')),
+                                'file_url': str(fix_string(href)),
                                 'file_name': title
                             })
                             )
@@ -695,7 +703,7 @@ def readdir(params):
 
                     if type == 'music' or (__settings__.getSetting('Autoplay next') == 'true' and not useFlv):
                         uri = construct_request({
-                            'file': str(href.encode('utf-8')),
+                            'file': str(fix_string(href)),
                             'referer': folderUrl,
                             'mode': 'play'
                         })
@@ -756,7 +764,7 @@ def render_search_results(params):
             link = item.find('a')
 
             if link is not None:
-                title = str(link['title'].encode('utf-8'))
+                title = str(fix_string(link['title']))
                 href = httpSiteUrl + link['href']
                 cover = item.find('img')['src']
 
@@ -785,7 +793,7 @@ def render_search_results(params):
             li = xbmcgui.ListItem('[NEXT PAGE >]')
             li.setProperty('IsPlayable', 'false')
             uri = construct_request({
-                'href': httpSiteUrl + str(nextPageLink['href'].encode('utf-8')),
+                'href': httpSiteUrl + str(fix_string(nextPageLink['href'])),
                 'mode': 'render_search_results',
                 'section': params['section']
             })
