@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.9.3"
+       version="1.9.4"
        provider-name="x86demon">
     <requires>
-        <import addon="xbmc.python" version="2.1"/>
-        <import addon="script.module.html5lib"/>
-        <import addon="script.module.beautifulsoup4"/>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.beautifulsoup"/>
         <import addon="script.module.simplejson"/>
         <import addon="script.module.simple.downloader"/>
     </requires>
@@ -16,17 +15,11 @@
         <provides>audio video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>
-            РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
+        <summary>Просмотр контента с brb.to (fs.ua, fs.to)</summary>
+        <description>РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
 
-            На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные
-            файлы, любимые видеоклипы и сериалы.
-        </summary>
-        <description>
-            РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
-
-            На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные
-            файлы, любимые видеоклипы и сериалы.
+На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные
+файлы, любимые видеоклипы и сериалы.
         </description>
         <platform>all</platform>
     </extension>
