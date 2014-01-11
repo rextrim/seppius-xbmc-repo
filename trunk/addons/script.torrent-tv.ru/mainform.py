@@ -148,6 +148,8 @@ class WMainForm(xbmcgui.WindowXML):
             return
         
         for ch in jdata['channels']:
+            if not ch["id"]:
+                continue
             if not ch["logo"]:
                 ch["logo"] = ""
             else:
@@ -499,7 +501,7 @@ class WMainForm(xbmcgui.WindowXML):
 
     def fillRecords(self, li, date = time.localtime()):
         self.showStatus("Загрузка архива")
-        data = defines.GET("http://api.torrent-tv.ru/v2_arc_getrecords.php?session=%s&date=%.2d-%.2d-%s&channel_id=%s&typeresult=json" % (self.session, date.day, date.month, date.year, li.getProperty("epg_cdn_id")), cookie = self.session)
+        data = defines.GET("http://api.torrent-tv.ru/v2_arc_getrecords.php?session=%s&date=%d-%d-%s&channel_id=%s&typeresult=json" % (self.session, date.day, date.month, date.year, li.getProperty("epg_cdn_id")), cookie = self.session)
         jdata = json.loads(data)
         if jdata["success"] == 0:
             self.showStatus(jdata["error"])

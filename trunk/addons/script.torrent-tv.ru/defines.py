@@ -22,6 +22,7 @@ def showMessage(message = '', heading='Torrent-TV.RU', times = 6789):
 
 def GET(target, post=None, cookie = None):
     try:
+        print target
         req = urllib2.Request(url = target, data = post)
         req.add_header('User-Agent', 'XBMC (script.torrent-tv.ru)')
         if cookie:

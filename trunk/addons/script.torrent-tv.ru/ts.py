@@ -47,7 +47,7 @@ class TSengine(xbmc.Player):
 
     def onPlayBackStopped(self):
         LogToXBMC('onPlayBackStopped')
-        if not self.amalker and self.playing:
+        if not self.amalker and self.playing and self.winmode:
             LogToXBMC('STOP')
             self.parent.player.close()
             self.tsstop()
@@ -61,10 +61,10 @@ class TSengine(xbmc.Player):
     def onPlayBackStarted(self):
         pass
         LogToXBMC('%s %s %s' % (xbmcgui.getCurrentWindowId(), self.amalker, self.getPlayingFile()))
-        if not self.amalker:
+        if not self.amalker and self.winmode:
             self.parent.player.show()
             pass
-        else:
+        elif self.amalker:
             pass
             LogToXBMC('SHOW ADS Window')
             self.parent.amalkerWnd.show()
@@ -234,6 +234,7 @@ class TSengine(xbmc.Player):
         self.paused = False
         self.closed = False
         self.trys = 0
+        self.winmode = defines.ADDON.getSetting("winmode") == "true"
        
         LogToXBMC(defines.ADDON.getSetting('ip_addr'))
         if defines.ADDON.getSetting('ip_addr'):
@@ -390,7 +391,6 @@ class TSengine(xbmc.Player):
                     raise Exception('Incorrect msg from TS %s' % msg.getType())
 
                 self.amalker = _params.has_key('ad') and not _params.has_key('interruptable')
-                LogToXBMC('Преобразование ссылки')
                 self.link = _params['url'].replace('127.0.0.1', self.server_ip).replace('6878', self.webport)
                 LogToXBMC('Преобразование ссылки: %s' % self.link)
                 self.title = title
@@ -407,7 +407,10 @@ class TSengine(xbmc.Player):
                 self.icon = icon
                 self.thumb = thumb
                 lit= xbmcgui.ListItem(title, iconImage = icon, thumbnailImage = thumb)
-                self.play(self.link, lit, windowed = True)
+                if self.amalker or self.winmode:
+                    self.play(self.link, lit, windowed = True)
+                else:
+                    self.play(self.link, lit)
                 self.playing = True
                 self.paused = False
                 self.loop()
@@ -463,7 +466,10 @@ class TSengine(xbmc.Player):
                         self.parent.showStatus('Рекламный ролик')
 
                     lit= xbmcgui.ListItem(self.title, iconImage = self.icon, thumbnailImage = self.thumb)
-                    self.play(self.play_url, lit, windowed = True)
+                    if self.amalker or self.winmode:
+                        self.play(self.play_url, lit, windowed = True)
+                    else:
+                        self.play(self.play_url, lit)
                     self.paused = False
                     self.loop()
                 except Exception, e:

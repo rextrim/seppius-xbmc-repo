@@ -92,6 +92,7 @@ class MyPlayer(xbmcgui.WindowXML):
 
     def Start(self, li):
         pass
+        print "Start play "
         if not self.TSPlayer :
             LogToXBMC('InitTS')
             self.TSPlayer = tsengine(parent = self.parent)
@@ -118,7 +119,9 @@ class MyPlayer(xbmcgui.WindowXML):
         if jdata["success"] == 0:
             self.parent.showStatus(data["error"])
             return
-        
+        if not jdata["source"]:
+            self.parent.showStatus("Канал временно не доступен")
+            return
         url = jdata["source"]
         mode = jdata["type"].upper().replace("CONTENTID","PID")
         self.parent.hideStatus()
