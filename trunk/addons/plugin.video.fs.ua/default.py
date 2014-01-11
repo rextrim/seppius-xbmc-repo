@@ -333,7 +333,6 @@ def fix_string(string):
         return string.encode('utf8')
     return string
 
-
 def readfavorites(params):
     href = httpSiteUrl + "/myfavourites.aspx?ajax&section=" + params['section'] \
            + "&subsection=" + params['subsection'] \
@@ -346,7 +345,7 @@ def readfavorites(params):
         return False
 
     data = json.loads(str(http))
-    http = fix_string(data['content'])
+    http = data['content'].encode('utf-8')
 
     beautifulSoup = BeautifulSoup(http)
     itemsContainer = beautifulSoup.find('div', 'b-posters')
@@ -512,7 +511,7 @@ def readcategory(params):
                     details = item.find('div', 'text').contents
                     for detail in details:
                         try:
-                            plot.append(fix_string(detail))
+                            plot.append(detail.encode('utf-8'))
                         except:
                             pass
                     plot = "\n".join(plot)
@@ -561,7 +560,7 @@ def readcategory(params):
         li = xbmcgui.ListItem('[NEXT PAGE >]')
         li.setProperty('IsPlayable', 'false')
         uri = construct_request({
-            'href': httpSiteUrl + fix_string(nextPageLink['href']),
+            'href': httpSiteUrl + nextPageLink['href'].encode('utf-8'),
             'mode': 'readcategory',
             'section': params['section'],
             'filter': params['filter'],
@@ -588,7 +587,7 @@ def getGenreList(params):
             li = xbmcgui.ListItem(item.string)
             li.setProperty('IsPlayable', 'false')
             uri = construct_request({
-                'href': httpSiteUrl + fix_string(item['href']),
+                'href': httpSiteUrl + item['href'].encode('utf-8'),
                 'mode': 'readcategory',
                 'section': params['section'],
                 'filter': '',
@@ -649,9 +648,7 @@ def readdir(params):
                         title = title + " [" + fix_string(quality[0].string) + "]"
                 else:
                     try:
-                        title = fix_string(
-                            playLink.find('span', playLinkClass + '-filename-text').string
-                        )
+                        title = playLink.find('span', fix_string(playLinkClass + '-filename-text').string)
                     except:
                         pass
 
@@ -695,7 +692,7 @@ def readdir(params):
                             (
                             __language__(40001), "XBMC.RunPlugin(%s)" % construct_request({
                                 'mode': 'download',
-                                'file_url': str(fix_string(href)),
+                                'file_url': str(href.encode('utf-8')),
                                 'file_name': title
                             })
                             )
@@ -703,7 +700,7 @@ def readdir(params):
 
                     if type == 'music' or (__settings__.getSetting('Autoplay next') == 'true' and not useFlv):
                         uri = construct_request({
-                            'file': str(fix_string(href)),
+                            'file': str(href.encode('utf-8')),
                             'referer': folderUrl,
                             'mode': 'play'
                         })
@@ -764,7 +761,7 @@ def render_search_results(params):
             link = item.find('a')
 
             if link is not None:
-                title = str(fix_string(link['title']))
+                title = str(link['title'].encode('utf-8'))
                 href = httpSiteUrl + link['href']
                 cover = item.find('img')['src']
 
@@ -793,7 +790,7 @@ def render_search_results(params):
             li = xbmcgui.ListItem('[NEXT PAGE >]')
             li.setProperty('IsPlayable', 'false')
             uri = construct_request({
-                'href': httpSiteUrl + str(fix_string(nextPageLink['href'])),
+                'href': httpSiteUrl + str(nextPageLink['href'].encode('utf-8')),
                 'mode': 'render_search_results',
                 'section': params['section']
             })
