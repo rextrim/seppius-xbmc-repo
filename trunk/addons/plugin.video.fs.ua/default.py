@@ -42,7 +42,7 @@ import socket
 import simplejson as json
 
 import SimpleDownloader as downloader
-from bs4 import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 
 socket.setdefaulttimeout(50)
 
@@ -60,9 +60,12 @@ cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 
 h = int(sys.argv[1])
 
-
 def construct_request(params):
     return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
+
+
+def htmlEntitiesDecode(string):
+    return BeautifulStoneSoup(string, convertEntities=BeautifulStoneSoup.HTML_ENTITIES).contents[0]
 
 
 def show_message(heading, message, times=3000):
@@ -290,17 +293,17 @@ def getFavoriteCategories(params):
         show_message('ОШИБКА', 'В избранном пусто', 3000)
         return False
 
-    favSections = favSectionsContainer.find_all('div', 'b-category')
+    favSections = favSectionsContainer.findAll('div', 'b-category')
     if len(favSections) == 0:
         show_message('ОШИБКА', 'В избранном пусто', 3000)
         return False
-    sectionRegexp = re.compile("'([^']+)")
-    subsectionRegexp = re.compile("'([^']+)")
+    sectionRegexp = re.compile("\s*\{\s*section:\s*'([^']+)")
+    subsectionRegexp = re.compile("subsection:\s*'([^']+)")
     for favSection in favSections:
-        rel = favSection.find('a', 'b-add')['rel']
-        section = sectionRegexp.findall(rel[1])[0]
-        subsection = subsectionRegexp.findall(rel[3])[0]
-        title = favSection.find('a', 'item').b.string
+        rel = favSection.find('a', 'b-add')['rel'].encode('utf-8')
+        section = sectionRegexp.findall(rel)[0]
+        subsection = subsectionRegexp.findall(rel)[0]
+        title = str(favSection.find('a', 'item').find('b').string)
         li = xbmcgui.ListItem(title)
 
         uri = construct_request({
@@ -352,7 +355,7 @@ def readfavorites(params):
     if itemsContainer is None:
         show_message('ОШИБКА', 'В избранном пусто', 3000)
         return False
-    items = itemsContainer.find_all('a')
+    items = itemsContainer.findAll('a')
     if len(items) == 0:
         show_message('ОШИБКА', 'В избранном пусто', 3000)
         return False
@@ -360,18 +363,15 @@ def readfavorites(params):
         coverRegexp = re.compile("url\s*\('([^']+)")
         for item in items:
             cover = coverRegexp.findall(str(item['style']))[0]
-            title = []
-            for string in item.find('span').stripped_strings:
-                title.append(fix_string(string))
-            title = ' / '.join(title)
+            title = str(item.find('span').string)
             href = httpSiteUrl + item['href']
 
             isMusic = "no"
             if re.search('audio', href):
                 isMusic = "yes"
 
-            li = xbmcgui.ListItem(title, iconImage=getThumbnailImage(cover),
-                  thumbnailImage=getPosterImage(cover))
+            li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage = getThumbnailImage(cover),
+                                  thumbnailImage = getPosterImage(cover))
             li.setProperty('IsPlayable', 'false')
 
             id = item['href'].split('/')[-1]
@@ -434,9 +434,9 @@ def readcategory(params):
 
     beautifulSoup = BeautifulSoup(http)
     if showUpdateInfo:
-        items = beautifulSoup.find_all('div', 'b-poster-section')
+        items = beautifulSoup.findAll('div', 'b-poster-section')
     else:
-        items = beautifulSoup.find_all('div', 'b-poster-section-detail')
+        items = beautifulSoup.findAll('div', 'b-poster-section-detail')
 
     if len(items) == 0:
         show_message('ОШИБКА', 'Неверная страница', 3000)
@@ -514,8 +514,8 @@ def readcategory(params):
                             plot.append(detail.encode('utf-8'))
                         except:
                             pass
-                    plot = "\n".join(plot)
-                titleText = title
+                    plot = htmlEntitiesDecode("\n".join(plot))
+                titleText = htmlEntitiesDecode(title)
                 li = xbmcgui.ListItem(titleText, iconImage=getThumbnailImage(cover),
                                       thumbnailImage=getPosterImage(cover))
                 if plot != '':
@@ -577,7 +577,7 @@ def getGenreList(params):
         return False
 
     beautifulSoup = BeautifulSoup(http)
-    items = beautifulSoup.find('div', params['css']).find_all('a')
+    items = beautifulSoup.find('div', params['css']).findAll('a')
 
     if len(items) == 0:
         show_message('ОШИБКА', 'Неверная страница', 3000)
@@ -614,7 +614,7 @@ def readdir(params):
         show_message('ОШИБКА', 'No filelist', 3000)
         return False
 
-    items = mainItems.find_all('li')
+    items = mainItems.findAll('li')
 
     folderRegexp = re.compile('(\d+)')
     if len(items) == 0:
@@ -622,7 +622,7 @@ def readdir(params):
         return False
     else:
         for item in items:
-            isFolder = 'folder' in item['class']
+            isFolder = item['class'] == 'folder'
             playLink = None
             if isFolder:
                 linkItem = item.find('a', 'title')
@@ -640,15 +640,15 @@ def readdir(params):
                 if isFolder:
                     titleB = linkItem.find('b')
                     if titleB is None:
-                        title = fix_string(linkItem.string)
+                        title = str(linkItem.string)
                     else:
-                        title = fix_string(titleB.string)
-                    quality = item.find_all('span', 'material-size')
+                        title = str(titleB.string)
+                    quality = item.findAll('span', 'material-size')
                     if len(quality) > 1:
-                        title = title + " [" + fix_string(quality[0].string) + "]"
+                        title = title + " [" + str(quality[0].string) + "]"
                 else:
                     try:
-                        title = playLink.find('span', fix_string(playLinkClass + '-filename-text').string)
+                        title = str(playLink.find('span', playLinkClass + '-filename-text').string)
                     except:
                         pass
 
@@ -662,12 +662,12 @@ def readdir(params):
                 else:
                     href = fallbackHref
                     try:
-                        folder = folderRegexp.findall(''.join(linkItem['rel']))[0]
+                        folder = folderRegexp.findall(linkItem['rel'])[0]
                     except:
                         pass
 
                 if isFolder:
-                    li = xbmcgui.ListItem(title, iconImage=getThumbnailImage(cover),
+                    li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage=getThumbnailImage(cover),
                                           thumbnailImage=getPosterImage(cover))
                     li.setProperty('IsPlayable', 'false')
 
@@ -680,7 +680,7 @@ def readdir(params):
                         'isMusic': params['isMusic']
                     })
                 else:
-                    li = xbmcgui.ListItem(title, iconImage=getThumbnailImage(cover),
+                    li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage=getThumbnailImage(cover),
                                           thumbnailImage=getPosterImage(cover), path=href)
                     li.setProperty('IsPlayable', 'true')
                     type = 'video'
@@ -693,7 +693,7 @@ def readdir(params):
                             __language__(40001), "XBMC.RunPlugin(%s)" % construct_request({
                                 'mode': 'download',
                                 'file_url': str(href.encode('utf-8')),
-                                'file_name': title
+                                'file_name': htmlEntitiesDecode(title)
                             })
                             )
                         ])
@@ -751,7 +751,7 @@ def render_search_results(params):
         return False
 
     beautifulSoup = BeautifulSoup(http)
-    items = beautifulSoup.find('div', 'l-content').find('table').find_all('tr')
+    items = beautifulSoup.find('div', 'l-content').find('table').findAll('tr')
 
     if len(items) == 0:
         show_message('ОШИБКА', 'Ничего не найдено', 3000)
@@ -766,7 +766,7 @@ def render_search_results(params):
                 cover = item.find('img')['src']
 
                 if title is not None:
-                    li = xbmcgui.ListItem(title, iconImage=getThumbnailImage(cover),
+                    li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage=getThumbnailImage(cover),
                                           thumbnailImage=getPosterImage(cover))
                     li.setProperty('IsPlayable', 'false')
 
