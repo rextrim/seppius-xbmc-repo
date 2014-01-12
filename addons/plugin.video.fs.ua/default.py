@@ -621,11 +621,16 @@ def readdir(params):
         show_message('ОШИБКА', 'Неверная страница', 3000)
         return False
     else:
+        langRegexp = re.compile('\s*m\-(\w+)\s*')
         for item in items:
             isFolder = item['class'] == 'folder'
             playLink = None
+            lang = None
             if isFolder:
                 linkItem = item.find('a', 'title')
+                lang_data = langRegexp.findall(linkItem['class'])
+                if len(lang_data) > 0:
+                    lang = str(lang_data[0])
                 playLinkClass = ''
             else:
                 playLinkClass = 'b-file-new__link-material'
@@ -651,6 +656,8 @@ def readdir(params):
                         title = str(playLink.find('span', playLinkClass + '-filename-text').string)
                     except:
                         pass
+                if lang is not None:
+                    title = lang.upper() + ' - ' + title
 
                 useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
                 fallbackHref = linkItem['href']
