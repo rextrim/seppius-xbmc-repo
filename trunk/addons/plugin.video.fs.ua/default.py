@@ -57,6 +57,8 @@ __language__ = __settings__.getLocalizedString
 siteUrl = 'brb.to'
 httpSiteUrl = 'http://' + siteUrl
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
+if isinstance(cookiepath, unicode):
+    cookiepath = cookiepath.encode('utf8')
 
 h = int(sys.argv[1])
 
