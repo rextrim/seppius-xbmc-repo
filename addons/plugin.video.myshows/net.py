@@ -11,8 +11,6 @@ import base64
 import mimetools
 import json
 import itertools
-import thread
-import tempfile
 
 _IS_LIBTORRENT = True
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs

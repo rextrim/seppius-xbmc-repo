@@ -27,6 +27,20 @@
         <string id="30024">Show Torrenter keyboard</string>
         <string id="30025">Ask to replace µTorrent dl path (for remote)</string>
         <string id="30026">Path replacement</string>
+        <string id="30027">Copy (with renaming)</string>
+        <string id="30028">Move (with renaming)</string>
+        <string id="30029">Symbolic link (Win:local NTFS folders only and no renaming!)</string>
+        <string id="30030">Move and backward Symbolic link (Win:same!)</string>
+        <string id="30031">None</string>
+        <string id="30032">Move to Library Mode</string>
+        <string id="30033">Always ask Move Mode</string>
+        <string id="30034">XBMC Series Folder</string>
+        <string id="30035">Always ask XBMC Series Folder</string>
+        <string id="30036">Never try Add Source if in XBMC Library</string>
+        <string id="30037">Torrent XBMC</string>
+
+        <string id="30038">LibTorrent (Torrenter needed)</string>
+        <string id="30039">Old style rate window</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
@@ -212,11 +226,40 @@
         <string id="30293">Would you like to change remote directory?</string>
         <string id="30294">Choose new µTorrent remote directory:</string>
         <string id="30295">Play XBMC Source</string>
+        <string id="30296">Failed! Didn't get any filenames!</string>
+        <string id="30297">Choose Move to XBMC Library Mode:</string>
+        <string id="30298">It works only with directories and files!</string>
+        <string id="30299">Move to Library</string>
+        <string id="30500">No XBMC Series Folder</string>
+        <string id="30501">Would you like to choose it?</string>
+        <string id="30502">Choose your XBMC (Library) Series Folder:</string>
+        <string id="30503">Would you like to change it?</string>
+        <string id="30504">Would you like to set it as default?</string>
+        <string id="30505">No subtitles or Do not want</string>
+	    <string id="30506">Would you like to copy subtitles to the main path?</string>
+        <string id="30507">Do not update</string>
+        <string id="30508">Full update</string>
+        <string id="30509">Update XBMC Library:</string>
+        <string id="30510">Folder Deleting Error</string>
+        <string id="30511">Folder is not empty, delete anyway?</string>
+        <string id="30512">uTorrent Check</string>
+        <string id="30513">Would you like to %s it (uTorrent list)?</string>
 
-        <string id="30296">Install patch</string>
-        <string id="30297">µTorrent Browser</string>
-        <string id="30298">NNM-Club.Ru Distribution (need patch plugin.video.torrenter)</string>
-        <string id="30299">Choose the show:</string>
+        <string id="30514">Episode</string>
+        <string id="30515">Rate %s</string>
+        <string id="30516">Favorite %s</string>
+        <string id="30517">Add to Favorites</string>
+        <string id="30518">Remove from Favorites</string>
+        <string id="30519">Add to Ignored</string>
+        <string id="30520">Remove from Ignored</string>
+        <string id="30521">No Friends</string>
+        <string id="30522">No Followers</string>
+        <string id="30523">Torrent Files:</string>
+        <string id="30524">Search Results:</string>
+        <string id="30525">BTChat passkey is invalid</string>
+        <string id="30526">File does not exist!</string>
+        <string id="30527">Play Source</string>
+        <string id="30528">Delete Source</string>
 
 ///Context menus
         <string id="30300">Mark as Watching</string>
@@ -237,8 +280,8 @@
         <string id="30315">Set as Main top</string>
         <string id="30316">Install Plugin</string>
         <string id="30317">Rate episode</string>
+        <string id="30318">Move to Library</string>
 
-        <string id="30318">Sort videos by length</string>
         <string id="30319">Show only 'HD' results</string>
         <string id="30320">Personal MyShows.ru list</string>
         <string id="30321">MyShows.ru user</string>

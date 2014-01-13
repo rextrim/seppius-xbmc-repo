@@ -14,13 +14,12 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.7.6a"
+__version__ = "1.8.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
 ruName=__settings__.getSetting("ruName")
-change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
 socket.setdefaulttimeout(60)
 __addonpath__= __settings__.getAddonInfo('path')
@@ -314,10 +313,10 @@ class CacheDB:
 def auto_scan():
     from torrents import ScanAll
     scan=CacheDB('autoscan')
+    if not scan.get(): scan.add()
     try:
         if scan.get() \
             and int(time.time())-scan.get()>refresh_period*3600:
-            showMessage(__language__(30277),__language__(30278))
             scan.delete()
             ScanAll()
             scan.add()
@@ -443,17 +442,18 @@ def cutFileNames(l):
     i=-1
 
     ##  need more tests
-    newl=[]
-    for li in l: newl.append(li.replace('.',' ').replace('_',' ').lower().strip())
-    l=newl
+    text=sortext(l)
     ###
+    newl=[]
+    for li in l: newl.append(li[0:len(li)-1-len(li.split('.')[-1])].replace('.',' ').replace('_',' ').lower().strip())
+    l=newl
 
-    text1 = str(l[0])
-    text2 = str(l[1])
+    text1 = str(text[0][0:len(text[0])-1-len(text[0].split('.')[-1])]).replace('.',' ').replace('_',' ').lower().strip()
+    text2 = str(text[1][0:len(text[1])-1-len(text[1].split('.')[-1])]).replace('.',' ').replace('_',' ').lower().strip()
 
-    seps=['.|:| ', '.|:|x', ' |:|x', ' |:|-', '_|:|',]
+    seps=['.', '.', ' ', ' ', '_']
     for s in seps:
-        sep_file=str(s).split('|:|')[0]
+        sep_file=s
         result=list(d.compare(text1.split(sep_file), text2.split(sep_file)))
         if len(result)>5:
             break
@@ -530,7 +530,7 @@ def filename2match(filename):
             results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip()
             Debug('[filename2match] '+str(results))
             return results
-    urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})']
+    urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})','(.+)(\d{4}) (\d{2}) (\d{2})']
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         if match:
@@ -612,7 +612,7 @@ def uTorrentBrowser():
             actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),]
             folder=True
         else:
-            actions=[('3', __language__(30281)),('0', __language__(30282)),('play', __language__(30227))] #lang
+            actions=[('3', __language__(30281)),('0', __language__(30282)),('play', __language__(30227))]
             folder=False
         for a,title in actions:
             i['argv']['action']=a
@@ -755,3 +755,33 @@ def saveCheckPoint():
 
 def gotoCheckPoint():
     xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/%s)' % (__settings__.getSetting("checkpoint")))
+
+def smbtopath(path):
+    x=path.split('@')
+    if len(x)>1: path=x[1]
+    else:path=path.replace('smb://','')
+    return '\\\\'+path.replace('/','\\')
+
+def PrepareFilename(filename):
+    badsymb=[':','"','\\','/','\'','!','&','*','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ']
+    for b in badsymb:
+        filename=filename.replace(b,' ')
+    return filename
+
+def sortext(filelist):
+    result={}
+    for name in filelist:
+        ext=name.split('.')[-1]
+        try:result[ext]=result[ext]+1
+        except: result[ext]=1
+    lol=result.viewitems()
+    lol=sorted(lol, key=lambda x: x[1])
+    Debug('[sortext]: lol:'+str(lol))
+    popext=lol[-1][0]
+    result,i=[],0
+    for name in filelist:
+        if name.split('.')[-1]==popext:
+            result.append(name)
+            i=i+1
+    Debug('[sortext]: result:'+str(result))
+    return result

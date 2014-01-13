@@ -4,7 +4,7 @@
         <string id="30001">Логин MyShows.ru</string>
         <string id="30002">Пароль MyShows.ru</string>
         <string id="30003">Использовать Русские названия</string>
-        <string id="30004">Измененять статус эпизода по клику</string>
+        <string id="30004">Изменять статус эпизода по клику</string>
         <string id="30005">Время устаревания кэша (ч)</string>
         <string id="30006">Отключить кэш</string>
         <string id="30007">Автоматическое сканирование</string>
@@ -27,6 +27,17 @@
         <string id="30024">Показывать клавиатуру Torrenter</string>
         <string id="30025">Спрашивать о замене пути к папке µTorrent (for remote)</string>
         <string id="30026">Замена пути</string>
+        <string id="30027">Копировать (с переименованием)</string>
+        <string id="30028">Переместить (с переименованием)</string>
+        <string id="30029">Симв. ссылки (Win:только local NTFS папки, без переим.!)</string>
+        <string id="30030">Переместить + обратные Симв.с. (Win:так же!)</string>
+        <string id="30031">Ничего</string>
+        <string id="30032">Перенос в Библиотеку</string>
+        <string id="30033">Всегда спрашивать как Переносить в Библиотеку</string>
+        <string id="30034">Библиотека видео в XBMC (сериалы)</string>
+        <string id="30035">Всегда спрашивать Библиотеку видео (при переносе)</string>
+        <string id="30036">Сразу проигрывать файлы [XBMC]</string>
+        <string id="30037">Торрент и XBMC</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -144,7 +155,7 @@
         <string id="30249">Добавлено %s новых источников!</string>
         <string id="30250">Невозможно проиграть: %s</string>
         <string id="30251">Удалено: %s источников</string>
-        <string id="30252">Хотите воспроизвести добавленый источник?</string>
+        <string id="30252">Хотите воспроизвести добавленный источник?</string>
         <string id="30253">Поиск BTchat.com:</string>
         <string id="30254">Корневая папка "./"</string>
         <string id="30255">Поиск Serialu.net (требует патч plugin.video.serialu.net)</string>
@@ -188,6 +199,24 @@
         <string id="30293">Изменить сетевую папку?</string>
         <string id="30294">Выберите сетевую папку µTorrent:</string>
         <string id="30295">Проиграть из XBMC</string>
+        <string id="30296">Ошибка! Список файлов пуст!</string>
+        <string id="30297">Выберите способ Переноса в Библиотеку XBMC:</string>
+        <string id="30298">Источником должна быть папка или файл!</string>
+        <string id="30299">Перенос в Библиотеку</string>
+        <string id="30500">Не указан источник видео Библиотеки XBMC</string>
+        <string id="30501">Хотите выбрать его сейчас?</string>
+        <string id="30502">Выберите папку Библиотеки XBMC (сериалы):</string>
+        <string id="30503">Хотите изменить?</string>
+        <string id="30504">Хотите установить по-умолчанию?</string>
+        <string id="30505">Нет субитров или Не хочу</string>
+	    <string id="30506">Хотите скопировать субтитры в папку к видео?</string>
+        <string id="30507">Не обновлять</string>
+        <string id="30508">Полное обновление</string>
+        <string id="30509">Обновите Библиотеку XBMC:</string>
+        <string id="30510">Ошибка Удаления Папки</string>
+        <string id="30511">Папка не пуста, удалить вместе с файлами?</string>
+        <string id="30512">Проверка uTorrent</string>
+        <string id="30513">Хотите %s раздачу в uTorrent?</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
@@ -208,6 +237,7 @@
         <string id="30315">Добавить на Главную</string>
         <string id="30316">Установить Плагин</string>
         <string id="30317">Оценить эпизод</string>
+        <string id="30318">Перенести в Библиотеку</string>
 
 ///Other plugins
         <string id="30400">Назад</string>
