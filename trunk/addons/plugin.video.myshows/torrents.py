@@ -1116,8 +1116,11 @@ class MoveToXBMC(Source):
         dialog = xbmcgui.Dialog()
         self.allowed_stypes=['dir',' multifile', 'file']
         if self.stype not in self.allowed_stypes:
-            dialog.ok(__language__(30299),__language__(30298))
-            return
+            ok=dialog.yesno(__language__(30299),__language__(30298),__language__(30232)+'?')
+            if ok:
+                AddSource()
+                self.filename=self.getfilename()
+                self.stype=self.gettype()
         self.stopped=None
         if __settings__.getSetting("alwayschoosemovemode")=='true':
             ret = dialog.select(__language__(30297), [__language__(30027),__language__(30028),__language__(30029),__language__(30030),__language__(30205)])
@@ -1189,7 +1192,8 @@ class MoveToXBMC(Source):
             allowed_ext.extend(['ass','mpsub','rum','sbt','sbv','srt','ssa','sub','sup','w32'])
             for i in range(0, len(filelist)):
                 try:
-                    if filelist[i].lower().split('.')[-1] in allowed_ext:
+                    if filelist[i].lower().split('.')[-1] in allowed_ext and\
+                        self.filename[:len(self.filename)-len(self.filename.split('.')[-1])-1]==filelist[i][:len(filelist[i])-len(filelist[i].split('.')[-1])-1]:
                         movelist.append((filelist[i],self.episodeId,self.seasonId))
                 except: pass
         elif self.stype in ['dir',' multifile']:
