@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.7.6a"
+__version__ = "1.8.0"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -607,6 +607,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
               __language__(30315)+'|:|'+sys_url+'5',
               __language__(30310)+'|:|'+sys_url+'201',
+              __language__(30318)+'|:|'+sys_url+'71',
               __language__(30228)+'|:|'+sys_url+'7',
               __language__(30314)+'|:|'+sys_url+'8',]
     elif mode==40:
@@ -619,12 +620,14 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
               __language__(30317)+'|:|'+sys_url+'2',
               __language__(30308)+'|:|'+sys_url+'1'+refresh_url,
+              __language__(30318)+'|:|'+sys_url+'71',
               __language__(30310)+'|:|'+sys_url+'201',
               __language__(30228)+'|:|'+sys_url+'200',]
     elif mode in (50,) and not sort:
         menu=[__language__(30227)+'|:|'+sys_url,
               __language__(30310)+'|:|'+sys_url+'1',
               __language__(30311)+'|:|'+sys_url+'2',
+              __language__(30318)+'|:|'+sys_url+'71',
               __language__(30228)+'|:|'+sys_url+'0']
     elif mode==50 and sort:
         menu=[__language__(30314)+'|:|'+sys_url+'0']
@@ -634,6 +637,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
         elif ifstat==False: menu.append(__language__(30313)+'|:|'+sys_url+'01')
         menu.extend([__language__(30227)+'|:|'+sys_url,
                     __language__(30311)+'|:|'+sys_url+'2',
+                    __language__(30318)+'|:|'+sys_url+'71',
                     __language__(30228)+'|:|'+sys_url+'0'])
 
     for s in menu: myshows_dict.append([s.split('|:|')[0],'XBMC.RunPlugin('+s.split('|:|')[1]+')'])
@@ -856,8 +860,9 @@ class SyncXBMC():
 
 def Test():
     #SyncXBMC()
-    RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
-    xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
+    #RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
+    #xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
+    print str(Download().listdirs())
     pass
 
 params = get_params()
@@ -973,6 +978,8 @@ elif mode == 62:
     ExtraFunction()
 elif mode == 70:
     SyncXBMC()
+elif mode in (2571,5171,302071,3071):
+    MoveToXBMC()
 elif mode == 610:
     PluginStatus().install(action)
 elif mode == 611:
