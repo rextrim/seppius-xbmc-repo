@@ -1237,14 +1237,15 @@ I hope you like this!
     </extension>
 </addon>
 
-<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="1.6.0" provider-name="Rodina TV">
+<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.0.2" provider-name="Rodina TV">
   <requires>
-	<import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="1.0"/>
+    <import addon="script.service.rodina.tv" version="1.0.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Rodina.TV – Новости, кино, музыка, спортивные трансляции, кинозал, архив программ за 2 недели.</summary>
-    <description>Rodina.TV – это качественное русскоязычное и интернациональное интернет телевидение в любой точке земного шара, в которой есть проводной или беспроводной интернет. Спортивные трансляции, кино, новости, музыка.
+    <description>Rodina.TV – это качественное русскоязычное и интернациональное интернет телевидение в любой точке земного шара. Спортивные трансляции, кино, новости, музыка.
 Сервис ТВ онлайн позволяет смотреть эфирные русскоязычные и другие каналы, пользоваться онлайн кинозалом со множеством новинок и киноклассикой. В вашем распоряжении архив программ за  2 недели, а также функция тайм-шифт (задержка телевещания на определённое время).</description>
     <platform>all</platform>
   </extension>
@@ -2121,6 +2122,22 @@ provider-name="Roman_V_M">
 		<description lang="en">Дополнительная служба к плагину MyShows.ru, которая автоматически отмечает эпизоды просмотренные в разделе "Сериалы" XBMC.</description>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="script.service.rodina.tv"
+       name="RodinaTV Service Script"
+       version="1.0.1"
+       provider-name="Rodina TV">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.addon.metadata">
+    <summary>RodinaTV Service Script</summary>
+    <description>RodinaTV Service Script</description>
+    <platform>all</platform>
+  </extension>
+  <extension point='xbmc.service' library='rodina.py'>
+  </extension>
 </addon>
 
 <addon id="script.torrent-tv.ru"

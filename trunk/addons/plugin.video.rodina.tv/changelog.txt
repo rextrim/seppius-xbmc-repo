@@ -24,3 +24,15 @@ gzip is on
 Bug fix
 [B]1.6.0[/B]
 COntrol of parental code
+[B]1.7.0[/B]
+Added support for Favorites
+[B]1.7.1[/B]
+Bug fix
+[B]2.0.0[/B]
+Added service script and seek functions
+[B]2.0.1[/B]
+Bug fix
+[B]2.0.2[/B]
+Corrected tag info after seek
+
+

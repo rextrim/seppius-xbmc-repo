@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Writer (c) 2013, otaranda@hotmail.com
-# Rev. 1.6.0
+# Rev. 2.0.2
 
+_REVISION_ = '2.0.2'
 
-_VERSION_ = '1.0.0'
+_DEV_VER_ = '1.0.0'
 _ADDOD_ID_= 'plugin.video.rodina.tv'
 
 import os, re, sys, time
@@ -17,6 +18,11 @@ import hashlib
 #import inspect
 import HTMLParser
 import json
+
+#try:
+#  sys.path.append(os.path.dirname(__file__)+ '/../script.service.rodina.tv')
+#  from rodina import RodinaPlayer
+#except: pass
 
 
 
@@ -513,6 +519,8 @@ class Helpers():
 
 common = Helpers()
 common.plugin = "Rodina TV"
+
+shstart = 0
     
 #def dt(u): return datetime.datetime.utcfromtimestamp(u)
 class ccache():
@@ -523,42 +531,39 @@ class ccache():
         self.ttl = 0
         self.ctime = 0.0
         
-
-
-
-class XBMCPlayer(xbmc.Player):
-    def __init__( self, *args, **kwargs ):
-        self.is_active = True
-        print "#XBMCPlayer#"
+#class XBMCPlayer(xbmc.Player):
+#    def __init__( self, *args, **kwargs ):
+#        self.is_active = True
+#        print "#XBMCPlayer#"
     
-    def onPlayBackPaused( self ):
-        xbmc.log("#Im paused#")
+#    def onPlayBackPaused( self ):
+#        xbmc.log("#Im paused#")
         
-    def onPlayBackResumed( self ):
-        xbmc.log("#Im Resumed #")
+#    def onPlayBackResumed( self ):
+#        xbmc.log("#Im Resumed #")
         
-    def onPlayBackStarted( self ):
-        print "#Playback Started#"
-        try:
-            print "#Im playing :: " + self.getPlayingFile()
-        except:
-            print "#I failed get what Im playing#"
+#    def onPlayBackStarted( self ):
+#        print "#Playback Started#"
+#        try:
+#            print "#Im playing :: " + self.getPlayingFile()
+#        except:
+#            print "#I failed get what Im playing#"
             
-    def onPlayBackEnded( self ):
-        print "#Playback Ended#"
-        self.is_active = False
+#    def onPlayBackEnded( self ):
+#        print "#Playback Ended#"
+#        self.is_active = False
         
-    def onPlayBackStopped( self ):
-        print "## Playback Stopped ##"
-        self.is_active = False
+#    def onPlayBackStopped( self ):
+#        print "## Playback Stopped ##"
+#        self.is_active = False
         
-    def onPlayBackSeek(self, time, seekOffset):
-        print "## Playback Seek ##"
-        xbmc.log("#seekOffset: %s #" % seekOffset)
-        xbmc.log("#time: %s #" % time)
+#    def onPlayBackSeek(self, time, seekOffset):
+#        print "## Playback Seek ##"
+#        xbmc.log("#seekOffset: %s #" % seekOffset)
+#        xbmc.log("#time: %s #" % time)
     
-    def sleep(self, s):
-        xbmc.sleep(s) 
+#    def sleep(self, s):
+#        xbmc.sleep(s) 
 
 class RodinaTV():
     def __init__(self):
@@ -572,6 +577,7 @@ class RodinaTV():
 
         self.handle = int(sys.argv[1])
         self.params = sys.argv[2]
+        self.mode = ''
 
         self.url = 'http://rodina.tv'
         self.api = 'http://api.rodina.tv'
@@ -600,7 +606,10 @@ class RodinaTV():
         self.fid = ''
         self.lid = ''
         self.sort = ''
-                
+        self.start = ''
+        self.place = ''
+        self.stime = ''
+        self.sval = ''
        
         self.path = xbmc.translatePath(self.addon.getAddonInfo('path')).decode('utf-8')
         self.path_resources = xbmc.translatePath(self.path + '/resources')
@@ -613,6 +622,7 @@ class RodinaTV():
                 
         self.cache_chan = xbmc.translatePath('special://temp/' + 'rodinatvc.tmp')
         self.cache_epg = xbmc.translatePath('special://temp/' + 'rodinatve.tmp')
+        self.cache_fav = xbmc.translatePath('special://temp/' + 'rodinatvf.tmp')
 
         self.uid = self.addon.getSetting('uid')
         self.pwd = self.addon.getSetting('pwd')
@@ -625,10 +635,25 @@ class RodinaTV():
         self.token = self.addon.getSetting('token')
         
         self.icons = {}
+        self.colors = { '1' : '[COLOR FFFF0000]' + self.language(22011) + '[/COLOR]',
+                        '2' : '[COLOR FFFFFF00]' + self.language(22012) + '[/COLOR]',
+                        '3' : '[COLOR FF00FF00]' + self.language(22013) + '[/COLOR]' }
+#                        '4' : '[COLOR FF0000FF]' + self.language(22014) + '[/COLOR]',
+#                        '5' : '[COLOR FFFF00FF]' + self.language(22015) + '[/COLOR]',
+#                        '6' : '[COLOR FF00FFFF]' + self.language(22016) + '[/COLOR]',
+#                        '7' : '[COLOR FFC0C0C0]' + self.language(22017) + '[/COLOR]',
+#                        '8' : '[COLOR FFFFFFFF]' + self.language(22018) + '[/COLOR]' }
+        
+        
 #        self.icats = {}
 
         self.debug = True
+        self.dbg_level = 1
         common.dbg = self.debug
+        
+        self.log('%s %s'%('Rev.', _REVISION_), 0)
+        
+        
         
         self.init_icons()
      
@@ -676,13 +701,9 @@ class RodinaTV():
                        '103' :xbmc.translatePath(self.path_icons + '/icon_1_1_xxx.png')
                      }
 
-    def main(self):
-        self.log("Addon: %s"  % self.id)
-        self.log("Params: %s" % self.params)
-
-        params = common.getParameters(self.params)
-        
-        mode = params['mode'] if 'mode' in params else None
+    def init_self(self, params):
+    
+        self.mode = params['mode'] if 'mode' in params else None
         self.cat = params['cat'] if 'cat' in params else ''
 #        self.token = params['token'] if 'token' in params else ''
         self.portal = urllib.unquote_plus(params['portal']) if 'portal' in params else ''
@@ -699,41 +720,65 @@ class RodinaTV():
         self.offset = params['offset'] if 'offset' in params else ''
         self.word = params['word'] if 'word' in params else ''
         self.sort = params['sort'] if 'sort' in params else ''
-        
+        self.start = params['start'] if 'start' in params else ''
+        self.place = params['place'] if 'place' in params else ''
+        self.stime = params['time'] if 'time' in params else ''
+        self.sval = params['seek'] if 'seek' in params else ''    
+    
+    def main(self):
+        self.log("Addon: %s"  % self.id)
+        self.log("Params: %s" % self.params)
 
-                                
-        if mode == 'tv':
+        params = common.getParameters(self.params)
+           
+        self.init_self(params)
+       
+        if self.mode == 'tv':
             self.m_tv()
-        elif mode == 'cat':
+        elif self.mode == 'cat':
             self.m_cat()
-        elif mode == 'tvplay':
+        elif self.mode == 'tvplay':
             self.tv_play()
-        elif mode == 'arch':
+        elif self.mode == 'arch':
             self.m_arch()       
-        elif mode == 'atv':
+        elif self.mode == 'atv':
             self.m_atv()   
-        elif mode == 'adate':
+        elif self.mode == 'adate':
             self.m_adate()  
-        elif mode == 'aepg':
+        elif self.mode == 'aepg':
             self.m_aepg()              
-        elif mode == 'kino':
+        elif self.mode == 'kino':
             self.m_kino() 
-        elif mode == 'search':
+        elif self.mode == 'search':
             self.m_search() 
-        elif mode == 'genres':
+        elif self.mode == 'genres':
             self.m_genres() 
-        elif mode == 'all':
+        elif self.mode == 'all':
             self.m_all() 
-        elif mode == 'film':
+        elif self.mode == 'film':
             self.m_film()             
-        elif mode == 'set':
+        elif self.mode == 'set':
             self.m_set() 
-        elif mode == 'setall':
+        elif self.mode == 'setall':
             self.m_setall() 
-        elif mode == 'setpc':
+        elif self.mode == 'setpc':
             self.m_setpcode()                         
-        elif mode == 'sort':
+        elif self.mode == 'sort':
             self.m_sort()             
+        elif self.mode == 'fcattv':
+            self.m_fav() 
+        elif self.mode == 'fcatatv':
+            self.m_fav()             
+        elif self.mode == 'favtv':
+            self.m_tv(sub='fav')
+        elif self.mode == 'favatv':
+            self.m_atv(sub='fav') 
+        elif self.mode == 'favset':
+            self.set_fav(self.cat, self.numb, self.place)
+        elif self.mode == 'shift':
+            self.set_shift() 
+        elif self.mode == 'seek':
+            self.seek()
         else:
             self.m_main()
             
@@ -764,6 +809,7 @@ class RodinaTV():
     def cached_get(self, type):
         self.log("-cached_get: %s" % type)
         cache = ''
+        skipt = False
         if type == 'tv':
             cquery = '?query=%s' % 'get_channels'
             fn = self.cache_chan
@@ -782,6 +828,11 @@ class RodinaTV():
             fn = self.cache_epg
             tt = float(self.adt)
             type += self.numb
+        elif type == 'fav':
+            cquery = '?query=%s' % 'get_favorites1'
+            fn = self.cache_fav
+            tt = time.time()
+            skipt = True
         else: return
         self.log("-tt: %s" % tt)
         
@@ -794,7 +845,7 @@ class RodinaTV():
                 flast = float(slast)
             except: flast = 0.0
             
-            if abs(tt - flast) < 300:
+            if skipt == True or abs(tt - flast) < 300:
                 self.log("--toread")
                 try: 
                     ctype = cf.readline()
@@ -892,7 +943,7 @@ class RodinaTV():
                         
                         ststart = time.strftime("%H:%M",time.localtime(float(a_utstart[i])))
                         ststop = time.strftime("%H:%M",time.localtime(float(a_utstop[i])))
-                        l_progs.append([ststart, ststop, a_title[i], desc, a_pid[i], a_has_rec[i]])
+                        l_progs.append([ststart, ststop, a_title[i], desc, a_pid[i], a_has_rec[i], a_utstart[i]])
                     
                     depg[numb] = l_progs
 
@@ -902,7 +953,7 @@ class RodinaTV():
     def authorize(self):
 
         device = 'xbmc'
-        version = _VERSION_
+        devver = _DEV_VER_
         self.get_auth = True
         
         resp = self.getPage({"link": self.auth})
@@ -914,7 +965,7 @@ class RodinaTV():
         
             resp = self.getPage({"link": self.auth 
                     + '?device=%s&version=%s&sid=%s&login=%s&passwd=%s&serial=%s' % 
-                    (device, version, sid, self.uid, 
+                    (device, devver, sid, self.uid, 
                     hashlib.md5( rand + hashlib.md5(self.pwd).hexdigest()).hexdigest(),
                     self.serial)})
                     
@@ -927,7 +978,7 @@ class RodinaTV():
                 
     def list_items(self, ictlg, view, films=False):
         self.log("-list_items:")
-        
+#        print ictlg
         if self.view_mode == 'true':
             if films == False:
                 xbmcplugin.setContent(self.handle, 'Episodes')
@@ -936,7 +987,7 @@ class RodinaTV():
                 xbmcplugin.setContent(self.handle, 'Movies')
                 self.log('Movies')
         
-        for ctUrl, ctIcon, ctFolder, ctLabels  in ictlg:
+        for ctUrl, ctIcon, ctFolder, ctLabels, ctPopup  in ictlg:
             ctTitle = ctLabels['title']
             item = xbmcgui.ListItem(ctTitle, iconImage=ctIcon, thumbnailImage=ctIcon)
 #            infoLabels = {'title':ename,
@@ -949,10 +1000,15 @@ class RodinaTV():
             item.setInfo( type='Video', infoLabels=ctLabels)
             if ctFolder == False: item.setProperty('IsPlayable', 'true')
             item.setProperty('fanart_image', self.fanart)
+            
+            if len(ctPopup) > 0:
+                item.addContextMenuItems(ctPopup)
+            
             xbmcplugin.addDirectoryItem(self.handle, sys.argv[0] + ctUrl, item, ctFolder) 
-            self.log("ctTitle: %s"  % ctTitle) 
-            self.log("ctUrl: %s"  % ctUrl) 
-            self.log("ctIcon: %s"  % ctIcon) 
+            self.log("ctTitle: %s"  % ctTitle, 2) 
+            self.log("ctUrl: %s"  % ctUrl, 2) 
+            self.log("ctIcon: %s"  % ctIcon, 2) 
+            self.log("ctPopup: %s"  % ctPopup, 2) 
 
         if self.view_mode == 'true':
             skin_used = xbmc.getSkinDir()
@@ -1025,23 +1081,26 @@ class RodinaTV():
 #        self.get_client()
 #        self.get_settings()
         
-        ct_main = [('?mode=%s&portal=%s&icon=%s' % ('cat', QT(self.portal), self.icons['i_tv'],), self.icons['i_tv'],   True, {'title': self.language(22000)} ),
-                   ('?mode=%s&portal=%s&icon=%s' % ('arch', QT(self.portal), self.icons['i_arch']), self.icons['i_arch'],   True, {'title': self.language(22002)}),
-                   ('?mode=%s&portal=%s&icon=%s' % ('kino', QT(self.portal), self.icons['i_kino']), self.icons['i_kino'], True, {'title': self.language(21001)}),
-                   ('?mode=%s&portal=%s&icon=%s' % ('setall', QT(self.portal), self.icons['i_set']), self.icons['i_set'], True, {'title': self.language(22003)}) ]
+        ct_main = [('?mode=%s&portal=%s&icon=%s' % ('cat', QT(self.portal), self.icons['i_tv'],), self.icons['i_tv'],   True, {'title': self.language(22000)}, [] ),
+                   ('?mode=%s&portal=%s&icon=%s' % ('arch', QT(self.portal), self.icons['i_arch']), self.icons['i_arch'],   True, {'title': self.language(22002)}, []),
+                   ('?mode=%s&portal=%s&icon=%s' % ('kino', QT(self.portal), self.icons['i_kino']), self.icons['i_kino'], True, {'title': self.language(21001)}, []),
+                   ('?mode=%s&portal=%s&icon=%s' % ('setall', QT(self.portal), self.icons['i_set']), self.icons['i_set'], True, {'title': self.language(22003)}, []) ]
                                           
         self.list_items(ct_main, True)
         
         self.cached_rst(self.cache_chan)
         self.cached_rst(self.cache_epg)
+        self.cached_rst(self.cache_fav)
 
     def m_cat(self, nmode='tv'):
         self.log("-m_cat:")
 
-        ct_cat = []    
+        params = '?mode=%s&portal=%s' % ('fcat' + nmode, QT(self.portal))
+        if self.ts != '': params += ('&ts=%s' % self.ts)
+        ct_cat = [(params, self.cicon, True, {'title': self.language(22010)}, [])]    
 
         resp = self.cached_get('tv')
-
+        
         if resp != '':
             a_cat = common.parseDOM(resp, "array", attrs={"name": "categories"})
             for cat in a_cat:
@@ -1053,11 +1112,11 @@ class RodinaTV():
                     if self.ts != '': params += ('&ts=%s' % self.ts)
                     try: cicon = self.icons[numb]
                     except: cicon = self.cicon
-                    ct_cat.append((params, cicon, True, {'title': title}))
+                    ct_cat.append((params, cicon, True, {'title': title}, []))
 
             self.list_items(ct_cat, True)
             
-    def m_tv(self):
+    def m_tv(self, sub = ''):
         self.log("-m_tv:")
 
         ct_chan = []    
@@ -1068,21 +1127,53 @@ class RodinaTV():
             else:
                 d_epg = self.epg2dict(self.cached_get('etv'))
             a_chan = common.parseDOM(resp, "array", attrs={"name": "channels"})
+            
+            a_fav = []
+            if sub == 'fav':
+                resp = self.cached_get('fav')
+
+                if resp != None and resp != '':
+                    a_fchan = common.parseDOM(resp, "array", attrs={"name": "channels"})
+                    a_fnumb = common.parseDOM(resp, "item", attrs={"name": "number"})
+                    a_fcomb = zip(a_fnumb, a_fchan)
+                    for fnumb,fchan in a_fcomb:
+                        if fnumb == self.cat:
+                            a_fitem = common.parseDOM(fchan, "item")
+                            for fitem in a_fitem:
+                                a_fav.append(fitem)
+            
             for chan in a_chan:
                 a_raw = common.parseDOM(chan, "row")
                 for raw in a_raw:
-                    try: cats = common.parseDOM(raw, "array", attrs={"name": "categories"})[0]
-                    except: cats = ''
-                    try: cat = common.parseDOM(cats, "item")[0]
-                    except: cat = ''
-                    if cat == self.cat:
+                    cadd = False
+                    popup = []
+                    if sub == 'fav':
+                        try: numb = common.parseDOM(raw, "item", attrs={"name": "number"})[0]
+                        except: numb = ''
+                        if numb in a_fav: 
+                            cadd = True
+                            uri2 = sys.argv[0] + '?mode=favset&cat=%s&numb=%s&place=0&portal=%s' % (self.cat, numb, QT(self.portal))
+                            popup.append((self.language(23002), 'RunPlugin(%s)'%uri2,))
+                    else:
+                        try: cats = common.parseDOM(raw, "array", attrs={"name": "categories"})[0]
+                        except: cats = ''
+                        try: cat = common.parseDOM(cats, "item")[0]
+                        except: cat = ''
+                        if cat == self.cat: 
+                            cadd = True
+                            try: 
+                                number = common.parseDOM(raw, "item", attrs={"name": "number"})[0]
+                                uri2 = sys.argv[0] + '?mode=favset&cat=%s&numb=%s&portal=%s' % (1, number, QT(self.portal))
+                                popup.append((self.language(23001), 'RunPlugin(%s)'%uri2,))
+                            except: pass
+                        
+                    if cadd == True:
                         try: has_passwd = common.parseDOM(raw, "item", attrs={"name": "has_passwd"})[0]
                         except: has_passwd = '0'
                         try: title = common.parseDOM(raw, "item", attrs={"name": "title"})[0]
                         except: title = ''
                         try: number = common.parseDOM(raw, "item", attrs={"name": "number"})[0]
                         except: number = ''
-#                        has_record = common.parseDOM(raw, "item", attrs={"name": "has_record"})[0]
                         a_icon45 = common.parseDOM(raw, "item", attrs={"name": "icon_45_45"})
                         a_icon100 = common.parseDOM(raw, "item", attrs={"name": "icon_100_100"})
                         if len(a_icon100) > 0:
@@ -1099,7 +1190,7 @@ class RodinaTV():
                             try:
                                 lepg = d_epg[number]
                                 title2nd = ''
-                                for ebgn, eend, ename, edescr, pid, rec in lepg:
+                                for ebgn, eend, ename, edescr, pid, rec, utstart in lepg:
                                     if self.view_epg == 'true' and title2nd == '':
                                         title2nd = '[COLOR FF0084FF]%s-%s[/COLOR] %s' % (ebgn, eend, ename)
                                     plot += '[B][COLOR FF0084FF]%s-%s[/COLOR] [COLOR FFFFFFFF] %s[/COLOR][/B][COLOR FF999999]\n%s[/COLOR]\n' % (ebgn, eend, ename, edescr)
@@ -1107,12 +1198,12 @@ class RodinaTV():
                             plot = plot.replace('&quot;','`').replace('&amp;',' & ')
                             title2nd = title2nd.replace('&quot;','`').replace('&amp;',' & ')
                             ct_chan.append(('?mode=%s&portal=%s&numb=%s&pwd=%s&icon=%s' % ('tvplay', self.portal, number, has_passwd, icon),
-                                            icon, False, {'title': '[B]%s[/B]\n%s' % (title, title2nd), 'plot':plot}))
+                                            icon, False, {'title': '[B]%s[/B]\n%s' % (title, title2nd), 'plot':plot}, popup))
 
             self.list_items(ct_chan, self.view_epg != 'true')
 
 
-    def tv_play(self):
+    def tv_play(self, seek = 0):
         self.log("-tv_play:")
         
         if self.has_rec == '0': return
@@ -1129,12 +1220,34 @@ class RodinaTV():
         if self.pid == '' and self.lid == '':
             key = "number"
             value = self.numb
-        elif self.lid == '':
-            key = "pid"
-            value = self.pid
+#        elif self.lid == '':
+#            key = "pid"
+#            value = self.pid
         else:
             key = "lid"
             value = self.lid
+        if self.start != '':
+            key += "|start"
+            if seek == 0: 
+                start = self.start
+                self.addon.setSetting('params', self.params)
+            else: 
+                self.log(self.start)
+                self.log(str(seek))
+                self.start = self.addon.getSetting('start')
+                self.log(self.start)
+                
+                start = str(int(self.start) + seek)
+                
+                
+                self.log(start)
+            
+            self.addon.setSetting('start', start)
+            value += '|' + start
+            self.addon.setSetting('arch_on', 'true')
+
+
+        
         if self.has_pwd == '1':
             self.get_tstatus()
 #            self.authorize()
@@ -1147,13 +1260,21 @@ class RodinaTV():
         if resp != None:
             try: url = common.parseDOM(resp, "item", attrs={"name": "url"})[0]
             except: return
-            item = xbmcgui.ListItem(path = url)
-            xbmcplugin.setResolvedUrl(self.handle, True, item)
+
+
             self.log("-play_url:%s" % url)
 
-#            sPlayer = XBMCPlayer()
-#            sPlayer.play(url, item)
-            
+            if seek == 0:
+                item = xbmcgui.ListItem(path = url)
+                xbmcplugin.setResolvedUrl(self.handle, True, item)
+            else:
+                sPlayer = xbmc.Player()
+                tag = sPlayer.getVideoInfoTag()
+                title=tag.getTitle()
+                item = xbmcgui.ListItem(label=title, path = url)
+                item.setInfo( type='Video', infoLabels={'title':title})
+                item.setProperty('IsPlayable', 'true')
+                sPlayer.play(url, item)
 
 #            while sPlayer.is_active:
 #                sPlayer.sleep(100)
@@ -1165,20 +1286,52 @@ class RodinaTV():
         self.log("-m_arch:")
         self.m_cat(nmode='atv')
 
-    def m_atv(self):
+    def m_atv(self, sub = ''):
         self.log("-m_atv:")
         ct_chan = []    
         resp = self.cached_get('tv')
         if resp != None:
             a_chan = common.parseDOM(resp, "array", attrs={"name": "channels"})
+            
+            a_fav = []
+            if sub == 'fav':
+                resp = self.cached_get('fav')
+
+                if resp != None and resp != '':
+                    a_fchan = common.parseDOM(resp, "array", attrs={"name": "channels"})
+                    a_fnumb = common.parseDOM(resp, "item", attrs={"name": "number"})
+                    a_fcomb = zip(a_fnumb, a_fchan)
+                    for fnumb,fchan in a_fcomb:
+                        if fnumb == self.cat:
+                            a_fitem = common.parseDOM(fchan, "item")
+                            for fitem in a_fitem:
+                                a_fav.append(fitem)
             for chan in a_chan:
                 a_raw = common.parseDOM(chan, "row")
                 for raw in a_raw:
-                    try: cats = common.parseDOM(raw, "array", attrs={"name": "categories"})[0]
-                    except: cats = ''
-                    try: cat = common.parseDOM(cats, "item")[0]
-                    except: cat = ''
-                    if cat == self.cat:
+                    cadd = False
+                    popup = []
+                    if sub == 'fav':
+                        try: numb = common.parseDOM(raw, "item", attrs={"name": "number"})[0]
+                        except: numb = ''
+                        if numb in a_fav: 
+                            cadd = True
+                            uri2 = sys.argv[0] + '?mode=favset&cat=%s&numb=%s&place=0&portal=%s' % (self.cat, numb, QT(self.portal))
+                            popup.append((self.language(23002), 'RunPlugin(%s)'%uri2,))
+                    else:
+                        try: cats = common.parseDOM(raw, "array", attrs={"name": "categories"})[0]
+                        except: cats = ''
+                        try: cat = common.parseDOM(cats, "item")[0]
+                        except: cat = ''
+                        if cat == self.cat:
+                            cadd = True
+                            try: 
+                                number = common.parseDOM(raw, "item", attrs={"name": "number"})[0]
+                                uri2 = sys.argv[0] + '?mode=favset&cat=%s&numb=%s&portal=%s' % (1, number, QT(self.portal))
+                                popup.append((self.language(23001), 'RunPlugin(%s)'%uri2,))
+                            except: pass
+                        
+                    if cadd == True:                
                         try: has_record = common.parseDOM(raw, "item", attrs={"name": "has_record"})[0]
                         except: has_record = ''
                         if has_record == '1':
@@ -1198,7 +1351,7 @@ class RodinaTV():
                                 except: icon = ''
                             if icon == '' : icon = self.path_icons_tv
                             if title != '' and number != '':
-                                ct_chan.append(('?mode=%s&portal=%s&numb=%s&pwd=%s&rec=%s&icon=%s' % ('adate', self.portal, number, has_passwd, has_record, icon), icon, True, {'title': title}))
+                                ct_chan.append(('?mode=%s&portal=%s&numb=%s&pwd=%s&rec=%s&icon=%s' % ('adate', self.portal, number, has_passwd, has_record, icon), icon, True, {'title': title}, popup))
 
             self.list_items(ct_chan, True)   
             
@@ -1222,7 +1375,7 @@ class RodinaTV():
             lt = time.localtime(dt)
             title = time.strftime("%x ", lt) + dweek[lt.tm_wday]
             ct_date.append(('?mode=%s&portal=%s&numb=%s&pwd=%s&icon=%s&dt=%s' % 
-            ('aepg', self.portal, self.numb, self.has_pwd, self.cicon, dt), self.cicon, True, {'title': title}))
+            ('aepg', self.portal, self.numb, self.has_pwd, self.cicon, dt), self.cicon, True, {'title': title}, []))
             
         self.list_items(ct_date, True)
 
@@ -1232,21 +1385,26 @@ class RodinaTV():
         ct_chan = []    
         d_epg = self.epg2dict(self.cached_get('atv'))
         lepg = d_epg[self.numb]
-        for ebgn, eend, ename, edescr, pid, rec in lepg:
+        for ebgn, eend, ename, edescr, pid, rec, utstart in lepg:
+            popup = []
             title = '%s-%s %s' % (ebgn, eend, ename)
             plot = '[COLOR FF999999]%s[/COLOR]' % (edescr)
-            if rec != '1': title = '[COLOR FFdc5310]%s[/COLOR]' % (title)
+            if rec != '1':
+                title = '[COLOR FFdc5310]%s[/COLOR]' % (title)
+            else: 
+                uri2 = sys.argv[0] + '?mode=%s&portal=%s&numb=%s&pwd=%s&icon=%s&rec=%s&start=%s' % ('shift', self.portal, self.numb, self.has_pwd, self.cicon, rec, utstart)
+#                popup.append(('RodinaTV Shift to Start', 'RunPlugin(%s)'%uri2,))
+            
 
-
-            ct_chan.append(('?mode=%s&portal=%s&numb=%s&pwd=%s&icon=%s&pid=%s&rec=%s' % ('tvplay', self.portal, self.numb, self.has_pwd, self.cicon, pid, rec), self.cicon, False, {'title': title, 'plot':plot}))
+            ct_chan.append(('?mode=%s&portal=%s&numb=%s&pwd=%s&icon=%s&rec=%s&start=%s' % ('tvplay', self.portal, self.numb, self.has_pwd, self.cicon, rec, utstart), self.cicon, False, {'title': title, 'plot':plot}, popup))
 
         self.list_items(ct_chan, False)   
         
     def m_setall(self):
         self.log("-m_setall:")
         
-        ct_setall = [('?mode=%s&portal=%s&icon=%s' % ('set', QT(self.portal), self.icons['i_set']), self.icons['i_set'], True, {'title': self.language(22003)}),
-                     ('?mode=%s&portal=%s&icon=%s' % ('setpc', QT(self.portal), self.icons['i_set']), self.icons['i_set'], True, {'title': self.language(11005)}) ]
+        ct_setall = [('?mode=%s&portal=%s&icon=%s' % ('set', QT(self.portal), self.icons['i_set']), self.icons['i_set'], True, {'title': self.language(22003)}, []),
+                     ('?mode=%s&portal=%s&icon=%s' % ('setpc', QT(self.portal), self.icons['i_set']), self.icons['i_set'], True, {'title': self.language(11005)}, []) ]
                                           
         self.list_items(ct_setall, True)
                  
@@ -1263,7 +1421,8 @@ class RodinaTV():
             self.error('Authorization failed')
 
         self.cached_rst(self.cache_chan)
-        self.cached_rst(self.cache_epg)        
+        self.cached_rst(self.cache_epg)    
+        self.cached_rst(self.cache_fav)    
         self.params = ''
         
         return True
@@ -1312,9 +1471,9 @@ class RodinaTV():
     def m_kino(self):
         self.log("-m_kino:")
         
-        ct_main = [('?mode=%s&portal=%s&icon=%s' % ('search', QT(self.portal), self.icons['i_find']), self.icons['i_find'], True, {'title': self.language(21002)}),
-                   ('?mode=%s&portal=%s&icon=%s' % ('genres', QT(self.portal), self.icons['i_genre']), self.icons['i_genre'], True, {'title': self.language(21003)}),
-                   ('?mode=%s&portal=%s&icon=%s&offset=%s' % ('all', QT(self.portal), self.icons['i_all'], '0'), self.icons['i_all'],    True, {'title': self.language(21004)}) ]
+        ct_main = [('?mode=%s&portal=%s&icon=%s' % ('search', QT(self.portal), self.icons['i_find']), self.icons['i_find'], True, {'title': self.language(21002)}, []),
+                   ('?mode=%s&portal=%s&icon=%s' % ('genres', QT(self.portal), self.icons['i_genre']), self.icons['i_genre'], True, {'title': self.language(21003)}, []),
+                   ('?mode=%s&portal=%s&icon=%s&offset=%s' % ('all', QT(self.portal), self.icons['i_all'], '0'), self.icons['i_all'],    True, {'title': self.language(21004)}, []) ]
                                           
         self.list_items(ct_main, True, True)
 
@@ -1370,10 +1529,10 @@ class RodinaTV():
                              {'title': title, 
                              'rating': imdb_rate, 
                               'plot': '%s IMDB: %s Kinopoisk:%s\n%s' % (year, imdb_rate, kp_rate, small_desc),
-                              'year':year} ))
+                              'year':year}, [] ))
 
                     if len(a_raw) >= 12:
-                        ct_search.append(('?mode=%s&portal=%s&word=%s&offset=%s' % ('search', self.portal, self.word, str(int(self.offset) + 12)), '', True, {'title': self.language(20008)}))
+                        ct_search.append(('?mode=%s&portal=%s&word=%s&offset=%s' % ('search', self.portal, self.word, str(int(self.offset) + 12)), '', True, {'title': self.language(20008)}, []))
                     self.list_items(ct_search, True, True) 
 
     def m_genres(self):
@@ -1401,7 +1560,7 @@ class RodinaTV():
                 except: cicon = self.cicon
                 if title != '' and number != '':
                     ct_genres.append(( '?mode=%s&portal=%s&numb=%s&offset=%s&icon=%s' % ('all', self.portal, number, '0', cicon), 
-                    cicon, True, {'title': '[B]%s [/B][COLOR FF999999](%s)[/COLOR]' % (title, cnt)} ))
+                    cicon, True, {'title': '[B]%s [/B][COLOR FF999999](%s)[/COLOR]' % (title, cnt)}, [] ))
 
             self.list_items(ct_genres, True, True)   
 
@@ -1430,7 +1589,7 @@ class RodinaTV():
                 if len(a_raw) >= 12:
                     req = '?mode=%s&portal=%s' % ('sort', self.portal)
                     if self.numb != '': req += '&numb=%s' % self.numb
-                    ct_search.append((req, self.icons['i_find'], True, {'title': self.language(21005)}))
+                    ct_search.append((req, self.icons['i_find'], True, {'title': self.language(21005)}, []))
                 for raw in a_raw:
                     try: title = common.parseDOM(raw, "item", attrs={"name": "title"})[0]
                     except: title = ''
@@ -1453,12 +1612,12 @@ class RodinaTV():
                          {'title': title, 
                           'rating': imdb_rate,                         
                           'plot': '%s IMDB: %s Kinopoisk:%s\n%s' % (year, imdb_rate, kp_rate, small_desc),
-                          'year':year} ))
+                          'year':year} , []))
                 if len(a_raw) >= 12:
                     req = '?mode=%s&portal=%s&offset=%s' % ('all', self.portal, str(int(self.offset) + 12))
                     if self.numb != '': req += '&numb=%s' % self.numb
                     if self.sort != '': req += '&sort=%s' % self.sort
-                    ct_search.append((req, '', True, {'title': self.language(20008)}))
+                    ct_search.append((req, '', True, {'title': self.language(20008)}, []))
                 self.list_items(ct_search, True, True) 
 
  
@@ -1550,7 +1709,7 @@ class RodinaTV():
                                  'country': country, 
                                  'year': prod_date, 
                                  'rating': rate_imdb, 
-                                 'plot': desc} ))
+                                 'plot': desc}, [] ))
                         
             self.list_items(ct_films, False, True) 
 
@@ -1569,24 +1728,184 @@ class RodinaTV():
             creq += '&numb=%s' % (self.numb)
         for smode in ct_smode:
             req = creq + '&sort=%s' % (smode[1])
-            ct_sort.append( (req, self.icons['i_find'], True, {'title': smode[0]}))
+            ct_sort.append( (req, self.icons['i_find'], True, {'title': smode[0]}, []))
                                          
         self.list_items(ct_sort, True, True)
+
+       
+    def m_fav(self):
+        self.log("-m_fav:")
         
+        ct_fav = []
+        resp = self.cached_get('fav')
+        
+        if self.mode == 'fcattv': nmode = 'favtv'
+        else: nmode = 'favatv'
+        if resp != None and resp != '':
+            a_numb = common.parseDOM(resp, "item", attrs={"name": "number"})
+            for numb in a_numb:
+                params = '?mode=%s&cat=%s&portal=%s' % (nmode, numb, QT(self.portal))
+                if self.ts != '': params += ('&ts=%s' % self.ts)
+                cicon = self.cicon
+                try: title = self.colors[numb]
+                except: title = numb
+                ct_fav.append((params, cicon, True, {'title': title}, []))
+
+            self.list_items(ct_fav, True)
+            
+    def set_fav(self, fav_numb, chan_numb, place = ''):
+        self.log("-set_fav:")
+        if place == '':
+            a_color = []
+            sz = 1
+            resp = self.cached_get('fav')
+            if resp != None and resp != '':
+                a_fnumb = common.parseDOM(resp, "item", attrs={"name": "number"})
+                if len(a_fnumb) > 0:
+                    try: sz = int(a_fnumb[len(a_fnumb) - 1]) + 1
+                    except: pass
+                    for i in range(1, sz):
+                        try: 
+                            color = self.colors[str(i)]
+                            a_color.append(color)
+                        except: 
+                            break
+
+            try: a_color.append(self.colors[str(sz)])
+            except: pass
+            dialog = xbmcgui.Dialog()
+            ret = dialog.select('Choose a color', a_color)
+            if ret >= 0:
+                try: fav_numb = str(ret + 1)
+                except: pass
+            else: return
+            
+        key = 'number|num_channel'
+        value = '%s|%s' % (fav_numb, chan_numb)
+        if place != '':
+            key += '|place'
+            value += '|%s' % (place)
+        
+        req = self.portal + '?query=%s&key="%s"&value="%s"' % ('set_favorites', key, value)
+        resp = self.getUrlPage( req)
+        if resp == None:
+            self.showErrorMessage(self.language(22008))
+            
+        self.cached_rst(self.cache_fav) 
+        xbmc.executebuiltin('Container.Refresh')
+        
+    def set_shift(self):
+        self.log("-set_shift:")    
+         
+        mydisplay = MyClass()
+        mydisplay .doModal()
+        shstart = int(mydisplay.slider.getPercent())
+        del mydisplay
+
+        shstart = 300
+        self.start = str(int(self.start) + shstart)
+        self.tv_play()
+        
+#        uri2 = sys.argv[0] + '?mode=%s&portal=%s&numb=%s&pwd=%s&icon=%s&rec=%s&start=%s' % ('tvplay', self.portal, self.numb, self.has_pwd, self.cicon, self.has_rec, self.start)
+#        xbmc.executebuiltin('RunPlugin(%s)'%uri2)
+            
+            
     # *** Add-on helpers
-    def log(self, message):
-        if self.debug:
+    def log(self, message, level = 1):
+        if (level < self.dbg_level) or (self.debug and self.dbg_level >= level):
             print "[%s LOG]: %s" % (common.plugin, message.encode('utf8'))
 
     def error(self, message):
         print "[%s ERROR]: %s" % (common.plugin, message)
 
     def showErrorMessage(self, msg):
-        print msg
-        xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg, str(10 * 1000)))
+        print msg.encode('utf-8')
+        xbmc.executebuiltin("XBMC.Notification(%s,%s, %s)" % ("ERROR", msg.encode('utf-8'), str(10 * 1000)))
 
     def encode(self, string):
         return string.decode('cp1251').encode('utf-8')
+        
+    def seek(self):
+        self.log("-seek:")
+        self.log("--stime:" + self.stime)
+        self.log("--sval:" + self.sval)
+        self.params = self.addon.getSetting('params')
+        self.log("--new params: " + self.params)
+        seek = int(self.stime)
+        seek += int(self.sval)
+        params = common.getParameters(self.params)
+        self.init_self(params)
+        self.tv_play(seek=seek)
+        
+
+ACTION_PREVIOUS_MENU = 10
+ACTION_SELECT_ITEM = 7
+ACTION_PARENT_DIR = 9
+ACTION_BACK  = 92
+
+ 
+class MyClass(xbmcgui.WindowDialog):
+#class MyClass(xbmcgui.Window):
+  def __init__(self):
+    self.id = _ADDOD_ID_
+    self.addon = xbmcaddon.Addon(self.id)  
+    self.path = xbmc.translatePath(self.addon.getAddonInfo('path')).decode('utf-8')
+    self.path_resources = xbmc.translatePath(self.path + '/resources')
+    self.path_icons = xbmc.translatePath(self.path_resources + '/icons')
+    
+    self.pw = 715
+    self.ph = 440
+    self.slw = 600
+    self.slh = 40
+    self.lw = 400
+    self.lh = 20
+    self.pcw = 60
+    self.pch = 20
+    self.sw = self.getWidth()
+    self.sh = self.getHeight()
+    if self.pw > self.sw: self.pw = self.sw
+    if self.ph > self.sh: self.ph = self.sh
+    self.pX = int((self.sw - self.pw)/2)
+    self.pY = int((self.sh - self.ph)/2)
+    self.slX = int((self.sw - self.slw)/2)
+    self.slY = int((self.sh - self.slh)/2)
+    self.lX = int((self.sw - self.lw)/2)
+    self.lY = int((self.sh - self.lh)/4)
+    self.pcX = int((self.sw - self.pcw)/2.75)
+    self.pcY = int((self.sh - self.pch)/2.75)
+   
+
+    self.addControl(xbmcgui.ControlImage(self.pX, self.pY, self.pw, self.ph, self.path_icons + '/dlgbkgnd.png'))
+    
+    self.strTitle = xbmcgui.ControlLabel(self.lX, self.lY, self.lw, self.lh, '', 'font13', '0xFF00FFFF')
+    self.addControl(self.strTitle)
+    self.strTitle.setLabel('Slide to Start and press Ok or Enter')
+
+    self.slider = xbmcgui.ControlSlider(self.slX, self.slY, self.slw, self.slh)
+    self.addControl(self.slider)
+    self.slider.setPercent(0.0)
+        
+    self.strPercent = xbmcgui.ControlLabel(self.pcX, self.pcY, self.pcw, self.pch, '', 'font13', '0xFFFFFF00')
+    self.addControl(self.strPercent)
+    self.strPercent.setLabel('%s %%'%self.slider.getPercent())
+    self.setFocus(self.slider)
+
+    
+
+
+    
+  def onAction(self, action):
+    if action == ACTION_PREVIOUS_MENU or action == ACTION_BACK or action == ACTION_PARENT_DIR:
+        self.close()
+    elif action == ACTION_SELECT_ITEM:
+        shstart = int(self.slider.getPercent())
+        self.close()
+    else:
+        self.strPercent.setLabel('%s %%'%self.slider.getPercent())
+
+
+      
+
         
 rodina = RodinaTV()
 rodina.main()        
