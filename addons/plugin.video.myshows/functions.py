@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.8.0"
+__version__ = "1.8.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -62,7 +62,7 @@ def id2title(showId, id=None, norus=False):
         else:
             title=jdata['title']
         Debug('[id2title]: '+ title)
-        if id:
+        if id and 'title' in jdata['episodes'][id]:
             return title.encode('utf-8'), jdata['episodes'][id]['title'].encode('utf-8')
         else:
             return title.encode('utf-8'), None
@@ -318,8 +318,8 @@ def auto_scan():
         if scan.get() \
             and int(time.time())-scan.get()>refresh_period*3600:
             scan.delete()
-            ScanAll()
             scan.add()
+            ScanAll()
     except: showMessage(__language__(30279), __language__(30277))
 
 class Data():
@@ -439,17 +439,14 @@ def getDirList(path, newl=None):
 def cutFileNames(l):
     from difflib import Differ
     d = Differ()
-    i=-1
 
-    ##  need more tests
     text=sortext(l)
-    ###
     newl=[]
-    for li in l: newl.append(li[0:len(li)-1-len(li.split('.')[-1])].replace('.',' ').replace('_',' ').lower().strip())
+    for li in l: newl.append(cutStr(li[0:len(li)-1-len(li.split('.')[-1])]))
     l=newl
 
-    text1 = str(text[0][0:len(text[0])-1-len(text[0].split('.')[-1])]).replace('.',' ').replace('_',' ').lower().strip()
-    text2 = str(text[1][0:len(text[1])-1-len(text[1].split('.')[-1])]).replace('.',' ').replace('_',' ').lower().strip()
+    text1 = cutStr(text[0][0:len(text[0])-1-len(text[0].split('.')[-1])])
+    text2 = cutStr(text[1][0:len(text[1])-1-len(text[1].split('.')[-1])])
 
     seps=['.', '.', ' ', ' ', '_']
     for s in seps:
@@ -458,7 +455,7 @@ def cutFileNames(l):
         if len(result)>5:
             break
 
-    Debug('[cutFileNames] '+unicode(list(d.compare(text1.split(sep_file), text2.split(sep_file)))))
+    Debug('[cutFileNames] '+unicode(result))
 
     start=''
     end=''
@@ -479,12 +476,14 @@ def cutFileNames(l):
     Debug('[cutFileNames] [start] '+start)
     Debug('[cutFileNames] [end] '+end)
     for fl in newl:
-        if fl[0:len(start)]==start: fl=fl[len(start):]
-        if fl[len(fl)-len(end):]==end: fl=fl[0:len(fl)-len(end)]
-        #fl=fl[len(start):len(fl)-len(end)] только это вместо 2 сверху
+        if cutStr(fl[0:len(start)])==cutStr(start): fl=fl[len(start):]
+        if cutStr(fl[len(fl)-len(end):])==cutStr(end): fl=fl[0:len(fl)-len(end)]
         l.append(fl)
     Debug('[cutFileNames] [cutnames] '+unicode(l))
     return l
+
+def cutStr(s):
+    return str(s).replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').lower().strip()
 
 def FileNamesPrepare(filename):
     my_season=None
@@ -498,7 +497,7 @@ def FileNamesPrepare(filename):
     except: pass
 
 
-    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)','\((\d{2}|\d{1})\)']
+    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)','\((\d+)\)']
     for file in urls:
         match=re.compile(file, re.DOTALL | re.I | re.IGNORECASE).findall(filename)
         if match:
@@ -517,6 +516,8 @@ def FileNamesPrepare(filename):
                             my_episode=int(match[0][0])
                         except: break
             Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
+            if my_season and my_season>100:my_season=None
+            if my_episode and my_episode>365:my_episode=None
             return [my_season, my_episode, filename]
 
 def filename2match(filename):
@@ -623,15 +624,20 @@ class PluginStatus():
     def __init__(self):
         self.patchfiles=[('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_1.0.2',['xbmcvkui.py','xvvideo.py']),
+                ('lostfilm','plugin.video.LostFilm','patch_for_lostfilm_ver_0.4.0',['default.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.2.7',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
                  'resources/searchers/NNMClubRu.py'])]
         self.status={}
         for plug in self.patchfiles:
             self.status[plug[0]]=self.check_status(plug[1],plug[2],plug[3])
 
-        self.vkstatus=self.status['vkstatus']
-        self.torrenterstatus=self.status['torrenterstatus']
-        self.myshows=self.status['myshows']
+        self.translate={'PATCHED':unicode(__language__(30257)),
+                       'NOT PATCHED':unicode(__language__(30258)),
+                       'NOT INSTALLED':unicode(__language__(30259)),}
+        self.vkstatus=self.translate[self.status['vkstatus']]
+        self.torrenterstatus=self.translate[self.status['torrenterstatus']]
+        self.myshows=self.translate[self.status['myshows']]
+        self.lostfilm=self.translate[self.status['lostfilm']]
         self.search={'vkstatus':'VK-xbmc', 'torrenterstatus':'Torrenter', 'myshows':'MyShows.ru (Service)'}
 
     def menu(self):
@@ -657,6 +663,8 @@ class PluginStatus():
         if action:
             if action=='vkstatus':
                 text=self.vkstatus
+            elif action=='lostfilm':
+                text=self.lostfilm
             elif action=='torrenterstatus':
                 text=self.torrenterstatus
                 text2='Python-LibTorrent and Torrenter at http://xbmc.ru/'
@@ -689,15 +697,16 @@ class PluginStatus():
               {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
               {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
               {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
+              {"title":'plugin.video.LostFilm: %s' % self.lostfilm  ,"mode":"61",   "argv":{'action':'lostfilm'}},
               {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
               {"title":__language__(30145) + " (v. " +__version__ +")"  ,"mode":"61",   "argv":{'action':'about'}}]
 
         for i in menu:
             link=Link(i['mode'], i['argv'])
             h=Handler(int(sys.argv[1]), link)
-            if i['argv']['action'] in self.status and self.status[i['argv']['action']]==unicode(__language__(30258)):
+            if i['argv']['action'] in self.status and self.status[i['argv']['action']]=='NOT PATCHED':
                 h.item(link, title=unicode(i['title']),  popup=[(Link(i['mode']+'0', i['argv']),unicode(__language__(30286)))], popup_replace=True)
-            elif i['argv']['action'] in self.status and self.status[i['argv']['action']]==unicode(__language__(30259)):
+            elif i['argv']['action'] in self.status and self.status[i['argv']['action']]=='NOT INSTALLED':
                 h.item(link, title=unicode(i['title']),  popup=[(Link(i['mode']+'1', i['argv']),unicode(__language__(30316)))], popup_replace=True)
             else:
                 h.item(link, title=unicode(i['title']))
@@ -706,11 +715,11 @@ class PluginStatus():
         import filecmp
         plugstatus=None
         try: plugpath=xbmcaddon.Addon(id).getAddonInfo('path')
-        except: return unicode(__language__(30259))
+        except: return "NOT INSTALLED"
         try: os.path.getsize(os.path.join(plugpath, filelist[0]))
         except:
             try: plugpath=xbmcaddon.Addon(id).getAddonInfo('path').decode('utf-8').encode('cp1251')
-            except: return unicode(__language__(30259))
+            except: return "NOT INSTALLED"
         try: os.path.getsize(os.path.join(__addonpath__, patchpath, filelist[0]))
         except: __addonpath__=xbmcaddon.Addon(id='plugin.video.myshows').getAddonInfo('path').decode('utf-8').encode('cp1251')
         for f in filelist:
@@ -719,9 +728,9 @@ class PluginStatus():
                 original=os.path.join(plugpath, f)
                 if os.path.isfile(original):
                     if not filecmp.cmp(original, patch):
-                        plugstatus=unicode(__language__(30258))
+                        plugstatus="NOT PATCHED"
             except: pass
-        if not plugstatus: plugstatus=unicode(__language__(30257))
+        if not plugstatus: plugstatus="PATCHED"
         return plugstatus
 
     def install_plugin(self, action):
@@ -749,6 +758,34 @@ class PluginStatus():
         xbmc.executebuiltin('Container.Refresh')
         if not plugstatus: showMessage(__language__(30286), __language__(30208))
         else: showMessage(__language__(30286), __language__(30206), forced=True)
+
+    def use(self, action):
+        if self.status[action] not in ('NOT INSTALLED','NOT PATCHED'):
+            return True
+        dialog = xbmcgui.Dialog()
+        id,patchpath,filelist=None,None,None
+        for plug in self.patchfiles:
+            if plug[0]==action:
+                id=plug[1]
+                patchpath=plug[2]
+                filelist=plug[3]
+                break
+        if id and patchpath and filelist and action:
+            if self.status[action]=='NOT INSTALLED':
+                ok=dialog.yesno(__language__(30316),'Would you like to install this plugin?',id)#lang
+                if ok:
+                    self.install_plugin(action)
+                    self.status[action]=self.check_status(id,patchpath,filelist)
+                else:
+                    return False
+            if self.status[action]=='NOT PATCHED':
+                ok=dialog.yesno(__language__(30316),'Would you like to patch plugin?',id)#lang
+                if ok:
+                    self.install(action)
+                    self.status[action]=self.check_status(id,patchpath,filelist)
+                else:
+                    return False
+            return True
 
 def saveCheckPoint():
     __settings__.setSetting("checkpoint", str(sys.argv[2]))

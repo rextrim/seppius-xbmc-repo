@@ -101,6 +101,7 @@
         <string id="30147">ДОСТУПНО</string>
         <string id="30148">НЕТ ДОСТУПА</string>
         <string id="30149">Дополнительные функции</string>
+        <string id="30150">Продолжение следует...</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
@@ -144,7 +145,7 @@
         <string id="30238">Выберите папку с файлами:</string>
         <string id="30239">Добавить файл</string>
         <string id="30240">Поиск ВКонтакте (требует патч xbmc.vk-svoka)</string>
-        <string id="30241">Поиск BTchat.com</string>
+        <string id="30241">Поиск LostFilm.tv (требует патч plugin.video.LostFilm)</string>
         <string id="30242">Добавить .torrent</string>
         <string id="30243">Назад</string>
         <string id="30244">Добавить папку</string>
@@ -217,6 +218,7 @@
         <string id="30511">Папка не пуста, удалить вместе с файлами?</string>
         <string id="30512">Проверка uTorrent</string>
         <string id="30513">Хотите %s раздачу в uTorrent?</string>
+        <string id="30514">Найдено на LostFilm.tv (требует патч plugin.video.LostFilm)</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
