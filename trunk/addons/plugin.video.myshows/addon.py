@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.0"
+__version__ = "1.8.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -44,8 +44,8 @@ class Main(Handler):
         if top: self.menu.append(top)
         if menu_style=='1':
             self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30100),"mode":"10"},
-                              {"title":__language__(30102),"mode":"17"},{"title":__language__(30103),"mode":"14"},
-                              {"title":__language__(30104),"mode":"15"},
+                              {"title":__language__(30102),"mode":"17"},{"title":__language__(30150),"mode":"18"},
+                              {"title":__language__(30103),"mode":"14"},{"title":__language__(30104),"mode":"15"},
                               {"title":__language__(30105),"mode":"16"},{"title":__language__(30106),"mode":"27"},
                               {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                               {"title":__language__(30112),"mode":"40"}, {"title":__language__(30101),"mode":"19"},
@@ -102,6 +102,7 @@ def Shows(mode):
     if mode==13:
         menu=[{"title":TextBB(__language__(30100), 'b'),"mode":"10", "argv":{}},
               {"title":TextBB(__language__(30102), 'b'),"mode":"17", "argv":{}},
+              {"title":TextBB(__language__(30150), 'b'),"mode":"18", "argv":{}},
               {"title":TextBB(__language__(30103), 'b'),"mode":"14", "argv":{}},
               {"title":TextBB(__language__(30104), 'b'),"mode":"15", "argv":{}},
               {"title":TextBB(__language__(30105), 'b'),"mode":"16", "argv":{}}]
@@ -113,14 +114,15 @@ def Shows(mode):
 
 
     for showId in jdata:
-
         if ruName=='true' and jdata[showId]['ruTitle']:
             title=jdata[showId]['ruTitle']
         else:
             title=jdata[showId]['title']
 
         if mode!=10 and mode!=19:
-            if mode not in (13,17) and jdata[showId]['watchStatus']=="watching":
+            if mode!=18 and jdata[showId]['watchStatus']=="watching" and jdata[showId]['totalEpisodes']-jdata[showId]['watchedEpisodes']==0:
+                continue
+            elif mode not in (13,17) and jdata[showId]['watchStatus']=="watching" and jdata[showId]['totalEpisodes']-jdata[showId]['watchedEpisodes']!=0:
                 continue
             elif mode!=14 and jdata[showId]['watchStatus']=="later":
                 continue
@@ -555,7 +557,7 @@ def Change_Status_Season(showId, seasonNumber, action, refresh_url):
     Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/episodes?'+action+'='+eps_string.rstrip(','), refresh_url).get()
     showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
 
-def Rate(showId, id, refresh_url):
+def Rate(showId, id, refresh_url, check=False):
     ratewindow=__settings__.getSetting("ratewindow")
     rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
     if id=='0':
@@ -573,7 +575,10 @@ def Rate(showId, id, refresh_url):
         if id=='0':
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
-            rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
+            if check==False:
+                rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
+            else:
+                rate_url=('http://api.myshows.ru/profile/episodes/check/'+id+'?rating='+rate[ret])
         Data(cookie_auth, rate_url, refresh_url).get()
         showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
         return True
@@ -645,9 +650,6 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
 
 class SyncXBMC():
     def __init__(self):
-        #action='check'
-        #title='{"tvshowid": 6, "episode": 14, "uniqueid": {"unknown": "4537122"}, "year": 0, "season": 6, "tvdb_id": "244991", "episodeid": 107, "showtitle": "\u0421\u0432\u0435\u0442\u043e\u0444\u043e\u0440", "label": "14 \u0441\u0435\u0440\u0438\u044f"}'
-        #title='{"label":"Californication [1x01] Pilot.mkv"}'
         self.menu=self.GetFromXBMC()
         #print self.xbmc_shows
         self.action=action
@@ -661,8 +663,6 @@ class SyncXBMC():
 
     def doaction(self):
         if self.action=='check':
-            #print self.match
-            #print str(self.getid(self.showtitle2showId(self.match['showtitle']), self.match['season'],self.match['episode'],self.match['label']))
             id=None
             showId=None
             if __settings__.getSetting("label")=='true':
@@ -687,20 +687,27 @@ class SyncXBMC():
                 except:showId=self.showtitle2showId(self.match['showtitle'])
             if self.match and 'date' in self.match and not 'episode' in self.match:
                 id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
-            Debug('[doaction] [showId] '+str(showId))
+            Debug('[doaction][showId]: '+str(showId)+' [doaction][id]: '+str(id))
             if showId:
                 if not id and 'season' in self.match and 'episode' in self.match:
                     Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
-                if __settings__.getSetting("scrobrate")=='true':
-                    rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
-                else: rateOK=True
-                if rateOK or __settings__.getSetting("rateandcheck")=='false':
-                    if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
-                        Debug('[doaction] New show! Marking as watching')
-                        Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
-                        xbmc.sleep(500)
-                    Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                if id:
+                    rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
+                    if scrobrate=='true' and rateandcheck=='true':
+                        rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', True)
+                    elif scrobrate=='true' and rateandcheck=='false':
+                        Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/',)
+                        rateOK=True
+                    elif scrobrate=='false' and rateandcheck=='true':
+                        rateOK=True
+                    if rateOK:
+                        if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
+                            Debug('[doaction] New show! Marking as watching')
+                            Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
+                            xbmc.sleep(500)
+                        if scrobrate!='true' or rateandcheck!='true':
+                            Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
         try:showtitle=showtitle.decode('utf-8','ignore')
@@ -751,28 +758,27 @@ class SyncXBMC():
     def getid(self, showId, seasonNumber, episodeId, lable=None):
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId))
         jdata = json.loads(data.get())
-        if seasonNumber and int(seasonNumber)>0:
+        if seasonNumber and int(seasonNumber)>0 and episodeId:
             for id in jdata['episodes']:
                 if jdata['episodes'][id]['seasonNumber']==int(seasonNumber) and jdata['episodes'][id]['episodeNumber']==int(episodeId):
                     return int(id)
-        else:
-            episodes=[]
-            for id in jdata['episodes']:
-                episodes.append((id, jdata['episodes'][id]['title'], jdata['episodes'][id]['seasonNumber']))
-                if lable and jdata['episodes'][id]['title']==lable:
-                    return int(id)
-            if len(episodes)==1:
-                return int(episodes)
-            episodes=sorted(episodes, key=lambda x: x[0], reverse=True)
-            eptitles=[]
-            ids=[]
-            for x in episodes:
-                eptitles.append('S'+int_xx(x[2])+' '+x[1])
-                ids.append(x[0])
-            dialog = xbmcgui.Dialog()
-            ret = dialog.select(unicode(__language__(30289)), eptitles)
-            if ret!=-1:
-                return int(ids[ret])
+        episodes=[]
+        for id in jdata['episodes']:
+            episodes.append((id, jdata['episodes'][id]['title'], jdata['episodes'][id]['seasonNumber']))
+            if lable and jdata['episodes'][id]['title']==lable:
+                return int(id)
+        if len(episodes)==1:
+            return int(episodes)
+        episodes=sorted(episodes, key=lambda x: x[0], reverse=True)
+        eptitles=[]
+        ids=[]
+        for x in episodes:
+            eptitles.append('S'+int_xx(x[2])+' '+x[1])
+            ids.append(x[0])
+        dialog = xbmcgui.Dialog()
+        ret = dialog.select(unicode(__language__(30289)), eptitles)
+        if ret!=-1:
+            return int(ids[ret])
 
     def list(self):
         for i in self.menu:
@@ -814,7 +820,9 @@ class SyncXBMC():
             return item
         for i in range(len(self.menu)):
             if title in self.menu[i]['title']:
+                #Debug('episodes:'+title+' '+str(self.menu[i]['title']))
                 item.setProperty('fanart_image', self.menu[i]['fanart'])
+                break
         return item
 
     def episode(self, title, seasonId, episodeNumber):
@@ -862,7 +870,8 @@ def Test():
     #SyncXBMC()
     #RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
     #xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
-    print str(Download().listdirs())
+    #print Rate('9237', '2031031', 'http://api.myshows.ru/profile/shows/9237/', True)
+    #PluginStatus().use('myshows')
     pass
 
 params = get_params()
