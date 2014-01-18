@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.8.1"
+__version__ = "1.8.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -485,6 +485,46 @@ def cutFileNames(l):
 def cutStr(s):
     return str(s).replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').lower().strip()
 
+def sortext(filelist):
+    result={}
+    for name in filelist:
+        ext=name.split('.')[-1]
+        try:result[ext]=result[ext]+1
+        except: result[ext]=1
+    lol=result.viewitems()
+    lol=sorted(lol, key=lambda x: x[1])
+    Debug('[sortext]: lol:'+str(lol))
+    popext=lol[-1][0]
+    result,i=[],0
+    for name in filelist:
+        if name.split('.')[-1]==popext:
+            result.append(name)
+            i=i+1
+    result=sweetpair(result)
+    return result
+
+def sweetpair(l):
+    from difflib import SequenceMatcher
+    s = SequenceMatcher()
+    ratio=[]
+    for i in range(0, len(l)-1): ratio.append(0)
+    for i in range(0, len(l)-1):
+        for p in range(0, len(l)-1):
+            s.set_seqs(l[i], l[p])
+            ratio[i]=ratio[i]+s.quick_ratio()
+    id1,id2=0,0
+    for i in range(0, len(l)-1):
+        if ratio[id1]<ratio[i] or id2==id1 and ratio[id1]==ratio[i]:
+            id2=id1
+            id1=i
+        elif ratio[id2]<ratio[i]:
+            id2=i
+
+    Debug('[sweetpair]: id1 '+str(l[id1])+':'+str(ratio[id1]))
+    Debug('[sweetpair]: id2 '+str(l[id2])+':'+str(ratio[id2]))
+
+    return [l[id1],l[id2]]
+
 def FileNamesPrepare(filename):
     my_season=None
     my_episode=None
@@ -804,21 +844,3 @@ def PrepareFilename(filename):
     for b in badsymb:
         filename=filename.replace(b,' ')
     return filename
-
-def sortext(filelist):
-    result={}
-    for name in filelist:
-        ext=name.split('.')[-1]
-        try:result[ext]=result[ext]+1
-        except: result[ext]=1
-    lol=result.viewitems()
-    lol=sorted(lol, key=lambda x: x[1])
-    Debug('[sortext]: lol:'+str(lol))
-    popext=lol[-1][0]
-    result,i=[],0
-    for name in filelist:
-        if name.split('.')[-1]==popext:
-            result.append(name)
-            i=i+1
-    Debug('[sortext]: result:'+str(result))
-    return result
