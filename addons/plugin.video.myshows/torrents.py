@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.8.1"
+__version__ = "1.8.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -357,7 +357,7 @@ class Source:
         self.libmode=libmode
         if int(__settings__.getSetting("torplayer"))==0 and torrmode:
             self.libmode=False
-        if self.stype in ('url-torrent'):
+        if self.stype in ('url-torrent',):
             self.TSplayer=tsengine()
             try: out=self.TSplayer.load_torrent(self.filename,'TORRENT',port=aceport)
             except: out=self.TSplayer.load_torrent(urllib.unquote_plus(self.filename),'TORRENT',port=aceport)
@@ -975,7 +975,7 @@ class PlayFile(Source):
             xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.LostFilm/?mode=OpenCat&text=0&title=Title&url=%s)' % (urllib.quote_plus(self.filename)))
         elif self.stype=='dir' or self.stype=='multifile':
             myshows_files=[unicode(__language__(30232))]
-            files=xbmcvfs.listdir(self.filename)[1]
+            files=sorted(xbmcvfs.listdir(self.filename)[1], key=lambda x: x[0])
             myshows_files.extend(files)
             myshows_files.append(unicode(__language__(30205)))
             dialog = xbmcgui.Dialog()
