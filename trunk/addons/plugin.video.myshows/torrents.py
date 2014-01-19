@@ -1357,7 +1357,7 @@ class MoveToXBMC(Source):
                     ok=dialog.yesno(__language__(30512),__language__(30513) % (action),dir)
                     if ok:
                         Download().action('action=%s&hash=%s' % (action, id))
-                        xbmc.sleep(20000)
+                        if action!='start':xbmc.sleep(10000)
                         return id
 
 def chooseDir(urls, path=None):
