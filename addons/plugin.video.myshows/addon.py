@@ -812,7 +812,7 @@ class SyncXBMC():
                     self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
                     #self.menu[i]['VideoResolution']=720
                 item.setInfo( type='Video', infoLabels=self.menu[i] )
-                #Debug('[SyncXBMC] [shows] '+str(self.menu[i]))
+                break
         return item
 
     def episodes(self, title, item):
@@ -872,6 +872,16 @@ def Test():
     #xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
     #print Rate('9237', '2031031', 'http://api.myshows.ru/profile/shows/9237/', True)
     #PluginStatus().use('myshows')
+    import libtorrent
+    for filename in xbmcvfs.listdir(r'D:\torrents')[1]:
+        filelist=[]
+        tor=os.path.join('D:\\','torrents',filename)
+        torrentFileInfo = libtorrent.torrent_info(tor)
+        s=torrentFileInfo.files()
+        for f in s:
+            if '\\' not in f.path[f.path.find('\\')+1:]:
+                filelist.append(f.path[f.path.find('\\')+1:])
+        print 'filelist.append('+str(filelist)+')'
     pass
 
 params = get_params()

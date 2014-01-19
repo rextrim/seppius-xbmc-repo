@@ -447,14 +447,8 @@ def cutFileNames(l):
 
     text1 = cutStr(text[0][0:len(text[0])-1-len(text[0].split('.')[-1])])
     text2 = cutStr(text[1][0:len(text[1])-1-len(text[1].split('.')[-1])])
-
-    seps=['.', '.', ' ', ' ', '_']
-    for s in seps:
-        sep_file=s
-        result=list(d.compare(text1.split(sep_file), text2.split(sep_file)))
-        if len(result)>5:
-            break
-
+    sep_file=" "
+    result=list(d.compare(text1.split(sep_file), text2.split(sep_file)))
     Debug('[cutFileNames] '+unicode(result))
 
     start=''
@@ -470,7 +464,6 @@ def cutFileNames(l):
             break
         end=sep_file+str(res).strip()+end
 
-
     newl=l
     l=[]
     Debug('[cutFileNames] [start] '+start)
@@ -478,8 +471,12 @@ def cutFileNames(l):
     for fl in newl:
         if cutStr(fl[0:len(start)])==cutStr(start): fl=fl[len(start):]
         if cutStr(fl[len(fl)-len(end):])==cutStr(end): fl=fl[0:len(fl)-len(end)]
+        try:
+            isinstance(int(fl.split(sep_file)[0]), int)
+            fl=fl.split(sep_file)[0]
+        except:pass
         l.append(fl)
-    Debug('[cutFileNames] [cutnames] '+unicode(l))
+    Debug('[cutFileNames] [sorted l]  '+unicode(sorted(l,key=lambda x:x)), True)
     return l
 
 def cutStr(s):
@@ -501,19 +498,20 @@ def sortext(filelist):
             result.append(name)
             i=i+1
     result=sweetpair(result)
+    Debug('[sortext]: result:'+str(result))
     return result
 
 def sweetpair(l):
     from difflib import SequenceMatcher
     s = SequenceMatcher()
     ratio=[]
-    for i in range(0, len(l)-1): ratio.append(0)
-    for i in range(0, len(l)-1):
-        for p in range(0, len(l)-1):
+    for i in range(0, len(l)): ratio.append(0)
+    for i in range(0, len(l)):
+        for p in range(0, len(l)):
             s.set_seqs(l[i], l[p])
             ratio[i]=ratio[i]+s.quick_ratio()
     id1,id2=0,0
-    for i in range(0, len(l)-1):
+    for i in range(0, len(l)):
         if ratio[id1]<ratio[i] or id2==id1 and ratio[id1]==ratio[i]:
             id2=id1
             id1=i
@@ -537,7 +535,7 @@ def FileNamesPrepare(filename):
     except: pass
 
 
-    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)','\((\d+)\)']
+    urls=['s(\d+)e(\d+)','(\d+)[x|-](\d+)','E(\d+)','Ep(\d+)','\((\d+)\)']
     for file in urls:
         match=re.compile(file, re.DOTALL | re.I | re.IGNORECASE).findall(filename)
         if match:
@@ -555,9 +553,9 @@ def FileNamesPrepare(filename):
                         try:
                             my_episode=int(match[0][0])
                         except: break
-            Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
             if my_season and my_season>100:my_season=None
             if my_episode and my_episode>365:my_episode=None
+            Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
             return [my_season, my_episode, filename]
 
 def filename2match(filename):
@@ -843,4 +841,4 @@ def PrepareFilename(filename):
     badsymb=[':','"','\\','/','\'','!','&','*','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ']
     for b in badsymb:
         filename=filename.replace(b,' ')
-    return filename
+    return filename.strip()
