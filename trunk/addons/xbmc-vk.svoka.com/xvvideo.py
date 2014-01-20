@@ -38,12 +38,11 @@ __language__ = __settings__.getLocalizedString
 
 
 SEARCH_RESULT, TOP_DOWNLOADS, SERIES, MY_VIDEOS, SEASONS, SEASON_SERIES = "SEARCH_RESULT,TOP_DOWNLOADS,SERIES,MY_VIDEOS,SEASONS,SEASON_SERIES".split(',')
-MY_SHOWS_LIST = "MY_SHOWS_LIST"
 SEARCH_RESULT_DOWNLOAD = "SEARCH_RESULT_DOWNLOAD"
 VIDEO_DOWNLOAD = "VIDEO_DOWNLOAD"
 GROUP_VIDEO = "GROUP_VIDEO"
 GROUPS = "GROUPS"
-NEXT_PAGE = "NEXT_PAGE"
+
 # ALBUM_VIDEO = "ALBUM_VIDEO"
 
 
@@ -51,6 +50,7 @@ NEXT_PAGE = "NEXT_PAGE"
 class XVKVideo(XBMCVkUI_VKSearch_Base):
 
     def __init__(self, *params):
+        self.offset = 0
         self.per_page = 50
         self.histId = None
         self.apiName = "video.search"
@@ -131,49 +131,44 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
         xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=GROUPS), listItem, True)
 
         self.friendsEntry("video")
-        # listItem = xbmcgui.ListItem(__language__(30020))
-        # xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=MY_SHOWS_LIST) , listItem, True)
 
-    def Do_NEXT_PAGE(self):
-        page = self.params.get('page')
-        gid = self.params.get('gid')
-        uid = self.params.get('uid')
-        offset = self.per_page * int(page)
-        if gid:
-            v = self.api.call('video.get', gid=gid, count=self.per_page, offset=offset)
-        elif uid:
-            v = self.api.call('video.get', uid=uid, count=self.per_page, offset=offset)
-        else:
-            v = self.api.call('video.get', count=self.per_page, offset=offset)
+        listItem = xbmcgui.ListItem(__language__(30020))
+        xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode="LOGOUT"), listItem, True)
+
+
+    def prevPage(self, **params):
+        self.offset = int(self.params.get("offset") or 0)
+        if self.offset:
+            listItem = xbmcgui.ListItem(__language__(30046)%(self.offset/self.per_page))
+            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=self.params["mode"], offset=self.offset-self.per_page, **params), listItem, True)
+            listItem = xbmcgui.ListItem(__language__(30021))
+            xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode="HOME"), listItem, True)
+
+
+    def nextPage(self, v, **params):
         if v:
-            for a in v[1:]:
-                self.ProcessFoundEntry(a)
-        if len(v[1:]) >= self.per_page:
-            page = int(page); page += 1
-            listItem = xbmcgui.ListItem(__language__(30044)%(page+1))
-            if gid:
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=page, gid=gid) , listItem, True)
-            else:
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=page, uid=uid) , listItem, True)
+            if int(v[0]) >= self.offset+self.per_page:
+                listItem = xbmcgui.ListItem(__language__(30044)%(1+self.offset/self.per_page))
+                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=self.params["mode"], offset=self.offset+self.per_page, **params), listItem, True)
+
 
     def Do_GROUP_VIDEO(self):
         gid = self.params["gid"]
-        v = self.api.call('video.get', gid=gid, count=self.per_page)
+        self.prevPage(gid=gid)
+        v = self.api.call('video.get', gid=gid, count=self.per_page, offset=self.offset)
         if v:
             for a in v[1:]:
                 self.ProcessFoundEntry(a)
-            if len(v[1:]) >= self.per_page:
-                listItem = xbmcgui.ListItem(__language__(30044)%2)
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1, gid=gid) , listItem, True)
+        self.nextPage(v,gid=gid)
+
 
     def processFriendEntry(self, uid):
-        v = self.api.call('video.get', uid=uid, count=200)
+        self.prevPage(uid=uid)
+        v = self.api.call('video.get', uid=uid, count=self.per_page, offset=self.offset)
         if v:
             for a in v[1:]:
                 self.ProcessFoundEntry(a)
-            if len(v[1:]) >= self.per_page:
-                listItem = xbmcgui.ListItem(__language__(30044)%2)
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1, uid=uid), listItem, True)
+        self.nextPage(v,uid=uid)
 
     def Do_GROUPS(self):
         resp = self.api.call('groups.get',extended=1)
@@ -216,13 +211,12 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
             xbmcplugin.addDirectoryItem(self.handle, q, i, True)
 
     def Do_MY_VIDEOS(self):
-        v = self.api.call("video.get", count=self.per_page)
+        self.prevPage()
+        v = self.api.call("video.get", count=self.per_page, offset=self.offset)
         if v:
             for a in v[1:]:
                 self.ProcessFoundEntry(a)
-            if len(v[1:]) >= self.per_page:
-                listItem = xbmcgui.ListItem(__language__(30044)%2)
-                xbmcplugin.addDirectoryItem(self.handle, self.GetURL(mode=NEXT_PAGE, page=1), listItem, True)
+        self.nextPage(v)
 
     def Do_TOP_DOWNLOADS(self):
         html = urllib.urlopen("http://kinobaza.tv/ratings/top-downloadable").read()
