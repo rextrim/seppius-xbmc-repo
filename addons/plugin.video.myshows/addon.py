@@ -557,7 +557,7 @@ def Change_Status_Season(showId, seasonNumber, action, refresh_url):
     Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/episodes?'+action+'='+eps_string.rstrip(','), refresh_url).get()
     showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
 
-def Rate(showId, id, refresh_url, check=False):
+def Rate(showId, id, refresh_url):
     ratewindow=__settings__.getSetting("ratewindow")
     rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
     if id=='0':
@@ -575,10 +575,7 @@ def Rate(showId, id, refresh_url, check=False):
         if id=='0':
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
-            if check==False:
-                rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
-            else:
-                rate_url=('http://api.myshows.ru/profile/episodes/check/'+id+'?rating='+rate[ret])
+            rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
         Data(cookie_auth, rate_url, refresh_url).get()
         showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
         return True
@@ -694,14 +691,10 @@ class SyncXBMC():
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
                 if id:
                     rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
-                    if scrobrate=='true' and rateandcheck=='true':
-                        rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', True)
-                    elif scrobrate=='true' and rateandcheck=='false':
-                        Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/',)
-                        rateOK=True
-                    elif scrobrate=='false' and rateandcheck=='true':
-                        rateOK=True
-                    if rateOK:
+                    if scrobrate=='true':
+                        rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                    else:rateOK=True
+                    if rateOK or rateandcheck=='false':
                         if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
                             Debug('[doaction] New show! Marking as watching')
                             Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
