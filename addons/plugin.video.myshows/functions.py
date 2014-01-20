@@ -661,7 +661,7 @@ def uTorrentBrowser():
 class PluginStatus():
     def __init__(self):
         self.patchfiles=[('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
-                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_1.0.2',['xbmcvkui.py','xvvideo.py']),
+                ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_1.1.0',['xbmcvkui.py','xvvideo.py']),
                 ('lostfilm','plugin.video.LostFilm','patch_for_lostfilm_ver_0.4.0',['default.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.2.7',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
                  'resources/searchers/NNMClubRu.py'])]
