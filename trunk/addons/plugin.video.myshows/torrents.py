@@ -1232,7 +1232,7 @@ class MoveToXBMC(Source):
                     self.move(os.path.join(folder, subtitledirs[ret].decode('utf-8','ignore')),renamebool)
 
             if success:
-                items=[__language__(30507),__language__(30508),orig_xbmclib]
+                items=[__language__(30507),__language__(30508),orig_xbmclib,os.path.join(orig_xbmclib,PrepareFilename(self.title))]
                 ret = dialog.select(__language__(30509), items)
                 if ret==1:
                     xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
@@ -1316,10 +1316,9 @@ class MoveToXBMC(Source):
             else:newfilename=file
             if self.movemode not in (3,4):
                 newfolder=self.mkdirs(seasonId)
-            if self.movemode in (1,2,3,4):
-                newfolder=newfolder.decode('utf-8','ignore')
-                file=file.decode('utf-8','ignore')
-                newfilename=newfilename.decode('utf-8','ignore')
+            newfolder=newfolder.decode('utf-8','ignore')
+            file=file.decode('utf-8','ignore')
+            newfilename=newfilename.decode('utf-8','ignore')
             if self.movemode==1 or self.movemode==5: #Copy
                 shutil.copy(os.path.join(folder, file), newfolder)
                 if renamebool:shutil.move(os.path.join(newfolder, file), os.path.join(newfolder, newfilename))
