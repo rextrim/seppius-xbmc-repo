@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.1"
+__version__ = "1.8.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -699,8 +699,7 @@ class SyncXBMC():
                             Debug('[doaction] New show! Marking as watching')
                             Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                             xbmc.sleep(500)
-                        if scrobrate!='true' or rateandcheck!='true':
-                            Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                        Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
 
     def showtitle2showId(self, showtitle, tvdb_id=None):
         try:showtitle=showtitle.decode('utf-8','ignore')
