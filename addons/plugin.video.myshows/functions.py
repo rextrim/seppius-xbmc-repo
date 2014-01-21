@@ -599,6 +599,7 @@ def lockView(viewId='list'):
 
 def uTorrentBrowser():
     from net import Download
+    menu,dirs=[],[]
     try: apps=get_apps()
     except: pass
     try: action=urllib.unquote_plus(apps['argv']['action'])
@@ -607,6 +608,8 @@ def uTorrentBrowser():
     except: hash=None
     try: ind=urllib.unquote_plus(apps['argv']['ind'])
     except: ind=None
+    try: tdir=urllib.unquote_plus(apps['argv']['tdir'])
+    except: tdir=None
 
     if action:
         if action=='context':
@@ -627,21 +630,49 @@ def uTorrentBrowser():
                folder=folder.replace(__settings__.getSetting("torrent_dir"),__settings__.getSetting("torrent_replacement"))
             filename=os.path.join(folder,filename)
             xbmc.executebuiltin('xbmc.PlayMedia("'+filename.encode('utf-8')+'")')
-        else: Download().action('action=%s&hash=%s' % (action, hash))
+        elif not tdir: Download().action('action=%s&hash=%s' % (action, hash))
+        elif tdir and action in ('0','3'):
+            dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
+            for name,percent,ind,size in dllist:
+                if '/' in name and tdir in name:
+                    menu.append((hash, action, str(ind)))
+            for hash, action, ind in menu: Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
+            return
         xbmc.executebuiltin('Container.Refresh')
         return
 
-    menu=[]
     if not hash:
         for data in Download().list():
             status=" "
             if data['status'] in ('seed_pending','stopped'): status=TextBB(' [||] ','b')
             elif data['status'] in ('seeding','downloading'): status=TextBB(' [>] ','b')
             menu.append({"title":'['+str(data['progress'])+'%]'+status+data['name'], "mode":"52", "argv":{'hash':str(data['id'])}})
-    else:
+    elif not tdir:
         dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
-        for s in dllist:
-            menu.append({"title":'['+str(s[1])+'%]'+'['+str(s[3])+'] '+s[0], "mode":"52", "argv":{'hash':hash,'ind':str(s[2]),'action':'context'}})
+        for name,percent,ind,size in dllist:
+            if '/' not in name:
+                menu.append({"title":'['+str(percent)+'%]'+'['+str(size)+'] '+name, "mode":"52", "argv":{'hash':hash,'ind':str(ind),'action':'context'}})
+            else:
+                tdir=name.split('/')[0]
+                #tfile=name[len(tdir)+1:]
+                if tdir not in dirs: dirs.append(tdir)
+    elif tdir:
+        dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
+        for name,percent,ind,size in dllist:
+            if '/' in name and tdir in name:
+                menu.append({"title":'['+str(percent)+'%]'+'['+str(size)+'] '+name[len(tdir)+1:], "mode":"52", "argv":{'hash':hash,'ind':str(ind),'action':'context'}})
+
+    for i in dirs:
+        argv={'hash':hash,'tdir':i}
+        link=Link("52", argv)
+        h=Handler(int(sys.argv[1]), link)
+        popup=[]
+        folder=True
+        actions=[('3', __language__(30281)),('0', __language__(30282))]
+        for a,title in actions:
+            argv['action']=a
+            popup.append((Link("52", argv),title))
+        h.item(link, title=unicode(i), popup=popup, popup_replace=True, folder=folder)
 
     for i in menu:
         link=Link(i['mode'], i['argv'])
