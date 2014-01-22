@@ -195,11 +195,12 @@ def subcat(params):
 	beautifulSoup = BeautifulSoup(http)
 	content = beautifulSoup.find('ul', attrs={'id': 'menu'})
 	if params['sub']=='god':
-		cats=content.findAll(value=re.compile('god'))
+		cats=content.findAll('option')
 		for line in cats[1:-1]:
 			title= line.string.encode('utf-8')
-			href=httpSiteUrl+line['value']+'/'
-
+			#xbmc.log('[STEPASHKA.COM] in god title='+str(title))
+			href=httpSiteUrl+'select/фильмы/'+title
+			#xbmc.log('[STEPASHKA.COM] in god href='+str(href))
 			if title!='None':
 				li = xbmcgui.ListItem(title, addon_fanart, thumbnailImage = addon_icon)
 				li.setProperty('IsPlayable', 'false')
@@ -217,8 +218,11 @@ def subcat(params):
 		list=[]
 		for line in cats:
 			title=None
-			if line.string:	title = str(line.string)
-			else: title = str(line.find('b').string)
+			#xbmc.log('[STEPASHKA.COM] Line='+str(line))
+			if line.string:
+				title = str(line.string)
+			else:
+				title = str(line.find('strong').string)
 			if title!='None':
 				li = xbmcgui.ListItem(title, addon_fanart, thumbnailImage = addon_icon)
 				li.setProperty('IsPlayable', 'false')
@@ -246,7 +250,7 @@ def doSearch(params):
 		params['href'] = 'http://online.stepashka.com/?do=search&subaction=search&story=%s'% quote(__addon__.getSetting('querry'))
 		params['search']=1
 		params['title']='Поиск'
-		readCategory(params)	
+		readCategory(params)
 
 def readCategory(params, postParams = None):
 	#print 'read'
@@ -258,8 +262,10 @@ def readCategory(params, postParams = None):
 		hlink=params['href']
 		page=1
 	try: 
-		if params['search']: search=True
-	except: search=False
+		if params['search']:
+			search=True
+	except:
+		search=False
 	http = GET(hlink)
 	if http == None: return False
 	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, стр. %s[/COLOR]' % (params['title'],page), addon_icon, thumbnailImage = addon_icon)
@@ -325,9 +331,13 @@ def readCategory(params, postParams = None):
 							})
 						xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	#try:
-	dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
+	#xbmc.log('[STEPASHKA.COM] bs='+str(beautifulSoup))
+	if search:
+		dataRows1 = beautifulSoup.find('div', attrs={'class': 'maincont'})
+	else:
+		dataRows1 = beautifulSoup.find('div', attrs={'class': 'navigation'})
 	dataRows = dataRows1.findAll('a')
-	
+	#xbmc.log('[STEPASHKA.COM] dr='+str(dataRows))
 	if not search:
 		if len(dataRows) == 0:
 			showMessage('ОШИБКА', 'Неверная страница', 3000)
@@ -471,7 +481,8 @@ def readFile(params):
 		#print 'stfile'
 		#print 'playlist in ' + lurl.split('=')[1]
 		http=flname
-		#print 'after xppod: '+str(http)
+		#print 'http: '+str(http)
+		if http == None: return False
 		http = GET(http)
 		#print 'http pl='+str(http)
 		#print 'http2' + http
