@@ -33,7 +33,7 @@
        version="1.0.9"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -53,7 +53,7 @@
        version="1.0.5"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -71,7 +71,7 @@
        version="1.0.5"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="audio"
@@ -91,7 +91,7 @@
        version="1.0.6"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -111,7 +111,7 @@
        version="0.2.0"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -125,7 +125,7 @@
 </addon>
 
 <addon id="plugin.audio.mp3tales.ru" name="Аудиосказки" version="1.0.1" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>audio</provides>
   </extension>
@@ -145,7 +145,7 @@
        version="1.0.8"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -163,7 +163,7 @@
        version="1.0.6"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -184,7 +184,7 @@
        version="0.0.2"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -202,7 +202,7 @@
        version="0.0.3"
        provider-name="akgdrg">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
 
     </requires>
@@ -222,7 +222,7 @@
        version="1.0.7"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -241,7 +241,7 @@
        version="1.0.3"
        provider-name="TelePlus.ru">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="audio"
@@ -257,7 +257,7 @@
 
 <addon id="plugin.audio.tracksflow" name="TracksFlow" version="0.4" provider-name="Dmitry Khrysev">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.xbmcswift2" version="1.1.1"/>
     <import addon="script.module.simple.downloader" version="0.9.1"/>
   </requires>
@@ -322,7 +322,7 @@ Audio sources are
        version="1.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -341,7 +341,7 @@ Audio sources are
        version="1.0.9"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -360,7 +360,7 @@ Audio sources are
        version="0.2.0"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -378,7 +378,7 @@ Audio sources are
        version="0.4.0"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -397,7 +397,7 @@ Audio sources are
        version="2.3.5"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -416,7 +416,7 @@ Audio sources are
        version="0.9.7"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -435,7 +435,7 @@ Audio sources are
        version="1.0.7"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -456,7 +456,7 @@ Audio sources are
        version="0.0.2"
        provider-name="x86demon">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
@@ -474,7 +474,7 @@ Audio sources are
        version="1.0.4"
        provider-name="x86demon">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <!--<import addon="script.module.simplejson"/>-->
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -494,7 +494,7 @@ Audio sources are
        version="1.0.0beta"
        provider-name="CSC">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="addon.py">
     <provides>video</provides>
@@ -513,7 +513,7 @@ Audio sources are
        version="1.0.5"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -532,7 +532,7 @@ Audio sources are
        version="0.0.6"
        provider-name="NuisMons">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
 	<import addon="script.module.beautifulsoup"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -552,7 +552,7 @@ Audio sources are
        version="1.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -571,7 +571,7 @@ Audio sources are
        version="1.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -590,7 +590,7 @@ Audio sources are
        version="1.0.5"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -605,7 +605,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.debilizator.tv" name="Debilizator.TV" version="1.1.1" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>http://debilizator.tv/</summary>
@@ -615,7 +615,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.debilizator.tva" name="[COLOR FFC85F1C]Debilizator.TVA[/COLOR]" version="0.7.5" provider-name="Silhouette">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Live TV and Archives from http://debilizator.tv/</summary>
@@ -629,7 +629,7 @@ Audio sources are
        version="1.0.4"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -652,7 +652,7 @@ Audio sources are
        version="1.0.4"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -667,7 +667,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.e1.ru" name="E1" version="0.0.1" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Видеосюжеты: Новости Екатеринбурга: Екатеринбург Он-Лайн</summary>
@@ -681,7 +681,7 @@ Audio sources are
        version="1.2.0"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -699,7 +699,7 @@ Audio sources are
        name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]fepcom.net[/COLOR]+[COLOR FF00FF00])[/COLOR]" version="2.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.script"
              provides="video"
@@ -718,7 +718,7 @@ Audio sources are
        version="0.0.2"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -763,7 +763,7 @@ Audio sources are
        version="1.0.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -784,7 +784,7 @@ Audio sources are
        version="1.0.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -809,7 +809,7 @@ Audio sources are
        version="1.0.8"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -828,7 +828,7 @@ Audio sources are
        version="1.0.4"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -847,7 +847,7 @@ Audio sources are
        version="1.1.4b"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.script"
              provides="video"
@@ -862,7 +862,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.inetcom.tv" name="[COLOR FF86BA0D]Inetcom.tv[/COLOR]" version="0.3.0" provider-name="Silhouette">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Online TV from inetcom.tv</summary>
@@ -872,7 +872,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.5.1" provider-name="ivi.ru (NuisMons)">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
 	<language>ru</language>
@@ -885,7 +885,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.6.0" provider-name="Silhouette">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Archives from http://kaban.tv/</summary>
@@ -899,7 +899,7 @@ Audio sources are
        version="1.2.5"
        provider-name="Eugene Bond">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -918,7 +918,7 @@ Audio sources are
        version="1.7.4"
        provider-name="x86demon">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
@@ -932,7 +932,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.6" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
   </extension>
@@ -944,7 +944,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.kinochi.org" name="[COLOR FFFD0100]KINOCHI.ORG[/COLOR]" version="0.3.2" provider-name="Silhouette">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>KINOCHI.ORG - Проект бесплатного онлайн видео</summary>
@@ -955,7 +955,7 @@ Audio sources are
 
 <addon id="plugin.video.kinogovno" name="KinoGovno" version="1.2.1" provider-name="x86demon">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup" version="3.0.8"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
@@ -970,7 +970,7 @@ Audio sources are
 
 <addon id="plugin.video.kinoxa-x.ru" name="[COLOR FFcFFF48]Kinoxa-X.ru[/COLOR]" version="0.3.2" provider-name="Silhouette">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.beautifulsoup" version="3.0.8"/>
   </requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
@@ -986,7 +986,7 @@ Audio sources are
        version="0.0.5"
        provider-name="nuismons">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
@@ -1004,7 +1004,7 @@ Audio sources are
        version="0.0.17"
        provider-name="nuismons">
 	<requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
 		<import addon="script.module.torrent.ts"/>
         <import addon="script.common.plugin.cache"/>
@@ -1021,7 +1021,7 @@ Audio sources are
 
 <addon id="plugin.video.kiwi.kz" name="Kiwi.kz" version="1.0.1" provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
 	<extension point="xbmc.python.pluginsource" provides="video, audio" library="default.py">
 		<provides>video audio</provides>
@@ -1034,7 +1034,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.megogo.net" name="MEGOGO.NET" version="1.0.1" provider-name="MEGOGO.NET">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>MEGOGO.NET - онлайн-кинотеатр с легальным контентом.</summary>
@@ -1049,7 +1049,7 @@ Audio sources are
        version="1.0.3"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1064,7 +1064,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.music.ivi.ru" name="music.ivi.ru" version="0.1.0" provider-name="ivi.ru">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
 	<language>ru</language>
@@ -1075,7 +1075,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.muzunga.tv" name="Muzunga.TV" version="1.0.3" provider-name="Muzunga.TV">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Фильмы, сериалы и телевидение в HD качестве онлайн</summary>
@@ -1089,7 +1089,7 @@ Audio sources are
        version="1.0.4"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1127,7 +1127,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.1" provider-name="Myvi">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Муви.ру - Только лучшие ролики сети!</summary>
@@ -1140,7 +1140,7 @@ Audio sources are
 
 <addon id="plugin.video.new-kino.net" name="[COLOR FF37C6FD]New-Kino.net[/COLOR]" version="0.6.0" provider-name="Silhouette">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.beautifulsoup" version="3.0.8"/>
   </requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
@@ -1156,7 +1156,7 @@ Audio sources are
        version="1.0.8"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1175,7 +1175,7 @@ Audio sources are
        version="0.2.5"
        provider-name="NuisMons">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
 	<import addon="script.module.beautifulsoup"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -1191,7 +1191,7 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.planeta-online.tv" name="Planeta-online.tv" version="1.0.8" provider-name="HD-Lab Team">
-	<requires><import addon="xbmc.python" version="1.0"/></requires>
+	<requires><import addon="xbmc.python" version="2.1.0"/></requires>
 	<extension point="xbmc.python.pluginsource" library="default.py"><provides>video</provides></extension>
 	<extension point="xbmc.addon.metadata">
 		<summary>http://www.planeta-online.tv/</summary>
@@ -1202,7 +1202,7 @@ Audio sources are
 
 <addon id="plugin.video.pokerstars.tv" name="Pokerstars TV" provider-name="Sergey Pulyaev" version="0.0.12">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension library="addon.py" point="xbmc.python.pluginsource" provides="video">
     <provides>video</provides>
@@ -1239,7 +1239,7 @@ I hope you like this!
 
 <addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.1.0" provider-name="Rodina TV">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.service.rodina.tv" version="1.0.1"/>
   </requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
@@ -1256,7 +1256,7 @@ I hope you like this!
        version="1.2.0"
        provider-name="Eugene Bond">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1275,7 +1275,7 @@ I hope you like this!
        version="1.0.8"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="audio, video"
@@ -1294,7 +1294,7 @@ I hope you like this!
        version="1.0.5"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -1312,7 +1312,7 @@ I hope you like this!
        version="1.2.2"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1331,7 +1331,7 @@ I hope you like this!
        name="RuremTV"
        provider-name="Rurem.TV">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
 
     </requires>
     <extension point="xbmc.python.pluginsource" library="brtv.py">
@@ -1351,7 +1351,7 @@ I hope you like this!
        version="1.2.1"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1366,7 +1366,7 @@ I hope you like this!
 </addon>
 
 <addon id="plugin.video.russia.ru" name="RUSSIA.RU" version="1.0.8" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
   </extension>
@@ -1380,7 +1380,7 @@ Russia.ru делает передачи для самой разной ауди�
 </addon>
 
 <addon id="plugin.video.russia.tv" name="Russia.tv" version="0.2.0" provider-name="achasik">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Фильмы и передачи телеканалов Россия-1, Россия-2,ТВ Культура</summary>
@@ -1394,7 +1394,7 @@ Russia.ru делает передачи для самой разной ауди�
        version="1.0.6"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1416,7 +1416,7 @@ RuTube - отличная стартовая площадка для незав�
        version="2.2.0"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1437,7 +1437,7 @@ RuTube - отличная стартовая площадка для незав�
        version="0.1.0"
        provider-name="nuismons">
     <requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
@@ -1455,7 +1455,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.2.6"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1474,7 +1474,7 @@ RuTube - отличная стартовая площадка для незав�
        version="2.0.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.script"
              provides="video"
@@ -1493,7 +1493,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1529,7 +1529,7 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.sovok.tv" name="Совок ТВ" version="0.0.2" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Отечественный проект "Совок ТВ" представляет!</summary>
@@ -1543,7 +1543,7 @@ RuTube - отличная стартовая площадка для незав�
        version="0.0.2"
        provider-name="NuisMons">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
 	<import addon="script.module.beautifulsoup"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -1583,7 +1583,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.3"
        provider-name="TelePlus.ru">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1602,7 +1602,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1621,7 +1621,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.0"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1662,7 +1662,7 @@ RuTube - отличная стартовая площадка для незав�
     <requires>
 		<import addon="script.module.torrent.ts"/>
 		<import addon="script.module.beautifulsoup"/>
-		<import addon="xbmc.python" version="2.0" />
+		<import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>
@@ -1676,7 +1676,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.torrenter" name="Torrenter" version="1.2.6" provider-name="vadim.skorba@gmail.com">
     <requires>
-        <import addon="xbmc.python" version="2.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>
@@ -1702,7 +1702,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.7"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1718,7 +1718,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.turbofilm.tv" name="Turbofilm.TV" version="1.0.7" provider-name="HD-Lab Team">
 	<requires>
-		<import addon="xbmc.python" version="1.0"/>
+		<import addon="xbmc.python" version="2.1.0"/>
 	</requires>
 	<extension point="xbmc.python.pluginsource" provides="video" library="default.py">
 		<provides>video</provides>
@@ -1735,7 +1735,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.5"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1754,7 +1754,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.6"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1775,7 +1775,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.3"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1795,7 +1795,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.5"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1810,7 +1810,7 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.tvrain.ru" name="Телеканал ДОЖДЬ" version="1.0.2" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>ДОЖДЬ — настоящий живой телеканал</summary>
@@ -1831,7 +1831,7 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.ulitka.tv" name="Сериалы онлайн на Улитке" version="2.0.2" provider-name="Admin Ulitka.TV [admin@ulitka.tv]">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Мы наполнили сайт Ulitka.TV самыми популярными сериалами.</summary>
@@ -1847,7 +1847,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.3"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1868,7 +1868,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.6nu"
        provider-name="HD-Lab Team">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1887,7 +1887,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.4"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1902,7 +1902,7 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.xbmc.rus" name="XBMC Russia" version="1.1.9" provider-name="HD-Lab Team">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="audio, video" library="default.py"><provides>audio video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Национальный агрегатор онлайн-контента</summary>
@@ -2035,7 +2035,7 @@ Raadpleeg de lokale wetgeving voordat u deze plugin installeert.</disclaimer>
 </addon>
 
 <addon id="plugin.video.zoomby.ru" name="ZOOMBY" version="2.0.2" provider-name="ОАО «ВебТВ»">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Zoomby - пересмотри свой взгляд на телевидение</summary>
@@ -2064,7 +2064,7 @@ version="0.0.6"
 name="M3U Playlist Convertor"
 provider-name="Roman_V_M">
 <requires>
-  <import addon="xbmc.python" version="2.0"/>
+  <import addon="xbmc.python" version="2.1.0"/>
 </requires>
 <extension point="xbmc.python.script" library="default.py" >
   <provides>executable</provides>
@@ -2083,7 +2083,7 @@ provider-name="Roman_V_M">
        version="2.1.0"
        provider-name="TDW, -=St.Anger=-">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.addon.metadata">
     <summary>YaTv</summary>
@@ -2129,7 +2129,7 @@ provider-name="Roman_V_M">
        version="1.2.0"
        provider-name="Rodina TV">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.addon.metadata">
     <summary>RodinaTV Service Script</summary>
@@ -2145,7 +2145,7 @@ provider-name="Roman_V_M">
        version="1.1.7"
        provider-name="Torrent-TV">
     <requires>
-		<import addon="xbmc.python" version="2.0" />
+		<import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.script" library="default.py">
         <provides>video</provides>
@@ -2159,7 +2159,7 @@ provider-name="Roman_V_M">
 
 <addon id="script.yandex.tvguide" name="Яндекс телепрограмма" version="0.0.3" provider-name="HD-Lab Team">
 	<requires>
-		<import addon="xbmc.python" version="1.0"/>
+		<import addon="xbmc.python" version="2.1.0"/>
 		<!--<import addon="script.module.simplejson" version="2.0.10"/>
 		<import addon="script.module.elementtree" version="1.2.7"/>-->
 	</requires>

@@ -4,7 +4,7 @@
        version="0.0.17"
        provider-name="nuismons">
 	<requires>
-        <import addon="xbmc.python" version="1.0"/>
+        <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
 		<import addon="script.module.torrent.ts"/>
         <import addon="script.common.plugin.cache"/>
