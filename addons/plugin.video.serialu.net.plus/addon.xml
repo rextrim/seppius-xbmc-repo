@@ -4,7 +4,7 @@
        version="2.0.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.script"
              provides="video"
