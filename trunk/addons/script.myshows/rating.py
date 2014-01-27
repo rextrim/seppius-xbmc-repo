@@ -19,26 +19,32 @@ def rate(rating, media):
         cookie=kpLogin.get_cookie()
         utils.set_string_setting('cookie', cookie)
     k=kinopoisk.KinoPoiskRuAgent()
+    kpId,title,year=None,None,None
     if 'kinopoiskId' not in media:
-        movies=k.search([],{'name':media['title'],'year':media['year']},'English')
-        if len(movies)>0:
-            if movies[0][4]>90:
-                ret=0
-            else:
-                items=[]
-                for i in movies: items.append('%s (%s)'%(i[1],str(i[2])))
-                ret=xbmcgui.Dialog().select('Movies:',items)
-            if ret>-1:
-                kpId=movies[ret][0]
-                title=movies[ret][1].encode('utf-8')
-                year=str(movies[ret][2])
+        if 'titleAlt' in media: titles=(media['title'], media['titleAlt'])
+        else: titles=(media['title'],)
+        for i in titles:
+            movies=k.search([],{'name':i,'year':media['year']},'English')
+            if len(movies)>0:
+                if movies[0][4]>90:
+                    ret=0
+                else:
+                    items=[]
+                    for i in movies: items.append('%s (%s)'%(i[1],str(i[2])))
+                    ret=xbmcgui.Dialog().select('Movies:',items)
+                if ret>-1:
+                    kpId=movies[ret][0]
+                    title=movies[ret][1].encode('utf-8')
+                    year=str(movies[ret][2])
+                    break
     else:
         kpId=str(media['kinopoiskId'])
         title=media['title'].encode('utf-8')
         year=str(media['year'])
-    r=kp.Rate(str(rating),str(kpId), cookie).rateit()
-    if r:
-        utils.notification('Rated %s OK!' % (str(kpId)),'%s to %s (%s)!' %(str(rating), title, year))
+    if kpId and kpId!='None':
+        r=kp.Rate(str(rating),str(kpId), cookie).rateit()
+        if r:
+            utils.notification('Rated %s OK!' % (str(kpId)),'%s to %s (%s)!' %(str(rating), title, year))
 
 
 
@@ -57,7 +63,7 @@ def rateMedia(media_type, summary_info, unrate=False, rating=None):
     if gui.rating:
         rating = gui.rating
 
-        if rating == 0 or rating == "unrate":
+        if not rating or rating == "unrate":
             return
         else:
             rate(rating, gui.media)

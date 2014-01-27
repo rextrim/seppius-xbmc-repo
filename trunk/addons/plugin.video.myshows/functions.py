@@ -62,8 +62,11 @@ def id2title(showId, id=None, norus=False):
         else:
             title=jdata['title']
         Debug('[id2title]: '+ title)
-        if id and 'title' in jdata['episodes'][id]:
-            return title.encode('utf-8'), jdata['episodes'][id]['title'].encode('utf-8')
+        if id:
+            try:
+                return title.encode('utf-8'), jdata['episodes'][id]['title'].encode('utf-8')
+            except:
+                return title.encode('utf-8'), None
         else:
             return title.encode('utf-8'), None
 
@@ -874,11 +877,13 @@ def PrepareFilename(filename):
         filename=filename.replace(b,' ')
     return filename.rstrip('. ')
 
-def kinorate(title,year,kinopoiskId=None):
+def kinorate(title,year,titleAlt=None,kinopoiskId=None):
     if kinopoiskId:
-        match={'title':title, 'year':str(year), 'kinopoiskId':str(kinopoiskId)}
+        match={'title':title.replace('"',''), 'year':str(year), 'kinopoiskId':str(kinopoiskId)}
     else:
-        match={'title':title, 'year':str(year)}
+        match={'title':title.replace('"',''), 'year':str(year)}
+    if titleAlt:
+        match['titleAlt']=titleAlt.replace('"','')
     try:
         xbmc.executebuiltin(
                     'xbmc.RunScript('+xbmcaddon.Addon("script.myshows").getAddonInfo("path")+

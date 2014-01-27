@@ -20,13 +20,15 @@ except:apps=None
 
 if apps:
     from rating import rateMedia
+    media={}
     if 'kinopoiskId' in apps:
         media={'kinopoiskId':urllib.unquote_plus(apps['kinopoiskId']),
                'title':urllib.unquote_plus(apps['title']),'year':urllib.unquote_plus(apps['year'])}
-        rateMedia('movie',media)
     elif 'title' in apps and 'year' in apps:
         media={'title':urllib.unquote_plus(apps['title']),'year':urllib.unquote_plus(apps['year'])}
-        rateMedia('movie',media)
+    if 'titleAlt' in apps:
+        media['titleAlt']=urllib.unquote_plus(apps['titleAlt'])
+    rateMedia('movie',media)
 
 elif __name__ == '__main__':
     xbmc.executebuiltin('XBMC.ActivateWindow(Videos,plugin://plugin.video.myshows/)')
