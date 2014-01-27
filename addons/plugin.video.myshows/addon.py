@@ -583,9 +583,11 @@ def Rate(showId, id, refresh_url):
                 if jload:
                     jdata = json.loads(jload)
                     title=jdata['title'].encode('utf-8')
+                    try: titleAlt=jdata['ruTitle'].encode('utf-8')
+                    except:titleAlt=None
                     year=jdata['year']
                     kinopoiskId=jdata['kinopoiskId']
-                    kinorate(title,year,kinopoiskId)
+                    kinorate(title,year,titleAlt,kinopoiskId)
         return True
 
 def Favorite(id, refresh_url):
