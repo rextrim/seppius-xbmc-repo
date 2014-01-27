@@ -14,9 +14,13 @@ except ImportError:
 # read settings
 __settings__ = xbmcaddon.Addon("script.myshows")
 __language__ = __settings__.getLocalizedString
-__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
+try:__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
+except:__myshows__=None
 
-debug = __myshows__.getSetting("debug")
+try:
+    debug = __myshows__.getSetting("debug")
+except:
+    debug = __settings__.getSetting("debug")
 
 def Debug(msg, force = False):
 	if(debug == 'true' or force):
@@ -32,10 +36,15 @@ def notification( header, message, time=5000, icon=__settings__.getAddonInfo("ic
 def get_bool_setting(setting):
 	return __settings__.getSetting(setting) == 'true'
 
+def getString(string_id):
+    return __language__(string_id).encode('utf-8', 'ignore')
+
 # helper function to get string type from settings
 def get_string_setting(setting):
 	return __settings__.getSetting(setting).strip()
 
+def set_string_setting(name, setting):
+	return __settings__.setSetting(name, setting)
 # helper function to get int type from settings
 def get_int_setting(setting):
 	return int(get_float_setting(setting))

@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.2"
+__version__ = "1.8.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -578,6 +578,14 @@ def Rate(showId, id, refresh_url):
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
         Data(cookie_auth, rate_url, refresh_url).get()
         showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
+        if getSettingAsBool('ratekinopoisk') and id=='0':
+                jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+                if jload:
+                    jdata = json.loads(jload)
+                    title=jdata['title'].encode('utf-8')
+                    year=jdata['year']
+                    kinopoiskId=jdata['kinopoiskId']
+                    kinorate(title,year,kinopoiskId)
         return True
 
 def Favorite(id, refresh_url):
@@ -864,6 +872,7 @@ def Test():
     #xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
     #print Rate('9237', '2031031', 'http://api.myshows.ru/profile/shows/9237/', True)
     #PluginStatus().use('myshows')
+    '''
     import libtorrent
     for filename in xbmcvfs.listdir(r'D:\torrents')[1]:
         filelist=[]
@@ -874,7 +883,8 @@ def Test():
             if '\\' not in f.path[f.path.find('\\')+1:]:
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
-    pass
+    pass'''
+    kinorate('The Job',2001)
 
 params = get_params()
 try: apps=get_apps()

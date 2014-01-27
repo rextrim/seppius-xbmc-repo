@@ -93,8 +93,8 @@
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
-                    <texturefocus>1.png</texturefocus>
-                    <texturenofocus>1.png</texturenofocus>
+                    <texturefocus>color.png</texturefocus>
+                    <texturenofocus>color.png</texturenofocus>
                     <align>center</align>
                     <aligny>center</aligny>
                     <onup>10014</onup>
@@ -111,8 +111,8 @@
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
-                    <texturefocus>1.png</texturefocus>
-                    <texturenofocus>1.png</texturenofocus>
+                    <texturefocus>color.png</texturefocus>
+                    <texturenofocus>color.png</texturenofocus>
                     <align>center</align>
                     <aligny>center</aligny>
                     <onleft>11030</onleft>
@@ -129,7 +129,7 @@
                     <posy>100</posy>
                     <width>70</width>
                     <height>70</height>
-                    <texture>2.png</texture>
+                    <texture>wb.png</texture>
                     <visible>Control.HasFocus(11030)</visible>
                 </control>
 
@@ -140,8 +140,8 @@
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
-                    <texturefocus>1.png</texturefocus>
-                    <texturenofocus>1.png</texturenofocus>
+                    <texturefocus>color.png</texturefocus>
+                    <texturenofocus>color.png</texturenofocus>
                     <align>center</align>
                     <aligny>center</aligny>
                     <onleft>11031</onleft>
@@ -158,7 +158,7 @@
                     <posy>100</posy>
                     <width>70</width>
                     <height>70</height>
-                    <texture>2.png</texture>
+                    <texture>wb.png</texture>
                     <visible>Control.HasFocus(11030)|Control.HasFocus(11031)</visible>
                 </control>
 
@@ -169,8 +169,8 @@
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
-                    <texturefocus>1.png</texturefocus>
-                    <texturenofocus>1.png</texturenofocus>
+                    <texturefocus>color.png</texturefocus>
+                    <texturenofocus>color.png</texturenofocus>
                     <align>center</align>
                     <aligny>center</aligny>
                     <onleft>11032</onleft>
@@ -187,7 +187,7 @@
                     <posy>100</posy>
                     <width>70</width>
                     <height>70</height>
-                    <texture>2.png</texture>
+                    <texture>wb.png</texture>
                     <visible>Control.HasFocus(11030)|Control.HasFocus(11031)|Control.HasFocus(11032)</visible>
                 </control>
 
@@ -198,8 +198,8 @@
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
-                    <texturefocus>1.png</texturefocus>
-                    <texturenofocus>1.png</texturenofocus>
+                    <texturefocus>color.png</texturefocus>
+                    <texturenofocus>color.png</texturenofocus>
                     <align>center</align>
                     <aligny>center</aligny>
                     <onleft>11033</onleft>
@@ -216,7 +216,7 @@
                     <posy>100</posy>
                     <width>70</width>
                     <height>70</height>
-                    <texture>2.png</texture>
+                    <texture>wb.png</texture>
                     <visible>Control.HasFocus(11030)|Control.HasFocus(11031)|Control.HasFocus(11032)|Control.HasFocus(11033)</visible>
                 </control>
 
