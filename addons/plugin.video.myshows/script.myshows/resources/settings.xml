@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="1010"><!-- General -->
-		<setting id="username" type="bool" label="1013" default="" />
+		<setting id="rate_min_view_time" type="slider" label="Minimum percent watched to scrobble" range="0,5,100" default="75"/>
+        <setting id="login" type="text" label="KinoPoisk.ru Login" default=""  />
+        <setting id="password" type="text" label="KinoPoisk.ru Password" default=""   option="hidden" />
+        <setting id="debug"   type="bool" label="Debug" default="false"/>
 	</category>
 </settings>

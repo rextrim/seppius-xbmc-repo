@@ -7,15 +7,16 @@ import threading
 import time, urllib
 
 import utilities
-from utilities import Debug, get_float_setting
-#from rating import ratingCheck
+from utilities import Debug, get_string_setting, set_string_setting
+
 try:
     import simplejson as json
 except ImportError:
     import json
 # read settings
 __settings__ = xbmcaddon.Addon("script.myshows")
-__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
+try:__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
+except:__myshows__=None
 __language__ = __settings__.getLocalizedString
 
 
@@ -173,8 +174,6 @@ class Scrobbler(threading.Thread):
             return
 
         Debug("[Scrobbler] watching()")
-        scrobbleMovieOption = utilities.getSettingAsBool('scrobble_movie')
-        scrobbleEpisodeOption = utilities.getSettingAsBool('scrobble_episode')
 
         self.update(True)
 
@@ -221,7 +220,6 @@ class Scrobbler(threading.Thread):
             if match == None:
                 return
 
-
     def stoppedWatching(self):
         Debug("[Scrobbler] stoppedWatching()")
         scrobbleMovieOption = __settings__.getSetting("scrobble_movie")
@@ -236,10 +234,9 @@ class Scrobbler(threading.Thread):
                 Debug("[Scrobbler] Cancel watch response: " + str(response))
 
     def scrobble(self):
-        Debug("[Scrobbler] scrobble()")
         Debug("[Scrobbler] self.curVideo:" + unicode(self.curVideo))
         Debug("[Scrobbler] self.curVideoData" + unicode(self.curVideoData))
-        if self.curVideo['type']:
+        if self.curVideo['type']=="episode":
             match = None
             if 'id' in self.curVideo:
             #if self.curVideo.has_key("multi_episode_count"):
@@ -274,9 +271,27 @@ class Scrobbler(threading.Thread):
         #response = self.myshowsapi.scrobbleEpisode(match['tvdb_id'], match['showtitle'], match['year'], match['season'], match['episode'], match['uniqueid']['unknown'], duration, watchedPercent)
         #if response != None:
         #Debug("[Scrobbler] Scrobble response: "+str(response))
+        elif self.curVideo['type']=="movie":
+                import kp
+                from rating import rateMedia
+                login=get_string_setting('login')
+                password=get_string_setting('password')
+                cookie=get_string_setting('cookie')
+                if cookie=='': cookie=None
+                if login!='' and password!='':
+                    kpLogin=kp.Login(login,password,cookie)
+                else:
+                    raise Exception('No login or password!')
+                if not cookie or not kpLogin.testAcc():
+                    set_string_setting('cookie', kpLogin.get_cookie())
+                rateMedia(self.curVideo['type'], self.curVideo)
+        self.curVideo = None
 
     def check(self):
-        scrobbleMinViewTimeOption = float(__myshows__.getSetting("rate_min_view_time"))
+        try:
+            scrobbleMinViewTimeOption = float(__myshows__.getSetting("rate_min_view_time"))
+        except:
+            scrobbleMinViewTimeOption = float(__settings__.getSetting("rate_min_view_time"))
 
         Debug("[Scrobbler] watched: %s / %s, min=%s" % (
             str(self.watchedTime), str(self.totalTime), str(scrobbleMinViewTimeOption)))

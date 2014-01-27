@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.8.2"
+__version__ = "1.8.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -560,7 +560,7 @@ def FileNamesPrepare(filename):
 
 def filename2match(filename):
     results={'label':filename}
-    urls=['(.+)s(\d+)e(\d+)','(.+)s(\d+)\.e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)']
+    urls=['(.+)s(\d+)e(\d+)','(.+)s(\d+)\.e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)'] #same in service
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         #print str(results)
@@ -569,7 +569,7 @@ def filename2match(filename):
             results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip()
             Debug('[filename2match] '+str(results))
             return results
-    urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})','(.+)(\d{4}) (\d{2}) (\d{2})']
+    urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})','(.+)(\d{4}) (\d{2}) (\d{2})'] #same in service
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         if match:
@@ -872,4 +872,15 @@ def PrepareFilename(filename):
     badsymb=[':','"','\\','/','\'','!','&','*','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ']
     for b in badsymb:
         filename=filename.replace(b,' ')
-    return filename.strip()
+    return filename.rstrip('. ')
+
+def kinorate(title,year,kinopoiskId=None):
+    if kinopoiskId:
+        match={'title':title, 'year':str(year), 'kinopoiskId':str(kinopoiskId)}
+    else:
+        match={'title':title, 'year':str(year)}
+    try:
+        xbmc.executebuiltin(
+                    'xbmc.RunScript('+xbmcaddon.Addon("script.myshows").getAddonInfo("path")+
+                    '\sync_exec.py,'+json.dumps(match).replace(',','|:|')+')')
+    except: return False

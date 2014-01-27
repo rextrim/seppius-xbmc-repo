@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.8.2"
+__version__ = "1.8.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -1252,7 +1252,6 @@ class MoveToXBMC(Source):
                     filename_if=self.filename[:len(self.filename)-len(self.filename.split('.')[-1])-1]
                     filename_if=os.path.split(filename_if)[-1]
                     filename_if2=filelist[i][:len(filename_if)]
-                    Debug(filename_if+filename_if2)
                     if filelist[i].lower().split('.')[-1] in allowed_ext and\
                         filename_if.lower()==filename_if2.lower():
                         movelist.append((filelist[i],self.episodeId,self.seasonId))
