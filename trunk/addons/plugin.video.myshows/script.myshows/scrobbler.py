@@ -272,6 +272,9 @@ class Scrobbler(threading.Thread):
         #if response != None:
         #Debug("[Scrobbler] Scrobble response: "+str(response))
         elif self.curVideo['type']=="movie":
+            if len(self.curVideo['title'])<1:
+                Debug("[Scrobbler] No title, stop scrobbing.")
+            else:
                 import kp
                 from rating import rateMedia
                 login=get_string_setting('login')
@@ -285,6 +288,7 @@ class Scrobbler(threading.Thread):
                 if not cookie or not kpLogin.testAcc():
                     set_string_setting('cookie', kpLogin.get_cookie())
                 rateMedia(self.curVideo['type'], self.curVideo)
+
         self.curVideo = None
 
     def check(self):

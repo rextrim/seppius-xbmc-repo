@@ -146,7 +146,8 @@ def playTorrent(url, StorageDirectory):
 #---------tsengine----by-nuismons-----
 
 
-from TSCore import TSengine as tsengine
+try: from TSCore import TSengine as tsengine
+except: pass
 
 def play_url(params):
 	torr_link=params['file']
@@ -349,12 +350,14 @@ urllib2.install_opener(opener)
 #----------- LOGIN to lostfilm.tv ----------------------------------------------
 #-- step 1
 
-url1 = 'http://login.bogi.ru/login.php' #?referer=http%3A%2F%2Fwww.lostfilm.tv%2F'
+url1 = 'http://login1.bogi.ru/login.php' #?referer=http%3A%2F%2Fwww.lostfilm.tv%2F'
 
 #-- enter your login/pass
 login = __settings__.getSetting("login")
 passw = __settings__.getSetting("password")
 if login =="" or passw == '': showMessage('lostfilm', "Проверьте логин и пароль", times = 50000)
+
+
 
 values = {
 				'login'     : login,
@@ -366,22 +369,7 @@ values = {
 		}
 
 
-try:
-	post = urllib.urlencode(values)
-	html = get_HTML(url1, post, 'http://www.lostfilm.tv/')
-	soup = BeautifulSoup(html, fromEncoding="utf-8")
-	#-- step 2
-	ref = url1
-	url1 = soup.find('form')['action']
-	values={}
-	for rec in soup.findAll('input'):
-		values[rec['name'].encode('utf-8')] = rec['value'].encode('utf-8')
 
-	post = urllib.urlencode(values)
-	html = get_HTML(url1, post, ref)
-except:
-	print 'lostfilm: Ошибка доступа'
-	#showMessage('lostfilm', "Ошибка доступа", times = 50000)
 
 
 def Allcat(http):
@@ -653,10 +641,10 @@ def Alln2(h):
 		e='</b></span><br />'
 		n5=mfindal(i,s,e)[0][len(s):]
 		
-		s='onClick="ShowAllReleases'
+		s='howAllReleases'
 		e='"></a><br clear=both>'
 		n6=mfindal(i,s,e)[0][len(s):]
-		
+		#print n6
 		LL.append([n1,n2,n3,n4,n5,n6])
 	return LL
 
@@ -668,8 +656,10 @@ def GET_N():
 		showMessage('lostfilm:', 'Сервер не отвечает', 1000)
 		return None
 	else:
-		#debug(http)
+		
 		LL=Alln2(http)
+		#debug(http)
+		
 		#LL=Alln(http)
 		AllListN(LL)
 		#return LL
@@ -751,6 +741,7 @@ def AllListN(L):
 			xbmcplugin.addDirectoryItem(handle, purl, listitem, True)
 
 def AllListS(L):
+		#print L
 		for i in L:
 			nm=i[0].replace(" \xf1\xe5\xe7\xee\xed ","_").replace(" \xf1\xe5\xf0\xe8\xff"," ").replace("\xf1\xe5\xe7\xee\xed","_").replace(" _","[COLOR FF00FF00]")
 			if len(nm)==4: nm=nm+"  "
@@ -804,7 +795,6 @@ def Allrelis(L):
             sys_url=urllib.quote_plus('{"filename":"%s", "stype":"%s", "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (urllib.quote_plus(myshows_files[ret]), 'lostfilm', s[0].strip(), s[1].strip(), s[2].strip(), s[3].strip()))
             sys_url='plugin://plugin.video.myshows/?mode=3010&stringdata='+sys_url
             xbmc.executebuiltin('xbmc.RunPlugin("'+sys_url+'")')
-
 
 
 p = re.compile(r'<.*?>')
@@ -1138,11 +1128,25 @@ except:
 
 
 
+try:
+	if  mode == "OpenRel" or mode == "myshows":#mode == None or
+		post = urllib.urlencode(values)
+		html = get_HTML(url1, post, 'http://www.lostfilm.tv/')
+		soup = BeautifulSoup(html, fromEncoding="utf-8")
+		#-- step 2
+		ref = url1
+		url1 = soup.find('form')['action']
+		values={}
+		for rec in soup.findAll('input'):
+			values[rec['name'].encode('utf-8')] = rec['value'].encode('utf-8')
+
+		post = urllib.urlencode(values)
+		html = get_HTML(url1, post, ref)
+except:
+		print 'lostfilm: Ошибка доступа'
+		#showMessage('lostfilm', "Ошибка доступа", times = 50000)
 
 
-
-#xplayer.play("torrentstream:")#C:\Users\Diman\AppData\Roaming\XBMC\addons\plugin.video.RuTor\playlists\179278.torrent 0")
-#xplayer.stop()
 
 
 if mode == None or mode == "None":
@@ -1152,6 +1156,7 @@ if mode == None or mode == "None":
 	xbmcplugin.endOfDirectory(handle)
 	
 elif mode == 'OpenLF':
+	
 	LF()
 	xbmcplugin.setPluginCategory(handle, PLUGIN_NAME)
 	xbmcplugin.endOfDirectory(handle)
@@ -1190,7 +1195,7 @@ elif mode == 'OpenRel':
 
 elif mode == 'myshows':
 	GET_R(url)
-	
+
 elif mode == 'play_url2':
 		play_url2(params)
 
