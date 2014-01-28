@@ -23,8 +23,9 @@
 # @revision 148
 
 import re, common, pageparser, LOGGER, pluginsettings as S
+from translit import provide_unicode
 
-IS_DEBUG = False # TODO - DON'T FORGET TO SET IT TO FALSE FOR A DISTRO.
+IS_DEBUG = True # TODO - DON'T FORGET TO SET IT TO FALSE FOR A DISTRO.
 
 # Plugin preferences.
 # When changing default values here, also update the DefaultPrefs.json file.
@@ -69,10 +70,11 @@ class KinoPoiskRuAgent():
         is on the scale of 1 - 100).
     """
     LOGGER.Debug('SEARCH START <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<')
-    mediaName = media['name']
+    try:mediaName = media['name'].decode('utf-8')
+    except:mediaName = media['name']
     mediaYear = media['year']
     LOGGER.Debug('searching for name="%s", year="%s"...' %
-        (mediaName.encode('utf-8','ignore'), str(mediaYear)))
+        (mediaName, str(mediaYear)))
 
     # Look for matches on KinoPisk (result is returned as an array of tuples [kinoPoiskId, title, year, score]).
     titleResults = KinoPoiskRuAgent.parser.fetchAndParseSearchResults(mediaName, mediaYear)

@@ -813,7 +813,8 @@ class SyncXBMC():
                     self.menu[i]['playcount']=0
                     self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
                     #self.menu[i]['VideoResolution']=720
-                item.setInfo( type='Video', infoLabels=self.menu[i] )
+                try: item.setInfo( type='Video', infoLabels=self.menu[i] )
+                except: pass
                 break
         return item
 
@@ -886,7 +887,7 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
-    kinorate('The Job',2001)
+    kinorate('Мальчишник Часть 3',2013)
 
 params = get_params()
 try: apps=get_apps()

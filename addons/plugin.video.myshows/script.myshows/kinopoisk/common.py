@@ -199,6 +199,7 @@ def scoreMediaTitleMatch(mediaName, mediaYear, title, altTitle, year, itemIndex)
       We should also take into consideration order of words, so that "One Two" would not
       have the same score as "Two One". Also, taking into consideration year difference.
   """
+  # TODO(zhenya): add logging that works in unit tests.
 #  Log.Debug('comparing item %d::: "%s-%s" with "%s-%s" (%s)...' %
 #      (itemIndex, str(mediaName), str(mediaYear), str(title), str(year), str(altTitle)))
   # Max score is when both title and year match exactly.

@@ -6,6 +6,7 @@ import xbmcaddon
 import xbmcgui
 import utilities as utils
 
+
 __addon__ = xbmcaddon.Addon("script.myshows")
 
 def rate(rating, media):

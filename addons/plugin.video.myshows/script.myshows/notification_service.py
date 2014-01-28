@@ -172,6 +172,7 @@ class myshowsPlayer(xbmc.Player):
                     data["type"] = "movie"
                     data["year"] = int(year)
                     data["title"] = xbmc.getInfoLabel("VideoPlayer.Title")
+                    data["titleAlt"]= xbmc.getInfoLabel("VideoPlayer.OriginalTitle")
                     Debug("[myshowsPlayer] onPlayBackStarted() - Playing a non-library 'movie' - %s (%d)." % (data["title"], data["year"]))
                 else:
                     Debug("[myshowsPlayer] onPlayBackStarted() - Non-library file, not enough data for scrobbling, try use lable.")
@@ -188,8 +189,9 @@ class myshowsPlayer(xbmc.Player):
                     if self.type!="episode":
                         file=data["label"]
                         file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').lower().strip()
-                        match=re.compile('(.+)(\d{4})', re.I | re.IGNORECASE).findall(file)
+                        match=re.compile('(.+) (\d{4}) ', re.I | re.IGNORECASE).findall(file)
                         if match:
+                            from kinopoisk.translit import detranslify, provide_unicode
                             data["title"], data["year"] = match[0]
                             self.type = "movie"
                             data["type"] = "movie"
@@ -208,6 +210,7 @@ class myshowsPlayer(xbmc.Player):
                 if self.type == "movie":
                     data["year"] = xbmc.getInfoLabel("VideoPlayer.Year")
                     data["title"] = xbmc.getInfoLabel("VideoPlayer.Title")
+                    data["titleAlt"]= xbmc.getInfoLabel("VideoPlayer.OriginalTitle")
 
                 if self.type == "episode":
                     Debug("[myshowsPlayer] onPlayBackStarted() - Doing multi-part episode check.")
