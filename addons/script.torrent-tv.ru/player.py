@@ -1,5 +1,5 @@
-﻿# Copyright (c) 2013 Torrent-TV.RU
-# Writer (c) 2013, Welicobratov K.A., E-mail: 07pov23@gmail.com
+﻿# Copyright (c) 2014 Torrent-TV.RU
+# Writer (c) 2014, Welicobratov K.A., E-mail: 07pov23@gmail.com
 
 import xbmcgui
 import threading

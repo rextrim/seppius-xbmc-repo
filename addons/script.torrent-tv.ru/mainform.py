@@ -176,6 +176,7 @@ class WMainForm(xbmcgui.WindowXML):
     def onInit(self):
         try:
             LogToXBMC('OnInit')
+            
             self.img_progress = self.getControl(108)
             self.txt_progress = self.getControl(107)
             self.progress = self.getControl(WMainForm.PROGRESS_BAR)
@@ -318,7 +319,7 @@ class WMainForm(xbmcgui.WindowXML):
                 else:
                    defines.showMessage("На данный момент трансляция не доступна")
                 return
-			    
+             
             buf = xbmcgui.ListItem(selItem.getLabel())
             buf.setProperty('epg_cdn_id', selItem.getProperty('epg_cdn_id'))
             buf.setProperty('icon', selItem.getProperty('icon'))
@@ -329,7 +330,34 @@ class WMainForm(xbmcgui.WindowXML):
                 return
             print selItem.getProperty("type")
             self.playditem = self.selitem_id
+            
             self.player.Start(buf)
+            if xbmc.getCondVisibility("Window.IsVisible(home)"):
+                LogToXBMC("Close from HOME Window")
+                self.close()
+            elif xbmc.getCondVisibility("Window.IsVisible(video)"):
+                self.close();
+                LogToXBMC("Is Video Window")
+            elif xbmc.getCondVisibility("Window.IsVisible(programs)"):
+                self.close();
+                LogToXBMC("Is programs Window")
+            elif xbmc.getCondVisibility("Window.IsVisible(addonbrowser)"):
+                self.close();
+                LogToXBMC("Is addonbrowser Window")
+            elif xbmc.getCondVisibility("Window.IsMedia"):
+                self.close();
+                LogToXBMC("Is media Window")
+            elif xbmc.getCondVisibility("Window.IsVisible(12346)"):
+                self.close();
+                LogToXBMC("Is plugin Window")
+            else:
+                jrpc = json.loads(xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"GUI.GetProperties","params":{"properties":["currentwindow"]},"id":1}'))
+                if jrpc["result"]["currentwindow"]["id"] == 10025:
+                    LogToXBMC("Is video plugins window");
+                    self.close();
+                
+                LogToXBMC("Is Other Window")
+
            
             LogToXBMC('CUR SELTAB %s' % self.seltab)
             
