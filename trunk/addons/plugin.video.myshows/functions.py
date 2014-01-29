@@ -14,7 +14,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.8.3"
+__version__ = "1.8.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -844,14 +844,14 @@ class PluginStatus():
                 break
         if id and patchpath and filelist and action:
             if self.status[action]=='NOT INSTALLED':
-                ok=dialog.yesno(__language__(30316),'Would you like to install this plugin?',id)#lang
+                ok=dialog.yesno(__language__(30316),__language__(30515),id)
                 if ok:
                     self.install_plugin(action)
                     self.status[action]=self.check_status(id,patchpath,filelist)
                 else:
                     return False
             if self.status[action]=='NOT PATCHED':
-                ok=dialog.yesno(__language__(30316),'Would you like to patch plugin?',id)#lang
+                ok=dialog.yesno(__language__(30316),__language__(30516),id)
                 if ok:
                     self.install(action)
                     self.status[action]=self.check_status(id,patchpath,filelist)
@@ -889,3 +889,70 @@ def kinorate(title,year,titleAlt=None,kinopoiskId=None):
                     'xbmc.RunScript('+xbmcaddon.Addon("script.myshows").getAddonInfo("path")+
                     '\sync_exec.py,'+json.dumps(match).replace(',','|:|')+')')
     except: return False
+
+class RateShow():
+    def __init__(self, showId, watched_jdata=None):
+        self.dialog = xbmcgui.Dialog()
+        self.showId=showId
+        self.list={}
+        if watched_jdata:self.watched_jdata=watched_jdata
+        else:
+            watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/',
+                               'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+            try:self.watched_jdata = json.loads(watched_data.get())
+            except: return
+
+    def seasonrates(self):
+        jload=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
+        jshowdata = json.loads(jload)
+        self.list, seasonNumber=self.listSE(jshowdata[str(self.showId)]['totalEpisodes'])
+        ratedict={}
+        for i in self.list:
+            for j in self.list[i]:
+                if self.watched_jdata.has_key(j):
+                    if self.watched_jdata[j]['rating']:
+                        if ratedict.has_key(i):
+                            ratedict[i].append(self.watched_jdata[j]['rating'])
+                        else:
+                            ratedict[i]=[self.watched_jdata[j]['rating']]
+        #Debug('[ratedict]:'+str(ratedict))
+        for i in ratedict:
+            ratedict[i]=round(float(sum(ratedict[i]))/len(ratedict[i]),2)
+        #Debug('[ratedict]:'+str(ratedict))
+        return ratedict
+
+    def count(self):
+        ratings,seasonratings=[],[]
+        showId=str(self.showId)
+        jload=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
+        jshowdata = json.loads(jload)
+        self.list, seasonNumber=self.listSE(jshowdata[showId]['totalEpisodes'])
+        old_rating=jshowdata[showId]['rating']
+        for id in self.watched_jdata:
+            if self.watched_jdata[id]['rating']:
+                ratings.append(self.watched_jdata[id]['rating'])
+                if id in self.list[str(seasonNumber)]:
+                    seasonratings.append(self.watched_jdata[id]['rating'])
+        Debug('ratings:'+str(ratings)+'; seasonratings:'+str(seasonratings))
+        if len(ratings)>0:
+            rating=round(float(sum(ratings))/len(ratings),2)
+        else: rating=0
+        if len(seasonratings)>0:
+            seasonrating=round(float(sum(seasonratings))/len(seasonratings),2)
+        else: seasonrating=0
+        return rating,seasonNumber,seasonrating,old_rating
+
+    def listSE(self,maxep):
+        listSE,seasonNumber={},0
+        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId))
+        jdata = json.loads(data.get())
+        for id in jdata['episodes']:
+            if maxep==jdata['episodes'][id]['sequenceNumber']:
+                seasonNumber=jdata['episodes'][id]['seasonNumber']
+            if maxep>=jdata['episodes'][id]['sequenceNumber']:
+                if listSE.has_key(str(jdata['episodes'][id]['seasonNumber'])):
+                    listSE[str(jdata['episodes'][id]['seasonNumber'])].append(id)
+                else:
+                    listSE[str(jdata['episodes'][id]['seasonNumber'])]=[id]
+        Debug('[listSE] '+str(listSE))
+        return listSE, seasonNumber

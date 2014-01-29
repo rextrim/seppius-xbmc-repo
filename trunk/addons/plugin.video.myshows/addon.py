@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.3"
+__version__ = "1.8.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -134,13 +134,13 @@ def Shows(mode):
         if mode==19:
             rating=int(jdata[showId]['watching'])
         else:
-            rating=float(jdata[showId]['rating'])*2
+            rating=float(jdata[showId]['rating'])
         pre=prefix(showId=int(showId))
 
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
-        info={'title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating, } #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
+        info={'title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating*2, } #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
         try:
-            info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(jdata[showId]['rating'])+'\r\n'
+            info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(rating)+'\r\n'
         except:info['plot']=''
         item.setInfo( type='Video', infoLabels=info )
         if syncshows: item=syncshows.shows(jdata[showId]['title'], item, info)
@@ -168,7 +168,10 @@ def Seasons(showId):
     watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
     try:watched_jdata = json.loads(watched_data.get())
     except: watched_jdata=None
-    if watched_jdata: epdict=sortcomma(epdict, watched_jdata)
+    ratedict={}
+    if watched_jdata:
+        epdict=sortcomma(epdict, watched_jdata)
+        ratedict=RateShow(int(showId),watched_jdata).seasonrates()
     for sNumber in seasons:
         pre=prefix(showId=int(showId), seasonId=int(sNumber))
         title=pre+__language__(30138)+' '+str(sNumber)
@@ -178,7 +181,9 @@ def Seasons(showId):
         if syncshows: item=syncshows.episodes(jdata['title'], item)
         if epdict[str(sNumber)]=='': playcount=1
         else: playcount=0
-        item.setInfo( type='Video', infoLabels={'Title': title, 'playcount': playcount} )
+        if ratedict.has_key(str(sNumber)): rating=ratedict[str(sNumber)]*2
+        else:rating=0
+        item.setInfo( type='Video', infoLabels={'Title': title, 'playcount': playcount, 'rating': rating} )
         refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
@@ -199,8 +204,12 @@ def Episodes(showId, seasonNumber):
             if jdata['episodes'][id]['seasonNumber']==int(seasonNumber):
                 if id in watched_jdata:
                     playcount=1
+                    if watched_jdata[id]['rating']:
+                        rating=float(watched_jdata[id]['rating'])
+                    else: rating=0
                 else:
                     playcount=0
+                    rating=0
                 pre=prefix(showId=int(showId),seasonId=jdata['episodes'][id]['seasonNumber'], id=int(id), stype=None, episodeNumber=jdata['episodes'][id]['episodeNumber'])
                 if not pre and syncshows.episode(jdata['title'], jdata['episodes'][id]['seasonNumber'], jdata['episodes'][id]['episodeNumber']): pre='[B][XBMC][/B]'
                 title=pre+jdata['episodes'][id]['title']+' ['+jdata['episodes'][id]['airDate']+']'
@@ -211,11 +220,13 @@ def Episodes(showId, seasonNumber):
                                                         'season': jdata['episodes'][id]['seasonNumber'],
                                                         'tracknumber': jdata['episodes'][id]['sequenceNumber'],
                                                         'playcount': playcount,
+                                                        'rating': rating*2,
                                                         'tvshowtitle': jdata['title'],
                                                         'premiered': jdata['started'],
                                                         'status': jdata['status'],
                                                         'code': jdata['imdbId'],
                                                         'aired': jdata['episodes'][id]['airDate'],
+                                                        'plot': __language__(30266)+' '+str(rating),
                                                         'votes': jdata['voted']} )
                 if syncshows: item=syncshows.episodes(jdata['title'], item)
                 stringdata={"showId":int(showId), "episodeId":jdata['episodes'][id]['episodeNumber'], "id":int(id), "seasonId":jdata['episodes'][id]['seasonNumber']}
@@ -579,7 +590,7 @@ def Rate(showId, id, refresh_url):
         Data(cookie_auth, rate_url, refresh_url).get()
         showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
         if getSettingAsBool('ratekinopoisk') and id=='0':
-                jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+                jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId).get()
                 if jload:
                     jdata = json.loads(jload)
                     title=jdata['title'].encode('utf-8')
@@ -887,7 +898,9 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
-    kinorate('Мальчишник Часть 3',2013)
+    #kinorate('Мальчишник Часть 3',2013)
+    #RateShow(24199).count()
+    Rate('24199', '0',None)
 
 params = get_params()
 try: apps=get_apps()
