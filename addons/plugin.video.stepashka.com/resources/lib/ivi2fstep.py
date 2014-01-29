@@ -427,7 +427,7 @@ def readFile(params):
 		f1=http.rfind('}]}]}{');
 		#print 'http' + http
 		try:
-			http= xppod.Decode(http)
+			http= xppod.Decode(str(http).strip())
 		except:
 			pat=re.compile('[\w\d=.,+]+', re.S)
 			http = pat.findall(http)[0]
@@ -484,10 +484,10 @@ def readFile(params):
 		#print 'http: '+str(http)
 		if http == None: return False
 		http = GET(http)
-		#print 'http pl='+str(http)
+		#print 'http pl='+str(http).strip()
 		#print 'http2' + http
 		try:
-			http= xppod.Decode(http)
+			http= xppod.Decode(str(http).strip())
 			#print 'http after xpod:' + str(http.encode('utf-8'))
 		except:
 			pat=re.compile('[\w\d=.,+]+', re.S)
