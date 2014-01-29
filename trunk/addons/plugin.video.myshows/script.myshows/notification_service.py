@@ -140,7 +140,7 @@ class myshowsPlayer(xbmc.Player):
                 return
 
             try:
-                if result['item']['label']=='':    result['item']['label']=_filename.replace('\\','/').split('/')[len(_filename.replace('\\','/').split('/'))-1]
+                if result['item']['label']=='': result['item']['label']=_filename.replace('\\','/').split('/')[-1]
             except: pass
 
             self.type = result["item"]["type"]
@@ -188,10 +188,9 @@ class myshowsPlayer(xbmc.Player):
                             break
                     if self.type!="episode":
                         file=data["label"]
-                        file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').lower().strip()
+                        file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').strip()
                         match=re.compile('(.+) (\d{4}) ', re.I | re.IGNORECASE).findall(file)
                         if match:
-                            from kinopoisk.translit import detranslify, provide_unicode
                             data["title"], data["year"] = match[0]
                             self.type = "movie"
                             data["type"] = "movie"
@@ -211,6 +210,13 @@ class myshowsPlayer(xbmc.Player):
                     data["year"] = xbmc.getInfoLabel("VideoPlayer.Year")
                     data["title"] = xbmc.getInfoLabel("VideoPlayer.Title")
                     data["titleAlt"]= xbmc.getInfoLabel("VideoPlayer.OriginalTitle")
+                    if len(data["title"])<1:
+                        result = xbmcJsonRequest({"jsonrpc": "2.0", "method": "VideoLibrary.GetMovieDetails", "params": {"movieid": self.id, "properties": ["title", "year","originaltitle"]}, "id": 1})
+                        if result:
+                            Debug("[myshowsPlayer] onPlayBackStarted() TitleLen0 Event - %s" % result)
+                            data["title"] = result["moviedetails"]["title"]
+                            data["year"] = int(result["moviedetails"]["year"])
+                            data["titleAlt"] = result["moviedetails"]["originaltitle"]
 
                 if self.type == "episode":
                     Debug("[myshowsPlayer] onPlayBackStarted() - Doing multi-part episode check.")
