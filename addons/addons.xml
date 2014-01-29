@@ -1237,7 +1237,7 @@ I hope you like this!
     </extension>
 </addon>
 
-<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.1.0" provider-name="Rodina TV">
+<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.3.1" provider-name="Rodina TV">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.service.rodina.tv" version="1.0.1"/>
@@ -1246,7 +1246,7 @@ I hope you like this!
   <extension point="xbmc.addon.metadata">
     <summary>Rodina.TV – Новости, кино, музыка, спортивные трансляции, кинозал, архив программ за 2 недели.</summary>
     <description>Rodina.TV – это качественное русскоязычное и интернациональное интернет телевидение в любой точке земного шара. Спортивные трансляции, кино, новости, музыка.
-Сервис ТВ онлайн позволяет смотреть эфирные русскоязычные и другие каналы, пользоваться онлайн кинозалом со множеством новинок и киноклассикой. В вашем распоряжении архив программ за  2 недели, а также функция тайм-шифт (задержка телевещания на определённое время).</description>
+Сервис ТВ онлайн позволяет смотреть эфирные русскоязычные и другие каналы, пользоваться онлайн кинозалом со множеством новинок и киноклассикой. В вашем распоряжении архив программ за  2 недели, а также функция тайм-шифт.</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -2123,7 +2123,7 @@ provider-name="Roman_V_M">
 
 <addon id="script.service.rodina.tv"
        name="RodinaTV Service Script"
-       version="1.2.0"
+       version="1.2.1"
        provider-name="Rodina TV">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
