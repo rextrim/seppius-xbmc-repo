@@ -947,12 +947,12 @@ class RateShow():
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId))
         jdata = json.loads(data.get())
         for id in jdata['episodes']:
-            if maxep==jdata['episodes'][id]['sequenceNumber']:
-                seasonNumber=jdata['episodes'][id]['seasonNumber']
             if maxep>=jdata['episodes'][id]['sequenceNumber']:
                 if listSE.has_key(str(jdata['episodes'][id]['seasonNumber'])):
                     listSE[str(jdata['episodes'][id]['seasonNumber'])].append(id)
                 else:
                     listSE[str(jdata['episodes'][id]['seasonNumber'])]=[id]
-        Debug('[listSE] '+str(listSE))
+                if jdata['episodes'][id]['seasonNumber']>seasonNumber:
+                    seasonNumber=jdata['episodes'][id]['seasonNumber']
+        Debug('[listSE] '+str(listSE)+str(seasonNumber))
         return listSE, seasonNumber
