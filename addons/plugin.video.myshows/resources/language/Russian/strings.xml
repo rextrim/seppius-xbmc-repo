@@ -38,6 +38,7 @@
         <string id="30035">Всегда спрашивать Библиотеку видео (при переносе)</string>
         <string id="30036">Сразу проигрывать файлы [XBMC]</string>
         <string id="30037">Торрент и XBMC</string>
+        <string id="30038">Оценивать сериалы на KinoPoisk.ru</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -219,6 +220,8 @@
         <string id="30512">Проверка uTorrent</string>
         <string id="30513">Хотите %s раздачу в uTorrent?</string>
         <string id="30514">Найдено на LostFilm.tv (требует патч plugin.video.LostFilm)</string>
+        <string id="30515">Установить этот плагин?</string>
+        <string id="30516">Установить патч на плагин?</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
@@ -254,6 +257,8 @@
         <string id="30409">Добавить в MyShows.ru</string>
 
 /// Rating
+        <string id="1314">Средняя оценка эпизодов: %s
+Средняя оценка %d сезона: %s</string>
         <string id="1315">Не стоит смотреть :(</string>
         <string id="1316">Так себе</string>
         <string id="1317">Можно посмотреть</string>

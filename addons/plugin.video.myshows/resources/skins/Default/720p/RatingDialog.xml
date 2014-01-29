@@ -17,7 +17,7 @@
                 <posx>0</posx>
                 <posy>0</posy>
                 <width>600</width>
-                <height>250</height>
+                <height>280</height>
                 <texture>ConfluenceDialogBack.png</texture>
             </control>
 
@@ -44,7 +44,7 @@
             <control type="label" id="10012"> <!--MEDIA TITLE-->
                 <description>Title</description>
                 <posx>0</posx>
-                <posy>60</posy>
+                <posy>80</posy>
                 <width>600</width>
                 <height>20</height>
                 <label>-</label>
@@ -57,7 +57,7 @@
             <control type="label" id="10013"> <!--RATING TITLE-->
                 <description>Title</description>
                 <posx>0</posx>
-                <posy>185</posy>
+                <posy>215</posy>
                 <width>600</width>
                 <height>20</height>
                 <label>-</label>
@@ -89,7 +89,7 @@
                 <control type="button" id="11030">
                     <description>1 Button</description>
                     <posx>80</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
@@ -107,7 +107,7 @@
                 <control type="button" id="11031">
                     <description>2 Button</description>
                     <posx>170</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
@@ -126,7 +126,7 @@
                 <control type="image">
                     <description>2 Button Placeholder</description>
                     <posx>170</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <texture>wb.png</texture>
@@ -136,7 +136,7 @@
                 <control type="button" id="11032">
                     <description>3 Button</description>
                     <posx>260</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
@@ -155,7 +155,7 @@
                 <control type="image">
                     <description>3 Button Placeholder</description>
                     <posx>260</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <texture>wb.png</texture>
@@ -165,7 +165,7 @@
                 <control type="button" id="11033">
                     <description>4 Button</description>
                     <posx>350</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
@@ -184,7 +184,7 @@
                 <control type="image">
                     <description>4 Button Placeholder</description>
                     <posx>350</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <texture>wb.png</texture>
@@ -194,7 +194,7 @@
                 <control type="button" id="11034">
                     <description>5 Button</description>
                     <posx>440</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <label>-</label>
@@ -213,7 +213,7 @@
                 <control type="image">
                     <description>5 Button Placeholder</description>
                     <posx>440</posx>
-                    <posy>100</posy>
+                    <posy>130</posy>
                     <width>70</width>
                     <height>70</height>
                     <texture>wb.png</texture>

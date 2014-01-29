@@ -38,10 +38,9 @@
         <string id="30035">Always ask XBMC Series Folder</string>
         <string id="30036">Never try Add Source if in XBMC Library</string>
         <string id="30037">Torrent XBMC</string>
+        <string id="30038">Rate Shows on KinoPoisk.ru</string>
 
-        <string id="30038">LibTorrent (Torrenter needed)</string>
         <string id="30039">Old style rate window</string>
-
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
         <string id="50303">Default</string>
@@ -246,9 +245,9 @@
         <string id="30512">uTorrent Check</string>
         <string id="30513">Would you like to %s it (uTorrent list)?</string>
         <string id="30514">Found on LostFilm.tv (need patch plugin.video.LostFilm)</string>
+        <string id="30515">Would you like to install this plugin?</string>
+        <string id="30516">Would you like to patch plugin?</string>
 
-        <string id="30515">Rate %s</string>
-        <string id="30516">Favorite %s</string>
         <string id="30517">Add to Favorites</string>
         <string id="30518">Remove from Favorites</string>
         <string id="30519">Add to Ignored</string>
@@ -323,9 +322,12 @@
         <string id="30409">Add to MyShows.ru</string>
 
 /// Rating
+        <string id="1314">Average rate: %s
+Average rate of season %d: %s</string>
         <string id="1315">It's really bad :(</string>
         <string id="1316">Not good</string>
         <string id="1317">It's ok</string>
         <string id="1318">Good one</string>
         <string id="1319">I'm loving it</string>
+
 </strings>

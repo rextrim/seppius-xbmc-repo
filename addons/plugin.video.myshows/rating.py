@@ -4,7 +4,7 @@
 import xbmc
 import xbmcaddon
 import xbmcgui
-from functions import id2title
+from functions import id2title,RateShow
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
@@ -48,9 +48,15 @@ class RatingDialog(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         self.getControl(10015).setVisible(True)
-        self.getControl(10011).setLabel(self.rate_item)
         self.title=id2title(self.showId, self.id)
-        self.getControl(10012).setLabel('%s - %s' % (self.title[0],self.title[1]))
+        if self.id and self.id!='0':
+            self.getControl(10011).setLabel(self.rate_item)
+            self.getControl(10012).setLabel('%s\n%s' % (self.title[0],self.title[1]))
+        else:
+            self.getControl(10011).setLabel('%s %s' % (__language__(30303),self.title[0]))
+            rating,seasonNumber,seasonrating,old_rating=RateShow(int(self.showId)).count()
+            if old_rating: self.setFocusId([11030,11031,11032,11033,11034][old_rating-1])
+            self.getControl(10012).setLabel(__language__(1314).encode('utf-8', 'ignore') %(str(rating), seasonNumber, str(seasonrating)))
 
 
     def onClick(self, controlID):
