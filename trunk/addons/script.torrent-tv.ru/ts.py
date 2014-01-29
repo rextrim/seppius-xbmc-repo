@@ -1,5 +1,5 @@
 ﻿# Copyright (c) 20131 Torrent-TV.RU
-# Writer (c) 2013, Welicobratov K.A., E-mail: 07pov23@gmail.com
+# Writer (c) 2014, Welicobratov K.A., E-mail: 07pov23@gmail.com
 
 #imports
 import xbmc
@@ -51,8 +51,11 @@ class TSengine(xbmc.Player):
             LogToXBMC('STOP')
             self.parent.player.close()
             self.tsstop()
-        else:
+        elif self.amalker:
             self.parent.amalkerWnd.close()
+        else:
+            LogToXBMC("STOP")
+            self.tsstop()
 
     def onPlayBackEnded(self):
         LogToXBMC('onPlayBackEnded')
@@ -436,6 +439,9 @@ class TSengine(xbmc.Player):
                 self.parent.amalkerWnd.close()
                 break
             try:
+                if xbmc.abortRequested:
+                    LogToXBMC("XBMC Shutdown")
+                    break;
                 xbmc.sleep(250)
                 #if not self.isPlaying() and self.playing:
                 #    self.tsstop()
@@ -445,6 +451,7 @@ class TSengine(xbmc.Player):
                 LogToXBMC('ERROR SLEEPING')
                 self.parent.close()
                 return
+            
 
         if self.amalker:
             self.sendCommand('PLAYBACK ' + self.play_url + ' 100')
@@ -547,7 +554,7 @@ class SockThread(threading.Thread):
 
     def run(self):
         LogToXBMC('Start SockThread')
-        while self.active and not self.error:
+        while self.active and not self.error and not xbmc.abortRequested:
             try:
                 xbmc.sleep(32)
                 self.lastRecv = self.lastRecv + self.sock.recv(self.buffer)
