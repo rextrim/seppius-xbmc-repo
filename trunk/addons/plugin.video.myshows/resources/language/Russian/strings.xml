@@ -60,7 +60,7 @@
         <string id="30105">Перестал смотреть</string>
         <string id="30106">Прошедшие эпизоды</string>
         <string id="30107">Будущие эпизоды</string>
-        <string id="30108">Топ сериалов</string>
+        <string id="30108">Топ сериалов и Рекомендации</string>
         <string id="30109">Мужской топ</string>
         <string id="30110">Женский топ</string>
         <string id="30111">Мой профиль</string>
@@ -103,6 +103,8 @@
         <string id="30148">НЕТ ДОСТУПА</string>
         <string id="30149">Дополнительные функции</string>
         <string id="30150">Продолжение следует...</string>
+        <string id="30151">Рекомендации</string>
+        <string id="30152">Топ Друзей</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>

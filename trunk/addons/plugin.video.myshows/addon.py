@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.4"
+__version__ = "1.8.5"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -342,12 +342,13 @@ def MyScanList():
 def TopShows(action):
     saveCheckPoint()
     if action=='all':
-        item = xbmcgui.ListItem(TextBB(__language__(30109), 'b'), iconImage='DefaultFolder.png', thumbnailImage='')
-        item.setInfo( type='Video', infoLabels={'Title': 'Male Top'} )
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str(sys.argv[0] + '?action=male&mode=100'), listitem=item, isFolder=True)
-        item = xbmcgui.ListItem(TextBB(__language__(30110), 'b'), iconImage='DefaultFolder.png', thumbnailImage='')
-        item.setInfo( type='Video', infoLabels={'Title': 'Female Top'} )
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str(sys.argv[0] + '?action=female&mode=100'), listitem=item, isFolder=True)
+        for i in [(__language__(30109),'male'),(__language__(30110),'female'),(__language__(30151),'recomm'),(__language__(30152),'friends')]:
+            item = xbmcgui.ListItem(TextBB(i[0], 'b'), iconImage='DefaultFolder.png', thumbnailImage='')
+            item.setInfo( type='Video', infoLabels={'Title': unicode(i[0])} )
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str('%s?action=%s&mode=100' %(sys.argv[0], i[1])), listitem=item, isFolder=True)
+    elif action in ['recomm','friends']:
+        Recommendations(action)
+        return
 
     tdata=Data(cookie_auth, 'http://api.myshows.ru/shows/top/'+action+'/')
     get_data= tdata.get()
@@ -370,6 +371,41 @@ def TopShows(action):
         stringdata={"showId":int(jdata['id']), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str(jdata['id']) + '&mode=20'
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+
+def Recommendations(action):
+    saveCheckPoint()
+    result=[]
+    if action=='recomm':
+        subject=Data(cookie_auth, 'http://myshows.ru/profile/recommendations/').get()
+        reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>', re.DOTALL | re.MULTILINE)
+        result = reobj.findall(subject)
+    elif action=='friends':
+        subject=Data(cookie_auth, 'http://myshows.ru/kyonkodura/friends/rating').get()
+        reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>', re.DOTALL | re.MULTILINE)
+        result = reobj.findall(subject)
+    j=0
+    for i in result:
+        j+=1
+        if action=='recomm':
+            showId,title,rating,recomm=i[0],i[1],i[2],i[3]
+            listtitle=str(j)+'. ['+recomm+'%] '+title
+        elif action=='friends':
+            showId,title,rating,friends,recomm=i[0],i[1],i[2],i[3],i[4]
+            listtitle=str(j)+'. ['+friends+']['+recomm+'%] '+title
+
+
+        rating=float(rating)/10
+
+        item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png',)
+        item.setInfo( type='Video', infoLabels={'Title': title,
+                                                'tvshowtitle': title,
+                                                'rating': rating} )
+
+        stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
+        refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
+        sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + showId + '&mode=20'
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 

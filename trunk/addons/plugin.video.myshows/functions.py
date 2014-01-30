@@ -905,20 +905,23 @@ class RateShow():
     def seasonrates(self):
         jload=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
         jshowdata = json.loads(jload)
-        self.list, seasonNumber=self.listSE(jshowdata[str(self.showId)]['totalEpisodes'])
-        ratedict={}
-        for i in self.list:
-            for j in self.list[i]:
-                if self.watched_jdata.has_key(j):
-                    if self.watched_jdata[j]['rating']:
-                        if ratedict.has_key(i):
-                            ratedict[i].append(self.watched_jdata[j]['rating'])
-                        else:
-                            ratedict[i]=[self.watched_jdata[j]['rating']]
-        #Debug('[ratedict]:'+str(ratedict))
-        for i in ratedict:
-            ratedict[i]=round(float(sum(ratedict[i]))/len(ratedict[i]),2)
-        #Debug('[ratedict]:'+str(ratedict))
+        if str(self.showId) in jshowdata:
+            self.list, seasonNumber=self.listSE(jshowdata[str(self.showId)]['totalEpisodes'])
+            ratedict={}
+            for i in self.list:
+                for j in self.list[i]:
+                    if self.watched_jdata.has_key(j):
+                        if self.watched_jdata[j]['rating']:
+                            if ratedict.has_key(i):
+                                ratedict[i].append(self.watched_jdata[j]['rating'])
+                            else:
+                                ratedict[i]=[self.watched_jdata[j]['rating']]
+            #Debug('[ratedict]:'+str(ratedict))
+            for i in ratedict:
+                ratedict[i]=round(float(sum(ratedict[i]))/len(ratedict[i]),2)
+            #Debug('[ratedict]:'+str(ratedict))
+        else:
+            ratedict={}
         return ratedict
 
     def count(self):
