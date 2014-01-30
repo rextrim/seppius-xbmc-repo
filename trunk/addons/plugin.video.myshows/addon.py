@@ -382,7 +382,7 @@ def Recommendations(action):
         reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>', re.DOTALL | re.MULTILINE)
         result = reobj.findall(subject)
     elif action=='friends':
-        subject=Data(cookie_auth, 'http://myshows.ru/kyonkodura/friends/rating').get()
+        subject=Data(cookie_auth, 'http://myshows.ru/'+login+'/friends/rating').get()
         reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>', re.DOTALL | re.MULTILINE)
         result = reobj.findall(subject)
     j=0
