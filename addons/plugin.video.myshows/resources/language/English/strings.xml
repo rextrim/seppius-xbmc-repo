@@ -63,7 +63,7 @@
         <string id="30105">My Cancelled Shows</string>
         <string id="30106">Unwatched Episodes</string>
         <string id="30107">Upcomming Episodes</string>
-        <string id="30108">Top Rated Shows</string>
+        <string id="30108">Top Rated Shows and Recommendations</string>
         <string id="30109">Male Top</string>
         <string id="30110">Female Top</string>
         <string id="30111">My Profile</string>
@@ -106,11 +106,9 @@
         <string id="30148">NOT ACCESSABLE</string>
         <string id="30149">Extra functions</string>
         <string id="30150">To be continued...</string>
-        __language__(30149)
+        <string id="30151">Recommendations</string>
+        <string id="30152">Friend's Top</string>
 
-        <string id="30150">Can't play: %s</string>
-        <string id="30151">Deleted: %s sources</string>
-        <string id="30152">Would you like to play it?</string>
         <string id="30153">BTchat search:</string>
         <string id="30154">Root path "./"</string>
         <string id="30155">Search Serialu.net (need patch plugin.video.serialu.net)</string>
