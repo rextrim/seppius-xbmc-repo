@@ -68,10 +68,10 @@ class myshowsAPI(object):
         if cookie=='': cookie=None
         if login!='' and password!='':
             kpLogin=kp.Login(login,password,cookie)
+            if kpLogin.testAcc():
+                Debug("[myshowsAPI] KinoPosik.ru account '%s' is valid." % login)
         else:
-            raise Exception('No login or password!')
-        if kpLogin.testAcc():
-            Debug("[myshowsAPI] KinoPosik.ru account '%s' is valid." % login)
+            Debug('[myshowsAPI] KinoPosik.ru: No login or password!')
 
     def __getData(self, url, args):
         data = None
