@@ -1,3 +1,4 @@
 <settings>
 	<setting id="mac" type="text" default="" />
+	<setting id="start" type="text" default="http://93.188.161.204/vod/start.xml" />
 </settings>
