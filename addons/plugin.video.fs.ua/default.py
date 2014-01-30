@@ -154,17 +154,27 @@ def check_login():
     return False
 
 
-def get_url_with_wort_by(url, section):
+def get_url_with_sort_by(url, section, start, view_mode):
     sortBy = __settings__.getSetting("Sort by")
+    perPage = __settings__.getSetting("Items per page")
     sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
-    if '?' in url:
-        return url
-    else:
-        return url + '?view=list&sort=' + sortByMap[sortBy] + get_filters(section)
+
+    separator = '?'
+    if separator in url:
+        separator = '&'
+
+    request_params = {
+        'view': view_mode,
+        'sort': sortByMap[sortBy],
+        'scrollload': 1,
+        'start': start,
+        'length': perPage
+    }
+    return url + get_filters(section) + separator + urllib.urlencode(request_params)
 
 
 def get_filters(section):
-    params = []
+    filter_params = []
     ret = ''
     sectionSettings = {
         'video': ['mood', 'vproduction', 'quality', 'translation'],
@@ -173,9 +183,9 @@ def get_filters(section):
     for settingId in sectionSettings[section]:
         setting = __settings__.getSetting(settingId)
         if setting != 'Any':
-            params.append(setting)
-    if len(params) > 0:
-        ret = '&fl=' + ','.join(params)
+            filter_params.append(setting)
+    if len(filter_params) > 0:
+        ret = '/fl_%s/' % ('_'.join(filter_params))
     return ret
 
 
@@ -272,12 +282,12 @@ def getCategories(params):
     for subcategory in subcategories:
         li = xbmcgui.ListItem(subcategory.string)
         uri = construct_request({
-            'href': get_url_with_wort_by(httpSiteUrl + subcategory['href'], section),
+            'href': httpSiteUrl + subcategory['href'],
             'mode': 'readcategory',
             'cleanUrl': httpSiteUrl + subcategory['href'],
             'section': section,
-            'filter': '',
-            'firstPage': 'yes'
+            'start': 0,
+            'filter': ''
         })
         xbmcplugin.addDirectoryItem(h, uri, li, True)
 
@@ -416,19 +426,29 @@ def readfavorites(params):
 
 
 def readcategory(params):
+    start = int(params['start'])
     showUpdateInfo = __settings__.getSetting("Show update info") == "true"
-    categoryUrl = get_url_with_wort_by(urllib.unquote_plus(params['href']), params['section'])
-    delimiter = '?'
-    if '?' in categoryUrl:
-        delimiter = '&'
+    category_href = urllib.unquote_plus(params['href'])
+
     viewMode = 'list'
     if not showUpdateInfo:
         viewMode = 'detailed'
-    categoryUrl = categoryUrl + delimiter + 'view=' + viewMode
 
-    http = GET(categoryUrl, httpSiteUrl)
-    if http is None:
+    categoryUrl = get_url_with_sort_by(
+        category_href,
+        params['section'],
+        params['start'],
+        viewMode
+    )
+
+    data = GET(categoryUrl, httpSiteUrl)
+    if data is None:
         return False
+    data = json.loads(data)
+    if data is None:
+        return False
+    http = data['content']
+
     try:
         params['filter']
     except:
@@ -444,46 +464,8 @@ def readcategory(params):
         show_message('ОШИБКА', 'Неверная страница', 3000)
         return False
     else:
-        if params['firstPage'] == 'yes':
-            #Add search list item
-            li = xbmcgui.ListItem("[ПОИСК]")
-            li.setProperty('IsPlayable', 'false')
-            uri = construct_request({
-                'mode': 'runsearch',
-                'section': params['section'],
-                'url': urllib.unquote_plus(params['cleanUrl'])
-            })
-            xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-            #Genre
-            groups = beautifulSoup.find('ul', 'm-group')
-            if groups is not None:
-                yearLink = groups.find('a', href=re.compile(r'year'))
-                if yearLink is not None:
-                    li = xbmcgui.ListItem("[По годам]")
-                    li.setProperty('IsPlayable', 'false')
-                    uri = construct_request({
-                        'mode': 'getGenreList',
-                        'section': params['section'],
-                        'filter': params['filter'],
-                        'href': httpSiteUrl + yearLink['href'],
-                        'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
-                        'css': 'main'
-                    })
-                    xbmcplugin.addDirectoryItem(h, uri, li, True)
-                genreLink = groups.find('a', href=re.compile(r'genre'))
-                if genreLink is not None:
-                    li = xbmcgui.ListItem("[Жанры]")
-                    li.setProperty('IsPlayable', 'false')
-                    uri = construct_request({
-                        'mode': 'getGenreList',
-                        'section': params['section'],
-                        'filter': params['filter'],
-                        'href': httpSiteUrl + genreLink['href'],
-                        'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
-                        'css': 'b-list-subcategories'
-                    })
-                    xbmcplugin.addDirectoryItem(h, uri, li, True)
+        if start == 0 and 'hideFirstPageData' not in params:
+            load_first_page_sections(category_href, params)
 
         for item in items:
             title = None
@@ -557,21 +539,64 @@ def readcategory(params):
 
                 xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-    nextPageLink = beautifulSoup.find('a', 'next-link')
-    if nextPageLink is not None:
-        li = xbmcgui.ListItem('[NEXT PAGE >]')
-        li.setProperty('IsPlayable', 'false')
-        uri = construct_request({
-            'href': httpSiteUrl + nextPageLink['href'].encode('utf-8'),
-            'mode': 'readcategory',
-            'section': params['section'],
-            'filter': params['filter'],
-            'firstPage': 'no'
-        })
-        xbmcplugin.addDirectoryItem(h, uri, li, True)
+    perPage = int(__settings__.getSetting("Items per page"))
+    li = xbmcgui.ListItem('[NEXT PAGE >]')
+    li.setProperty('IsPlayable', 'false')
+    uri = construct_request({
+        'href': category_href,
+        'mode': 'readcategory',
+        'section': params['section'],
+        'filter': params['filter'],
+        'start': start + perPage,
+        'firstPage': 'no'
+    })
+    xbmcplugin.addDirectoryItem(h, uri, li, True)
 
     xbmcplugin.endOfDirectory(h)
 
+
+def load_first_page_sections(href, params):
+    #Add search list item
+    li = xbmcgui.ListItem("[ПОИСК]")
+    li.setProperty('IsPlayable', 'false')
+    uri = construct_request({
+        'mode': 'runsearch',
+        'section': params['section'],
+        'url': urllib.unquote_plus(params['cleanUrl'])
+    })
+    xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+    first_page_data = GET(href, httpSiteUrl)
+    if first_page_data is not None:
+        beautifulSoup = BeautifulSoup(first_page_data)
+        groups = beautifulSoup.find('ul', 'm-group')
+        if groups is not None:
+            yearLink = groups.find('a', href=re.compile(r'year'))
+            if yearLink is not None:
+                li = xbmcgui.ListItem("[По годам]")
+                li.setProperty('IsPlayable', 'false')
+                uri = construct_request({
+                    'mode': 'getGenreList',
+                    'section': params['section'],
+                    'filter': params['filter'],
+                    'href': httpSiteUrl + yearLink['href'],
+                    'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
+                    'css': 'main'
+                })
+                xbmcplugin.addDirectoryItem(h, uri, li, True)
+            genreLink = groups.find('a', href=re.compile(r'genre'))
+            if genreLink is not None:
+                li = xbmcgui.ListItem("[Жанры]")
+                li.setProperty('IsPlayable', 'false')
+                uri = construct_request({
+                    'mode': 'getGenreList',
+                    'section': params['section'],
+                    'filter': params['filter'],
+                    'href': httpSiteUrl + genreLink['href'],
+                    'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
+                    'css': 'b-list-subcategories'
+                })
+                xbmcplugin.addDirectoryItem(h, uri, li, True)
 
 def getGenreList(params):
     http = GET(urllib.unquote_plus(params['href']), httpSiteUrl)
@@ -594,7 +619,8 @@ def getGenreList(params):
                 'section': params['section'],
                 'filter': '',
                 'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
-                'firstPage': 'yes'
+                'start': 0,
+                'hideFirstPageData': 1
             })
             xbmcplugin.addDirectoryItem(h, uri, li, True)
         xbmcplugin.endOfDirectory(h)
