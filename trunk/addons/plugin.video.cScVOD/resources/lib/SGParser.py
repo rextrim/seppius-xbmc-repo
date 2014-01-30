@@ -47,7 +47,7 @@ class sg_parsers:
 				except Exception as ex:
 					print ex
 	
-			if url.find('brb.to/video') > -1 or url.find('fs.to/video'):
+			if url.find('brb.to/video') > -1 or url.find('fs.to/video') > -1:
 				request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
 				'Connection': 'Close'})
 				try:
