@@ -68,7 +68,9 @@ AddChannels = {
     "Зоо ТВ": {"group_id": "6", "hd": 0, "adult": 0},
     "Кинопоказ": {"group_id": "3", "hd": 0, "adult": 0},
     "Футбол (украина)": {"group_id": "4", "hd": 0, "adult": 0},
-    "Футбол+ (украина)": {"group_id": "4", "hd": 0, "adult": 0}}
+    "Футбол+ (украина)": {"group_id": "4", "hd": 0, "adult": 0},
+    "Футбол 1 Украина": {"group_id": "4", "hd": 0, "adult": 0},
+    "Футбол 2 Украина": {"group_id": "4", "hd": 0, "adult": 0}}
 
 AddURL = {
     "458": "http://acelive.torrent-tv.ru/cdn/torrent-tv-ru_2+2.acelive",
