@@ -39,17 +39,19 @@
         <string id="30036">Сразу проигрывать файлы [XBMC]</string>
         <string id="30037">Торрент и XBMC</string>
         <string id="30038">Оценивать сериалы на KinoPoisk.ru</string>
+        <string id="30039">Скачивать информацию с TheTVDb.com (острожно, трафик!)</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
         <string id="50303">Задать по умолчанию</string>
         <string id="50304">Путь к директории</string>
         <string id="50305">Создавать поддиректорию для скрапера</string>
-        <string id="50312">Хост µTorrent</string>
-        <string id="50313">Порт µTorrent</string>
+        <string id="50312">Хост</string>
+        <string id="50313">Порт</string>
         <string id="50314">URL</string>
-        <string id="50315">Логин µTorrent</string>
-        <string id="50316">Пароль µTorrent</string>
+        <string id="50315">Логин</string>
+        <string id="50316">Пароль</string>
+        <string id="50311">Торрент-клиент</string>
 
 ///ListItems
         <string id="30100">Все Мои сериалы</string>
@@ -105,6 +107,7 @@
         <string id="30150">Продолжение следует...</string>
         <string id="30151">Рекомендации</string>
         <string id="30152">Топ Друзей</string>
+        <string id="30153">Вручную изменить папку µTorrent по-умолчанию</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
@@ -173,7 +176,7 @@
         <string id="30263">Сканирование:</string>
         <string id="30264">Статус сериала:</string>
         <string id="30265">Вы посмотрели %s эпизодов из %s</string>
-        <string id="30266">Вы оценили сериал на </string>
+        <string id="30266">Вы оценили на </string>
         <string id="30267">УСТАНОВЛЕН</string>
         <string id="30268">Раздача RuTracker.Org (требует патч plugin.video.torrenter)</string>
         <string id="30269">Получение списка файлов Magnet-ссылки</string>
@@ -245,6 +248,7 @@
         <string id="30316">Установить Плагин</string>
         <string id="30317">Оценить эпизод</string>
         <string id="30318">Перенести в Библиотеку</string>
+        <string id="30319">Информация</string>
 
 ///Other plugins
         <string id="30400">Назад</string>

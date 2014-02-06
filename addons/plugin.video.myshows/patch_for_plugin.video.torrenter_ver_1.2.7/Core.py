@@ -151,15 +151,13 @@ class Core:
             self.sectionMenu()
 
     def clearStorage(self, params = {}):
-        try:
-            xbmcaddon.Addon(id='plugin.video.myshows')
-            fuckyou=True
-        except: fuckyou=False
-        if not fuckyou:
-            if xbmcvfs.exists(self.userStorageDirectory):
-                import shutil
-                shutil.rmtree(self.userStorageDirectory, ignore_errors=True)
-            xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Storage'), Localization.localize('Storage was cleared')))
+        if xbmcvfs.exists(self.userStorageDirectory):
+            import shutil
+            temp=self.userStorageDirectory.rstrip('Torrenter').rstrip('/\\')
+            shutil.move(os.path.join(self.userStorageDirectory, 'torrents'), os.path.join(temp, 'torrents'))
+            shutil.rmtree(self.userStorageDirectory, ignore_errors=True)
+            shutil.move(os.path.join(temp, 'torrents'), os.path.join(self.userStorageDirectory, 'torrents'))
+        xbmc.executebuiltin("Notification(%s, %s, 2500)" % (Localization.localize('Storage'), Localization.localize('Storage was cleared')))
 
     def calculateIterator(self, current, full):
         if (100 * 1024 * 1024) > full:#<100Mb
@@ -607,6 +605,7 @@ class Core:
                 if silent:
                     order, seeds, title, link, image= filesList[0]
                     xbmc.executebuiltin('XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&action=download&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId'])))))
+                    return
                 else:
                     for (order, seeds, title, link, image) in filesList:
                         contextMenu = [

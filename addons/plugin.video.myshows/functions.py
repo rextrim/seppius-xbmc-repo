@@ -14,10 +14,10 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-__version__ = "1.8.4"
-__plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
+__version__ = __settings__.getAddonInfo('version')
+__plugin__ = "MyShows.ru " + __version__
 __language__ = __settings__.getLocalizedString
 ruName=__settings__.getSetting("ruName")
 cookie_auth=__settings__.getSetting("cookie_auth")
@@ -144,13 +144,7 @@ def get_apps(paramstring=None):
         return apps
 
 def int_xx(intxx):
-    if intxx==None or intxx=='None':
-        return ''
-    intxx=int(intxx)
-    if intxx<10:
-        return '0'+str(intxx)
-    else:
-        return str(intxx)
+    return '%02d' % (int(intxx))
 
 def StripName(name, list, replace=' '):
     lname=name.lower().split(' ')
@@ -515,14 +509,16 @@ def sweetpair(l):
             ratio[i]=ratio[i]+s.quick_ratio()
     id1,id2=0,0
     for i in range(0, len(l)):
-        if ratio[id1]<ratio[i] or id2==id1 and ratio[id1]==ratio[i]:
+        if ratio[id1]<=ratio[i] and i!=id2 or id2==id1 and ratio[id1]==ratio[i]:
             id2=id1
             id1=i
-        elif ratio[id2]<ratio[i]:
+            #Debug('1 - %d %d' % (id1, id2))
+        elif (ratio[id2]<=ratio[i] or id1==id2) and i!=id1:
             id2=i
+            #Debug('2 - %d %d' % (id1, id2))
 
-    Debug('[sweetpair]: id1 '+str(l[id1])+':'+str(ratio[id1]))
-    Debug('[sweetpair]: id2 '+str(l[id2])+':'+str(ratio[id2]))
+    Debug('[sweetpair]: id1 '+l[id1]+':'+str(ratio[id1]))
+    Debug('[sweetpair]: id2 '+l[id2]+':'+str(ratio[id2]))
 
     return [l[id1],l[id2]]
 
@@ -618,7 +614,8 @@ def uTorrentBrowser():
         if action=='context':
             xbmc.executebuiltin("Action(ContextMenu)")
             return
-        if (ind or ind==0) and action in ('0','3'):Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
+        if (ind or ind==0) and action in ('0','3'):
+            Download().setprio_simple(hash, action, ind)
         elif (ind or ind==0) and action=='play':
             p,dllist,i,folder,filename=Download().list(),Download().listfiles(hash),0,None,None
             for data in p:
@@ -629,17 +626,17 @@ def uTorrentBrowser():
                 if data[2]==int(ind):
                     filename=data[0]
                     break
-            if __settings__.getSetting("torrent_utorrent_host") not in ['127.0.0.1', 'localhost']:
+            if isRemoteTorr():
                folder=folder.replace(__settings__.getSetting("torrent_dir"),__settings__.getSetting("torrent_replacement"))
             filename=os.path.join(folder,filename)
             xbmc.executebuiltin('xbmc.PlayMedia("'+filename.encode('utf-8')+'")')
-        elif not tdir: Download().action('action=%s&hash=%s' % (action, hash))
+        elif not tdir: Download().action_simple(action, hash)
         elif tdir and action in ('0','3'):
             dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
             for name,percent,ind,size in dllist:
                 if '/' in name and tdir in name:
                     menu.append((hash, action, str(ind)))
-            for hash, action, ind in menu: Download().action('action=setprio&hash=%s&p=%s&f=%s' % (hash, action, ind))
+            for hash, action, ind in menu: Download().setprio_simple(hash, action, ind)
             return
         xbmc.executebuiltin('Container.Refresh')
         return
@@ -692,6 +689,14 @@ def uTorrentBrowser():
             popup.append((Link(i['mode'], i['argv']),title))
         h.item(link, title=unicode(i['title']), popup=popup, popup_replace=True, folder=folder)
 
+def torrent_dir():
+    KB = xbmc.Keyboard()
+    KB.setHeading(__language__(30153))
+    KB.setDefault(__settings__.getSetting("torrent_dir"))
+    KB.doModal()
+    if (KB.isConfirmed()):
+        __settings__.setSetting("torrent_dir", KB.getText())
+
 class PluginStatus():
     def __init__(self):
         self.patchfiles=[('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
@@ -710,7 +715,7 @@ class PluginStatus():
         self.torrenterstatus=self.translate[self.status['torrenterstatus']]
         self.myshows=self.translate[self.status['myshows']]
         self.lostfilm=self.translate[self.status['lostfilm']]
-        self.search={'vkstatus':'VK-xbmc', 'torrenterstatus':'Torrenter', 'myshows':'MyShows.ru (Service)'}
+        self.search={'vkstatus':'VK-xbmc', 'torrenterstatus':'Torrenter', 'myshows':'MyShows.ru (Service)', 'lostfilm':'Lostfilm'}
 
     def menu(self):
         try:
@@ -722,7 +727,7 @@ class PluginStatus():
         from net import Download
 
         socket.setdefaulttimeout(3)
-        if Download().action('action=getsettings'):
+        if Download().list():
             utorrentstatus=unicode(__language__(30147))
         else:
             utorrentstatus=unicode(__language__(30148))
@@ -751,6 +756,8 @@ class PluginStatus():
                 text2='Engine at http://torrentstream.org/'
             elif action=='about':
                 text=unicode(__language__(30260))
+            elif action=='torrent_dir':
+                return torrent_dir()
             if action not in ['tscheck', 'torrenterstatus', 'utorrentstatus']:
                 if text!=unicode(__language__(30257)):
                     text2=unicode(__language__(30261))
@@ -771,6 +778,7 @@ class PluginStatus():
               {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
               {"title":'plugin.video.LostFilm: %s' % self.lostfilm  ,"mode":"61",   "argv":{'action':'lostfilm'}},
               {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
+              {"title":__language__(30153)  ,"mode":"61",   "argv":{'action':'torrent_dir'}},
               {"title":__language__(30145) + " (v. " +__version__ +")"  ,"mode":"61",   "argv":{'action':'about'}}]
 
         for i in menu:
@@ -918,7 +926,7 @@ class RateShow():
                                 ratedict[i]=[self.watched_jdata[j]['rating']]
             #Debug('[ratedict]:'+str(ratedict))
             for i in ratedict:
-                ratedict[i]=round(float(sum(ratedict[i]))/len(ratedict[i]),2)
+                ratedict[i]=(round(float(sum(ratedict[i]))/len(ratedict[i]),2),len(ratedict[i]))
             #Debug('[ratedict]:'+str(ratedict))
         else:
             ratedict={}
@@ -936,7 +944,7 @@ class RateShow():
                 ratings.append(self.watched_jdata[id]['rating'])
                 if id in self.list[str(seasonNumber)]:
                     seasonratings.append(self.watched_jdata[id]['rating'])
-        Debug('ratings:'+str(ratings)+'; seasonratings:'+str(seasonratings))
+        #Debug('ratings:'+str(ratings)+'; seasonratings:'+str(seasonratings))
         if len(ratings)>0:
             rating=round(float(sum(ratings))/len(ratings),2)
         else: rating=0
@@ -957,5 +965,22 @@ class RateShow():
                     listSE[str(jdata['episodes'][id]['seasonNumber'])]=[id]
                 if jdata['episodes'][id]['seasonNumber']>seasonNumber:
                     seasonNumber=jdata['episodes'][id]['seasonNumber']
-        Debug('[listSE] '+str(listSE)+str(seasonNumber))
+        #Debug('[listSE] '+str(listSE)+str(seasonNumber))
         return listSE, seasonNumber
+
+def isRemoteTorr():
+    localhost=['127.0.0.1', '0.0.0.0', 'localhost']
+    if __settings__.getSetting("torrent")=='0':
+        if __settings__.getSetting("torrent_utorrent_host") not in localhost:
+            Debug('[isRemoteTorr]: uTorrent is Remote!')
+            return True
+    elif __settings__.getSetting("torrent")=='1':
+        if __settings__.getSetting("torrent_transmission_host") not in localhost:
+            Debug('[isRemoteTorr]: Transmission is Remote!')
+            return True
+
+def season_banner(banners, season):
+    import random
+    season_banners = [banner for banner in banners if banner["bannertype"] == "season" and int(banner["season"]) == season]
+    if len(season_banners)>0:
+        return season_banners[random.randint(0, len(season_banners)-1)]["bannerpath"]
