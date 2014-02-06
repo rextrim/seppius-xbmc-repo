@@ -3,12 +3,19 @@
 
 import xbmc
 import xbmcaddon
-
+import cPickle
 import defines
+import os
+
+#from ACEStream.Core.Utilities.TSCrypto import AES_encrypt, AES_decrypt, m2_AES_encrypt, m2_AES_decrypt
 
 #defines.showMessage('Start plugin')
 
 import mainform 
+
+def AES_decrypt(data, key):
+        aes = AES.new(key, AES.MODE_CFB)
+        return aes.decrypt(data)
 
 if __name__ == '__main__':
     if not defines.ADDON.getSetting('skin'):

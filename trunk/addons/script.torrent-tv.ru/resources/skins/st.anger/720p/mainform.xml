@@ -261,17 +261,29 @@
           <width>26</width>
           <height>26</height>
           <onleft>200</onleft>
-          <onright>204</onright>
+          <onright>209</onright>
           <onup>50</onup>
           <texturefocus>fullscreenfocus.png</texturefocus>
           <texturenofocus>fullscreen.png</texturenofocus>
           <visible>Player.HasVideo</visible>
         </control>
+        <control type="button" id="209">
+          <description>Show Window Information</description>
+          <posx>110</posx>
+          <posy>590</posy>
+          <width>26</width>
+          <height>26</height>
+          <onleft>208</onleft>
+          <onright>204</onright>
+          <visible>true</visible>
+          <texturefocus>infofocus.png</texturefocus>
+          <texturenofocus>infonofocus.png</texturenofocus>
+        </control>
         <description>Info</description>
         <control type="image" id="1111">
           <posx>22</posx>
           <posy>615</posy>
-          <width>100</width>
+          <width>110</width>
           <height>100</height>
           <visible>true</visible>
           <texture>unkchannel.jpg</texture>
@@ -279,7 +291,7 @@
         </control>
         <control type="label" id = "109">
           <description>Current EPG</description>
-          <posx>140</posx>
+          <posx>145</posx>
           <posy>590</posy>
 	        <width>1000</width>
           <label>Нет программы</label>
@@ -290,7 +302,7 @@
         </control>
         <control type="label" id ="112">
           <description>Next EPG1</description>
-          <posx>140</posx>
+          <posx>145</posx>
           <posy>627</posy>
           <align>left</align>
           <aligny>top</aligny>
@@ -301,7 +313,7 @@
         </control>
         <control type="label" id ="113">
           <description>Next EPG2</description>
-          <posx>140</posx>
+          <posx>145</posx>
           <posy>647</posy>
           <align>left</align>
           <aligny>top</aligny>
@@ -312,7 +324,7 @@
         </control>
         <control type="label" id ="114">
           <description>Next EPG3</description>
-          <posx>140</posx>
+          <posx>145</posx>
           <posy>667</posy>
           <align>left</align>
           <aligny>top</aligny>
@@ -323,7 +335,7 @@
         </control>
         <control type="progress" id ="110">
           <description>Progress EGP</description>
-          <posx>135</posx>
+          <posx>140</posx>
           <posy>615</posy>
           <visible>true</visible>
           <colordiffuse>88FFFFFF</colordiffuse>

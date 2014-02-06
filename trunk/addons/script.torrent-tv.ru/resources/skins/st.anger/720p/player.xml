@@ -44,7 +44,7 @@
             <posy>100</posy>
             <width>30</width>
             <height>30</height>
-            <onleft>207</onleft>
+            <onleft>209</onleft>
             <onright>200</onright>
             <texturefocus>pausefocus.png</texturefocus>
             <texturenofocus>pause.png</texturenofocus>
@@ -64,6 +64,7 @@
             <texturenofocus>stop.png</texturenofocus>
             <onclick>XBMC.PlayerControl(Stop)</onclick>
           </control>
+          
           <control type="button" id="205">
             <description>VIDEO SETTINGS</description>
             <posx>235</posx>
@@ -107,11 +108,25 @@
             <width>30</width>
             <height>30</height>
             <onleft>207</onleft>
-            <onright>204</onright>
+            <onright>209</onright>
             <texturefocus>fullscreenfocus.png</texturefocus>
             <texturenofocus>fullscreen.png</texturenofocus>
             <onclick>Action(FullScreen)</onclick>
           </control>
+
+          <control type="button" id="209">
+            <description>Show Window Information</description>
+            <posx>420</posx>
+            <posy>100</posy>
+            <width>30</width>
+            <height>30</height>
+            <onleft>208</onleft>
+            <onright>204</onright>
+            <visible>true</visible>
+            <texturefocus>infofocus.png</texturefocus>
+            <texturenofocus>infonofocus.png</texturenofocus>
+          </control>
+          
           <control type="image" id="202">
             <posx>20</posx>
             <posy>30</posy>

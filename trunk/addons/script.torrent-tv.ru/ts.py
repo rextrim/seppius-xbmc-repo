@@ -361,6 +361,12 @@ class TSengine(xbmc.Player):
                 elif _descr[0] == 'check':
                     LogToXBMC('showState: Проверка %s' % _descr[1])
                     self.parent.showStatus('Проверка %s' % _descr[1])
+                elif _descr[0] == 'dl':
+                    self.parent.showInfoStatus('Total:%s DL:%s UL:%s' % (_descr[1], _descr[3], _descr[5]))
+                elif _descr[0] == 'buf':
+                    self.parent.showInfoStatus('Buf:%s DL:%s UL:%s' % (_descr[1], _descr[5], _descr[7]))
+                else:
+                    self.parent.showInfoStatus('%s' % _params)
         elif state.getType() == TSMessage.EVENT:
             if state.getParams() == 'getuserdata':
                 self.sendCommand('USERDATA [{"gender": %s}, {"age": %s}]' % (int(defines.ADDON.getSetting('gender')) + 1, int(defines.ADDON.getSetting('age')) + 1))
@@ -381,7 +387,8 @@ class TSengine(xbmc.Player):
             spons = ' 0 0 0'
         comm='START '+self.mode+ ' ' + self.torrent + ' '+ str(index) + spons
         LogToXBMC("Запуск торрента")
-        self.tsstop()
+        self.stop()
+        xbmc.sleep(4)
         self.sendCommand(comm)
         if self.parent: self.parent.showStatus("Запуск торрента")
         self.Wait(TSMessage.START)
@@ -504,8 +511,8 @@ class TSengine(xbmc.Player):
     def tsstop(self):
         self.sendCommand('STOP')
         self.playing = False
-        self.stop()
         self.thr.active = False
+        self.thr.join()
         self.last_error = None
         self.paused = False
 

@@ -31,6 +31,7 @@ class MyPlayer(xbmcgui.WindowXML):
     CONTROL_ICON_ID = 202
     CONTROL_WINDOW_ID = 203
     CONTROL_BUTTON_PAUSE = 204
+    CONTROL_BUTTON_INFOWIN = 209
     CONTROL_BUTTON_STOP = 200
     ACTION_RBC = 101
 
@@ -116,6 +117,9 @@ class MyPlayer(xbmcgui.WindowXML):
             return
         jdata = json.loads(data);
         print jdata
+        if not jdata["success"]:
+            self.parent.showStatus("Канал временно не доступен")
+            return
         if jdata["success"] == 0:
             self.parent.showStatus(data["error"])
             return
@@ -184,3 +188,5 @@ class MyPlayer(xbmcgui.WindowXML):
     def onClick(self, controlID):
         if controlID == MyPlayer.CONTROL_BUTTON_STOP:
             self.close()
+        if controlID == self.CONTROL_BUTTON_INFOWIN:
+            self.parent.showInfoWindow()

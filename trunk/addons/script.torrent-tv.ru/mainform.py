@@ -14,8 +14,10 @@ from ts import TSengine as tsengine
 from player import MyPlayer
 from adswnd import AdsForm
 from menu import MenuForm
+from infoform import InfoForm
 from dateform import DateForm
 from datetime import datetime
+from okdialog import OkDialog
 
 import defines
 
@@ -60,6 +62,7 @@ class WMainForm(xbmcgui.WindowXML):
     CONTROL_LIST = 50
     PANEL_ADS = 105
     PROGRESS_BAR = 110
+    BTN_INFO = 209
     
     CHN_TYPE_FAVOURITE = 'Избранное'
     CHN_TYPE_TRANSLATION = 'Трансляции'
@@ -89,6 +92,8 @@ class WMainForm(xbmcgui.WindowXML):
         self.epg = {}
         self.selitem_id = -1
         self.playditem = -1
+        self.user = None
+        self.infoform = None
     
     def initLists(self):
         self.category = {}
@@ -102,6 +107,8 @@ class WMainForm(xbmcgui.WindowXML):
         if jdata['success'] == 0:
             self.showStatus(jdata['error'])
             return
+        
+        
         for cat in jdata["categories"]:
             if not self.category.has_key(cat["id"]):
                 self.category[cat["id"]] = { "name": cat["name"], "channels": [] }
@@ -186,6 +193,9 @@ class WMainForm(xbmcgui.WindowXML):
             if jdata['success'] == 0:
                 self.showStatus(jdata['error'])
                 return
+
+            self.user = {"login" : defines.ADDON.getSetting('login'), "ballance" : jdata["ballance"]}
+            
             self.session = jdata['session']
             self.updateList()
             #li = xbmcgui.ListItem('Test')
@@ -195,8 +205,18 @@ class WMainForm(xbmcgui.WindowXML):
             #li.setProperty('icon', '')
             #self.translation.append(li)
             
+            thr = MyThread(self.checkPort, defines.ADDON.getSetting("outport"))
+            thr.start()
+
         except Exception, e:
             LogToXBMC('OnInit: %s' % e, 2)
+
+    def checkPort(self, params):
+        frminfo = InfoForm("inform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        if not frminfo.checkPort(params):
+            dialog = OkDialog("okdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+            dialog.setText("Порт %s закрыт. Для стабильной работы сервиса и трансляций, настоятельно рекомендуется его открыть." % defines.ADDON.getSetting('outport'))
+            dialog.doModal()
 
     def onFocus(self, ControlID):
         if ControlID == 50:
@@ -363,7 +383,20 @@ class WMainForm(xbmcgui.WindowXML):
             
            # xbmc.executebuiltin('SendClick(12345,%s)' % self.seltab)
         elif controlID == WMainForm.BTN_FULLSCREEN:
-            self.player.show()
+            if defines.ADDON.getSetting("winmode") == "true":
+                self.player.show()
+            else:
+                xbmc.executebuiltin("Action(FullScreen)")
+
+        elif controlID == WMainForm.BTN_INFO:
+            self.showInfoWindow()
+            return
+
+    def showInfoWindow(self):
+        self.infoform = InfoForm("inform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        self.infoform.parent = self
+        self.infoform.doModal()
+        self.infoform = None
 
     def showSimpleEpg(self, epg_id = None):
         controlEpg = self.getControl(109)
@@ -479,6 +512,10 @@ class WMainForm(xbmcgui.WindowXML):
     def showStatus(self, str):
         if self.img_progress: self.img_progress.setVisible(True)
         if self.txt_progress: self.txt_progress.setLabel(str)
+        if self.infoform: self.infoform.printASStatus(str)
+
+    def showInfoStatus(self, str):
+        if self.infoform: self.infoform.printASStatus(str)
 
     def hideStatus(self):
         if self.img_progress: self.img_progress.setVisible(False)
