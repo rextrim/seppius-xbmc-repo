@@ -12,6 +12,7 @@ import mimetools
 import json
 import itertools
 
+from utilities import Debug
 _IS_LIBTORRENT = True
 import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -42,7 +43,7 @@ class HTTP:
         
         self.response = HTTPResponse(self.request)
         
-        xbmc.log('XBMCup: HTTP: request: ' + str(self.request), xbmc.LOGDEBUG)
+        #Debug('XBMCup: HTTP: request: ' + str(self.request))
         
         try:
             self._opener()
@@ -378,11 +379,23 @@ class UTorrent:
             res.append((x[0],(int(x[2]*100/x[1])),i,size))
         return res
 
-    def add(self, torrent, dirid):
+    def dirid(self, dirname):
+        if __settings__.getSetting("torrent_save")=='0':
+            dirid=self.listdirs()[1].index(dirname)
+        else:
+            dirname=__settings__.getSetting("torrent_dir")
+            clean=self.listdirs()[1]
+            try:dirid=clean.index(dirname)
+            except:dirid=0
+        return dirid
+
+    def add(self, torrent, dirname):
+        dirid=self.dirid(dirname)
         res = self.action('action=add-file&download_dir='+str(dirid), {'name': 'torrent_file', 'download_dir': str(dirid), 'content-type': 'application/x-bittorrent', 'body': torrent})
         return True if res else None
 
-    def add_url(self, torrent, dirid):
+    def add_url(self, torrent, dirname):
+        dirid=self.dirid(dirname)
         res = self.action('action=add-url&download_dir='+str(dirid)+'&s='+urllib.quote(torrent))
         return True if res else None
 
@@ -395,11 +408,19 @@ class UTorrent:
         i=-1
         for x in obj['files'][1]:
             i+=1
-            if x[3]==2: self.action('action=setprio&hash=%s&p=%s&f=%s' %(id, '0', i))
+            if x[3]==2: self.setprio_simple(id, '0', i)
 
-        res=self.action('action=setprio&hash=%s&p=%s&f=%s' %(id, '3', ind))
+        res=self.setprio_simple(id, '3', ind)
 
         return True if res else None
+
+    def setprio_simple(self, id, prio, ind):
+        obj = self.action('action=setprio&hash=%s&p=%s&f=%s' % (id, prio, ind))
+
+        if not obj or ind==None:
+            return None
+
+        return True if obj else None
 
     def delete(self, id):
         pass
@@ -423,6 +444,10 @@ class UTorrent:
                 return None
             else:
                 return obj
+
+    def action_simple(self, action, id):
+        obj = self.action('action=%s&hash=%s' % (action, id))
+        return True if obj else None
 
     def get_token(self):
         response = self.http.fetch(self.url + 'token.html', auth_username=self.login, auth_password=self.password)
@@ -520,228 +545,300 @@ class UTorrent:
 
         return 'stopped'
 
-class Download(UTorrent):
+class Transmission:
+    def config(self, login, password, host, port, url):
+        self.login = login
+        self.password = password
+
+        self.url = 'http://' + host
+        if port:
+            self.url += ':' + str(port)
+
+        if url[0] != '/':
+            url = '/' + url
+        if url[-1] != '/':
+            url += '/'
+
+        self.url += url
+
+        self.http = HTTP()
+
+        self.token = '0'
+
+    def list(self):
+        obj = self.action({'method': 'torrent-get', 'arguments': {'fields': ['id', 'status', 'name', 'totalSize', 'sizeWhenDone', 'leftUntilDone', 'downloadedEver', 'uploadedEver', 'uploadRatio', 'rateUpload', 'rateDownload', 'eta', 'peersConnected', 'peersFrom', 'addedDate', 'doneDate', 'downloadDir', 'fileStats', 'peersConnected', 'peersGettingFromUs', 'peersSendingToUs']}})
+        if obj is None:
+            return None
+
+        res = []
+        for r in obj['arguments'].get('torrents', []):
+            if len(r['fileStats'])>1:
+               res.append({
+                'id': str(r['id']),
+                'status': self.get_status(r['status']),
+                'name': r['name'],
+                'size': r['totalSize'],
+                'progress': 0 if not r['sizeWhenDone'] else int(100.0 * float(r['sizeWhenDone'] - r['leftUntilDone']) / float(r['sizeWhenDone'])),
+                'download': r['downloadedEver'],
+                'upload': r['uploadedEver'],
+                'upspeed': r['rateUpload'],
+                'downspeed': r['rateDownload'],
+                'ratio': float(r['uploadRatio']),
+                'eta': r['eta'],
+                'peer': r['peersConnected'],
+                'seed': r['peersSendingToUs'],
+                'leech': r['peersGettingFromUs'],
+                'add': r['addedDate'],
+                'finish': r['doneDate'],
+                'dir': os.path.join(r['downloadDir'],r['name'])
+            })
+            else:
+                res.append({
+                    'id': str(r['id']),
+                    'status': self.get_status(r['status']),
+                    'name': r['name'],
+                    'size': r['totalSize'],
+                    'progress': 0 if not r['sizeWhenDone'] else int(100.0 * float(r['sizeWhenDone'] - r['leftUntilDone']) / float(r['sizeWhenDone'])),
+                    'download': r['downloadedEver'],
+                    'upload': r['uploadedEver'],
+                    'upspeed': r['rateUpload'],
+                    'downspeed': r['rateDownload'],
+                    'ratio': float(r['uploadRatio']),
+                    'eta': r['eta'],
+                    'peer': r['peersConnected'],
+                    'seed': r['peersSendingToUs'],
+                    'leech': r['peersGettingFromUs'],
+                    'add': r['addedDate'],
+                    'finish': r['doneDate'],
+                    'dir': r['downloadDir']
+                })
+
+        return res
+
+    def listdirs(self):
+        obj = self.action({'method': 'session-get'})
+        if obj is None:
+            return None
+
+        res = [obj['arguments'].get('download-dir')]
+        Debug('[Transmission][listdirs]: %s' % (str(res)))
+        return res, res
+
+    def listfiles(self, id):
+        obj = self.action({"method":"torrent-get","arguments":{"fields":["id","activityDate","corruptEver","desiredAvailable","downloadedEver","fileStats","haveUnchecked","haveValid","peers","startDate","trackerStats","comment","creator","dateCreated","files","hashString","isPrivate","pieceCount","pieceSize"],
+                                                               "ids":[int(id)]}})['arguments']['torrents'][0]
+        if obj is None:
+            return None
+
+        res=[]
+        i=-1
+
+        lenf=len(obj['files'])
+        for x in obj['files']:
+            i+=1
+            if x['length']>=1024*1024*1024:
+                size=str(x['length']/(1024*1024*1024))+'GB'
+            elif x['length']>=1024*1024:
+                size=str(x['length']/(1024*1024))+'MB'
+            elif x['length']>=1024:
+                size=str(x['length']/1024)+'KB'
+            else:
+                size=str(x['length'])+'B'
+            if lenf>1:
+                x['name']=x['name'].strip('/\\').replace('\\','/')
+                x['name']=x['name'].replace(x['name'].split('/')[0]+'/','')
+            res.append([x['name'],(int(x['bytesCompleted']*100/x['length'])),i,size])
+        return res
+
+    def add(self, torrent, dirname):
+        if self.action({'method': 'torrent-add', 'arguments': {'download-dir': dirname, 'metainfo': base64.b64encode(torrent)}}) is None:
+            return None
+        return True
+
+    def add_url(self, torrent, dirname):
+        if self.action({'method': 'torrent-add', 'arguments': {'download-dir': dirname, 'filename': torrent}}) is None:
+            return None
+        return True
+
+    def delete(self, id):
+        pass
+
+    def setprio(self, id, ind):
+        obj = self.action({"method":"torrent-get","arguments":{"fields":["id","fileStats","files"],
+                                                               "ids":[int(id)]}})['arguments']['torrents'][0]
+        if not obj or ind==None:
+            return None
+
+        inds=[]
+        i=-1
+
+        for x in obj['fileStats']:
+            i+=1
+            if x['wanted']==True and x['priority']==0:
+                inds.append(i)
+
+        if len(inds)>1: self.action({"method":"torrent-set","arguments":{"ids":[int(id)],"priority-high":inds,"files-unwanted":inds}})
+
+        res=self.setprio_simple(id, '3', ind)
+
+        #self.action_simple('start',id)
+
+        return True if res else None
+
+    def setprio_simple(self, id, prio, ind):
+        if ind==None:
+            return None
+
+        res=None
+        inds=[int(ind)]
+
+        if prio=='3':
+            res=self.action({"method":"torrent-set","arguments":{"ids":[int(id)],"priority-high":inds,"files-wanted":inds}})
+        elif prio=='0':
+            res=self.action({"method":"torrent-set","arguments":{"ids":[int(id)],"priority-high":inds,"files-unwanted":inds}})
+
+        return True if res else None
+
+    def action(self, request):
+        try:
+            jsobj = json.dumps(request)
+        except:
+            return None
+        else:
+
+            while True:
+                # пробуем сделать запрос
+                if self.login:
+                    response = self.http.fetch(self.url+'rpc/', method='POST', params=jsobj, headers={'X-Transmission-Session-Id': self.token,'X-Requested-With':'XMLHttpRequest','Content-Type':'charset=UTF-8'}, auth_username=self.login, auth_password=self.password)
+                else:
+                    response = self.http.fetch(self.url+'rpc/', method='POST', params=jsobj, headers={'X-Transmission-Session-Id': self.token,'X-Requested-With':'XMLHttpRequest','Content-Type':'charset=UTF-8'})
+
+                if response.error:
+
+                    # требуется авторизация?
+                    if response.code == 401:
+                        if not self.get_auth():
+                            return None
+
+                    # требуется новый токен?
+                    elif response.code == 409:
+                        if not self.get_token(response.error):
+                            return None
+
+                    else:
+                        return None
+
+                else:
+                    try:
+                        obj = json.loads(response.body)
+                    except:
+                        return None
+                    else:
+                        return obj
+
+    def action_simple(self, action, id):
+        actions={'start':{"method":"torrent-start","arguments":{"ids":[int(id)]}},
+                 'stop':{"method":"torrent-stop","arguments":{"ids":[int(id)]}},
+                 'remove':{"method":"torrent-remove","arguments":{"ids":[int(id)],"delete-local-data":False}},
+                 'removedata':{"method":"torrent-remove","arguments":{"ids":[int(id)],"delete-local-data":True}}}
+        obj = self.action(actions[action])
+        return True if obj else None
+
+    def get_auth(self):
+        response = self.http.fetch(self.url, auth_username=self.login, auth_password=self.password)
+        if response.error:
+            if response.code == 409:
+                return self.get_token(response.error)
+        return False
+
+    def get_token(self, error):
+        token = error.headers.get('x-transmission-session-id')
+        if not token:
+            return False
+        self.token = token
+        return True
+
+    def get_status(self, code):
+        mapping = {
+            0: 'stopped',
+            1: 'check_pending',
+            2: 'checking',
+            3: 'download_pending',
+            4: 'downloading',
+            5: 'seed_pending',
+            6: 'seeding'
+        }
+        return mapping[code]
+
+class Download():
     def __init__(self):
         self.handle()
 
     def handle(self):
         config = self.get_torrent_client()
-        self.config(host=config['host'], port=config['port'], login=config['login'], password=config['password'], url=config['url'])
-        #print(client.list())
+
+        if self.client == 'utorrent':
+            self.client = UTorrent()
+
+        elif self.client == 'transmission':
+            self.client = Transmission()
+
+        self.client.config(host=config['host'], port=config['port'], login=config['login'], password=config['password'], url=config['url'])
+        #print(self.client.list())
         return True
 
     def get_torrent_client(self):
         self.setting=__settings__
-        config = {
-            'host': self.setting.getSetting("torrent_utorrent_host"),
-            'port': self.setting.getSetting("torrent_utorrent_port"),
-            'url': '',
-            'login': self.setting.getSetting("torrent_utorrent_login"),
-            'password': self.setting.getSetting("torrent_utorrent_password")
-        }
+        client=self.setting.getSetting("torrent")
+        config={}
+        if client=='0':
+            self.client='utorrent'
+            config = {
+                'host': self.setting.getSetting("torrent_utorrent_host"),
+                'port': self.setting.getSetting("torrent_utorrent_port"),
+                'url': '',
+                'login': self.setting.getSetting("torrent_utorrent_login"),
+                'password': self.setting.getSetting("torrent_utorrent_password")
+            }
+        elif client=='1':
+            self.client = 'transmission'
+            config = {
+                'host': self.setting.getSetting("torrent_transmission_host"),
+                'port': self.setting.getSetting("torrent_transmission_port"),
+                'url': self.setting.getSetting("torrent_transmission_url"),
+                'login': self.setting.getSetting("torrent_transmission_login"),
+                'password': self.setting.getSetting("torrent_transmission_password")
+            }
 
         return config
 
+    def add(self, torrent, dirname):
+        return self.client.add(torrent, dirname)
 
+    def add_url(self, torrent, dirname):
+        return self.client.add_url(torrent, dirname)
 
+    def list(self):
+        return self.client.list()
 
-# ################################
-#
-#   LIBTORRENT
-#
-# ################################
-"""
-class LibTorrent:
-    def __init__(self):
-        self.is_install = _IS_LIBTORRENT
-    
-    
-    def list(self, torrent, reverse=False):
-        files = [{'id': i, 'name': x.path.split(os.sep)[-1], 'size': x.size} for i, x in enumerate(self._torrent_info(torrent).files())]
-        files.sort(cmp=lambda f1, f2: cmp(f1['name'], f2['name']))
-        if reverse:
-            files.reverse()
-        return files
-        
-    
-    def play(self, torrent, file_id, dirname, seed=None, info=None, notice=False, buffer=45):
-        torrent_info = self._torrent_info(torrent)
-        
-        # length
-        selfile = torrent_info.files()[file_id]
-        self._filename = os.path.join(dirname, selfile.path.decode('utf8'))
-        self._fname = self._filename.split(os.sep.decode('utf8'))[-1].encode('utf8')
-        offset = (buffer+5)*1024*1024 / torrent_info.piece_length()
-        start = selfile.offset / torrent_info.piece_length()
-        end = (selfile.offset + selfile.size) / torrent_info.piece_length()
-        buffer = buffer*1024*1024
-        
-        # start session
-        self._session = libtorrent.session()
-        
-        # start DHT
-        self._session.start_dht()
-        self._session.add_dht_router('router.bittorrent.com', 6881)
-        self._session.add_dht_router('router.utorrent.com', 6881)
-        self._session.add_dht_router('router.bitcomet.com', 6881)
-        self._session.listen_on(6881, 6891)
-        
-        # events
-        self._session.set_alert_mask(libtorrent.alert.category_t.storage_notification)
-        
-        # add torrent
-        if seed is not None:
-            if seed:
-                self._session.set_upload_rate_limit(seed)
-            #self._handle = self._session.add_torrent({'ti': torrent_info, 'save_path': dirname.encode('utf8'), 'paused': False, 'auto_managed': False, 'seed_mode': True})
-            self._handle = self._session.add_torrent({'ti': torrent_info, 'save_path': dirname.encode('utf8')})
-        else:
-            self._handle = self._session.add_torrent({'ti': torrent_info, 'save_path': dirname.encode('utf8')})
-        
-        # low priority
-        for i in range(torrent_info.num_pieces()):
-            self._handle.piece_priority(i, 0)
-        
-        # high priority
-        for i in range(start, start + offset):
-            if i <= end:
-                self._handle.piece_priority(i, 7)
-        
-        # sequential
-        self._handle.set_sequential_download(True)
-        
-        self._stop = False
-        self._complete = False
-        
-        thread.start_new_thread(self._download, (start, end))
-        
-        percent = 0
-        size = 0
-        firstsize = selfile.size if selfile.size < buffer else buffer
-        persize = firstsize/100
-        
-        progress = xbmcgui.DialogProgress()
-        progress.create(u'Please Wait')
-        progress.update(0, self._fname, u'Size: ' + self._human(firstsize) + u' / ' + self._human(selfile.size).strip(), u'Load: ' + self._human(0))
-        
-        while percent < 100:
-            time.sleep(1)
-            size = self._handle.file_progress()[file_id]
-            percent = int(size/persize)
-            progress.update(percent, self._fname, u'Size: ' + self._human(firstsize) + u' / ' + self._human(selfile.size).strip(), u'Load: ' + self._human(size))
-            if progress.iscanceled():
-                progress.close()
-                return self._end()
-        progress.close()
-        
-        if info:
-            info['size'] = selfile.size
-            xbmc.Player().play(self._filename.encode('utf8'), info)
-        else:
-            xbmc.Player().play(self._filename.encode('utf8'))
-        
-        while xbmc.Player().isPlaying():
-            if not self._complete:
-                priorities = self._handle.piece_priorities()
-                status = self._handle.status()
-                download = 0
-                
-                if len(status.pieces):
-                    
-                    for i in range(start, end + 1):
-                        if priorities[i] != 0 and not status.pieces[i]:
-                            download += 1
-                            
-                    for i in range(start, end + 1):
-                        if priorities[i] == 0 and download < offset:
-                            self._handle.piece_priority(i, 1)
-                            download += 1
-                    
-                    for i in range(start, end + 1):
-                        if not status.pieces[i]:
-                            break
-                    else:
-                        self._complete = True
-                        
-                        if notice:
-                            if not isinstance(notice, basestring):
-                                notice = xbmcaddon.Addon(id=sys.argv[0].replace('plugin://', '').replace('/', '')).getAddonInfo('icon')
-                            if notice:
-                                xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % ('Download complete', self._fname, 5000, notice))
-                            else:
-                                xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ('Download complete', self._fname, 5000))
-            
-            time.sleep(1)
-        
-        return self._end()
-    
-    
-    def _end(self):
-        self._stop = True
-        
-        try:
-            self._session.remove_torrent(self._handle)
-        except:
-            pass
-        
-        return self._filename if self._complete else None
-        
-        
-    def _download(self, start, end):
-        cache = {}
-        
-        for i in range(start, end + 1):
-            
-            if i in cache:
-                del cache[i]
-                continue
-            
-            while True:
-                status = self._handle.status()
-                if not status.pieces or status.pieces[i]:
-                    break
-                time.sleep(0.5)
-                if self._stop:
-                    return
-                
-            self._handle.read_piece(i)
-            
-            while True:
-                part = self._session.pop_alert()
-                if isinstance(part, libtorrent.read_piece_alert):
-                    if part.piece == i:
-                        break
-                    else:
-                        cache[part.piece] = part.buffer
-                    break
-                time.sleep(0.5)
-                if self._stop:
-                    return
-            
-            time.sleep(0.1)
-            if self._stop:
-                return
-    
-    
-    def _torrent_info(self, torrent):
-        filename = os.tempnam()
-        file(filename, 'wb').write(torrent)
-        torrent_info = libtorrent.torrent_info(filename)
-        os.unlink(filename)
-        return torrent_info
-    
-    def _human(self, size):
-        human = None
-        for h, f in (('KB', 1024), ('MB', 1024*1024), ('GB', 1024*1024*1024), ('TB', 1024*1024*1024*1024)):
-            if size/f > 0:
-                human = h
-                factor = f
-            else:
-                break
-        if human is None:
-            return (u'%10.1f %s' % (size, u'byte')).replace(u'.0', u'')
-        else:
-            return u'%10.2f %s' % (float(size)/float(factor), human)
-    
+    def listdirs(self):
+        return self.client.listdirs()
 
-    """
+    def listfiles(self, id):
+        return self.client.listfiles(id)
+
+    def add(self, torrent, dirname):
+        return self.client.add(torrent, dirname)
+
+    def delete(self, id):
+        return self.client.delete(id)
+
+    def setprio(self, id, ind):
+        return self.client.setprio(id, ind)
+
+    def setprio_simple(self, id, prio, ind):
+        #Debug('[setprio_simple] '+str((id, prio, ind)))
+        return self.client.setprio_simple(id, prio, ind)
+
+    def action_simple(self, action, id):
+        return self.client.action_simple(action, id)

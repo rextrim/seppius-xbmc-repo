@@ -22,6 +22,7 @@ login=__settings__.getSetting("username")
 ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
+useTVDB=getSettingAsBool('tvdb')
 socket.setdefaulttimeout(60)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
@@ -138,12 +139,12 @@ def Shows(mode):
         pre=prefix(showId=int(showId))
 
         item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
-        info={'title': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating*2, } #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
+        info={'title': title, 'label':title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating*2, 'votes':1, 'year': '', } #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
         try:
-            info['plot']='\r\n'+__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(rating)+'\r\n'
+            info['plot']=__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(rating)+'\r\n'
         except:info['plot']=''
-        item.setInfo( type='Video', infoLabels=info )
         if syncshows: item=syncshows.shows(jdata[showId]['title'], item, info)
+        else: item.setInfo( type='Video', infoLabels=info)
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
@@ -172,18 +173,29 @@ def Seasons(showId):
     if watched_jdata:
         epdict=sortcomma(epdict, watched_jdata)
         ratedict=RateShow(int(showId),watched_jdata).seasonrates()
+
+    info={'label':jdata['title'], 'year':jdata['year']}
+    meta, banners = None, []
+    if syncshows and useTVDB: meta, banners = syncshows.episodes_meta(info)
     for sNumber in seasons:
         pre=prefix(showId=int(showId), seasonId=int(sNumber))
         title=pre+__language__(30138)+' '+str(sNumber)
         stringdata={"showId":int(showId), "seasonId":int(sNumber), "episodeId":None, "id":None}
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str(showId) + '&seasonNumber=' + str(sNumber) + '&mode=25'
         item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage='')
-        if syncshows: item=syncshows.episodes(jdata['title'], item)
         if epdict[str(sNumber)]=='': playcount=1
         else: playcount=0
-        if ratedict.has_key(str(sNumber)): rating=ratedict[str(sNumber)]*2
+        votes=1
+        if ratedict.has_key(str(sNumber)): rating, votes=ratedict[str(sNumber)][0]*2,ratedict[str(sNumber)][1]*2
         else:rating=0
-        item.setInfo( type='Video', infoLabels={'Title': title, 'playcount': playcount, 'rating': rating} )
+        info={'title': title, 'label':jdata['title'], 'season':int(sNumber), 'playcount': playcount, 'rating': rating, 'votes':votes, 'year':jdata['year']}
+        if syncshows:
+            item=syncshows.episodes(jdata['title'], item, info, meta)
+            if banners:
+                banner=season_banner(banners, int(sNumber))
+                if banner: item.setThumbnailImage(banner)
+        else: item.setInfo( type='Video', infoLabels=info )
+
         refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
@@ -199,6 +211,10 @@ def Episodes(showId, seasonNumber):
         saveCheckPoint()
         try:watched_jdata = json.loads(watched_data.get())
         except: watched_jdata=[]
+        fanart=None
+        if syncshows:
+            info={'label':jdata['title'], 'year':jdata['year']}
+            fanart=syncshows.episode_fanart(info)
 
         for id in jdata['episodes']:
             if jdata['episodes'][id]['seasonNumber']==int(seasonNumber):
@@ -228,8 +244,8 @@ def Episodes(showId, seasonNumber):
                                                         'aired': jdata['episodes'][id]['airDate'],
                                                         'plot': __language__(30266)+' '+str(rating),
                                                         'votes': jdata['voted']} )
-                if syncshows: item=syncshows.episodes(jdata['title'], item)
                 stringdata={"showId":int(showId), "episodeId":jdata['episodes'][id]['episodeNumber'], "id":int(id), "seasonId":jdata['episodes'][id]['seasonNumber']}
+                if fanart: item.setProperty('fanart_image', fanart)
                 sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&seasonNumber='+seasonNumber+'&showId='+showId+'&episodeId='+str(jdata['episodes'][id]['episodeNumber'])+'&id=' + str(id) + '&playcount=' + str(playcount) + '&mode=30'
                 refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
                 item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
@@ -340,6 +356,7 @@ def MyScanList():
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
 
 def TopShows(action):
+    xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     saveCheckPoint()
     if action=='all':
         for i in [(__language__(30109),'male'),(__language__(30110),'female'),(__language__(30151),'recomm'),(__language__(30152),'friends')]:
@@ -361,12 +378,12 @@ def TopShows(action):
             title=jdata['title']
 
         item = xbmcgui.ListItem(str(jdata['place'])+'. '+title+' ('+str(jdata['year'])+')', iconImage='DefaultFolder.png', thumbnailImage=str(jdata['image']))
-        item.setInfo( type='Video', infoLabels={'Title': title,
+        item.setInfo( type='Video', infoLabels={'title': title,
                                                 'year': jdata['year'],
                                                 'tvshowtitle': jdata['title'],
                                                 'status': jdata['status'],
                                                 'votes': jdata['voted'],
-                                                'rating': float(jdata['rating'])} )
+                                                'rating': float(jdata['rating'])*2} )
 
         stringdata={"showId":int(jdata['id']), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
@@ -375,34 +392,42 @@ def TopShows(action):
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Recommendations(action):
+    try: syncshows=SyncXBMC()
+    except: syncshows=False
+    xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     saveCheckPoint()
     result=[]
     if action=='recomm':
+        orig_before='                        <p class="description">'
+        orig_after='</p>                    </th>'
+        orig_false='                                            </th>'
         subject=Data(cookie_auth, 'http://myshows.ru/profile/recommendations/').get()
-        reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>', re.DOTALL | re.MULTILINE)
+        reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>', re.DOTALL | re.MULTILINE)
         result = reobj.findall(subject)
     elif action=='friends':
+        orig_before='							<p class="description">'
+        orig_after='</p>						</th>'
+        orig_false='</th>'
         subject=Data(cookie_auth, 'http://myshows.ru/'+login+'/friends/rating').get()
-        reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>', re.DOTALL | re.MULTILINE)
+        reobj = re.compile(r'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>', re.DOTALL | re.MULTILINE)
         result = reobj.findall(subject)
     j=0
     for i in result:
         j+=1
         if action=='recomm':
-            showId,title,rating,recomm=i[0],i[1],i[2],i[3]
+            showId,title,origtitle,rating,recomm=i[0],i[1],i[2],i[3],i[4]
             listtitle=str(j)+'. ['+recomm+'%] '+title
         elif action=='friends':
-            showId,title,rating,friends,recomm=i[0],i[1],i[2],i[3],i[4]
+            showId,title,origtitle,rating,friends,recomm=i[0],i[1],i[2],i[3],i[4],i[5]
             listtitle=str(j)+'. ['+friends+']['+recomm+'%] '+title
-
+        if origtitle==orig_false: origtitle=title
+        else: origtitle=origtitle.replace(orig_before,'').replace(orig_after,'')
 
         rating=float(rating)/10
-
         item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png',)
-        item.setInfo( type='Video', infoLabels={'Title': title,
-                                                'tvshowtitle': title,
-                                                'rating': rating} )
-
+        info={'title': title.decode('utf-8'), 'label':title, 'tvshowtitle': origtitle.decode('utf-8'), 'rating': rating, 'year':''}
+        if syncshows: item=syncshows.shows(title, item, info)
+        else: item.setInfo( type='Video', infoLabels=info )
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + showId + '&mode=20'
@@ -658,12 +683,14 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
               __language__(30315)+'|:|'+sys_url+'5',
               __language__(30303)+'|:|'+sys_url+'1&id=0',
-              __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url]
+              __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url,
+              __language__(30319)+'|:|'+sys_url+'6',]
     elif mode==20:
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30311)+'|:|'+sys_url+'9',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
+              __language__(30319)+'|:|'+sys_url+'6',
               __language__(30315)+'|:|'+sys_url+'5',
               __language__(30310)+'|:|'+sys_url+'201',
               __language__(30318)+'|:|'+sys_url+'71',
@@ -678,6 +705,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
               __language__(30317)+'|:|'+sys_url+'2',
+              __language__(30319)+'|:|'+sys_url+'6',
               __language__(30308)+'|:|'+sys_url+'1'+refresh_url,
               __language__(30318)+'|:|'+sys_url+'71',
               __language__(30310)+'|:|'+sys_url+'201',
@@ -704,8 +732,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
 
 class SyncXBMC():
     def __init__(self):
-        self.menu=self.GetFromXBMC()
-        #print self.xbmc_shows
+        self.menu=None
         self.action=action
         self.jloadshows=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
         if self.jloadshows:
@@ -714,6 +741,12 @@ class SyncXBMC():
         if self.action in ['check']:
             self.match=json.loads(title)
             self.doaction()
+        self.useTVDB=useTVDB
+        if self.useTVDB:
+            from search.scrapers import Scrapers
+            self.TVDB=Scrapers()
+        else:
+            self.menu=self.GetFromXBMC()
 
     def doaction(self):
         if self.action=='check':
@@ -829,18 +862,41 @@ class SyncXBMC():
         if ret!=-1:
             return int(ids[ret])
 
+    def get_menu(self):
+        if self.menu:
+            return self.menu
+        else:
+            return self.GetFromXBMC()
+
     def list(self):
+        self.menu=self.get_menu()
         for i in self.menu:
             item = xbmcgui.ListItem(i['title'], iconImage='DefaultFolder.png', thumbnailImage=i['thumbnail'])
-            #item.setInfo( type='Video', infoLabels=i )
-            #print i
-            #item.setProperty('fanart_image', i['fanart'])
             item=self.shows(i['title'],item)
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=True)
 
     def shows(self, title, item, info=None):
-        if not self.menu:
+        if not self.menu and not self.useTVDB:
             return item
+
+        if self.useTVDB:
+            meta=self.TVDB.scraper('tvdb', {'label':info['title'], 'search':[info['tvshowtitle'],info['title']], 'year':info['year']})
+
+            if not meta:
+                return item
+
+            item=self.itemTVDB(item,meta)
+            try:
+                #print str(meta)
+                meta['info']['title']=info['title']
+                meta['info']['rating']=info['rating']
+                meta['info']['votes']=info['votes']
+                meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')+'\r\n'+info['plot']
+            except:pass
+            item.setInfo(type='Video', infoLabels=meta['info'] )
+            return item
+
+        self.menu=self.get_menu()
         for i in range(len(self.menu)):
             if title in self.menu[i]['title']:
                 item.setProperty('fanart_image', self.menu[i]['fanart'])
@@ -859,23 +915,45 @@ class SyncXBMC():
                     self.menu[i]['title']=info['title']
                     self.menu[i]['playcount']=0
                     self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
-                    #self.menu[i]['VideoResolution']=720
-                try: item.setInfo( type='Video', infoLabels=self.menu[i] )
-                except: pass
-                break
+                    break
+        try: item.setInfo( type='Video', infoLabels=self.menu[i] )
+        except: item.setInfo( type='Video', infoLabels=info)
+
         return item
 
-    def episodes(self, title, item):
-        if not self.menu:
+    def episodes_meta(self, info):
+        meta=self.TVDB.scraper('tvdb', {'label':info['label'], 'search':info['label'], 'year':str(info['year'])})
+        if not meta: return
+        banners=self.TVDB.scraper('tvdb', {'label':info['label'], 'search':info['label'], 'year':str(info['year']), 'season':True})
+        return meta, banners
+
+    def episodes(self, title, item, info, meta=None):
+        if not self.menu and not self.useTVDB:
             return item
+
+        if self.useTVDB and meta:
+            item=self.itemTVDB(item,meta)
+            try:
+                #print str(meta)
+                meta['info']['title']=info['title']
+                meta['info']['rating']=info['rating']
+                meta['info']['votes']=info['votes']
+                meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')+'\r\n'+info['plot']
+            except:pass
+            item.setInfo(type='Video', infoLabels=meta['info'] )
+            return item
+
+        self.menu=self.get_menu()
         for i in range(len(self.menu)):
             if title in self.menu[i]['title']:
                 #Debug('episodes:'+title+' '+str(self.menu[i]['title']))
                 item.setProperty('fanart_image', self.menu[i]['fanart'])
                 break
+        item.setInfo( type='Video', infoLabels=info )
         return item
 
     def episode(self, title, seasonId, episodeNumber):
+        self.menu=self.get_menu()
         if not self.menu:
             return False
         for i in range(len(self.menu)):
@@ -884,6 +962,23 @@ class SyncXBMC():
                     if episode['episode']==episodeNumber and episode['season']==seasonId:
                         return True
         return False
+
+    def episode_fanart(self, info):
+        if self.useTVDB:
+            meta=self.TVDB.scraper('tvdb', {'label':info['label'], 'search':info['label'], 'year':str(info['year'])})
+
+            if not meta:
+                return ''
+            else:
+                return meta['properties']['fanart_image']
+
+        self.menu=self.get_menu()
+        if not self.menu:
+            return ''
+        for i in range(len(self.menu)):
+            if info['title'] in self.menu[i]['title']:
+                return self.menu[i]['fanart']
+        return ''
 
     def GetFromXBMC(self):
         from utilities import xbmcJsonRequest
@@ -916,6 +1011,26 @@ class SyncXBMC():
         self.xbmc_shows = [x for x in shows if x['episodes']]
         return shows
 
+    def itemTVDB(self, item, kwarg):
+        #Debug('[itemTVDB]:meta '+str(kwarg))
+        if 'title' in kwarg and kwarg['title']:
+            item.setLabel(kwarg['title'])
+
+        if 'label' in kwarg and kwarg['label']:
+            item.setLabel2(kwarg['label'])
+
+        if 'icon' in kwarg and kwarg['icon']:
+            item.setIconImage(kwarg['icon'])
+
+        if 'thumbnail' in kwarg and kwarg['thumbnail']:
+            item.setThumbnailImage(kwarg['thumbnail'])
+
+        if 'properties' in kwarg and kwarg['properties']:
+            for key, value in kwarg['properties'].iteritems():
+                item.setProperty(key, str(value))
+
+        return item
+
 def Test():
     #SyncXBMC()
     #RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
@@ -936,7 +1051,18 @@ def Test():
     pass'''
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
-    Rate('24199', '0',None)
+    #Rate('24199', '0',None)
+    from search.scrapers import Scrapers
+    TVDB=Scrapers()
+    meta=TVDB.scraper('tvdb', {'label':u'Friends', 'search':u'Friends', 'year':''})
+    meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')
+    for i in [(u'Friends','friends')]:
+        item = xbmcgui.ListItem(TextBB(i[0], 'b'))
+        item.setInfo(type='Video', infoLabels=meta['info'] )
+        for key, value in meta['properties'].iteritems():
+            item.setProperty(key, value)
+        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str('%s?mode=999' %(sys.argv[0])), listitem=item, isFolder=True)
+    print str(meta)
 
 params = get_params()
 try: apps=get_apps()
@@ -1062,6 +1188,8 @@ elif mode == 100:
     TopShows(action)
 elif mode == 200:
     Change_Status_Show(showId, action, refresh_url)
+elif mode in (206,256,306):
+    xbmc.executebuiltin("Action(Info)")
 elif mode == 250:
     Change_Status_Season(showId, seasonNumber, action, refresh_url)
 elif mode in (251,201,302):

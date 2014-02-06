@@ -39,18 +39,19 @@
         <string id="30036">Never try Add Source if in XBMC Library</string>
         <string id="30037">Torrent XBMC</string>
         <string id="30038">Rate Shows on KinoPoisk.ru</string>
+        <string id="30039">Use TheTVDb.com for images and extra info (high traffic)</string>
 
-        <string id="30039">Old style rate window</string>
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
         <string id="50303">Default</string>
         <string id="50304">Path</string>
         <string id="50305">Create subdirectory for scrapper</string>
-        <string id="50312">Host µTorrent</string>
-        <string id="50313">Port µTorrent</string>
+        <string id="50312">Host</string>
+        <string id="50313">Port</string>
         <string id="50314">URL</string>
-        <string id="50315">Login µTorrent</string>
-        <string id="50316">Password µTorrent</string>
+        <string id="50315">Login</string>
+        <string id="50316">Password</string>
+        <string id="50311">Torrent Client</string>
 
 
 
@@ -108,8 +109,8 @@
         <string id="30150">To be continued...</string>
         <string id="30151">Recommendations</string>
         <string id="30152">Friend's Top</string>
+        <string id="30153">Manual µTorrent Path Edit</string>
 
-        <string id="30153">BTchat search:</string>
         <string id="30154">Root path "./"</string>
         <string id="30155">Search Serialu.net (need patch plugin.video.serialu.net)</string>
         <string id="30156">Input Serialu.net correct show title:</string>
@@ -279,8 +280,8 @@
         <string id="30316">Install Plugin</string>
         <string id="30317">Rate episode</string>
         <string id="30318">Move to Library</string>
+        <string id="30319">Information</string>
 
-        <string id="30319">Show only 'HD' results</string>
         <string id="30320">Personal MyShows.ru list</string>
         <string id="30321">MyShows.ru user</string>
         <string id="30322">MyShows.ru password</string>
