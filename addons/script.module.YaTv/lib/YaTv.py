@@ -458,7 +458,7 @@ def GetChannels(Url):
 			if http == None:
 				return None
 			else:
-				http = http.replace(':false','0')
+				http = http.replace(':false','0').replace(':true',':1')
 				http=eval(http)
 				for channel in http["schedules"]:
 					if xbmc.abortRequested:
@@ -466,7 +466,7 @@ def GetChannels(Url):
 					else:
 						save_cache(channel, channel["channel"]["id"])
 		else:
-			http = http.replace(':false','0')
+			http = http.replace(':false','0').replace(':true',':1')
 			http=eval(http)
 			for channel in http["schedules"]:
 				if xbmc.abortRequested:
@@ -474,7 +474,7 @@ def GetChannels(Url):
 				else:
 					save_cache(channel, channel["channel"]["id"])
 	else:
-		http = http.replace(':false',':0')
+		http = http.replace(':false',':0').replace(':true',':1')
 		http=eval(http)
 		for channel in http["schedules"]:
 			if xbmc.abortRequested:
@@ -507,7 +507,7 @@ def GetChannelsFull(Url):
 			if http == None:
 				return None
 			else:
-				http = http.replace(':false',':0')
+				http = http.replace(':false',':0').replace(':true',':1')
 				http = eval(http.replace("\\/","//"))
 				for channel in http["schedules"]:
 					if xbmc.abortRequested:
@@ -516,7 +516,7 @@ def GetChannelsFull(Url):
 						add_to_db_New(channel["channel"]["id"], channel)
 						xbmc.sleep(250)
 		else:
-			http = http.replace(':false',':0')
+			http = http.replace(':false',':0').replace(':true',':1')
 			http = eval(http.replace("\\/","//"))
 			for channel in http["schedules"]:
 				if xbmc.abortRequested:
@@ -525,7 +525,7 @@ def GetChannelsFull(Url):
 					add_to_db_New(channel["channel"]["id"], channel)
 					xbmc.sleep(250)
 	else:
-		http = http.replace(':false',':0')
+		http = http.replace(':false',':0').replace(':true',':1')
 		http = eval(http.replace("\\/","//"))
 		for channel in http["schedules"]:
 			if xbmc.abortRequested:
