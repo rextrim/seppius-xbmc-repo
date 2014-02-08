@@ -84,10 +84,6 @@ class Scrapers():
 
         if content == 'tvdb':
             return self.scraper_tvdb(item)
-        
-        else:
-            # иначе, используем стандартное отображение
-            return self.default(item)
     
     def scraper_tvdb(self, item):
         scraper = self.scraper_default(item)
@@ -122,7 +118,7 @@ class Scrapers():
         scraper['label'] = name
 
         # для поиска похожих раздач и поддиректорий
-        scraper['search'] = scraper['subdir'] = search[0]
+        #scraper['search'] = scraper['subdir'] = search[0]
 
         item.update(scraper)
         return item

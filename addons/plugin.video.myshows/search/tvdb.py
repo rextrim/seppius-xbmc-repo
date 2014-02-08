@@ -214,8 +214,10 @@ class TvDb:
         
     
     def _search(self, search):
+        i=-1
         for name in search:
-            response = self.http.fetch('http://www.thetvdb.com/api/GetSeries.php?language=ru&seriesname=' + urllib.quote_plus(name.encode('utf8')), headers=self.headers)
+            i+=1
+            response = self.http.fetch('http://www.thetvdb.com/api/GetSeries.php?language=ru&seriesname=' + urllib.quote_plus(name.encode('utf-8','ignore')), headers=self.headers)
             if response.error:
                 return None
         

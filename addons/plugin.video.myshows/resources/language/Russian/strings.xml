@@ -80,8 +80,8 @@
         <string id="30123">%s %s %s дн. (%s ч)</string>
         <string id="30124">Мои Друзья</string>
         <string id="30125">Мои Подписчики</string>
-        <string id="30126">Подписчики %s|:|%s</string>
-        <string id="30127">Друзья %s|:|%s</string>
+        <string id="30126">Подписчики %s</string>
+        <string id="30127">Друзья %s</string>
         <string id="30128">Потратил %s дней</string>
         <string id="30129">Посмотрел %s эпизодов</string>
         <string id="30130">Потратил %s часов</string>
@@ -108,6 +108,8 @@
         <string id="30151">Рекомендации</string>
         <string id="30152">Топ Друзей</string>
         <string id="30153">Вручную изменить папку µTorrent по-умолчанию</string>
+        <string id="30154">Статистика сериалов</string>
+        <string id="30155">Скачать информацию с TVDb.com</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
@@ -222,11 +224,14 @@
         <string id="30509">Обновите Библиотеку XBMC:</string>
         <string id="30510">Ошибка Удаления Папки</string>
         <string id="30511">Папка не пуста, удалить вместе с файлами?</string>
-        <string id="30512">Проверка uTorrent</string>
-        <string id="30513">Хотите %s раздачу в uTorrent?</string>
-        <string id="30514">Найдено на LostFilm.tv (требует патч plugin.video.LostFilm)</string>
+        <string id="30512">Проверка µTorrent</string>
+        <string id="30513">Хотите %s раздачу в µTorrent?</string>
+        <string id="30514">[B]Найдено[/B] на LostFilm.tv (требует патч plugin.video.LostFilm)</string>
         <string id="30515">Установить этот плагин?</string>
         <string id="30516">Установить патч на плагин?</string>
+        <string id="30517">Вы уверены, что хотите скачать информацию о 500 сериалах?</string>
+        <string id="30518">Первый раз это займет 5-10 минут (осторожно, трафик!).</string>
+        <string id="30519">TheTVDb.com</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>

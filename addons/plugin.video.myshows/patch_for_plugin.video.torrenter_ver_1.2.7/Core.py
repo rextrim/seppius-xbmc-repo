@@ -604,7 +604,7 @@ class Core:
                 myshows_lang=myshows_setting.getLocalizedString
                 if silent:
                     order, seeds, title, link, image= filesList[0]
-                    xbmc.executebuiltin('XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&action=download&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId'])))))
+                    xbmc.executebuiltin('XBMC.RunPlugin(%s)' % ('plugin://plugin.video.myshows/?mode=3010&sort=activate&action=silent&stringdata='+urllib.quote_plus('{"filename":"%s", "stype":%s, "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (link, self.jstr(s['stype']), self.jstr(s['showId']), self.jstr(s['seasonId']), self.jstr(s['id']), self.jstr(s['episodeId'])))))
                     return
                 else:
                     for (order, seeds, title, link, image) in filesList:
