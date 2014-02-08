@@ -156,7 +156,10 @@ def StripName(name, list, replace=' '):
 def auth():
     login=__settings__.getSetting("username")
     passwd=__settings__.getSetting("password")
-    url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+md5(passwd).hexdigest()
+    if len(passwd)!=32:
+        __settings__.setSetting("password",md5(passwd).hexdigest())
+        passwd=__settings__.getSetting("password")
+    url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+passwd
     headers = {'User-Agent':'XBMC', 'Content-Type':'application/x-www-form-urlencoded'}
     try:    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
     except urllib2.HTTPError as e:
@@ -927,7 +930,7 @@ class RateShow():
             #Debug('[ratedict]:'+str(ratedict))
             for i in ratedict:
                 ratedict[i]=(round(float(sum(ratedict[i]))/len(ratedict[i]),2),len(ratedict[i]))
-            #Debug('[ratedict]:'+str(ratedict))
+            Debug('[ratedict]:'+str(ratedict))
         else:
             ratedict={}
         return ratedict

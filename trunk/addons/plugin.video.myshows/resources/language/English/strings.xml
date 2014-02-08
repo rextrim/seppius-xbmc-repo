@@ -82,8 +82,8 @@
         <string id="30123">%s %s %s d (%s h)</string>
         <string id="30124">My Friends</string>
         <string id="30125">My Followers</string>
-        <string id="30126">%s's Followers|:|%s</string>
-        <string id="30127">%s's Friends|:|%s</string>
+        <string id="30126">%s's Followers</string>
+        <string id="30127">%s's Friends</string>
         <string id="30128">Wasted %s d</string>
         <string id="30129">Watched %s eps</string>
         <string id="30130">Wasted %s h</string>
@@ -110,9 +110,9 @@
         <string id="30151">Recommendations</string>
         <string id="30152">Friend's Top</string>
         <string id="30153">Manual µTorrent Path Edit</string>
+        <string id="30154">Shows Stats</string>
+        <string id="30155">Download TVDb.com info</string>
 
-        <string id="30154">Root path "./"</string>
-        <string id="30155">Search Serialu.net (need patch plugin.video.serialu.net)</string>
         <string id="30156">Input Serialu.net correct show title:</string>
         <string id="30157">PATCHED</string>
         <string id="30158">NOT PATCHED</string>
@@ -246,10 +246,10 @@
         <string id="30514">Found on LostFilm.tv (need patch plugin.video.LostFilm)</string>
         <string id="30515">Would you like to install this plugin?</string>
         <string id="30516">Would you like to patch plugin?</string>
+        <string id="30517">Are you sure, that you want to download info for 500 shows?</string>
+        <string id="30518">First time it could take 5-10 minutes (high traffic).</string>
+        <string id="30519">TheTVDb.com</string>
 
-        <string id="30517">Add to Favorites</string>
-        <string id="30518">Remove from Favorites</string>
-        <string id="30519">Add to Ignored</string>
         <string id="30520">Remove from Ignored</string>
         <string id="30521">No Friends</string>
         <string id="30522">No Followers</string>

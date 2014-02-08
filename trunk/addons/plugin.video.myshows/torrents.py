@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.8.5"
+__version__ = "1.8.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
