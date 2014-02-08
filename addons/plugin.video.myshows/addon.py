@@ -354,7 +354,7 @@ def MyScanList():
 
 def TopShows(action):
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
-    saveCheckPoint()
+    if action!='tvdb':saveCheckPoint()
     useTVDBtop=getSettingAsBool('tvdbtop')
     if action=='all':
         for i in [(__language__(30109),'male'),(__language__(30110),'female'),(__language__(30151),'recomm'),(__language__(30152),'friends'),(__language__(30155),'tvdb')]:
