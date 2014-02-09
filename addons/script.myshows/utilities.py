@@ -14,13 +14,7 @@ except ImportError:
 # read settings
 __settings__ = xbmcaddon.Addon("script.myshows")
 __language__ = __settings__.getLocalizedString
-try:__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
-except:__myshows__=None
-
-try:
-    debug = __myshows__.getSetting("debug")
-except:
-    debug = __settings__.getSetting("debug")
+debug = __settings__.getSetting("debug")
 
 def Debug(msg, force = False):
 	if(debug == 'true' or force):

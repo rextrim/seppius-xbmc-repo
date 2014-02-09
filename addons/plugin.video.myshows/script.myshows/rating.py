@@ -43,9 +43,14 @@ def rate(rating, media):
         title=media['title'].encode('utf-8')
         year=str(media['year'])
     if kpId and kpId!='None':
-        r=kp.Rate(str(rating),str(kpId), cookie).rateit()
+        r_class=kp.Rate(str(rating),str(kpId), cookie)
+        r=r_class.rateit()
         if r:
             utils.notification('Rated %s OK!' % (str(kpId)),'%s to %s (%s)!' %(str(rating), title, year))
+            folderid=utils.get_string_setting('folderid')
+            if folderid!="" and folderid>-1 and isinstance(int(folderid),int):
+                r_class.moveit(int(folderid))
+
 
 
 

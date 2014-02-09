@@ -47,33 +47,37 @@ class Rate():
     def __init__(self,rate,kpId,cookie):
         self.cookie = cookie
         self.kpId=kpId
-        self.code=self.get_code()
+        self.code, self.token=self.get_code()
         self.rate=rate
+
 
     def get_code(self):
         url = 'http://www.kinopoisk.ru/film/'+str(self.kpId)+'/'
-        headers = {'User-Agent' : USER_AGENT,
-                   'Host' : 'www.kinopoisk.ru',
-                   'Cookie': self.cookie,
-                   'Accept': 'text/html',
-                  }
-
-        req = HTTPRequest(url, headers = headers)
-        data = HTTP().fetch(req)
+        data = self.get_data(url)
 
         reobj = re.compile(r'user_code:\'(.+?)\',')
-        self.code = reobj.findall(str(data.body).decode('cp1251'))[0]
-        return self.code
+        code = reobj.findall(str(data.body).decode('cp1251'))[0]
+        reobj = re.compile(r'token = \'([a-f0-9]+)\';')
+        token = reobj.findall(str(data.body).decode('cp1251'))[0]
+        return code, token
 
     def rateit(self):
         url = 'http://www.kinopoisk.ru/vote.php?film='+str(self.kpId)+'&film_vote='+str(self.rate)+'&c='+self.code
+        data = self.get_data(url)
+        if str(data.body).decode('cp1251')=='Ok':
+            return True
+
+    def moveit(self, folderid):
+        if folderid:
+            url = 'http://www.kinopoisk.ru/handler_mustsee_ajax.php?mode=add_film&id_film='+str(self.kpId)+'&to_folder='+str(folderid)+'&token='+self.token
+            data = self.get_data(url)
+
+    def get_data(self, url):
         headers = {'User-Agent' : USER_AGENT,
                    'Host' : 'www.kinopoisk.ru',
                    'Cookie': self.cookie,
-                   'Accept': 'text/html',
-                  }
-
+                   'Accept': 'text/html'}
         req = HTTPRequest(url, headers = headers)
-        data = HTTP().fetch(req)
-        if str(data.body).decode('cp1251')=='Ok':
-            return True
+        return HTTP().fetch(req)
+
+
