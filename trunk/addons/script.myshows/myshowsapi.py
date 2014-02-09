@@ -61,7 +61,7 @@ class myshowsAPI(object):
             if self.testAccount():
                 Debug("[myshowsAPI] Myshows.ru account '%s' is valid." % self.__username)
         except:
-            pass
+            Debug("[myshowsAPI] Myshows.ru account is NOT valid.")
         login=get_string_setting('login')
         password=get_string_setting('password')
         cookie=get_string_setting('cookie')

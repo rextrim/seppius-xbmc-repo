@@ -15,8 +15,6 @@ except ImportError:
     import json
 # read settings
 __settings__ = xbmcaddon.Addon("script.myshows")
-try:__myshows__ = xbmcaddon.Addon("plugin.video.myshows")
-except:__myshows__=None
 __language__ = __settings__.getLocalizedString
 
 
@@ -292,10 +290,7 @@ class Scrobbler(threading.Thread):
         self.curVideo = None
 
     def check(self):
-        try:
-            scrobbleMinViewTimeOption = float(__myshows__.getSetting("rate_min_view_time"))
-        except:
-            scrobbleMinViewTimeOption = float(__settings__.getSetting("rate_min_view_time"))
+        scrobbleMinViewTimeOption = float(__settings__.getSetting("rate_min_view_time"))
 
         Debug("[Scrobbler] watched: %s / %s, min=%s" % (
             str(self.watchedTime), str(self.totalTime), str(scrobbleMinViewTimeOption)))

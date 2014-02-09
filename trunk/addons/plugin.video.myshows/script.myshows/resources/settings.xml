@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="1010"><!-- General -->
-		<setting id="rate_min_view_time" type="slider" label="Minimum percent watched to scrobble" range="0,5,100" default="75"/>
-        <setting id="login" type="text" label="KinoPoisk.ru Login" default=""  />
-        <setting id="password" type="text" label="KinoPoisk.ru Password" default=""   option="hidden" />
-        <setting id="debug"   type="bool" label="Debug" default="false"/>
+		<setting id="rate_min_view_time" type="slider" label="Минимальный процент просмотра" range="0,5,100" default="75"/>
+        <setting id="login" type="text" label="KinoPoisk.ru Логин" default=""  />
+        <setting id="password" type="text" label="KinoPoisk.ru Пароль" default=""   option="hidden" />
+        <setting id="folderid" type="text" label="Добавить кино в папку с id" default=""  />
+        <setting id="debug"   type="bool" label="Дебаг" default="false"/>
 	</category>
 </settings>
