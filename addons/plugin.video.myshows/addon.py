@@ -585,13 +585,13 @@ def Profile(action, sort='profile'):
                     origtitle=title.encode('utf-8')
                 else:
                     origtitle=origtitle.replace(orig_before,'').replace(orig_after,'')
-                    Debug(origtitle)
+                    #Debug(origtitle)
                 if ruName!='true': title=origtitle
                 title=title.encode('utf-8')
                 rating=float(rating)/10
                 listtitle='[%d] %s' %(int(rating)/2, title)
                 item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png',)
-                info={'title': title, 'label':title, 'tvshowtitle': origtitle, 'rating': rating, 'year':'', 'playcount':int(epwatched), 'episode':int(totalep)}
+                info={'title': title, 'label':title, 'tvshowtitle': origtitle, 'rating': rating, 'year':'', 'playcount':int(totalep)-int(epwatched), 'episode':int(totalep)}
                 if syncshows: item=syncshows.shows(title, item, info)
                 else: item.setInfo( type='Video', infoLabels=info )
                 stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
@@ -737,7 +737,8 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
     elif mode==40:
         menu=[__language__(30300)+'|:|'+sys_url+'0&action=watching'+refresh_url,
               __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
-              __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url]
+              __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
+              __language__(30319)+'|:|'+sys_url+'6']
     elif mode==25 or not sort and mode in (27,28):
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
@@ -922,6 +923,8 @@ class SyncXBMC():
             #Debug('[shows][useTVDB]:'+info['title'])
             try:info['title']=info['title'].decode('utf-8','ignore')
             except:pass
+            try:info['tvshowtitle']=info['tvshowtitle'].decode('utf-8','ignore')
+            except:pass
             meta=self.TVDB.scraper('tvdb', {'label':info['title'], 'search':[info['tvshowtitle'],info['title']], 'year':info['year']})
 
             if not meta:
@@ -929,15 +932,23 @@ class SyncXBMC():
 
             item=self.itemTVDB(item,meta)
             try:
+            #if 1==1:
                 #print str(meta)
-                meta['info']['title']=info['title']
-                meta['info']['rating']=info['rating']
-                meta['info']['votes']=info['votes']
-                meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')+'\r\n'+info['plot']
-                if 'playcount' in info and info['playcount']:
-                    meta['info']['playcount']=1
-                if 'episode' in info and info['episode']:
-                    meta['info']['episode']=1
+                if 'title' in info:
+                    meta['info']['title']=info['title']
+                if 'rating' in info:
+                    meta['info']['rating']=info['rating']
+                if 'votes' in info:
+                    meta['info']['votes']=info['votes']
+                if 'plot' in info:
+                    meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')+'\r\n'+info['plot']
+                elif 'plot' in meta['info'] and meta['info']['plot']:
+                    meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')
+                if 'playcount' in info:
+                    meta['info']['playcount']=info['playcount']
+                if 'episode' in info:
+                    meta['info']['episode']=info['episode']
+                #print str(meta)
 
             except:pass
             item.setInfo(type='Video', infoLabels=meta['info'] )
@@ -981,11 +992,15 @@ class SyncXBMC():
         if self.useTVDB and meta:
             item=self.itemTVDB(item,meta)
             try:
+            #if 1==1:
                 #print str(meta)
                 meta['info']['title']=info['title']
                 meta['info']['rating']=info['rating']
                 meta['info']['votes']=info['votes']
-                meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')+'\r\n'+info['plot']
+                if 'playcount' in info and info['playcount']:
+                    meta['info']['playcount']=info['playcount']
+                if 'plot' in info and info['plot']:
+                    meta['info']['plot']=info['plot']
             except:pass
             item.setInfo(type='Video', infoLabels=meta['info'] )
             return item
