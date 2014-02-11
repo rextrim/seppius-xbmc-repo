@@ -575,12 +575,12 @@ def Profile(action, sort='profile'):
             orig_after=u'</p>            </th>'
             orig_false=u'                            </th>'
             subject=Data(cookie_auth, 'http://myshows.ru/'+action+'/wasted').get().decode('utf-8')
-            reobj = re.compile(r'<span class="status .+?"><a href="http://myshows.ru/view/(\d+)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?.+?<div style="width: (\d+)%"></div>.+?<td>(\d+)</td>.+?<td>(\d+)</td>', re.DOTALL | re.MULTILINE)
+            reobj = re.compile(r'<span class="status .+?"><a href="http://myshows.ru/view/(\d+)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?.+?<div style="width: (\d+)%"></div>.+?<td>\d+</td>.+?<td>(\d+)</td>.+?<td>(.+?)</td>', re.DOTALL | re.MULTILINE)
             result = reobj.findall(subject)
             result=sorted(result, key=lambda x: x[1])
             result=sorted(result, key=lambda x: int(x[3]), reverse=True)
             for i in result:
-                showId,title,origtitle,rating,epwatched,totalep=i[0],i[1],i[2],i[3],i[4],i[5]
+                showId,title,origtitle,rating,totalep,epunwatched=i[0],i[1],i[2],i[3],i[4],i[5]
                 if origtitle==orig_false:
                     origtitle=title.encode('utf-8')
                 else:
@@ -589,9 +589,12 @@ def Profile(action, sort='profile'):
                 if ruName!='true': title=origtitle
                 title=title.encode('utf-8')
                 rating=float(rating)/10
+                epunwatched=epunwatched.replace('<span class="useless">','').replace('</span>','')
+                if int(epunwatched)==0: playcount=1
+                else: playcount=0
                 listtitle='[%d] %s' %(int(rating)/2, title)
                 item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png',)
-                info={'title': title, 'label':title, 'tvshowtitle': origtitle, 'rating': rating, 'year':'', 'playcount':int(totalep)-int(epwatched), 'episode':int(totalep)}
+                info={'title': title, 'label':title, 'tvshowtitle': origtitle, 'rating': rating, 'year':'', 'playcount':playcount, 'episode':int(totalep)}
                 if syncshows: item=syncshows.shows(title, item, info)
                 else: item.setInfo( type='Video', infoLabels=info )
                 stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
@@ -997,7 +1000,7 @@ class SyncXBMC():
                 meta['info']['title']=info['title']
                 meta['info']['rating']=info['rating']
                 meta['info']['votes']=info['votes']
-                if 'playcount' in info and info['playcount']:
+                if 'playcount' in info:
                     meta['info']['playcount']=info['playcount']
                 if 'plot' in info and info['plot']:
                     meta['info']['plot']=info['plot']

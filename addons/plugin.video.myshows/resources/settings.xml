@@ -44,7 +44,6 @@
         <setting id="notification"   type="bool" label="30020" default="true"/>
         <setting id="label"   type="bool" label="30021" default="true"/>
         <setting id="rateandcheck"   type="bool" label="30022" default="true"/>
-        <setting id="rate_min_view_time" type="slider" label="30023" range="0,5,100" default="75"/>
         <setting id="ratekinopoisk"   type="bool" label="30038" default="true"/>
     </category>
 </settings>
