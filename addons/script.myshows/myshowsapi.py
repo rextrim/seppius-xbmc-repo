@@ -70,6 +70,8 @@ class myshowsAPI(object):
             kpLogin=kp.Login(login,password,cookie)
             if kpLogin.testAcc():
                 Debug("[myshowsAPI] KinoPosik.ru account '%s' is valid." % login)
+            else:
+                Debug('[myshowsAPI] KinoPosik.ru: can\'t logon!')
         else:
             Debug('[myshowsAPI] KinoPosik.ru: No login or password!')
 
