@@ -598,7 +598,8 @@ class Core:
                 s=json.loads(json.loads(urllib.unquote_plus(get("sdata"))))
                 if len(filesList)<1:
                     xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=True)
-                    xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=3013')
+                    if not silent:xbmc.executebuiltin('XBMC.ActivateWindow(%s)' % 'Videos,plugin://plugin.video.myshows/?mode=3013')
+                    else: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)'% ("Поиск", "Ничего не найдено :(", "2500"))
                     return
                 myshows_setting=xbmcaddon.Addon(id='plugin.video.myshows')
                 myshows_lang=myshows_setting.getLocalizedString

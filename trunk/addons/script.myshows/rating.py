@@ -50,11 +50,12 @@ def rate(rating, media):
             folderid=utils.get_string_setting('folderid')
             if folderid!="" and folderid>-1 and isinstance(int(folderid),int):
                 r_class.moveit(int(folderid))
+            return 1
 
 
 
 
-def rateMedia(media_type, summary_info, unrate=False, rating=None):
+def rateMedia(media_type, summary_info, unrate=False, rating=None, offline=False):
     xbmc.executebuiltin('Dialog.Close(all, true)')
 
     gui = RatingDialog(
@@ -63,6 +64,7 @@ def rateMedia(media_type, summary_info, unrate=False, rating=None):
         media_type=media_type,
         media=summary_info,
         rating_type='advanced',
+        offline=offline
     )
 
     gui.doModal()
@@ -71,6 +73,8 @@ def rateMedia(media_type, summary_info, unrate=False, rating=None):
 
         if not rating or rating == "unrate":
             return
+        elif offline:
+            WatchedDB().check(str(gui.media), rating)
         else:
             rate(rating, gui.media)
     else:
@@ -109,12 +113,13 @@ class RatingDialog(xbmcgui.WindowXMLDialog):
         11039: 1314
     }
 
-    def __init__(self, xmlFile, resourcePath, forceFallback=False, media_type=None, media=None, rating_type=None, rerate=False):
+    def __init__(self, xmlFile, resourcePath, forceFallback=False, media_type=None, media=None, rating_type=None, rerate=False, offline=False):
         self.media_type = media_type
         self.media = media
         self.rating_type = rating_type
         self.rating = None
         self.rerate = rerate
+        self.offline=offline
 
     def onInit(self):
         self.getControl(10014).setVisible(False)
@@ -122,7 +127,8 @@ class RatingDialog(xbmcgui.WindowXMLDialog):
 
         s = "%s (%s)" % (self.media['title'], self.media['year'])
         self.getControl(10012).setLabel(s)
-        self.getControl(10011).setLabel('KinoPoisk.ru Rate')
+        if self.offline: self.getControl(10011).setLabel('KinoPoisk.ru Rate Offline!')
+        else: self.getControl(10011).setLabel('KinoPoisk.ru Rate')
 
         rateID = 11037
         self.setFocus(self.getControl(rateID))
@@ -142,3 +148,136 @@ class RatingDialog(xbmcgui.WindowXMLDialog):
             self.getControl(10013).setLabel(s)
         else:
             self.getControl(10013).setLabel('')
+
+import time, xbmcvfs, os.path, sys, xbmcgui, ast
+from utilities import get_bool_setting as getSettingAsBool, notification as showMessage
+try:
+    from sqlite3 import dbapi2 as sqlite
+except:
+    from pysqlite2 import dbapi2 as sqlite
+
+__settings__ = xbmcaddon.Addon("script.myshows")
+__language__ = __settings__.getLocalizedString
+
+class WatchedDB:
+    def __init__(self):
+        dirname = xbmc.translatePath('special://temp')
+        for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
+            dirname = os.path.join(dirname, subdir)
+            if not xbmcvfs.exists(dirname):
+                xbmcvfs.mkdir(dirname)
+        self.dbfilename = os.path.join(dirname, 'myshows.db3')
+        if not xbmcvfs.exists(self.dbfilename):
+            creat_db(self.dbfilename)
+        self.dialog = xbmcgui.Dialog()
+
+    def _get(self, id):
+        self._connect()
+        self.where=' where id="%s"' % (id)
+        self.cur.execute('select rating from watched'+self.where)
+        res=self.cur.fetchone()
+        self._close()
+        return res[0] if res else None
+
+    def _get_all(self):
+        self._connect()
+        self.cur.execute('select id, rating from watched order by addtime desc')
+        res = [[x[0],x[1]] for x in self.cur.fetchall()]
+        self._close()
+        return res
+
+    def check(self, id, rating=0):
+        ok1,ok3=None,None
+        db_rating=self._get(id)
+        title=titlesync(id)
+        if getSettingAsBool("silentoffline"):
+            if db_rating==None and rating>=0:
+                showMessage(__language__(30520),__language__(30522) % (str(rating)))
+                ok1=True
+            elif db_rating>=0 and rating!=db_rating:
+                showMessage(__language__(30520),__language__(30523) % (str(rating)))
+                ok3=True
+            elif db_rating!=None and rating==db_rating:
+                showMessage(__language__(30520),__language__(30524) % (str(rating)))
+        else:
+            if db_rating==None and rating>=0:
+                ok1=self.dialog.yesno(__language__(30520),__language__(30525) % (str(rating)), unicode(title))
+            elif db_rating and rating!=db_rating:
+                ok3=self.dialog.yesno(__language__(30520),__language__(30526) % (str(db_rating), str(rating)),unicode(title))
+            elif db_rating==0 and rating!=db_rating:
+                ok3=True
+            elif db_rating!=None and rating==db_rating:
+                showMessage(__language__(30520),__language__(30527) % (str(rating)))
+
+        if ok1:
+            self._add(id, rating)
+            return True
+        if ok3:
+            self._delete(id)
+            self._add(id, rating)
+            return True
+
+    def onaccess(self):
+        self._connect()
+        self.cur.execute('select count(id) from watched')
+        x=self.cur.fetchone()
+        res=int(x[0])
+        self._close()
+        i=0
+
+        if res>0:
+            ok2=self.dialog.yesno(__language__(30521),__language__(30528) % (str(res)), __language__(30529))
+            if ok2:
+                for id,rating in self._get_all():
+                    j=rate(rating, ast.literal_eval(id))
+                    i=i+int(j)
+                    self._delete(id)
+                    showMessage(__language__(30521),__language__(30530) % (i))
+            else:
+                ok2=self.dialog.yesno(__language__(30521),__language__(30531) % (str(res)))
+                if ok2:
+                    for id,rating in self._get_all():
+                        self._delete(id)
+        return res
+
+    def _add(self, id, rating=0):
+        self._connect()
+        self.cur.execute('insert into watched(addtime, rating, id) values(?,?,?)', (int(time.time()), int(rating), id))
+        self.db.commit()
+        self._close()
+
+    def _delete(self, id):
+        self._connect()
+        self.cur.execute('delete from watched where id=("'+id+'")')
+        self.db.commit()
+        self._close()
+
+    def _connect(self):
+        self.db = sqlite.connect(self.dbfilename)
+        self.cur = self.db.cursor()
+
+    def _close(self):
+        self.cur.close()
+        self.db.close()
+
+def titlesync(id):
+    title=id
+    try:
+        jid=ast.literal_eval(id)
+        try:
+            if 'title' in jid and 'year' in jid:
+                title="%s (%s)" % (jid["title"],jid["year"])
+            elif 'title' in jid:
+                title=jid["title"]
+        except:pass
+    except:pass
+    return title
+
+def creat_db(dbfilename):
+    db = sqlite.connect(dbfilename)
+    cur = db.cursor()
+    cur.execute('pragma auto_vacuum=1')
+    cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
+    db.commit()
+    cur.close()
+    db.close()

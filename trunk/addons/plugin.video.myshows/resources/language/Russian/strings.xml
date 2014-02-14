@@ -40,6 +40,8 @@
         <string id="30037">Торрент и XBMC</string>
         <string id="30038">Оценивать сериалы на KinoPoisk.ru</string>
         <string id="30039">Скачивать информацию с TheTVDb.com (острожно, трафик!)</string>
+        <string id="30040">Не спрашивать подтверждение при офлайн оценке\отметке</string>
+        <string id="30041">[B]Отправить офлайн оценки на MyShows.ru[/B]</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -232,6 +234,19 @@
         <string id="30517">Вы уверены, что хотите скачать информацию о 500 сериалах?</string>
         <string id="30518">Первый раз это займет 5-10 минут (осторожно, трафик!).</string>
         <string id="30519">TheTVDb.com</string>
+        <string id="30520">MyShows.ru Offline!</string>
+        <string id="30521">MyShows.ru Online!</string>
+        <string id="30522">Сохранил оценку %s.</string>
+        <string id="30523">Обновил оценку на %s.</string>
+        <string id="30524">Уже было оценено на %s.</string>
+        <string id="30525">Хотите сохранить оценку %s и отправить позже?</string>
+        <string id="30526">Хотите обновить оценку с %s на %s?</string>
+        <string id="30527">Уже было оценино на %s.</string>
+        <string id="30528">У вас %s неотправленных оценок\отметок?</string>
+        <string id="30529">Хотите отправить их сейчас?</string>
+        <string id="30530">%d оценок\отметок было синхронизированно.</string>
+        <string id="30531">Удалить %s оценок\отметок без отправки?</string>
+        <string id="30532">Нет интернетов!</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>

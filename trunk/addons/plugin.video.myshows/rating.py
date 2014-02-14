@@ -25,7 +25,7 @@ focus_labels = {
 	11034: __language__(1319).encode('utf-8', 'ignore'),
 }
 
-def rateMedia(showId, id, rate_item):
+def rateMedia(showId=None, id=None, rate_item=None):
     xbmc.executebuiltin('Dialog.Close(all, true)')
 
     gui = RatingDialog(
@@ -42,21 +42,26 @@ def rateMedia(showId, id, rate_item):
 
 
 class RatingDialog(xbmcgui.WindowXMLDialog):
-    def __init__(self, xmlFile, resourcePath, forceFallback=False, media_type=None, media=None, rating_type=None, showId='None', id='None', rate_item='None'):
+    def __init__(self, xmlFile, resourcePath, forceFallback=False, media_type=None, media=None, rating_type=None,
+                 showId=None, id=None, rate_item=None):
         self.rating = None
         self.showId, self.id, self.rate_item = showId, id, rate_item
 
     def onInit(self):
         self.getControl(10015).setVisible(True)
-        self.title=id2title(self.showId, self.id)
+        if self.showId: self.title=id2title(self.showId, self.id)
+        else: self.title=['None','None']
         if self.id and self.id!='0':
             self.getControl(10011).setLabel(self.rate_item)
             self.getControl(10012).setLabel('%s\n%s' % (self.title[0],self.title[1]))
         else:
             self.getControl(10011).setLabel('%s %s' % (__language__(30303).encode('utf-8', 'ignore'),self.title[0]))
-            rating,seasonNumber,seasonrating,old_rating=RateShow(int(self.showId)).count()
-            if old_rating: self.setFocusId([11030,11031,11032,11033,11034][old_rating-1])
-            self.getControl(10012).setLabel(__language__(1314).encode('utf-8', 'ignore') %(str(rating), seasonNumber, str(seasonrating)))
+            if self.showId:
+                rating,seasonNumber,seasonrating,old_rating=RateShow(int(self.showId)).count()
+                if old_rating: self.setFocusId([11030,11031,11032,11033,11034][old_rating-1])
+                self.getControl(10012).setLabel(__language__(1314).encode('utf-8', 'ignore') % (str(rating), seasonNumber, str(seasonrating)))
+            if not self.showId and self.rate_item:
+                self.getControl(10012).setLabel(self.rate_item.encode('utf-8', 'ignore'))
 
 
     def onClick(self, controlID):

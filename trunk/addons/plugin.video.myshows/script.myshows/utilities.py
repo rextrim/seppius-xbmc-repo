@@ -3,8 +3,6 @@
 
 import xbmc
 import xbmcaddon
-import xbmcgui
-import math
 
 try:
 	import simplejson as json
@@ -24,7 +22,8 @@ def Debug(msg, force = False):
 			print "[myshows] " + msg.encode( "utf-8", "ignore" )
 
 def notification( header, message, time=5000, icon=__settings__.getAddonInfo("icon")):
-	xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i,%s)" % ( header, message, time, icon ) )
+	try:xbmc.executebuiltin( "XBMC.Notification(%s,%s,%i,%s)" % ( header, message, time, icon ) )
+	except:xbmc.executebuiltin('XBMC.Notification("%s", "%s", %i, "%s")'%(header.encode('utf-8'), unicode(message).encode('utf-8'), time, icon))
 
 # helper function to get bool type from settings
 def get_bool_setting(setting):
