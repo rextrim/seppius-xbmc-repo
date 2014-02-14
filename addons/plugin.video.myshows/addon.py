@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.5"
+__version__ = "1.8.7"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -691,6 +691,7 @@ def Rate(showId, id, refresh_url):
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
         Data(cookie_auth, rate_url, refresh_url).get()
         showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
+        WatchedDB().onaccess()
         if getSettingAsBool('ratekinopoisk') and id=='0':
                 jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId).get()
                 if jload:
@@ -701,6 +702,35 @@ def Rate(showId, id, refresh_url):
                     year=jdata['year']
                     kinopoiskId=jdata['kinopoiskId']
                     kinorate(title,year,titleAlt,kinopoiskId)
+        return True
+
+def FakeRate(title):
+    if getSettingAsBool("scrobrate"):
+        ratewindow=__settings__.getSetting("ratewindow")
+        rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
+        if id=='0':
+            rate_item=__language__(30213)
+        else:
+            rate_item=__language__(30214)
+        if ratewindow=='true':
+            dialog = xbmcgui.Dialog()
+            ret = dialog.select(__language__(30215) % rate_item, rate)
+            if ret>-1:
+                ret=int(ret)+1
+        else:
+            rate_item=titlesync(title)
+            ret=rateMedia(None, None, rate_item)
+            if ret: ret=int(ret)
+    else:
+        ret=False
+    if ret>0 and ret<6 or ret==None and not getSettingAsBool("rateandcheck") or ret==False:
+        db=WatchedDB()
+        if ret==None or ret==False: rating=0
+        else:
+            ret=int(ret)-1
+            rating=int(rate[ret])
+        print str(rating)
+        db.check(title,rating)
         return True
 
 def Favorite(id, refresh_url):
@@ -773,16 +803,19 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
     return myshows_dict
 
 class SyncXBMC():
-    def __init__(self):
-        self.menu=None
-        self.action=action
+    def __init__(self, inner=None, rating=None):
+        self.menu,self.rating,self.title=None,None,title
+        if not inner: self.action=action
+        else:
+            self.action='check'
+            self.title=str(inner)
+            self.rating=rating
         self.jloadshows=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
         if self.jloadshows:
             self.jdatashows = json.loads(self.jloadshows)
         else: return
         if self.action in ['check']:
-            self.match=json.loads(title)
-            self.doaction()
+            self.match=json.loads(self.title)
         self.useTVDB=useTVDB
         if self.useTVDB:
             from search.scrapers import Scrapers
@@ -790,7 +823,7 @@ class SyncXBMC():
         else:
             self.menu=self.GetFromXBMC()
 
-    def doaction(self):
+    def doaction(self,action=None):
         if self.action=='check':
             id=None
             showId=None
@@ -822,6 +855,13 @@ class SyncXBMC():
                     Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
                 if id:
+                    if self.rating:
+                        rate_url=('http://api.myshows.ru/profile/episodes/rate/'+str(self.rating)+'/'+str(id))
+                        Data(cookie_auth, rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                    if self.rating or self.rating==0:
+                        status_url='http://api.myshows.ru/profile/episodes/check/'+str(id)
+                        Data(cookie_auth, status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        return 1
                     rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
                     if scrobrate=='true':
                         rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
@@ -959,24 +999,26 @@ class SyncXBMC():
 
         self.menu=self.get_menu()
         for i in range(len(self.menu)):
-            if title in self.menu[i]['title']:
-                item.setProperty('fanart_image', self.menu[i]['fanart'])
+            try:
+                if title in self.menu[i]['title']:
+                    item.setProperty('fanart_image', self.menu[i]['fanart'])
 
-                for studio_info in self.menu[i]['studio']:
-                    try: studio+=', '+studio_info
-                    except: studio=studio_info
-                self.menu[i]['studio']=studio.encode('utf-8')
+                    for studio_info in self.menu[i]['studio']:
+                        try: studio+=', '+studio_info
+                        except: studio=studio_info
+                    self.menu[i]['studio']=studio.encode('utf-8')
 
-                for genre_info in self.menu[i]['genre']:
-                    try: genre+=', '+genre_info
-                    except: genre=genre_info
-                self.menu[i]['genre']=genre.encode('utf-8')
+                    for genre_info in self.menu[i]['genre']:
+                        try: genre+=', '+genre_info
+                        except: genre=genre_info
+                    self.menu[i]['genre']=genre.encode('utf-8')
 
-                if info:
-                    self.menu[i]['title']=info['title']
-                    self.menu[i]['playcount']=0
-                    self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
-                    break
+                    if info:
+                        self.menu[i]['title']=info['title']
+                        self.menu[i]['playcount']=0
+                        self.menu[i]['plot']=info['plot']+self.menu[i]['plot']
+                        break
+            except:pass
         try: item.setInfo( type='Video', infoLabels=self.menu[i] )
         except: item.setInfo( type='Video', infoLabels=info)
 
@@ -1041,8 +1083,10 @@ class SyncXBMC():
         if not self.menu:
             return ''
         for i in range(len(self.menu)):
-            if info['title'] in self.menu[i]['title']:
-                return self.menu[i]['fanart']
+            try:
+                if info['title'] in self.menu[i]['title']:
+                    return self.menu[i]['fanart']
+            except:pass
         return ''
 
     def GetFromXBMC(self):
@@ -1096,6 +1140,111 @@ class SyncXBMC():
 
         return item
 
+class WatchedDB:
+    def __init__(self):
+        dirname = xbmc.translatePath('special://temp')
+        for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
+            dirname = os.path.join(dirname, subdir)
+            if not xbmcvfs.exists(dirname):
+                xbmcvfs.mkdir(dirname)
+        self.dbfilename = os.path.join(dirname, 'data.db3')
+        if not xbmcvfs.exists(self.dbfilename):
+            creat_db(self.dbfilename)
+        self.dialog = xbmcgui.Dialog()
+
+    def _get(self, id):
+        self._connect()
+        self.where=" where id='%s'" % (id.decode('utf-8','ignore'))
+        try:
+            self.cur.execute('select rating from watched'+self.where)
+        except:
+            self.cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
+            self.cur.execute('select rating from watched'+self.where)
+        res=self.cur.fetchone()
+        self._close()
+        return res[0] if res else None
+
+    def _get_all(self):
+        self._connect()
+        self.cur.execute('select id, rating from watched order by addtime desc')
+        res = [[unicode(x[0]).encode('utf-8','ignore'),x[1]] for x in self.cur.fetchall()]
+        self._close()
+        return res
+
+    def check(self, id, rating=0):
+        ok1,ok3=None,None
+        db_rating=self._get(id)
+        title=titlesync(id)
+        if getSettingAsBool("silentoffline"):
+            if db_rating==None and rating>=0:
+                showMessage(__language__(30520),__language__(30522) % (str(rating)))
+                ok1=True
+            elif db_rating>=0 and rating!=db_rating:
+                showMessage(__language__(30520),__language__(30523) % (str(rating)))
+                ok3=True
+            elif db_rating!=None and rating==db_rating:
+                showMessage(__language__(30520),__language__(30524) % (str(rating)))
+        else:
+            if db_rating==None and rating>=0:
+                ok1=self.dialog.yesno(__language__(30520),__language__(30525) % (str(rating)), str(title))
+            elif db_rating and rating!=db_rating:
+                ok3=self.dialog.yesno(__language__(30520),__language__(30526) % (str(db_rating), str(rating)),str(title))
+            elif db_rating==0 and rating!=db_rating:
+                ok3=True
+            elif db_rating!=None and rating==db_rating:
+                showMessage(__language__(30520),__language__(30527) % (str(rating)))
+
+        if ok1:
+            self._add(id, rating)
+            return True
+        if ok3:
+            self._delete(id)
+            self._add(id, rating)
+            return True
+
+    def onaccess(self):
+        self._connect()
+        self.cur.execute('select count(id) from watched')
+        x=self.cur.fetchone()
+        res=int(x[0])
+        self._close()
+        i=0
+
+        if res>0:
+            ok2=self.dialog.yesno(__language__(30521),__language__(30528) % (str(res)), __language__(30529))
+            if ok2:
+                for id,rating in self._get_all():
+                    j=SyncXBMC(id,int(rating)).doaction('check')
+                    i=i+int(j)
+                    self._delete(id)
+                    showMessage(__language__(30521),__language__(30530) % (i))
+            else:
+                ok2=self.dialog.yesno(__language__(30521),__language__(30531) % (str(res)))
+                if ok2:
+                    for id,rating in self._get_all():
+                        self._delete(id)
+        return res
+
+    def _add(self, id, rating=0):
+        self._connect()
+        self.cur.execute('insert into watched(addtime, rating, id) values(?,?,?)', (int(time.time()), int(rating), id.decode('utf-8','ignore')))
+        self.db.commit()
+        self._close()
+
+    def _delete(self, id):
+        self._connect()
+        self.cur.execute("delete from watched where id=('"+id.decode('utf-8','ignore')+"')")
+        self.db.commit()
+        self._close()
+
+    def _connect(self):
+        self.db = sqlite.connect(self.dbfilename)
+        self.cur = self.db.cursor()
+
+    def _close(self):
+        self.cur.close()
+        self.db.close()
+
 def Test():
     #SyncXBMC()
     #RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
@@ -1117,17 +1266,10 @@ def Test():
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
     #Rate('24199', '0',None)
-    from search.scrapers import Scrapers
-    TVDB=Scrapers()
-    meta=TVDB.scraper('tvdb', {'label':u'Friends', 'search':u'Friends', 'year':''})
-    meta['info']['plot']=meta['info']['plot'].replace('&quot;','"')
-    for i in [(u'Friends','friends')]:
-        item = xbmcgui.ListItem(TextBB(i[0], 'b'))
-        item.setInfo(type='Video', infoLabels=meta['info'] )
-        for key, value in meta['properties'].iteritems():
-            item.setProperty(key, value)
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str('%s?mode=999' %(sys.argv[0])), listitem=item, isFolder=True)
-    print str(meta)
+    title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
+    title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
+    FakeRate(title)
+    WatchedDB().onaccess()
 
 params = get_params()
 try: apps=get_apps()
@@ -1241,7 +1383,19 @@ elif mode == 61:
 elif mode == 62:
     ExtraFunction()
 elif mode == 70:
-    SyncXBMC()
+    #SyncXBMC()
+    #if 1==0:
+    try:
+        SyncXBMC().doaction(action)
+    except:
+        if action=='check':
+            FakeRate(title)
+elif mode == 71:
+    try:
+        get_data= get_url(cookie_auth, 'http://api.myshows.ru/profile/news/')
+        WatchedDB().onaccess()
+    except:
+        showMessage(__language__(30520),__language__(30532))
 elif mode in (2571,5171,302071,3071):
     MoveToXBMC()
 elif mode == 610:

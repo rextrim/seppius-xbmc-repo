@@ -1079,6 +1079,7 @@ def VKSearch(showId, id):
                   u'%s S%sE%s' % (t, int_xx(s), int_xx(e)),
                   u'%s.S%sE%s' % (t.replace(' ', '.'), int_xx(s), int_xx(e)),
                   u'%s %s %s' % (t, a, et),
+                  u'%s %s' % (t, et),
                   u'%s S%sE%s' % (StripName(t, striplist), int_xx(s), int_xx(e)),
                   u'%s %s' % (StripName(t, striplist), rev_date(a).replace('.', ' ')),
                   unicode(__language__(30205))]

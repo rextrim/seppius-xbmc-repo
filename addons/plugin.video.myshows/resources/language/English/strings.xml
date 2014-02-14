@@ -40,6 +40,8 @@
         <string id="30037">Torrent XBMC</string>
         <string id="30038">Rate Shows on KinoPoisk.ru</string>
         <string id="30039">Use TheTVDb.com for images and extra info (high traffic)</string>
+        <string id="30040">Silent Offline Marks Mode</string>
+        <string id="30041">[B]Send Offline Marks[/B]</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
@@ -249,16 +251,38 @@
         <string id="30517">Are you sure, that you want to download info for 500 shows?</string>
         <string id="30518">First time it could take 5-10 minutes (high traffic).</string>
         <string id="30519">TheTVDb.com</string>
+        <string id="30520">MyShows.ru Offline!</string>
+        <string id="30521">MyShows.ru Online!</string>
+        <string id="30522">Saved rating %s.</string>
+        <string id="30523">Update rate to %s.</string>
+        <string id="30524">Already has been rated %s.</string>
+        <string id="30525">Would you like to save rating %s and sync it later?</string>
+        <string id="30526">Would you like to update your rating %s to %s?</string>
+        <string id="30527">Already has been rated %s.</string>
+        <string id="30528">You have %s unsynced marks?</string>
+        <string id="30529">Would you like to sync it now?</string>
+        <string id="30530">%d marks has been synced.</string>
+        <string id="30531">Would you like to delete %s marks without syncing?</string>
+        <string id="30532">No internet!</string>
 
-        <string id="30520">Remove from Ignored</string>
-        <string id="30521">No Friends</string>
-        <string id="30522">No Followers</string>
-        <string id="30523">Torrent Files:</string>
-        <string id="30524">Search Results:</string>
-        <string id="30525">BTChat passkey is invalid</string>
-        <string id="30526">File does not exist!</string>
-        <string id="30527">Play Source</string>
-        <string id="30528">Delete Source</string>
+        <string id="30533">Directory Files:</string>
+        <string id="30534">Deleted from DB: %s</string>
+        <string id="30535">Sources:</string>
+        <string id="30536">Cache has been cleared!</string>
+        <string id="30537">Can't add to DB: %s</string>
+        <string id="30538">Choose path with files:</string>
+        <string id="30539">Add File</string>
+        <string id="30540">Search VK (need patched xbmc.vk-svoka)</string>
+        <string id="30541">Search LostFilm.tv (need patch plugin.video.LostFilm)</string>
+        <string id="30542">Add .torrent</string>
+        <string id="30543">Back</string>
+        <string id="30544">Add Directory</string>
+        <string id="30545">Add Multiple Files</string>
+        <string id="30546">Add Multiple Files from .torrent</string>
+        <string id="30547">Choose .torrent for multifile add:</string>
+        <string id="30548">Choose directory:</string>
+        <string id="30549">Added %s new sources!</string>
+        <string id="30550">Can't play: %s</string>
 
 ///Context menus
         <string id="30300">Mark as Watching</string>

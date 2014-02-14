@@ -4,10 +4,11 @@
 import xbmc
 import xbmcaddon
 import threading
-import time, urllib
+import urllib, time
+
 
 import utilities
-from utilities import Debug, get_string_setting, set_string_setting
+from utilities import Debug, get_string_setting, set_string_setting, get_bool_setting as getSettingAsBool, notification as showMessage
 
 try:
     import simplejson as json
@@ -282,10 +283,13 @@ class Scrobbler(threading.Thread):
                 if login!='' and password!='':
                     kpLogin=kp.Login(login,password,cookie)
                 else:
-                    raise Exception('No login or password!')
+                    Debug("No login or password!")
                 if not cookie or not kpLogin.testAcc():
-                    set_string_setting('cookie', kpLogin.get_cookie())
-                rateMedia(self.curVideo['type'], self.curVideo)
+                    try:
+                        set_string_setting('cookie', kpLogin.get_cookie())
+                        rateMedia(self.curVideo['type'], self.curVideo)
+                    except:
+                        rateMedia(self.curVideo['type'], self.curVideo, offline=True)
 
         self.curVideo = None
 
@@ -335,3 +339,4 @@ class Scrobbler(threading.Thread):
 
                         if not forceCheck:
                             self.watching()
+

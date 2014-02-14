@@ -41,6 +41,8 @@ class Login():
         req = HTTPRequest(url, headers = headers)
         data = HTTP().fetch(req)
         if self.login in str(data.body).decode('cp1251'):
+            from rating import WatchedDB
+            WatchedDB().onaccess()
             return True
 
 class Rate():

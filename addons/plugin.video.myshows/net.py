@@ -345,7 +345,7 @@ class UTorrent:
                 'progress': r[4]/10,
                 'download': r[5],
                 'upload': r[6],
-                'ratio': r[7],
+                'ratio': float(r[7])/1000,
                 'upspeed': r[8],
                 'downspeed': r[9],
                 'eta': r[10],

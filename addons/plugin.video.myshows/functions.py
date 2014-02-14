@@ -242,6 +242,7 @@ def creat_db(dbfilename):
     cur.execute('create table sources(addtime integer, filename varchar(32) PRIMARY KEY, showId integer, seasonId integer, episodeId integer, id integer, stype varchar(32))')
     cur.execute('create table cache(addtime integer, url varchar(32))')
     cur.execute('create table scan(addtime integer, filename varchar(32) PRIMARY KEY)')
+    cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
     db.commit()
     cur.close()
     db.close()
@@ -345,7 +346,7 @@ class Data():
 
     def get(self):
         if self.filename:
-            if self.refresh==True:
+            if self.refresh==True or not xbmcvfs.File(self.filename, 'r').size():
                 self.write()
             self.fg = xbmcvfs.File(self.filename, 'r')
             try:self.data = self.fg.read()
@@ -649,7 +650,7 @@ def uTorrentBrowser():
             status=" "
             if data['status'] in ('seed_pending','stopped'): status=TextBB(' [||] ','b')
             elif data['status'] in ('seeding','downloading'): status=TextBB(' [>] ','b')
-            menu.append({"title":'['+str(data['progress'])+'%]'+status+data['name'], "mode":"52", "argv":{'hash':str(data['id'])}})
+            menu.append({"title":'['+str(data['progress'])+'%]'+status+data['name']+' ['+str(data['ratio'])+']', "mode":"52", "argv":{'hash':str(data['id'])}})
     elif not tdir:
         dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
         for name,percent,ind,size in dllist:
@@ -984,6 +985,20 @@ def isRemoteTorr():
 
 def season_banner(banners, season):
     import random
-    season_banners = [banner for banner in banners if banner["bannertype"] == "season" and int(banner["season"]) == season]
+    try:season_banners = [banner for banner in banners if banner["bannertype"] == "season" and int(banner["season"]) == season]
+    except:season_banners=[]
     if len(season_banners)>0:
         return season_banners[random.randint(0, len(season_banners)-1)]["bannerpath"]
+
+def titlesync(id):
+    title=id
+    try:
+        jid=json.loads(id)
+        try:
+            if 'showtitle' in jid and 'season' in jid and 'episode' in jid:
+                title="%s S%02dE%02d" % (jid["showtitle"],jid["season"],jid["episode"])
+            elif 'label' in jid:
+                title=jid["label"]
+        except:pass
+    except:pass
+    return title

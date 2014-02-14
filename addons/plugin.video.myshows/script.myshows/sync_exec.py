@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import xbmcaddon
-import xbmcgui
 import xbmc
 import urllib, sys, json
 

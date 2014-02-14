@@ -6,5 +6,6 @@
         <setting id="password" type="text" label="KinoPoisk.ru Пароль" default=""   option="hidden" />
         <setting id="folderid" type="text" label="Добавить кино в папку с id" default=""  />
         <setting id="debug"   type="bool" label="Дебаг" default="false"/>
+        <setting id="silentoffline"   type="bool" label="30040" default="false"/>
 	</category>
 </settings>

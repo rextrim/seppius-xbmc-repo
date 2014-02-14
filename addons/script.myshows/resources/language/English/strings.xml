@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
+
+   <string id="30520">KinoPoisk.ru Offline!</string>
+   <string id="30521">KinoPoisk.ru Online!</string>
+   <string id="30522">Сохранил оценку %s.</string>
+   <string id="30523">Обновил оценку на %s.</string>
+   <string id="30524">Уже было оценено на %s.</string>
+   <string id="30525">Хотите сохранить оценку %s и отправить позже?</string>
+   <string id="30526">Хотите обновить оценку с %s на %s?</string>
+   <string id="30527">Уже было оценино на %s.</string>
+   <string id="30528">У вас %s неотправленных оценок\отметок?</string>
+   <string id="30529">Хотите отправить их сейчас?</string>
+   <string id="30530">%s оценок\отметок было синхронизированно.</string>
+   <string id="30531">Удалить %s оценок\отметок без отправки?</string>
+   <string id="30532">Нет интернетов!</string>
+
 	<!-- Preferences -->
 	<string id="1010">General</string>
 	<string id="1011">Enable debug mode</string>
