@@ -61,6 +61,7 @@ class RatingDialog(xbmcgui.WindowXMLDialog):
                 if old_rating: self.setFocusId([11030,11031,11032,11033,11034][old_rating-1])
                 self.getControl(10012).setLabel(__language__(1314).encode('utf-8', 'ignore') % (str(rating), seasonNumber, str(seasonrating)))
             if not self.showId and self.rate_item:
+                self.getControl(10011).setLabel(__language__(30520))
                 self.getControl(10012).setLabel(self.rate_item.encode('utf-8', 'ignore'))
 
 

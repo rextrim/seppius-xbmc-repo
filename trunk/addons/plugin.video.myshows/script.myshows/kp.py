@@ -40,10 +40,12 @@ class Login():
 
         req = HTTPRequest(url, headers = headers)
         data = HTTP().fetch(req)
-        if self.login in str(data.body).decode('cp1251'):
-            from rating import WatchedDB
-            WatchedDB().onaccess()
-            return True
+        try:
+            if self.login in str(data.body).decode('cp1251'):
+                from rating import WatchedDB
+                WatchedDB().onaccess()
+                return True
+        except: return False
 
 class Rate():
     def __init__(self,rate,kpId,cookie):

@@ -670,7 +670,7 @@ def Change_Status_Season(showId, seasonNumber, action, refresh_url):
     Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/episodes?'+action+'='+eps_string.rstrip(','), refresh_url).get()
     showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
 
-def Rate(showId, id, refresh_url):
+def Rate(showId, id, refresh_url, selftitle=None):
     ratewindow=__settings__.getSetting("ratewindow")
     rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
     if id=='0':
@@ -689,9 +689,13 @@ def Rate(showId, id, refresh_url):
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
-        Data(cookie_auth, rate_url, refresh_url).get()
-        showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
-        WatchedDB().onaccess()
+        try:
+            Data(cookie_auth, rate_url, refresh_url).get()
+            showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
+            WatchedDB().onaccess()
+        except:
+            WatchedDB().check(selftitle,int(rate[ret]))
+            return False
         if getSettingAsBool('ratekinopoisk') and id=='0':
                 jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId).get()
                 if jload:
@@ -708,13 +712,10 @@ def FakeRate(title):
     if getSettingAsBool("scrobrate"):
         ratewindow=__settings__.getSetting("ratewindow")
         rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
-        if id=='0':
-            rate_item=__language__(30213)
-        else:
-            rate_item=__language__(30214)
+        rate_item=__language__(30520)
         if ratewindow=='true':
             dialog = xbmcgui.Dialog()
-            ret = dialog.select(__language__(30215) % rate_item, rate)
+            ret = dialog.select(rate_item, rate)
             if ret>-1:
                 ret=int(ret)+1
         else:
@@ -729,7 +730,6 @@ def FakeRate(title):
         else:
             ret=int(ret)-1
             rating=int(rate[ret])
-        print str(rating)
         db.check(title,rating)
         return True
 
@@ -864,7 +864,7 @@ class SyncXBMC():
                         return 1
                     rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
                     if scrobrate=='true':
-                        rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                        rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', self.title)
                     else:rateOK=True
                     if rateOK or rateandcheck=='false':
                         if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
