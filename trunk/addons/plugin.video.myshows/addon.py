@@ -826,7 +826,16 @@ class SyncXBMC():
         if self.action=='check':
             id=None
             showId=None
-            if __settings__.getSetting("label")=='true':
+            if self.match and 'showtitle' in self.match:
+                showId=self.showtitle2showId()
+            if self.match and 'date' in self.match and not 'episode' in self.match:
+                id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
+            if showId:
+                if 'season' in self.match and 'episode' in self.match:
+                    Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
+                    id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+            Debug('[doaction][showId]: '+str(showId)+' [doaction][id]: '+str(id))
+            if __settings__.getSetting("label")=='true' and not id:
                 idlist=[]
                 if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
                     self.match['label']=self.match['label'].strip(os.path.dirname(self.match['label'])).encode('utf-8','ignore')
@@ -843,15 +852,9 @@ class SyncXBMC():
                     else:
                         self.match=filename2match(self.match['label'])
                         Debug('[doaction] [filename2match] '+unicode(self.match))
-            if self.match and not showId and 'showtitle' in self.match:
-                try:showId=self.showtitle2showId(self.match['showtitle'], self.match['tvdb_id'])
-                except:showId=self.showtitle2showId(self.match['showtitle'])
-            if self.match and 'date' in self.match and not 'episode' in self.match:
-                id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
-            Debug('[doaction][showId]: '+str(showId)+' [doaction][id]: '+str(id))
             if showId:
                 if not id and 'season' in self.match and 'episode' in self.match:
-                    Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
+                    Debug('[doaction2] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
                 if id:
                     if self.rating:
@@ -872,9 +875,14 @@ class SyncXBMC():
                             xbmc.sleep(500)
                         Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
 
-    def showtitle2showId(self, showtitle, tvdb_id=None):
-        try:showtitle=showtitle.decode('utf-8','ignore')
-        except:pass
+    def showtitle2showId(self):
+        try:showtitle=self.match['showtitle'].decode('utf-8','ignore')
+        except:showtitle=self.match['showtitle']
+        if 'tvdb_id' in self.match:
+            tvdb_id=self.match['tvdb_id']
+        else:
+            tvdb_id=None
+
         for showId in self.jdatashows:
             if showtitle==self.jdatashows[showId]['ruTitle'] or showtitle==self.jdatashows[showId]['title']:
                 return int(showId)
@@ -1262,16 +1270,17 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
-    x={'item': {'title': '\xd0\xa0\xd0\xbe\xd0\xba-\xd0\xb2\xd0\xbe\xd0\xbb\xd0\xbd\xd0\xb0', 'year': '2009', 'titleAlt': 'The Boat That Rocked', 'type': u'movie', 'id': 39}}
-    kinorate(x['item']['title'],x['item']['year'])
+    title={u'tvshowid': 35, u'episode': 19, u'season': 1, 'tvdb_id': u'79044', u'episodeid': 974, u'label': u'Time Begins to Move Again', u'uniqueid': {u'unknown': u'305759'}, 'year': 2005, u'showtitle': u'Honey and Clover'}
+    title=json.dumps(title)
+    #kinorate(x['item']['title'],x['item']['year'])
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
     #Rate('24199', '0',None)
-    title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
-    title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    title='{"tvshowid": 43, "episode": 13, "season": 5, "tvdb_id": "108611", "episodeid": 705, "label": "Diamond Exchange", "uniqueid": {"unknown": "4669451"}, "year": 0, "showtitle": "\u0411\u0435\u043b\u044b\u0439 \u0432\u043e\u0440\u043e\u0442\u043d\u0438\u0447\u043e\u043a"}'
+    #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
+    #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
+    #title='{"tvshowid": 43, "episode": 13, "season": 5, "tvdb_id": "108611", "episodeid": 705, "label": "Diamond Exchange", "uniqueid": {"unknown": "4669451"}, "year": 0, "showtitle": "\u0411\u0435\u043b\u044b\u0439 \u0432\u043e\u0440\u043e\u0442\u043d\u0438\u0447\u043e\u043a"}'
     action='check'
-    #SyncXBMC(title).doaction(action)
+    SyncXBMC(title).doaction(action)
     #FakeRate(title)
     #WatchedDB().onaccess()
 
