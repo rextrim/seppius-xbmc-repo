@@ -728,8 +728,7 @@ def FakeRate(title):
         db=WatchedDB()
         if ret==None or ret==False: rating=0
         else:
-            ret=int(ret)-1
-            rating=int(rate[ret])
+            rating=int(rate[int(ret)-1])
         db.check(title,rating)
         return True
 
@@ -1263,13 +1262,18 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
+    x={'item': {'title': '\xd0\xa0\xd0\xbe\xd0\xba-\xd0\xb2\xd0\xbe\xd0\xbb\xd0\xbd\xd0\xb0', 'year': '2009', 'titleAlt': 'The Boat That Rocked', 'type': u'movie', 'id': 39}}
+    kinorate(x['item']['title'],x['item']['year'])
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
     #Rate('24199', '0',None)
     title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
     title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    FakeRate(title)
-    WatchedDB().onaccess()
+    title='{"tvshowid": 43, "episode": 13, "season": 5, "tvdb_id": "108611", "episodeid": 705, "label": "Diamond Exchange", "uniqueid": {"unknown": "4669451"}, "year": 0, "showtitle": "\u0411\u0435\u043b\u044b\u0439 \u0432\u043e\u0440\u043e\u0442\u043d\u0438\u0447\u043e\u043a"}'
+    action='check'
+    #SyncXBMC(title).doaction(action)
+    #FakeRate(title)
+    #WatchedDB().onaccess()
 
 params = get_params()
 try: apps=get_apps()

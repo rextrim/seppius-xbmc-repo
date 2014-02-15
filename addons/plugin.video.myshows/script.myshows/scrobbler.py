@@ -197,7 +197,7 @@ class Scrobbler(threading.Thread):
                                 req = {"jsonrpc": "2.0", "id": 1, "method": "VideoLibrary.SetTVShowDetails",
                                        "params": {"tvshowid": self.curVideoInfo['tvshowid'],
                                                   "imdbnumber": self.curVideoInfo['tvdb_id']}}
-                                utils.xbmcJsonRequest(req)
+                                utilities.xbmcJsonRequest(req)
                                 # get summary data now if we are rating this episode
                             if utilities.getSettingAsBool('rate_episode') and self.traktSummaryInfo is None:
                                 self.traktSummaryInfo = self.traktapi.getEpisodeSummary(self.curVideoInfo['tvdb_id'],
@@ -287,9 +287,11 @@ class Scrobbler(threading.Thread):
                 if not cookie or not kpLogin.testAcc():
                     try:
                         set_string_setting('cookie', kpLogin.get_cookie())
-                        rateMedia(self.curVideo['type'], self.curVideo)
                     except:
                         rateMedia(self.curVideo['type'], self.curVideo, offline=True)
+                        return
+                if get_string_setting('cookie'):
+                    rateMedia(self.curVideo['type'], self.curVideo)
 
         self.curVideo = None
 

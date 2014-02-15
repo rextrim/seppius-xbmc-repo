@@ -207,6 +207,8 @@ def get_url(cookie, url):
             if debug=='true': showMessage('HTTP Error', str(e.code), forced=True)
             xbmc.sleep(2000)
             return
+    except:
+        return False
 
 def get_html_source(url):
     class AppURLopener(urllib.FancyURLopener):
@@ -363,15 +365,15 @@ class Data():
     def write(self):
         try: CacheDB(self.url).delete()
         except: pass
-        self.fw = xbmcvfs.File(self.filename, 'w')
-        try:self.data=get_url(self.cookie, self.url)
-        except:
-            self.fg.close()
-            self.fw = open(self.filename, 'w')
-            self.data=get_url(self.cookie, self.url)
-        self.fw.write(self.data)
-        self.fw.close()
-        CacheDB(self.url).add()
+        self.data=get_url(self.cookie, self.url)
+        if self.data:
+            try:
+                self.fw = xbmcvfs.File(self.filename, 'w')
+            except:
+                self.fw = open(self.filename, 'w')
+            self.fw.write(self.data)
+            self.fw.close()
+            CacheDB(self.url).add()
 
     def url2filename(self, url):
         self.files=[r'shows.txt', r'showId_%s.txt', r'watched_showId_%s.txt', r'action_%s.txt']
