@@ -900,8 +900,8 @@ def kinorate(title,year,titleAlt=None,kinopoiskId=None):
         match['titleAlt']=titleAlt.replace('"','')
     try:
         xbmc.executebuiltin(
-                    'xbmc.RunScript('+xbmcaddon.Addon("script.myshows").getAddonInfo("path")+
-                    '\sync_exec.py,'+json.dumps(match).replace(',','|:|')+')')
+                    'xbmc.RunScript('+xbmcaddon.Addon("script.myshows").getAddonInfo("path")+os.sep+
+                    'sync_exec.py,'+json.dumps(match).replace(',','|:|')+')')
     except: return False
 
 class RateShow():
