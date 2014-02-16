@@ -804,6 +804,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
 class SyncXBMC():
     def __init__(self, inner=None, rating=None):
         self.menu,self.rating,self.title=None,None,title
+        self.useTVDB=useTVDB
         if not inner: self.action=action
         else:
             self.action='check'
@@ -815,7 +816,6 @@ class SyncXBMC():
         else: return
         if self.action in ['check']:
             self.match=json.loads(self.title)
-        self.useTVDB=useTVDB
         if self.useTVDB:
             from search.scrapers import Scrapers
             self.TVDB=Scrapers()
