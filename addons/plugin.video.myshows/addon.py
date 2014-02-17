@@ -645,8 +645,8 @@ def Change_Status_Episode(id, playcount, refresh_url):
     else:
         if playcount=='0': status_url='http://api.myshows.ru/profile/episodes/check/'+str(id)
         else: status_url='http://api.myshows.ru/profile/episodes/uncheck/'+str(id)
-    Data(cookie_auth, status_url, refresh_url).get()
-    showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
+    ok=Data(cookie_auth, status_url, refresh_url).get()
+    if ok:showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
 
 def Change_Status_Show(showId, action, refresh_url):
     if action=='remove':
@@ -655,11 +655,11 @@ def Change_Status_Show(showId, action, refresh_url):
     else:
         ret=True
     if ret:
-        Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/'+action, refresh_url).get()
-        showMessage(__language__(30208), showId+'/'+action)
+        ok=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/'+action, refresh_url).get()
+        if ok:showMessage(__language__(30208), showId+'/'+action)
 
 def Change_Status_Season(showId, seasonNumber, action, refresh_url):
-    showMessage(__language__(30211), __language__(30212))
+    #showMessage(__language__(30211), __language__(30212))
     data= get_url(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
     eps_string=''
     jdata = json.loads(data)
@@ -667,8 +667,8 @@ def Change_Status_Season(showId, seasonNumber, action, refresh_url):
         sNum=str(jdata['episodes'][id]['seasonNumber'])
         if seasonNumber==sNum:
             eps_string=eps_string+str(id)+','
-    Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/episodes?'+action+'='+eps_string.rstrip(','), refresh_url).get()
-    showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
+    ok=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/episodes?'+action+'='+eps_string.rstrip(','), refresh_url).get()
+    if ok:showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
 
 def Rate(showId, id, refresh_url, selftitle=None):
     ratewindow=__settings__.getSetting("ratewindow")
@@ -689,14 +689,14 @@ def Rate(showId, id, refresh_url, selftitle=None):
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
-        try:
-            Data(cookie_auth, rate_url, refresh_url).get()
+        ok=Data(cookie_auth, rate_url, refresh_url).get()
+        if ok:
             showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
             WatchedDB().onaccess()
-        except:
+        elif selftitle:
             WatchedDB().check(selftitle,int(rate[ret]))
             return False
-        if getSettingAsBool('ratekinopoisk') and id=='0':
+        if getSettingAsBool('ratekinopoisk') and id=='0' and ok:
                 jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId).get()
                 if jload:
                     jdata = json.loads(jload)
@@ -822,7 +822,7 @@ class SyncXBMC():
         else:
             self.menu=self.GetFromXBMC()
 
-    def doaction(self,action=None):
+    def doaction(self):
         if self.action=='check':
             id=None
             showId=None
@@ -867,7 +867,8 @@ class SyncXBMC():
                     rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
                     if scrobrate=='true':
                         rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', self.title)
-                    else:rateOK=True
+                    else:
+                        rateOK=True
                     if rateOK or rateandcheck=='false':
                         if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
                             Debug('[doaction] New show! Marking as watching')
@@ -927,8 +928,8 @@ class SyncXBMC():
             return showId
 
     def getid(self, showId, seasonNumber, episodeId, lable=None):
-        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId))
-        jdata = json.loads(data.get())
+        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+        jdata = json.loads(data)
         if seasonNumber and int(seasonNumber)>0 and episodeId:
             for id in jdata['episodes']:
                 if jdata['episodes'][id]['seasonNumber']==int(seasonNumber) and jdata['episodes'][id]['episodeNumber']==int(episodeId):
@@ -1161,10 +1162,14 @@ class WatchedDB:
 
     def _get(self, id):
         self._connect()
-        self.where=" where id='%s'" % (id.decode('utf-8','ignore'))
+        Debug('[WatchedDB][_get]: Checking '+id)
+        id=id.replace("'","<&amp>").decode('utf-8','ignore')
+        self.where=" where id='%s'" % (id)
+        #if 1==1:
         try:
             self.cur.execute('select rating from watched'+self.where)
         except:
+        #else:
             self.cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
             self.cur.execute('select rating from watched'+self.where)
         res=self.cur.fetchone()
@@ -1174,7 +1179,7 @@ class WatchedDB:
     def _get_all(self):
         self._connect()
         self.cur.execute('select id, rating from watched order by addtime desc')
-        res = [[unicode(x[0]).encode('utf-8','ignore'),x[1]] for x in self.cur.fetchall()]
+        res = [[unicode(x[0]).replace("<&amp>","'").encode('utf-8','ignore'),x[1]] for x in self.cur.fetchall()]
         self._close()
         return res
 
@@ -1201,6 +1206,8 @@ class WatchedDB:
             elif db_rating!=None and rating==db_rating:
                 showMessage(__language__(30520),__language__(30527) % (str(rating)))
 
+        Debug('[WatchedDB][check]: rating: %s DB: %s, ok1: %s, ok3: %s' % (str(rating), str(db_rating), str(ok1), str(ok3)))
+
         if ok1:
             self._add(id, rating)
             return True
@@ -1221,7 +1228,7 @@ class WatchedDB:
             ok2=self.dialog.yesno(__language__(30521),__language__(30528) % (str(res)), __language__(30529))
             if ok2:
                 for id,rating in self._get_all():
-                    j=SyncXBMC(id,int(rating)).doaction('check')
+                    j=SyncXBMC(id,int(rating)).doaction()
                     i=i+int(j)
                     self._delete(id)
                     showMessage(__language__(30521),__language__(30530) % (i))
@@ -1234,13 +1241,16 @@ class WatchedDB:
 
     def _add(self, id, rating=0):
         self._connect()
-        self.cur.execute('insert into watched(addtime, rating, id) values(?,?,?)', (int(time.time()), int(rating), id.decode('utf-8','ignore')))
+        id=id.replace("'","<&amp>").decode('utf-8','ignore')
+        Debug('[WatchedDB][_add]: Adding %s with rate %d' % (id, rating))
+        self.cur.execute('insert into watched(addtime, rating, id) values(?,?,?)', (int(time.time()), int(rating), id))
         self.db.commit()
         self._close()
 
     def _delete(self, id):
         self._connect()
-        self.cur.execute("delete from watched where id=('"+id.decode('utf-8','ignore')+"')")
+        id=id.replace("'","<&amp>").decode('utf-8','ignore')
+        self.cur.execute("delete from watched where id=('"+id+"')")
         self.db.commit()
         self._close()
 
@@ -1270,17 +1280,19 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
-    title={u'tvshowid': 35, u'episode': 19, u'season': 1, 'tvdb_id': u'79044', u'episodeid': 974, u'label': u'Time Begins to Move Again', u'uniqueid': {u'unknown': u'305759'}, 'year': 2005, u'showtitle': u'Honey and Clover'}
-    title=json.dumps(title)
+    #title={u'tvshowid': 35, u'episode': 19, u'season': 1, 'tvdb_id': u'79044', u'episodeid': 974, u'label': u'Time Begins to Move Again', u'uniqueid': {u'unknown': u'305759'}, 'year': 2005, u'showtitle': u'Honey and Clover'}
+    #title=json.dumps(title)
     #kinorate(x['item']['title'],x['item']['year'])
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
     #Rate('24199', '0',None)
     #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
-    #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    #title='{"tvshowid": 43, "episode": 13, "season": 5, "tvdb_id": "108611", "episodeid": 705, "label": "Diamond Exchange", "uniqueid": {"unknown": "4669451"}, "year": 0, "showtitle": "\u0411\u0435\u043b\u044b\u0439 \u0432\u043e\u0440\u043e\u0442\u043d\u0438\u0447\u043e\u043a"}'
-    action='check'
-    SyncXBMC(title).doaction(action)
+    title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
+    #title='''{"tvshowid": 12, "episode": 3, "season": 12, "tvdb_id": "75978", "episodeid": 996, "label": "Quagmire's Quagmire", "uniqueid": {"unknown": "4655100"}, "year": 1999, "showtitle": "Family Guy"}'''
+    try:
+        SyncXBMC(title).doaction()
+    except:
+        FakeRate(title)
     #FakeRate(title)
     #WatchedDB().onaccess()
 
@@ -1399,7 +1411,7 @@ elif mode == 70:
     #SyncXBMC()
     #if 1==0:
     try:
-        SyncXBMC().doaction(action)
+        SyncXBMC(title).doaction()
     except:
         if action=='check':
             FakeRate(title)

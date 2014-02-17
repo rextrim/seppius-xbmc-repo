@@ -238,7 +238,7 @@
 
 <addon id="plugin.audio.teleplus.ru"
        name="[COLOR FF00FF00]Музыка ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="TelePlus.ru">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1125,7 +1125,7 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="[COLOR FFFFFFFF][/COLOR][COLOR FF00AAFF]MyShows.ru[/COLOR]"
-       version="1.8.7e"
+       version="1.8.7f"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1597,7 +1597,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.teleplus.ru"
        name="[COLOR FF00FF00]Фильмы ([/COLOR][COLOR FFFFF000]TelePlus.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="TelePlus.ru">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
