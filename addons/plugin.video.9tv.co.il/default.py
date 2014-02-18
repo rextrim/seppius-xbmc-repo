@@ -130,6 +130,12 @@ def Get_Parameters(params):
 def Get_URL(par):
     if par.genre == 'video':
         url = 'http://9tv.co.il/video/news/'
+    elif par.genre == 'shabat':
+        url = 'http://9tv.co.il/video/shabat/'
+    elif par.genre == 'w_order':
+        url = 'http://9tv.co.il/video/world-order/'
+    elif par.genre == 'contact':
+        url = 'http://9tv.co.il/video/contact/'
     else:
         url = 'http://9tv.co.il'
         html = get_HTML(url)
@@ -290,6 +296,48 @@ def Genre_List(params):
     #--- ACTUAL VIDEO ---------------
     name     = 'Актуальное видео'
     genre_id = 'video'
+
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=MOVIE'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&page=%s'%urllib.quote_plus('1')
+    u += '&genre=%s'%urllib.quote_plus(genre_id)
+    u += '&genre_name=%s'%urllib.quote_plus(name)
+    u += '&url=%s'%urllib.quote_plus('')
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #--- World ORDER ---------------
+    name     = '"Мировой порядок"'
+    genre_id = 'w_order'
+
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=MOVIE'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&page=%s'%urllib.quote_plus('1')
+    u += '&genre=%s'%urllib.quote_plus(genre_id)
+    u += '&genre_name=%s'%urllib.quote_plus(name)
+    u += '&url=%s'%urllib.quote_plus('')
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #--- PROGRAM CONTACT ---------------
+    name     = 'Программа "Контакт"'
+    genre_id = 'contact'
+
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=MOVIE'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&page=%s'%urllib.quote_plus('1')
+    u += '&genre=%s'%urllib.quote_plus(genre_id)
+    u += '&genre_name=%s'%urllib.quote_plus(name)
+    u += '&url=%s'%urllib.quote_plus('')
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #--- SHABAT to SHABAT -------------
+    name     = '"От шабата до шабата"'
+    genre_id = 'shabat'
 
     i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=MOVIE'

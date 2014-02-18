@@ -357,7 +357,7 @@ Audio sources are
 
 <addon id="plugin.video.9tv.co.il"
        name="[COLOR FF00FF00]Девятый канал - Израиль ([/COLOR][COLOR FFFFF000]9tv.co.il[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
