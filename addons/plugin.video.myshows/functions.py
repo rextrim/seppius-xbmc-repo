@@ -194,7 +194,7 @@ def get_url(cookie, url):
     try:
         conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
         array=conn.read()
-        conn.close()
+        if array=='': array=True
         return array
     except urllib2.HTTPError as e:
         if e.code==401:
