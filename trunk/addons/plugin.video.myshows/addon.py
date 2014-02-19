@@ -100,13 +100,20 @@ def Shows(mode):
         jdata = json.loads(jload)
     else: return
 
+    #if mode in(11,12):
+    #    next_data=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/episodes/next/').get())
+    #else:
+    #    next_data=[]
+
     if mode==13:
         menu=[{"title":TextBB(__language__(30100), 'b'),"mode":"10", "argv":{}},
               {"title":TextBB(__language__(30102), 'b'),"mode":"17", "argv":{}},
               {"title":TextBB(__language__(30150), 'b'),"mode":"18", "argv":{}},
               {"title":TextBB(__language__(30103), 'b'),"mode":"14", "argv":{}},
               {"title":TextBB(__language__(30104), 'b'),"mode":"15", "argv":{}},
-              {"title":TextBB(__language__(30105), 'b'),"mode":"16", "argv":{}}]
+              {"title":TextBB(__language__(30105), 'b'),"mode":"16", "argv":{}},]
+              #{"title":TextBB('ONGOING', 'b'),"mode":"11", "argv":{}},
+              #{"title":TextBB('FULLSEASON', 'b'),"mode":"12", "argv":{}},]
 
         for i in menu:
             link=Link(i['mode'], i['argv'])
@@ -120,7 +127,7 @@ def Shows(mode):
         else:
             title=jdata[showId]['title']
 
-        if mode!=10 and mode!=19:
+        if mode not in (10,11,12,19):
             if mode!=18 and jdata[showId]['watchStatus']=="watching" and jdata[showId]['totalEpisodes']-jdata[showId]['watchedEpisodes']==0:
                 continue
             elif mode not in (13,17) and jdata[showId]['watchStatus']=="watching" and jdata[showId]['totalEpisodes']-jdata[showId]['watchedEpisodes']!=0:
@@ -464,7 +471,7 @@ def EpisodeList(action):
         left=dates_diff(str(jdata[id]["airDate"]), 'today')
         title=pre+(__language__(30113) % (int_xx(str(jdata[id]['seasonNumber'])), int_xx(str(jdata[id]['episodeNumber'])), left, show_title, jdata[id]['title']))
         item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage=show_jdata[ str_showId ]['image'] )
-        item.setInfo( type='Video', infoLabels={'Title': title,
+        item.setInfo( type='Video', infoLabels={'title': title,
                                                 'episode': jdata[id]['episodeNumber'],
                                                 'season': jdata[id]['seasonNumber'],
                                                 'date': jdata[id]['airDate'] } )
@@ -822,19 +829,23 @@ class SyncXBMC():
         else:
             self.menu=self.GetFromXBMC()
 
+    def doaction_simple(self):
+        id=None
+        showId=None
+        if self.match and 'showtitle' in self.match:
+            showId=self.showtitle2showId()
+        if self.match and 'date' in self.match and not 'episode' in self.match:
+            id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
+        if showId:
+            if 'season' in self.match and 'episode' in self.match:
+                Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
+                id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
+        Debug('[doaction][showId]: '+str(showId)+' [doaction][id]: '+str(id))
+        return showId, id
+
     def doaction(self):
         if self.action=='check':
-            id=None
-            showId=None
-            if self.match and 'showtitle' in self.match:
-                showId=self.showtitle2showId()
-            if self.match and 'date' in self.match and not 'episode' in self.match:
-                id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
-            if showId:
-                if 'season' in self.match and 'episode' in self.match:
-                    Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
-                    id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
-            Debug('[doaction][showId]: '+str(showId)+' [doaction][id]: '+str(id))
+            showId, id=self.doaction_simple()
             if __settings__.getSetting("label")=='true' and not id:
                 idlist=[]
                 if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
@@ -851,6 +862,7 @@ class SyncXBMC():
                             id=idlist[0]
                     else:
                         self.match=filename2match(self.match['label'])
+                        showId, id=self.doaction_simple()
                         Debug('[doaction] [filename2match] '+unicode(self.match))
             if showId:
                 if not id and 'season' in self.match and 'episode' in self.match:
@@ -1288,7 +1300,7 @@ def Test():
     #Rate('24199', '0',None)
     #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
     title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    #title='''{"tvshowid": 12, "episode": 3, "season": 12, "tvdb_id": "75978", "episodeid": 996, "label": "Quagmire's Quagmire", "uniqueid": {"unknown": "4655100"}, "year": 1999, "showtitle": "Family Guy"}'''
+    title='{"label": "The.Daily.Show.2014.02.18.Kevin.Spacey.HDTV.x264-BATV.mp4"}'
     try:
         SyncXBMC(title).doaction()
     except:
