@@ -950,23 +950,24 @@ def ScanAll():
     myscan=ScanDB()
     scanlist=[]
     multilist=myscan.get_all()
-    #Debug('[ScanAll]: scanlist '+str(scanlist))
     if len(multilist)>0:
         for x in multilist:
             filename=unicode(x['filename'])
             ifstat=myscan.isfilename(filename)
             if ifstat==True:
                 scanlist.append(filename)
-    ok=dialog.yesno(__language__(30140), __language__(30141)+'?')
-    i=0
-    if ok and len(scanlist)>0:
-        showMessage(__language__(30277),__language__(30278))
-        for filename in scanlist:
-            i+=ScanSource(stringdata=makeapp({"filename":filename})).scanone(True)
-        xbmc.sleep(len(scanlist)*500)
-        showMessage(__language__(30263), __language__(30249) % (str(i)))
-        if i>0: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=50)')
-        else: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/)')
+    #Debug('[ScanAll]: scanlist '+str(scanlist))
+    if len(scanlist)>0:
+        ok=dialog.yesno(__language__(30140), __language__(30141)+'?')
+        i=0
+        if ok:
+            showMessage(__language__(30277),__language__(30278))
+            for filename in scanlist:
+                i+=ScanSource(stringdata=makeapp({"filename":filename})).scanone(True)
+            xbmc.sleep(len(scanlist)*500)
+            showMessage(__language__(30263), __language__(30249) % (str(i)))
+            if i>0: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=50)')
+            else: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/)')
 
 class DeleteSourses(Source):
     def handle(self):

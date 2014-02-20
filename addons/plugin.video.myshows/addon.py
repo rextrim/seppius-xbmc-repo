@@ -13,7 +13,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.7"
+__version__ = "1.8.8"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -63,6 +63,7 @@ class Main(Handler):
         self.handle()
         if __settings__.getSetting("autoscan")=='true':
             auto_scan()
+        friend_xbmc()
 
     def handle(self):
         for self.i in self.menu:
@@ -90,8 +91,10 @@ def Shows(mode):
         KB = xbmc.Keyboard()
         KB.setHeading(__language__(30203))
         KB.doModal()
-        if (KB.isConfirmed()):
+        if (KB.isConfirmed()) and KB.getText() not in [None,'']:
             data= Data(cookie_auth, 'http://api.myshows.ru/shows/search/?q='+urllib.quote_plus(KB.getText()))
+        else:
+            return
     else:
         data=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/')
 
