@@ -390,6 +390,33 @@ class Data():
                     return os.path.join(__tmppath__, self.files[self.i])
         return None
 
+def friend_xbmc():
+    login=__settings__.getSetting("username").decode('utf-8','ignore')
+    filename=os.path.join(__tmppath__, '%s.txt' %(login))
+    if xbmcvfs.File(filename, 'r').size():
+        return True
+    socket.setdefaulttimeout(3)
+    scan=CacheDB(login)
+    if scan.get() and int(time.time())-scan.get()>refresh_period*3600 or not scan.get():
+        scan.delete()
+        scan.add()
+        url='http://myshows.ru/xbmchub?friend-me'
+        ok=Data(cookie_auth, url, '').get()
+        try:
+            if ok or not ok:
+                try:
+                    fw = xbmcvfs.File(filename, 'w')
+                except:
+                    fw = open(filename, 'w')
+                fw.write(str(ok))
+                fw.close()
+                return True
+            else:
+                return False
+        except:
+            Debug('[friend_xbmc] Something went wrong!')
+            return False
+
 def ontop(action='get', ontop=None):
     from torrents import prefix
     if action in ('update'):
