@@ -367,11 +367,11 @@ def TopShows(action):
     if action!='tvdb':saveCheckPoint()
     useTVDBtop=getSettingAsBool('tvdbtop')
     if action=='all':
-        for i in [(__language__(30109),'male'),(__language__(30110),'female'),(__language__(30151),'recomm'),(__language__(30152),'friends'),(__language__(30155),'tvdb')]:
+        for i in [(__language__(30109),'male'),(__language__(30110),'female'),(__language__(30151),'recomm'),(__language__(30152),'friends'),(__language__(30156),'xbmcfriends'),(__language__(30155),'tvdb')]:
             item = xbmcgui.ListItem(TextBB(i[0], 'b'), iconImage='DefaultFolder.png', thumbnailImage='')
             item.setInfo( type='Video', infoLabels={'Title': unicode(i[0])} )
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str('%s?action=%s&mode=100' %(sys.argv[0], i[1])), listitem=item, isFolder=True)
-    elif action in ['recomm','friends']:
+    elif action in ['recomm','friends','xbmcfriends']:
         Recommendations(action)
         return
     elif action=='tvdb':
@@ -416,6 +416,9 @@ def Recommendations(action):
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     saveCheckPoint()
     result=[]
+    if action=='xbmcfriends':
+        action='friends'
+        login='xbmchub'
     if action=='recomm':
         orig_before=u'                        <p class="description">'
         orig_after=u'</p>                    </th>'
@@ -847,12 +850,14 @@ class SyncXBMC():
         return showId, id
 
     def doaction(self):
+        friend_xbmc()
         if self.action=='check':
             showId, id=self.doaction_simple()
             if __settings__.getSetting("label")=='true' and not id:
+                if 'file' in self.match: self.match['label']=self.match['file']
                 idlist=[]
                 if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
-                    self.match['label']=self.match['label'].strip(os.path.dirname(self.match['label'])).encode('utf-8','ignore')
+                    self.match['label']=self.match['label'].replace(os.path.dirname(self.match['label']),'').encode('utf-8','ignore').lstrip('\\/')
                     Debug('[doaction] Trying to find filename on myshows.ru: '+self.match['label'])
                     data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+urllib.quote_plus(self.match['label'])).get()
                     if data:
@@ -866,7 +871,7 @@ class SyncXBMC():
                     else:
                         self.match=filename2match(self.match['label'])
                         showId, id=self.doaction_simple()
-                        Debug('[doaction] [filename2match] '+unicode(self.match))
+                        #Debug('[doaction] [filename2match] '+unicode(self.match))
             if showId:
                 if not id and 'season' in self.match and 'episode' in self.match:
                     Debug('[doaction2] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))

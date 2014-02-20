@@ -245,7 +245,7 @@ class Scrobbler(threading.Thread):
                 #	match = utilities.getEpisodeDetailsFromXbmc(self.curVideo["multi_episode_data"][cur_episode], ['showtitle', 'season', 'episode', 'tvshowid', 'uniqueid'])
                 #else:
                 match = utilities.getEpisodeDetailsFromXbmc(self.curVideo['id'],
-                                                            ['showtitle', 'season', 'episode', 'tvshowid', 'uniqueid'])
+                                                            ['showtitle', 'season', 'episode', 'tvshowid', 'uniqueid', 'file'])
             elif 'showtitle' in self.curVideoData and 'season' in self.curVideoData and 'episode' in self.curVideoData:
                 match = {}
                 match['tvdb_id'] = None
