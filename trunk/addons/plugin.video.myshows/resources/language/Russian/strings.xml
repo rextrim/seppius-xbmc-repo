@@ -68,7 +68,7 @@
         <string id="30109">Мужской топ</string>
         <string id="30110">Женский топ</string>
         <string id="30111">Мой профиль</string>
-        <string id="30112">Новости Друзей</string>
+        <string id="30112">Новости Друзей и Пользователей плагина</string>
         <string id="30113">S%sE%s [%s дн.] %s (%s)</string>
         <string id="30114">Группировать по сериалу</string>
         <string id="30115">[%s] %s (%s эп.)</string>
@@ -112,7 +112,9 @@
         <string id="30153">Вручную изменить папку µTorrent по-умолчанию</string>
         <string id="30154">Статистика сериалов</string>
         <string id="30155">Скачать информацию с TVDb.com</string>
-        <string id="30156">Топ пользователей плагина</string>
+        <string id="30156">Топ Пользователей плагина</string>
+        <string id="30157">Новости Пользователей плагина</string>
+        <string id="30158">Новости Друзей</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>

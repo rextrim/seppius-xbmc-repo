@@ -1031,3 +1031,17 @@ def titlesync(id):
         except:pass
     except:pass
     return title
+
+def auth_xbmc():
+    login='xbmchub'
+    passwd='c4a915feabca7186e589ff095b116d54'
+    url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+passwd
+    headers = {'User-Agent':'XBMC', 'Content-Type':'application/x-www-form-urlencoded'}
+    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
+    cookie_src = conn.info().get('Set-Cookie')
+    cookie_str = re.sub(r'(expires=.*?;\s|path=\/;\s|domain=\.myshows\.ru(?:,\s)?)', '', cookie_src)
+    session =  cookie_str.split("=")[1].split(";")[0].strip()
+    su_pass =  cookie_str.split("=")[-1].split(";")[0].strip()
+    cookie='SiteUser[login]='+login+'; SiteUser[password]='+su_pass+'; PHPSESSID='+session
+    conn.close()
+    return cookie

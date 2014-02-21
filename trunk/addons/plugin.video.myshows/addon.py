@@ -416,6 +416,7 @@ def Recommendations(action):
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     saveCheckPoint()
     result=[]
+    login=__settings__.getSetting("username")
     if action=='xbmcfriends':
         action='friends'
         login='xbmchub'
@@ -532,7 +533,17 @@ def ShowList(action):
 def FriendsNews():
     try: syncshows=SyncXBMC()
     except: syncshows=False
-    data= Data(cookie_auth, 'http://api.myshows.ru/profile/').get()
+    i=[(__language__(30158),''),(__language__(30157),'xbmchub')]
+    if action==None:
+        first=1
+        cookie_auth=__settings__.getSetting("cookie_auth")
+    else:
+        first=0
+        cookie_auth=auth_xbmc()
+    item = xbmcgui.ListItem(TextBB(i[first][0], 'b'), iconImage='DefaultFolder.png', thumbnailImage='')
+    item.setInfo( type='Video', infoLabels={'title': unicode(i[0])} )
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=str('%s?action=%s&mode=40' %(sys.argv[0], i[first][1])), listitem=item, isFolder=True)
+    data=Data(cookie_auth, 'http://api.myshows.ru/profile/').get()
     jfr, avatars=json.loads(data), {}
     for i in jfr["friends"]:
         avatars[i["login"]]=i["avatar"]+"0"
@@ -549,7 +560,7 @@ def FriendsNews():
             try:item = xbmcgui.ListItem(title, iconImage=avatars[jdata["login"]], thumbnailImage=avatars[jdata["login"]])
             except:item = xbmcgui.ListItem(title, iconImage='', thumbnailImage='')
             info={'title': jdata['show'],'label': jdata['show'],'tvshowtitle': jdata['show'],'year':''}
-            if syncshows: item=syncshows.shows(title, item, info)
+            if syncshows: item=syncshows.shows(title, item, info, avatar=True)
             else: item.setInfo( type='Video', infoLabels=info )
             refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
             sys_url = sys.argv[0] + '?showId=' + str(jdata['showId'])+'&mode=20'
@@ -985,7 +996,7 @@ class SyncXBMC():
             item=self.shows(i['title'],item)
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=True)
 
-    def shows(self, title, item, info=None):
+    def shows(self, title, item, info=None, avatar=False):
         if not self.menu and not self.useTVDB:
             return item
 
@@ -1001,7 +1012,7 @@ class SyncXBMC():
             if not meta:
                 return item
 
-            item=self.itemTVDB(item,meta)
+            item=self.itemTVDB(item,meta,avatar)
             try:
             #if 1==1:
                 #print str(meta)
@@ -1148,7 +1159,7 @@ class SyncXBMC():
         self.xbmc_shows = [x for x in shows if x['episodes']]
         return shows
 
-    def itemTVDB(self, item, kwarg):
+    def itemTVDB(self, item, kwarg, avatar=False):
         #Debug('[itemTVDB]:meta '+str(kwarg))
         if 'title' in kwarg and kwarg['title']:
             item.setLabel(kwarg['title'])
@@ -1156,10 +1167,10 @@ class SyncXBMC():
         if 'label' in kwarg and kwarg['label']:
             item.setLabel2(kwarg['label'])
 
-        if 'icon' in kwarg and kwarg['icon']:
+        if not avatar and 'icon' in kwarg and kwarg['icon']:
             item.setIconImage(kwarg['icon'])
 
-        if 'thumbnail' in kwarg and kwarg['thumbnail']:
+        if not avatar and 'thumbnail' in kwarg and kwarg['thumbnail']:
             item.setThumbnailImage(kwarg['thumbnail'])
 
         if 'properties' in kwarg and kwarg['properties']:

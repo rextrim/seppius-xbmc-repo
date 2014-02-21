@@ -70,7 +70,7 @@
         <string id="30109">Male Top</string>
         <string id="30110">Female Top</string>
         <string id="30111">My Profile</string>
-        <string id="30112">Friend's News</string>
+        <string id="30112">Friend's News and XBMC's users</string>
         <string id="30113">S%sE%s [%s days] %s (%s)</string>
         <string id="30114">Group by Show</string>
         <string id="30115">[%s] %s (%s Ep)</string>
@@ -115,9 +115,9 @@
         <string id="30154">Shows Stats</string>
         <string id="30155">Download TVDb.com info</string>
         <string id="30156">XBMC Users Top</string>
+        <string id="30157">XBMC Users News</string>
+        <string id="30158">Friend's News</string>
 
-        <string id="30157">PATCHED</string>
-        <string id="30158">NOT PATCHED</string>
         <string id="30159">NOT INSTALLED</string>
         <string id="30160">DiMartino on xbmc.ru and bitbucket.org</string>
         <string id="30161">You can install it via context menu</string>
