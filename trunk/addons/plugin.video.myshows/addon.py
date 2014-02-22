@@ -265,7 +265,7 @@ def Episodes(showId, seasonNumber):
 def EpisodeMenu(id, playcount, refresh_url):
     if change_onclick=='true':
         xbmc.executebuiltin("Action(ToggleWatched)")
-        Change_Status_Episode(id, playcount, refresh_url)
+        Change_Status_Episode(showId, id, action, playcount, refresh_url)
     else:
         xbmc.executebuiltin("Action(ContextMenu)")
 
@@ -663,14 +663,27 @@ def Profile(action, sort='profile'):
             item.setInfo( type='Video', infoLabels={'Title': title} )
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=False)
 
-def Change_Status_Episode(id, playcount, refresh_url):
-    if str(action)!='None':
-        status_url='http://api.myshows.ru/profile/episodes/'+action+'/'+str(id)
-    else:
-        if playcount=='0': status_url='http://api.myshows.ru/profile/episodes/check/'+str(id)
-        else: status_url='http://api.myshows.ru/profile/episodes/uncheck/'+str(id)
+def Change_Status_Episode(showId, id, action, playcount, refresh_url, selftitle=None):
+    if action==None:
+        if playcount=='0': action='check'
+        else: action='uncheck'
+
+    status_url='http://api.myshows.ru/profile/episodes/'+action+'/'+str(id)
     ok=Data(cookie_auth, status_url, refresh_url).get()
-    if ok:showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
+    if ok:
+        showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
+        WatchedDB().onaccess()
+    else:
+        if not showId: showId=0
+        if not selftitle: selftitle=json.dumps({"myshows_showId":int(showId),"myshows_id":int(id)})
+        if action=='check':
+            WatchedDB().check(selftitle)
+        else:
+            try:
+                WatchedDB()._delete(selftitle)
+            except:
+                Debug('[Change_Status_Episode] Nothing to delete.'+selftitle)
+        return False
 
 def Change_Status_Show(showId, action, refresh_url):
     if action=='remove':
@@ -717,7 +730,8 @@ def Rate(showId, id, refresh_url, selftitle=None):
         if ok:
             showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
             WatchedDB().onaccess()
-        elif selftitle:
+        else:
+            if not selftitle: selftitle=json.dumps({"myshows_showId":int(showId),"myshows_id":int(id)})
             WatchedDB().check(selftitle,int(rate[ret]))
             return False
         if getSettingAsBool('ratekinopoisk') and id=='0' and ok:
@@ -863,7 +877,10 @@ class SyncXBMC():
     def doaction(self):
         friend_xbmc()
         if self.action=='check':
-            showId, id=self.doaction_simple()
+            if 'myshows_id' in self.match:
+                 showId, id=self.match['myshows_showId'],self.match['myshows_id']
+            else:
+                showId, id=self.doaction_simple()
             if __settings__.getSetting("label")=='true' and not id:
                 if 'file' in self.match: self.match['label']=self.match['file']
                 idlist=[]
@@ -883,7 +900,7 @@ class SyncXBMC():
                         self.match=filename2match(self.match['label'])
                         showId, id=self.doaction_simple()
                         #Debug('[doaction] [filename2match] '+unicode(self.match))
-            if showId:
+            if showId or id:
                 if not id and 'season' in self.match and 'episode' in self.match:
                     Debug('[doaction2] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
@@ -905,7 +922,7 @@ class SyncXBMC():
                             Debug('[doaction] New show! Marking as watching')
                             Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                             xbmc.sleep(500)
-                        Change_Status_Episode(str(id), '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/')
+                        Change_Status_Episode(showId, id, action, '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', self.title)
 
     def showtitle2showId(self):
         try:showtitle=self.match['showtitle'].decode('utf-8','ignore')
@@ -1470,7 +1487,7 @@ elif mode == 250:
 elif mode in (251,201,302):
     Rate(showId, id, refresh_url)
 elif mode == 300:
-    Change_Status_Episode(id, playcount, refresh_url)
+    Change_Status_Episode(showId, id, action, playcount, refresh_url)
 elif mode == 3000 or mode == 2500:
     VKSearch(showId, id)
 elif mode == 3010:
