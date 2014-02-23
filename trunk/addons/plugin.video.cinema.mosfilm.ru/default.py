@@ -19,266 +19,467 @@
 # *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 # *  http://www.gnu.org/copyleft/gpl.html
 # */
-import re, os, urllib, urllib2, cookielib
-try:
-    from hashlib import md5 as md5
-except:
-    import md5
+import re, os, urllib, cookielib, time
+from time import gmtime, strftime
+import urlparse, urllib2
+
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 Addon = xbmcaddon.Addon(id='plugin.video.cinema.mosfilm.ru')
-xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
+fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
+
+# load XML library
+try:
+    sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+    from BeautifulSoup  import BeautifulSoup
+except:
+    try:
+        sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+    except:
+        sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
+        from BeautifulSoup  import BeautifulSoup
+        icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
+
+import HTMLParser
+hpar = HTMLParser.HTMLParser()
 
 h = int(sys.argv[1])
-icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 
-fcookies = os.path.join(Addon.getAddonInfo('path'), 'cookies.txt')
-print fcookies
+host_url = 'http://cinema.mosfilm.ru'
+movie_url = None
 
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
-#get actioncodes from keymap.xml
-ACTION_PREVIOUS_MENU = 10
+#---------- parameter/info structure -------------------------------------------
+class Param:
+    page    = '1'
+    genre   = '?'
+    genre_name = 'Все'
+    country  = ''
+    country_name = ''
+    year    = '/films/'
+    year_name = 'Все'
+    search  = ''
+    url     = ''
+    prev_url= ''
 
-class msgDialog(xbmcgui.Window):
-  def __init__(self):
-    #self.setCoordinateResolution(1) # 0 for 1080
-    self.addControl(xbmcgui.ControlImage(60,189,600,102, os.path.join(Addon.getAddonInfo('path'), r'resources', r'image', r'background.png')))
-    self.strActionInfo = xbmcgui.ControlLabel(170, 210, 500, 50, '', 'font14', '0xFFFF00FF')
-    self.addControl(self.strActionInfo)
-    self.strActionInfo.setLabel('***')
+class Info:
+    img         = ''
+    url         = '*'
+    title       = ''
+    year        = ''
+    genre       = ''
+    country     = ''
+    director    = ''
+    text        = ''
+    actors      = ''
 
-  def Set_Message(self, str):
-    self.strActionInfo.setLabel(str)
+#---------- get parameters -----------------------------------------------------
+def Get_Parameters(params):
+    #-- page
+    try:    p.page = urllib.unquote_plus(params['page'])
+    except: p.page = '1'
+    #-- genre
+    try:    p.genre = urllib.unquote_plus(params['genre'])
+    except: p.genre = '?'
+    try:    p.genre_name = urllib.unquote_plus(params['genre_name'])
+    except: p.genre_name = 'Все'
+    #-- year
+    try:    p.year = urllib.unquote_plus(params['year'])
+    except: p.year = '/films/'
+    try:    p.year_name = urllib.unquote_plus(params['year_name'])
+    except: p.year_name = 'Все'
+    #--search
+    try:    p.search = urllib.unquote_plus(params['search'])
+    except: p.search = ''
+    #--url
+    try:    p.url = urllib.unquote_plus(params['url'])
+    except: p.url = ''
+    try:    p.prev_url = urllib.unquote_plus(params['prev_url'])
+    except: p.prev_url = ''
+    #-----
+    return p
 
-  def onAction(self, action):
-    if action == ACTION_PREVIOUS_MENU:
-      self.close()
+#---------- get web page -------------------------------------------------------
+def get_HTML(url, post = None, ref = None):
 
-#---------- get film types -----------------------------------------------------
-def Get_Movie_Type():
-    # load movie types
-    url = 'http://cinema.mosfilm.ru/Films.aspx?sim=2'
-    post = None
+    print url
 
-    request = urllib2.Request(urllib.unquote(url), post)
+    request = urllib2.Request(url, post)
+    host = urlparse.urlsplit(url).hostname
+
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'cinema.mosfilm.ru')
+    request.add_header('Host',   host)
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://cinema.mosfilm.ru/Films.aspx')
+    request.add_header('Referer',             ref)
 
-    o = urllib2.urlopen(request)
-    http = o.read()
-    o.close()
+    try:
+        f = urllib2.urlopen(request)
+    except IOError, e:
+        if hasattr(e, 'reason'):
+           xbmc.log('We failed to reach a server.')
+        elif hasattr(e, 'code'):
+           xbmc.log('The server couldn\'t fulfill the request.')
 
-    # get post data
-    match=re.compile('<form (.+?)</form>', re.MULTILINE|re.DOTALL).findall(http)
-    viewstate   = re.compile('id="__VIEWSTATE" value="(.+?)"', re.MULTILINE|re.DOTALL).findall(match[0])
-    # get movie info
-    match = re.compile('<div class="filter-box side">(.+?)</div>', re.MULTILINE|re.DOTALL).findall(http)
-    glist = re.compile('href="javascript:__doPostBack\(\'(.+?)\',\'\'\)">(.+?)</a>', re.MULTILINE|re.DOTALL).findall(match[0])
-    for g in glist:
-        name = g[1]
+    html = f.read()
+
+    return html
+
+#---------- get MY-HIT.RU URL --------------------------------------------------
+def Get_URL(par):
+
+    if par.page == '1':
+        url = host_url+par.year+par.genre
+    else:
+        url = par.url
+
+    return url
+
+#----------- get Header string ---------------------------------------------------
+def Get_Header(par):
+
+    info  = 'Page: ' + '[COLOR FF00FF00]'+ par.page +'[/COLOR]'
+
+    if par.genre <> '':
+        info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre_name + '[/COLOR]'
+
+    if par.year <> '':
+        info += ' | Год: ' + '[COLOR FFFFF000]'+ par.year_name + '[/COLOR]'
+
+    if par.search <> '':
+        info += ' | Поиск: ' + '[COLOR FFFF9933]'+ par.search + '[/COLOR]'
+
+    #-- info line
+    name    = info
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=EMPTY'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&page=%s'%urllib.quote_plus(par.page)
+    u += '&genre=%s'%urllib.quote_plus(par.genre)
+    u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+    u += '&country=%s'%urllib.quote_plus(par.country)
+    u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+    u += '&year=%s'%urllib.quote_plus(par.year)
+    u += '&year_name=%s'%urllib.quote_plus(par.year_name)
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- search
+    '''
+    if par.genre == '' and par.country == '' and par.page == '1' and par.search == '':
+        name    = '[COLOR FFFF9933][Поиск][/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=TYPE'
+        u = sys.argv[0] + '?mode=SEARCH'
         u += '&name=%s'%urllib.quote_plus(name)
-        u += '&tag=%s'%urllib.quote_plus(g[0])
-        u += '&viewstat=%s'%urllib.quote_plus(viewstate[0])
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&country=%s'%urllib.quote_plus(par.country)
+        u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&year=%s'%urllib.quote_plus(par.year)
+        u += '&year_name=%s'%urllib.quote_plus(par.year_name)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+    '''
+    #-- genres
+    if par.search == '': #-- par.page == '1' and
+        name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=GENRES'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&country=%s'%urllib.quote_plus(par.country)
+        u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&year=%s'%urllib.quote_plus(par.year)
+        u += '&year_name=%s'%urllib.quote_plus(par.year_name)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    cj.save(fcookies, ignore_discard=True)
-    xbmcplugin.endOfDirectory(h)
+    #-- year
+    if par.search == '': #-- par.page == '1' and
+        name    = '[COLOR FFFFF000][Год][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=YEAR'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&country=%s'%urllib.quote_plus(par.country)
+        u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&year=%s'%urllib.quote_plus(par.year)
+        u += '&year_name=%s'%urllib.quote_plus(par.year_name)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
 
-#-------------------------------------------------------------------------------
+    #-- next page link
+        if par.page != '1':
+            url = par.prev_url
 
-#---------- get moviesfor selected type ----------------------------------------
-def Get_Movie_List(params):
-    s_type      = urllib.unquote_plus(params['tag'])
-    s_name      = urllib.unquote_plus(params['name'])
-    s_viewstat  = urllib.unquote_plus(params['viewstat'])
+            name    = '[PAGE-1]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&year=%s'%urllib.quote_plus(par.year)
+            u += '&year_name=%s'%urllib.quote_plus(par.year_name)
+            u += '&url=%s'%urllib.quote_plus(url)
+            xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    cj.load(fcookies, ignore_discard=True)
-    # load serials types
-    url = 'http://cinema.mosfilm.ru/Films.aspx?sim=2'
+def Empty():
+    return False
 
-    values = {'__EVENTTARGET'   : urllib.unquote(s_type),
-              '__EVENTARGUMENT' : urllib.unquote(''),
-              '__VIEWSTATE'     : urllib.unquote(s_viewstat),
-              'ctl00$timeTag'   : '' }
+#---------- movie list ---------------------------------------------------------
+def Movie_List(params):
+        #-- get filter parameters
+        par = Get_Parameters(params)
 
-    request = urllib2.Request(urllib.unquote(url), urllib.urlencode(values))
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'cinema.mosfilm.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://cinema.mosfilm.ru/Films.aspx?sim=2')
+        #== get movie list =====================================================
+        url = Get_URL(par)
+        html = get_HTML(url)
 
-    o = urllib2.urlopen(request)
-    http = o.read()
-    o.close()
+        # -- parsing web page --------------------------------------------------
+        soup = BeautifulSoup(html)
 
-    flist = re.compile('<div class="movie">(.+?) class="description">(.+?)</a>', re.MULTILINE|re.DOTALL).findall(http)
+        Get_Header(par)
 
-    for film in flist:
+        for rec in soup.findAll('div', {'class':"item"}):
+            try:
+                mi.title = rec.find('div', {'class':"title"}).text.encode('utf-8')
+                mi.img   = 'http://cinema.mosfilm.ru/'+rec.find('div', {'class':"img actt"}).find('img')['src']
+                mi.url   = 'http://cinema.mosfilm.ru/'+rec.find('div', {'class':"img actt"}).find('a')['href']
+                mi.text  = rec.find('div', {'class':"descr"}).text.encode('utf-8')
+                for r in rec.find('div', {'class':"creators"}).findAll('p'):
+                    if (r.find('b').text) == u'Режиссер:':
+                        mi.director = r.text.split(':',1)[1].encode('utf-8')
+                    if (r.find('b').text) == u'Актеры:':
+                        mi.actors   = r.text.split(':',1)[1].encode('utf-8')
+                info = rec.find('div', {'class':"info"}).text.split(' | ')
+                mi.year  = info[0].encode('utf-8')
+                mi.genre = info[1].encode('utf-8')
+
+                name = '[COLOR FFC3FDB8]'+mi.title+'[/COLOR]'
+
+                i = xbmcgui.ListItem(name, iconImage=mi.img, thumbnailImage=mi.img)
+                u = sys.argv[0] + '?mode=PLAY'
+                u += '&name=%s'%urllib.quote_plus(mi.title)
+                u += '&url=%s'%urllib.quote_plus(mi.url)
+                u += '&img=%s'%urllib.quote_plus(mi.img)
+                i.setInfo(type='video', infoLabels={'title':       mi.title,
+                            						'year':        mi.year,
+                            						'director':    mi.director,
+                            						'plot':        mi.text,
+                            						'artist':      mi.actors,
+                            						'genre':       mi.genre})
+                i.setProperty('fanart_image', mi.img)
+                xbmcplugin.addDirectoryItem(h, u, i, False)
+            except:
+                pass
+
+        #-- next page link
         try:
-            f_url_name = re.compile('<span class="name">.*<a href=\'(.+?)\'.*title=\'.*\'>(.+?)</a>', re.MULTILINE|re.DOTALL).findall(film[0])
-            if len(f_url_name) == 0:
-                continue
-            f_year     = re.compile('<span class="year">(.+?)</span>', re.MULTILINE|re.DOTALL).findall(film[0])
-            f_image    = re.compile('<img src=\'(.+?)\'', re.MULTILINE|re.DOTALL).findall(film[0])
+            r = soup.find('div', {'class':"show-more-center"}).find('a')
 
-            i_name = f_url_name[0][1]
-            i_url  = f_url_name[0][0]
-            if unicode(f_year[0]).isnumeric():
-                i_year      = int(f_year[0])
+            if r['href'] != '#':
+                url = host_url+r['href']
             else:
-                i_year      = 1900
-            i_image     = 'http://cinema.mosfilm.ru/'+f_image[0]
-            i_text      = film[1]
-            i_genre     = s_name
+                url = 'http://cinema.mosfilm.ru/ajax/films/pager.php?'+'&'+r['rel']+'&serii='+r['serii']
 
-            # set serial to XBMC
-            i = xbmcgui.ListItem(i_name, iconImage=i_image, thumbnailImage=i_image)
-            u = sys.argv[0] + '?mode=LIST'
-            u += '&name=%s'%urllib.quote_plus(i_name)
-            u += '&url=%s'%urllib.quote_plus(i_url)
-            u += '&img=%s'%urllib.quote_plus(i_image)
-            i.setInfo(type='video', infoLabels={
-                                'title':       i_name,
-        						'year':        i_year,
-        						'plot':        i_text,
-        						'genre':       i_genre})
-            i.setProperty('fanart_image', i_image)
+            name    = '[PAGE+1]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)+1))
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&year=%s'%urllib.quote_plus(par.year)
+            u += '&year_name=%s'%urllib.quote_plus(par.year_name)
+            u += '&url=%s'%urllib.quote_plus(url)
             xbmcplugin.addDirectoryItem(h, u, i, True)
         except:
-            xbmc.log('***   ERROR '+i_name.encode('utf-8'))
+            pass
 
-    cj.save(fcookies, ignore_discard=True)
-    xbmcplugin.endOfDirectory(h)
+        xbmcplugin.endOfDirectory(h, updateListing=True)
 
-#---------- get movie ---------------------------------------------------------
-def Get_Movie(params):
-    url = urllib.unquote_plus(params['url'])
+#---------- search movie list --------------------------------------------------
+def Search_List(params):
+        list = []
+        #-- get filter parameters
+        par = Get_Parameters(params)
 
-    if url == None:
-        return False
+        # show search dialog
+        skbd = xbmc.Keyboard()
+        skbd.setHeading('Поиск фильмов.')
+        skbd.doModal()
+        if skbd.isConfirmed():
+            SearchStr = skbd.getText().split(':')
+            par.search = SearchStr[0]
+        else:
+            return False
 
-    cj.load(fcookies, ignore_discard=True)
+        #== get movie list =====================================================
+        url = 'http://my-hit.org/index.php?module=search&func=view&result_orderby=score&result_order_asc=0&result_perpage=1000&search_string=%s&x=0&y=0'%urllib.quote(par.search.decode('utf-8').encode('cp1251'))
+        #print url
+        html = get_HTML(url)
 
-    image = urllib.unquote_plus(params['img'])
-    name  = urllib.unquote_plus(params['name'])
-    url = 'http://cinema.mosfilm.ru/'+url
+        # -- parsing web page --------------------------------------------------
+        soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    # get movie link
-    post = None
+        pcount = 1
+        mcount = 0
 
-    request = urllib2.Request(urllib.unquote(url), post)
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'cinema.mosfilm.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://cinema.mosfilm.ru/Films.aspx')
+        # -- get list of found movies
+        flag = 0
+        for rec in soup.findAll("tr"):
+            try:
+                if rec.find('a').text.find(u'(фильм)')<>-1:
+                    m_name = rec.find('a').text.replace(u'(фильм)', '').encode('utf-8')
+                    flag = 1
+                elif flag==1:
+                    m_url  = rec.find('a')['href']
+                    m_url = 'http://my-hit.org/film/'+m_url.split('&id=')[1]+'/online'
 
-    o = urllib2.urlopen(request)
-    http = o.read()
-    o.close()
+                    m_img  = 'http://my-hit.org'+rec.find('img')['src']
+                    m_text = unescape(rec.text).encode('utf-8')
+                    flag = 0
+                    list.append({'name':m_name, 'url':m_url, 'img':m_img, 'text':m_text})
+            except:
+                pass
+        mcount = len(list)
 
-    match=re.compile('<form (.+?)</form>', re.MULTILINE|re.DOTALL).findall(http)
+        if mcount == 0:
+            return False
 
-    viewstate   = re.compile('id="__VIEWSTATE" value="(.+?)"', re.MULTILINE|re.DOTALL).findall(match[0])
+        #-- add header info
+        Get_Header(par, mcount, pcount)
 
-    has_parts    = re.compile('<div class="side-head">Серии</div>.*<div class=\'content\'>.*<ul>(.+?)</ul>', re.MULTILINE|re.DOTALL).findall(match[0])
-    if len(has_parts) == 0:
-        #---
-        i = xbmcgui.ListItem(name, iconImage=image, thumbnailImage=image)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(name)
-        u += '&url=%s'%urllib.quote_plus(url)
-        u += '&eventtarget=%s'%urllib.quote_plus('ctl00$centerContentPlaceHolder$playLinkButton')
-        u += '&viewstate=%s'%urllib.quote_plus(viewstate[0])
-        #i.setProperty('IsPlayable', 'true')
-        xbmcplugin.addDirectoryItem(h, u, i, False)
-    else:
-        has_parts    = re.compile('<div class="side-head">Серии</div>(.+?)</ul>', re.MULTILINE|re.DOTALL).findall(match[0])
-        part_list = re.compile('<a href="javascript:__doPostBack\(\'(.+?)\',\'\'\)">(.+?)</a>', re.MULTILINE|re.DOTALL).findall(has_parts[0])
+        for mov in list:
+            #-- add movie to the list ------------------------------------------
+            name = '[COLOR FFC3FDB8]'+mov['name']+'[/COLOR]'
 
-        for rec in part_list:
-            s = re.compile('<b>(.+?)</b>', re.MULTILINE|re.DOTALL).findall(rec[1])
-            iname = name + ' ' + s[0]
-            i = xbmcgui.ListItem(iname, iconImage=image, thumbnailImage=image)
+            i = xbmcgui.ListItem(name, iconImage=mi.img, thumbnailImage=mi.img)
             u = sys.argv[0] + '?mode=PLAY'
-            u += '&name=%s'%urllib.quote_plus(iname)
-            u += '&url=%s'%urllib.quote_plus(url)
-            u += '&eventtarget=%s'%urllib.quote_plus(rec[0])
-            u += '&viewstate=%s'%urllib.quote_plus(viewstate[0])
-            #i.setProperty('IsPlayable', 'true')
+            u += '&name=%s'%urllib.quote_plus(mov['name'])
+            u += '&url=%s'%urllib.quote_plus(mov['url'])
+            u += '&img=%s'%urllib.quote_plus(mov['img'])
+            i.setInfo(type='video', infoLabels={ 'title':      mov['name'],
+                        						'plot':        mov['text']})
+            i.setProperty('fanart_image', mov['img'])
             xbmcplugin.addDirectoryItem(h, u, i, False)
 
-    cj.save(fcookies, ignore_discard=True)
-    xbmcplugin.endOfDirectory(h)
+        xbmcplugin.endOfDirectory(h)
+
+#---------- get genge list -----------------------------------------------------
+def Genre_List(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+
+    #-- get generes
+    url = 'http://cinema.mosfilm.ru/films/'
+    html = get_HTML(url)
+
+    # -- parsing web page ------------------------------------------------------
+    soup = BeautifulSoup(html)
+    nav = soup.find('div', {'class':"filter"})
+
+    for rec in nav.findAll('span'):
+        if (rec.text) == u'Жанр':
+            for g in rec.parent.findAll('li'):
+                name     = g.find('a').text.encode('utf-8')
+                genre_id = g.find('a')['href']
+    			#---
+                i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    	        u = sys.argv[0] + '?mode=MOVIE'
+    	        u += '&name=%s'%urllib.quote_plus(name)
+    	        #-- filter parameters
+    	        u += '&page=%s'%urllib.quote_plus('1')
+    	        u += '&genre=%s'%urllib.quote_plus(genre_id)
+    	        u += '&genre_name=%s'%urllib.quote_plus(name)
+    	        u += '&year=%s'%urllib.quote_plus(par.year)
+                u += '&year_name=%s'%urllib.quote_plus(par.year_name)
+                u += '&url=%s'%urllib.quote_plus(par.url)
+    	        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
+    #xbmcplugin.endOfDirectory(h)
+    xbmcplugin.endOfDirectory(h, updateListing=True)
+
+#---------- get year list -----------------------------------------------------
+def Year_List(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+
+    #-- get generes
+    url = 'http://cinema.mosfilm.ru/films/'
+    html = get_HTML(url)
+
+    # -- parsing web page ------------------------------------------------------
+    soup = BeautifulSoup(html)
+    nav = soup.find('div', {'class':"filter"})
+
+    for rec in nav.findAll('span'):
+        if (rec.text) == u'Год':
+            for g in rec.parent.findAll('li'):
+                name     = g.find('a').text.encode('utf-8')
+                year_id  = g.find('a')['href']
+    			#---
+                i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    	        u = sys.argv[0] + '?mode=MOVIE'
+    	        u += '&name=%s'%urllib.quote_plus(name)
+    	        #-- filter parameters
+    	        u += '&page=%s'%urllib.quote_plus('1')
+    	        u += '&genre=%s'%urllib.quote_plus(par.genre)
+    	        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+    	        u += '&year=%s'%urllib.quote_plus(year_id)
+                u += '&year_name=%s'%urllib.quote_plus(name)
+                u += '&url=%s'%urllib.quote_plus(par.url)
+    	        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #xbmcplugin.endOfDirectory(h)
+    xbmcplugin.endOfDirectory(h, updateListing=True)
+
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
-    url         = urllib.unquote_plus(params['url'])
-    eventtarget = urllib.unquote_plus(params['eventtarget'])
-    viewstate   = urllib.unquote_plus(params['viewstate'])
-    movie_name  = urllib.unquote_plus(params['name'])
+    # -- parameters
+    url   = urllib.unquote_plus(params['url'])
+    img   = urllib.unquote_plus(params['img'])
+    name  = urllib.unquote_plus(params['name'])
 
-    cj.load(fcookies, ignore_discard=True)
+    html = get_HTML(url)
+    soup = BeautifulSoup(html)
 
-    str = 'Загрузка "'+movie_name+'"'
-    show_msg = msgDialog()
-    show_msg.Set_Message(str)
-    show_msg.show()
+    #-- get video id
+    url      = soup.find('embed')['src']
+    video_id = re.compile(u'\/v\/(.+?)\?', re.MULTILINE|re.DOTALL).findall(url)[0]
 
-    # get movie link
-    s_tag = re.compile('id=(.+?)</tag>', re.MULTILINE|re.DOTALL).findall(url+'</tag>')
-    tag = s_tag[0]
+    xbmc.executebuiltin('PlayMedia(plugin://plugin.video.youtube/?action=play_video&videoid='+video_id+')')
 
-    values = {  '__EVENTARGUMENT'   : urllib.unquote(''),
-                '__EVENTTARGET'     : urllib.unquote(eventtarget),
-                '__VIEWSTATE'       : urllib.unquote(viewstate),
-                'ctl00$centerContentPlaceHolder$captchaTextBox':urllib.unquote(''),
-                'ctl00$centerContentPlaceHolder$commentTextBox':urllib.unquote(''),
-                'ctl00$centerContentPlaceHolder$cookie':urllib.unquote(''),
-                'ctl00$centerContentPlaceHolder$tag':urllib.unquote(tag),
-                'ctl00$timeTag':urllib.unquote('')}
+#-------------------------------------------------------------------------------
+def unescape(text):
+    try:
+        text = hpar.unescape(text)
+    except:
+        text = hpar.unescape(text.decode('utf8'))
 
-    request = urllib2.Request(urllib.unquote(url), urllib.urlencode(values))
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'cinema.mosfilm.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	urllib.unquote(url))
+    try:
+        text = unicode(text, 'utf-8')
+    except:
+        text = text
 
-    o = urllib2.urlopen(request)
-    http = o.read()
-    o.close()
+    return text
 
-    purchase_ID = re.compile('<param id="ctl00_centerContentPlaceHolder_onlineVideoPlayer_initParam" name="initParams" value="movieType=privateOnline,host=cinema.mosfilm.ru,id=(.+?),', re.MULTILINE|re.DOTALL).findall(http)
-
-    url2 = 'http://cinema.mosfilm.ru/GetMovieCode.ashx?purchaseID='+purchase_ID[0]
-
-    request = urllib2.Request(urllib.unquote(url2), None)
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'cinema.mosfilm.ru')
-    request.add_header('Accept', '*/*')
-    request.add_header('Accept-Language', 'ru-RU')
-
-    o = urllib2.urlopen(request)
-    http = o.read()
-    o.close()
-
-    url2 = 'http://cinema.mosfilm.ru/MovieWithOutSessionState.ashx?code='+http
-
-    #play movie
-    i = xbmcgui.ListItem(path = urllib.unquote(url2))
-    xbmc.Player().play(url2, i)
-
-    show_msg.close()
-    del show_msg
+def get_url(url):
+    return "http:"+urllib.quote(url.replace('http:', ''))
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
@@ -298,29 +499,39 @@ def get_params(paramstring):
 	return param
 #-------------------------------------------------------------------------------
 
-# get parameters
 params=get_params(sys.argv[2])
 
 # get cookies from last session
-cj = cookielib.MozillaCookieJar()
-cookie_handler  = urllib2.HTTPCookieProcessor(cj)
-redirect_handler= urllib2.HTTPRedirectHandler()
-
-opener = urllib2.build_opener(redirect_handler, cookie_handler)
+cj = cookielib.FileCookieJar(fcookies)
+hr  = urllib2.HTTPCookieProcessor(cj)
+opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
+
+p  = Param()
+mi = Info()
 
 mode = None
 
 try:
 	mode = urllib.unquote_plus(params['mode'])
 except:
-	Get_Movie_Type()
+	Movie_List(params)
 
-if mode == 'TYPE':
-	Get_Movie_List(params)
-elif mode == 'LIST':
-	Get_Movie(params)
-if mode == 'PLAY':
+if mode == 'MOVIE':
+	Movie_List(params)
+if mode == 'SEARCH':
+	Search_List(params)
+elif mode == 'GENRES':
+    Genre_List(params)
+elif mode == 'YEAR':
+    Year_List(params)
+elif mode == 'COUNTRY':
+	Country_List(params)
+elif mode == 'EMPTY':
+    Empty()
+elif mode == 'PLAY_MODE':
+	Play_Mode(params)
+elif mode == 'PLAY':
 	PLAY(params)
 
 
