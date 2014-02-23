@@ -1039,13 +1039,12 @@ Audio sources are
 
 <addon id="plugin.video.kinozal.tv"
        name="kinozal.tv"
-       version="0.0.17"
+       version="0.0.25"
        provider-name="nuismons">
 	<requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.beautifulsoup"/>
 		<import addon="script.module.torrent.ts"/>
-        <import addon="script.common.plugin.cache"/>
 	</requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>
@@ -2149,16 +2148,19 @@ provider-name="Roman_V_M">
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id='script.module.torrent.ts' version='0.5.1.2' name='TorrentStream Engine Support' provider-name='NuisMons'>
+<addon id='script.module.torrent.ts' version='0.6.0.25' name='AceStream Client Alpha' provider-name='NuisMons'>
   <requires>
-    <import addon='xbmc.python' version='2.0'/>
+    <import addon='xbmc.python' version='2.1.0'/>
   </requires>
+  <extension point="xbmc.python.script" library="tsserv.py">
+    <provides>executable</provides>
+  </extension>
   <extension point='xbmc.addon.metadata'>
     <platform>all</platform>
-    <summary>TorrentStream Engine</summary>
+    <summary>AceStream Engine support</summary>
   </extension>
   <extension library="default.py" point="xbmc.service" />
-  <extension point='xbmc.python.module' library='lib' />
+  <extension point='xbmc.python.module'/>
 </addon>
 
 <addon id="script.myshows" name="[COLOR FF00AAFF]MyShows.ru (Service)[/COLOR]" version="0.1.3c" provider-name="DiMartino">

@@ -18,16 +18,11 @@ import threading
 import time
 import random
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-from TSCore import TSengine
+from ASCore import TSengine,_TSPlayer
 from urllib import unquote, quote
 
 
-try:
-    import StorageServer
-except:
-    import storageserverdummy as StorageServer
-    
-cache = StorageServer.StorageServer("kinozal.tv", 24) # (Your plugin name, Cache time in hours)
+
     
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.kinozal.tv' )
 
@@ -120,13 +115,13 @@ except ImportError:
 def construct_request(params):
     return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 
-def GET(target, post=None):
+def GE3T(target, post=None):
     target=target.replace(' ','+')
     print target
     result = cache.cacheFunction(GET2, target, post)
     return result
     
-def GET2(target, post=None):
+def GET(target, post=None):
     #print target
     try:
         req = urllib2.Request(url = target, data = post)
@@ -284,7 +279,25 @@ def get_search(params):
     xbmcplugin.endOfDirectory(hos)
 
 def get_top(params):
-    http = GET('http://kinozal.tv/top.php')
+
+    http=GET('http://kinozal.tv/top.php')
+    beautifulSoup = BeautifulSoup(http)
+    cat= beautifulSoup.find('select',attrs={"class":"w100p styled"})
+    cat=cat.findAll('option')
+    for n in cat:
+        if int(n['value']) not in [5,6,7,8,4,41,42,43,44]:
+            li = xbmcgui.ListItem(n.string.encode('utf-8'),addon_icon,addon_icon)
+            uri = construct_request({
+                'func': 'get_top1',
+                'link':'http://kinozal.tv/top.php?w=0&t=%s&d=0&f=0&s=0'%n['value']
+            })
+            xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    
+   
+    xbmcplugin.endOfDirectory(hos)
+    
+def get_top1(params):
+    http = GET(params['link'])
     beautifulSoup = BeautifulSoup(http)
     content = beautifulSoup.find('div', attrs={'class': 'bx1 stable'})
     cats=content.findAll('a')
@@ -327,7 +340,7 @@ def get_folder(params):
 def play(params):
     print 'palyyy'
     filename=xbmc.translatePath(ktv_folder + params['filename'])
-    if os.path.isfile(filename): 
+    ''' if os.path.isfile(filename): 
         try: 
             #f = open(filename, 'rb').read()
             yel=base64.b64encode(open(filename, 'rb').read())
@@ -335,27 +348,28 @@ def play(params):
             #f.close
             #print red.encode('utf-8')
         except: pass
-    else:	
+    else:	'''
     
-        cookiejar = cookielib.CookieJar()
-        urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-        values = {'username': ktv_login, 'password':ktv_password}
-        data = urllib.urlencode(values)
-        request = urllib2.Request("http://kinozal.tv/takelogin.php", data)
-        url = urlOpener.open(request)
-        torr_link=params['torr_url']
-        urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
-        request = urllib2.Request(torr_link)
-        url = urlOpener.open(request)
-        red = url.read()
-        if '<!DOCTYPE HTML>' in red:
-            showMessage('Ошибка','Проблема при скачивании (превышен лимит?)')
-            return False
-        filename=xbmc.translatePath(ktv_folder + params['filename'])
-        f = open(filename, 'wb')
-        f.write(red)
-        f.close
-        yel=base64.b64encode(red)
+    cookiejar = cookielib.CookieJar()
+    urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+    values = {'username': ktv_login, 'password':ktv_password}
+    data = urllib.urlencode(values)
+    request = urllib2.Request("http://kinozal.tv/takelogin.php", data)
+    url = urlOpener.open(request)
+    torr_link=params['torr_url']
+    urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+    request = urllib2.Request(torr_link)
+    print torr_link
+    url = urlOpener.open(request)
+    red = url.read()
+    if '<!DOCTYPE HTML>' in red:
+        showMessage('Ошибка','Проблема при скачивании (превышен лимит?)')
+        return False
+    filename=xbmc.translatePath(ktv_folder + params['filename'])
+    #f = open(filename, 'wb')
+    #f.write(red)
+    #f.close
+    yel=base64.b64encode(red)
     torr_link=yel
     start_torr(torr_link, params['img'])
     
@@ -366,6 +380,17 @@ def start_torr(torr_link,img):
     if out=='Ok':
         for k,v in TSplayer.files.iteritems():
             li = xbmcgui.ListItem(urllib.unquote(k))
+            
+            uri = construct_request({
+                't': urllib.quote(torr_link),
+                'tt': k.encode('utf-8'),
+                'i':v,
+                'ii':urllib.quote(img),
+                'func': 'addplist'
+            })
+            li.setProperty('IsPlayable', 'true')
+            
+            li.addContextMenuItems([('Добавить в плейлист', 'XBMC.RunPlugin(%s)' % uri),])
             uri = construct_request({
                 'torr_url': urllib.quote(torr_link),
                 'title': k,
@@ -373,11 +398,24 @@ def start_torr(torr_link,img):
                 'img':img,
                 'func': 'play_url2'
             })
-            xbmcplugin.addDirectoryItem(hos, uri, li, False)
+            #li.addContextMenuItems([('Добавить в плейлист', 'XBMC.RunPlugin(%s?func=addplist&torr_url=%s&title=%s&ind=%s&img=%s&func=play_url2)' % (sys.argv[0],urllib.quote(torr_link),k,v,img  )),])
+            xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_LABEL)
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
     xbmcplugin.endOfDirectory(hos)
     TSplayer.end()
 
+def addplist(params):
+
+    li = xbmcgui.ListItem(params['tt'])
+    uri = construct_request({
+        'torr_url': params['t'],
+        'title': params['tt'].decode('utf-8'),
+        'ind':urllib.unquote_plus(params['i']),
+        'img':urllib.unquote_plus(params['ii']),
+        'func': 'play_url2'
+    })
+    xbmc.PlayList(xbmc.PLAYLIST_VIDEO).add(uri,li)
 def play_url2(params):
     print 'play'
     torr_link=urllib.unquote(params["torr_url"])
@@ -387,9 +425,33 @@ def play_url2(params):
     TSplayer=TSengine()
     out=TSplayer.load_torrent(torr_link,'RAW')
     if out=='Ok':
-        TSplayer.play_url_ind(int(params['ind']),title, img, img)
+        lnk=TSplayer.get_link(int(params['ind']),title, img, img)
+        if lnk:
+           
+            item = xbmcgui.ListItem(path=lnk)
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)  
+
+            while not xbmc.Player().isPlaying:
+                xbmc.sleep(300)
+            while TSplayer.player.active and not TSplayer.local: 
+                TSplayer.loop()
+                xbmc.sleep(300)
+                if xbmc.abortRequested:
+                    TSplayer.log.out("XBMC is shutting down")
+                    break
+            if TSplayer.local and xbmc.Player().isPlaying: 
+                try: time1=TSplayer.player.getTime()
+                except: time1=0
+                
+                i = xbmcgui.ListItem("***%s"%title)
+                i.setProperty('StartOffset', str(time1))
+                xbmc.Player().play(TSplayer.filename.decode('utf-8'),i)
+
+        else:
+            item = xbmcgui.ListItem(path='')
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, item) 
     TSplayer.end()
-    
+    xbmc.Player().stop
 def get_params(paramstring):
     param=[]
     if len(paramstring)>=2:
