@@ -269,7 +269,7 @@ def Movie_List(params):
                 name = '[COLOR FFC3FDB8]'+mi.title+'[/COLOR]'
 
                 i = xbmcgui.ListItem(name, iconImage=mi.img, thumbnailImage=mi.img)
-                u = sys.argv[0] + '?mode=PLAY'
+                u = sys.argv[0] + '?mode=PLAY_LIST'
                 u += '&name=%s'%urllib.quote_plus(mi.title)
                 u += '&url=%s'%urllib.quote_plus(mi.url)
                 u += '&img=%s'%urllib.quote_plus(mi.img)
@@ -280,7 +280,7 @@ def Movie_List(params):
                             						'artist':      mi.actors,
                             						'genre':       mi.genre})
                 i.setProperty('fanart_image', mi.img)
-                xbmcplugin.addDirectoryItem(h, u, i, False)
+                xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
                 pass
 
@@ -449,20 +449,62 @@ def Year_List(params):
 
 #-------------------------------------------------------------------------------
 
+def Play_List(params):
+    # -- parameters
+    url   = urllib.unquote_plus(params['url'])
+    img   = urllib.unquote_plus(params['img'])
+    name  = urllib.unquote_plus(params['name'])
+
+    is_Multi = False
+
+    html = get_HTML(url)
+    soup = BeautifulSoup(html)
+
+    for rec in soup.findAll('div', {'class':"item series-prev"}):
+        is_Multi = True
+        mi.img      = 'http://cinema.mosfilm.ru'+rec.find('img')['src']
+        mi.url      = rec.find('span', {'class':"episode"})['link']
+        mi.title    = rec.find('span', {'class':"episode"}).text.encode('utf-8')
+
+        name = '[COLOR FFC3FDB8]'+mi.title+'[/COLOR]'
+
+        i = xbmcgui.ListItem(name, iconImage=mi.img, thumbnailImage=mi.img)
+        u = sys.argv[0] + '?mode=PLAY'
+        u += '&name=%s'%urllib.quote_plus(mi.title)
+        u += '&url=%s'%urllib.quote_plus(mi.url)
+        u += '&img=%s'%urllib.quote_plus(mi.img)
+        i.setProperty('fanart_image', mi.img)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    if is_Multi == False:
+        url  = soup.find('embed')['src']
+        name = '[COLOR FFC3FDB8]'+name+'[/COLOR]'
+
+        i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
+        u = sys.argv[0] + '?mode=PLAY'
+        u += '&name=%s'%urllib.quote_plus(name)
+        u += '&url=%s'%urllib.quote_plus(url)
+        u += '&img=%s'%urllib.quote_plus(img)
+        i.setProperty('fanart_image', img)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    xbmcplugin.endOfDirectory(h)
+
 def PLAY(params):
     # -- parameters
     url   = urllib.unquote_plus(params['url'])
     img   = urllib.unquote_plus(params['img'])
     name  = urllib.unquote_plus(params['name'])
 
-    html = get_HTML(url)
-    soup = BeautifulSoup(html)
-
     #-- get video id
-    url      = soup.find('embed')['src']
+    print url
+    #url      = soup.find('embed')['src']
     video_id = re.compile(u'\/v\/(.+?)\?', re.MULTILINE|re.DOTALL).findall(url)[0]
 
+    print video_id
+
     xbmc.executebuiltin('PlayMedia(plugin://plugin.video.youtube/?action=play_video&videoid='+video_id+')')
+
 
 #-------------------------------------------------------------------------------
 def unescape(text):
@@ -529,8 +571,8 @@ elif mode == 'COUNTRY':
 	Country_List(params)
 elif mode == 'EMPTY':
     Empty()
-elif mode == 'PLAY_MODE':
-	Play_Mode(params)
+elif mode == 'PLAY_LIST':
+	Play_List(params)
 elif mode == 'PLAY':
 	PLAY(params)
 

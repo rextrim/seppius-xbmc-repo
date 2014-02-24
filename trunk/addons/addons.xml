@@ -587,7 +587,7 @@ Audio sources are
 
 <addon id="plugin.video.cinema.mosfilm.ru"
        name="[COLOR FF00FF00]Мосфильм ([/COLOR][COLOR FFFFF000]cinema.mosfilm.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.1.0"
+       version="1.1.1"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="1.0"/>
