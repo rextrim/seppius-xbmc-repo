@@ -539,17 +539,19 @@ def Get_Cookies(url): #soup):
 
 #---------- get play list ------------------------------------------------------
 def Get_PlayList(soup, parent_url):
-
     #-- get play list url
     plcode = ''
-    for rec in soup.findAll('script', {'type':'text/javascript'}):
-        if rec.text.find('eval(') > -1:
-            plcode = Run_Java(rec.text)
-            if len(plcode.split(',')) > 1:
-                break
+    plcode = Run_Java(parent_url)
+##    print '-----------------'
+##    print plcode
+##    print '-----------------'
     #---
-    swf_player  = plcode.split(',')[1]
-    plcode      = plcode.split(',')[0]
+    soup = BeautifulSoup(plcode, fromEncoding="windows-1251")
+
+    swf_player  = soup.find('object')['data']
+
+    str = soup.find('param', {'name':"flashvars"})['value']
+    plcode      = re.compile('pl=(.+?)&uid', re.MULTILINE|re.DOTALL).findall(str)[0]
 
     get_HTML(swf_player)
 
@@ -617,11 +619,11 @@ def Initialize():
         else:
             group = ''
 
-def Run_Java(SWF_code):
+def Run_Java(seasonvar_url):
     #-- remote PhantomJS service
     if Addon.getSetting('External_PhantomJS') == 'true':
         url = 'http://'+Addon.getSetting('PhantomJS_IP')+':'+Addon.getSetting('PhantomJS_Port')
-        values = {'swf_code' :	SWF_code}
+        values = {'url' :	seasonvar_url}
         post = urllib.urlencode(values)
         try:
             fcode = get_HTML(url, post)
@@ -630,8 +632,8 @@ def Run_Java(SWF_code):
 
         try:
             print '----------------------'
-            print SWF_code
-            print fcode
+            print seasonvar_url
+            #print fcode
             print '----------------------'
         except:
             pass
@@ -641,7 +643,7 @@ def Run_Java(SWF_code):
     #-- local PhantomJS service
     f1 = open(os.path.join(Addon.getAddonInfo('path'),'test.tpl'), 'r')
     f2 = open(os.path.join(Addon.getAddonInfo('path'),'test.js') , 'w')
-    fcode = f1.read().replace('$script$', SWF_code.replace('eval(', '" "+('))
+    fcode = f1.read().replace('$url$', seasonvar_url)
 
     f2.write(fcode.encode('utf-8'))
     f1.close()
