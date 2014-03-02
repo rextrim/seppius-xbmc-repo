@@ -1200,7 +1200,7 @@ class TorrenterSearch():
                 (query, urllib.quote_plus(json.dumps('{"stype":%s, "showId":%s, "seasonId":%s, "episodeId":%s, "id":%s}' %
                 (jstr(self.stype), jstr(self.showId), jstr(self.seasonId), jstr(self.episodeId), jstr(self.id)))),self.externals[self.stype],silent)
             if self.silent: xbmc.executebuiltin('xbmc.RunPlugin(%s)' % (url))
-            else: xbmc.executebuiltin('ActivateWindow(Videos,%s)' % (url))
+            else: xbmc.executebuiltin('ActivateWindow(Videos,"%s")' % (url))
         return
 
 class MoveToXBMC(Source):
