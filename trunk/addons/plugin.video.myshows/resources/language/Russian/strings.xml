@@ -272,6 +272,8 @@
         <string id="30317">Оценить эпизод</string>
         <string id="30318">Перенести в Библиотеку</string>
         <string id="30319">Информация</string>
+        <string id="30320">Пуск Всем Файлам</string>
+        <string id="30321">Стоп Всем Файлам</string>
 
 ///Other plugins
         <string id="30400">Назад</string>

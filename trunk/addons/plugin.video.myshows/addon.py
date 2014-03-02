@@ -3,17 +3,12 @@
 import urllib, re, sys, socket, json, os
 import xbmcplugin, xbmcgui, xbmc, xbmcaddon, xbmcvfs
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import md5
-
 from functions import *
 from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.8"
+__version__ = "1.8.9"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -472,8 +467,12 @@ def EpisodeList(action):
 
     for id in jdata:
         str_showId=str(jdata[id]["showId"])
+        try:
+            show_title=show_jdata[str_showId]['title']
+        except KeyError:
+            show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
+            show_title=show_jdata[str_showId]['title']
         if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
-        else: show_title=show_jdata[str_showId]['title']
         pre=prefix(id=int(id))
         left=dates_diff(str(jdata[id]["airDate"]), 'today')
         title=pre+(__language__(30113) % (int_xx(str(jdata[id]['seasonNumber'])), int_xx(str(jdata[id]['episodeNumber'])), left, show_title, jdata[id]['title']))

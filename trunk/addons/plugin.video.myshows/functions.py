@@ -144,7 +144,10 @@ def get_apps(paramstring=None):
         return apps
 
 def int_xx(intxx):
-    return '%02d' % (int(intxx))
+    if intxx and intxx!='None':
+        return '%02d' % (int(intxx))
+    else:
+        return '00'
 
 def StripName(name, list, replace=' '):
     lname=name.lower().split(' ')
@@ -156,7 +159,7 @@ def StripName(name, list, replace=' '):
 def auth():
     login=__settings__.getSetting("username")
     passwd=__settings__.getSetting("password")
-    if len(passwd)!=32:
+    if len(passwd)!=32 and passwd!='':
         __settings__.setSetting("password",md5(passwd).hexdigest())
         passwd=__settings__.getSetting("password")
     url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+passwd
@@ -376,8 +379,8 @@ class Data():
             CacheDB(self.url).add()
 
     def url2filename(self, url):
-        self.files=[r'shows.txt', r'showId_%s.txt', r'watched_showId_%s.txt', r'action_%s.txt']
-        self.urls=['http://api.myshows.ru/profile/shows/$', 'http://api.myshows.ru/shows/(\d{1,20}?$)', 'http://api.myshows.ru/profile/shows/(\d{1,20}?)/$', 'http://api.myshows.ru/profile/episodes/(unwatched|next)/']
+        self.files=[r'shows.txt', r'showId_%s.txt', r'watched_showId_%s.txt', r'action_%s.txt', r'top_%s.txt']
+        self.urls=['http://api.myshows.ru/profile/shows/$', 'http://api.myshows.ru/shows/(\d{1,20}?$)', 'http://api.myshows.ru/profile/shows/(\d{1,20}?)/$', 'http://api.myshows.ru/profile/episodes/(unwatched|next)/', 'http://api.myshows.ru/shows/top/(all|male|female)/']
         self.i=-1
         for file in self.urls:
             self.i=self.i+1
@@ -663,11 +666,14 @@ def uTorrentBrowser():
                folder=folder.replace(__settings__.getSetting("torrent_dir"),__settings__.getSetting("torrent_replacement"))
             filename=os.path.join(folder,filename)
             xbmc.executebuiltin('xbmc.PlayMedia("'+filename.encode('utf-8')+'")')
-        elif not tdir: Download().action_simple(action, hash)
-        elif tdir and action in ('0','3'):
+        elif not tdir and action not in ('0','3'): Download().action_simple(action, hash)
+        elif action in ('0','3'):
             dllist=sorted(Download().listfiles(hash), key=lambda x: x[0])
             for name,percent,ind,size in dllist:
-                if '/' in name and tdir in name:
+                if tdir:
+                    if '/' in name and tdir in name:
+                        menu.append((hash, action, str(ind)))
+                else:
                     menu.append((hash, action, str(ind)))
             for hash, action, ind in menu: Download().setprio_simple(hash, action, ind)
             return
@@ -701,7 +707,7 @@ def uTorrentBrowser():
         h=Handler(int(sys.argv[1]), link)
         popup=[]
         folder=True
-        actions=[('3', __language__(30281)),('0', __language__(30282))]
+        actions=[('3', __language__(30320)),('0',__language__(30321))]
         for a,title in actions:
             argv['action']=a
             popup.append((Link("52", argv),title))
@@ -712,7 +718,7 @@ def uTorrentBrowser():
         h=Handler(int(sys.argv[1]), link)
         popup=[]
         if not hash:
-            actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),]
+            actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),('3', __language__(30320)),('0',__language__(30321))]#lang
             folder=True
         else:
             actions=[('3', __language__(30281)),('0', __language__(30282)),('play', __language__(30227))]

@@ -305,9 +305,9 @@
         <string id="30317">Rate episode</string>
         <string id="30318">Move to Library</string>
         <string id="30319">Information</string>
+        <string id="30320">Start All Files</string>
+        <string id="30321">Stop All Files</string>
 
-        <string id="30320">Personal MyShows.ru list</string>
-        <string id="30321">MyShows.ru user</string>
         <string id="30322">MyShows.ru password</string>
         <string id="30323">All Hail Shchvova</string>
         <string id="30324">Season %d - %d episode(s)</string>
