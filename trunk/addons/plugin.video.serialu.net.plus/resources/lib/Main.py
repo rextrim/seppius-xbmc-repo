@@ -586,7 +586,8 @@ class MainScreen(xbmcgui.WindowXML):
                 if 'http' in par.split(':')[1]:
                     s_url = par.split(':')[1]+':'+par.split(':')[2]
                 else:
-                    s_url = xppod.Decode(par.split(':')[1]).split(' or ')[0]
+                    s_url = xppod.Decode(par.split(':')[1]).split(' or ') #[0]
+                    s_url = s_url[len(s_url)-1]
         s_num += 1
 
         if name == selected.getLabel():
