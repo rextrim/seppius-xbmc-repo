@@ -514,6 +514,9 @@ class MainScreen(xbmcgui.WindowXML):
         if video_url.find('http:') == -1:
             video_url = xppod.Decode(video_url)
 
+        video_url = video_url.split(' or ') #[0]
+        video_url = video_url[len(video_url)-1]
+
         i = xbmcgui.ListItem(i_name, video_url, thumbnailImage=img)
         i.setProperty('IsPlayable', 'true')
         pl.add(video_url, i)
