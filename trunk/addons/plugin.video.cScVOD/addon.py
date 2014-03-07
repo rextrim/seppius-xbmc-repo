@@ -183,7 +183,7 @@ def Categories(params):
 						})
 				listitem=xbmcgui.ListItem(title, img_src, img_src)
 				listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-				xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+				xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
 			except: stream = None
 		xbmc.executebuiltin('Container.SetViewMode(504)')
 		xbmcplugin.endOfDirectory(hos)
@@ -272,7 +272,7 @@ def Categories(params):
 						})
 				listitem=xbmcgui.ListItem(title, img_src, img_src)
 				listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-				xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+				xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
 			except: stream = None
 		xbmc.executebuiltin('Container.SetViewMode(504)')
 		xbmcplugin.endOfDirectory(hos)
