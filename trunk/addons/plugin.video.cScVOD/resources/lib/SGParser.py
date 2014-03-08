@@ -8,19 +8,7 @@ class sg_parsers:
 
     def get_parsed_link(self, url):
         try:
-			if url.find('.minizal.net/video/md5hash') > -1:
-				url1 = 'http://s2.minizal.net/php/play.php?name=film/pod.krovatju.2012.bdrip.flv'
-				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
-				'Connection': 'Close'})
-				try:
-					page = urllib2.urlopen(request).read()
-					code = re.findall('video/(.*?)/', page)
-					if len(code) > 0:
-						md5hash = code[0]
-						url = url.replace('md5hash', md5hash)
-				except Exception as ex:
-					print ex
-	
+
 			if url.find('.lovekino.tv/video/md5hash') > -1:
 				url1 = 'http://s2.lovekino.tv/player/play.php?name=films/klyatva.na.krovi.2010.xvid.iptvrip.filesx.flv'
 				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -99,7 +87,7 @@ class sg_parsers:
 	
 				except Exception as ex:
 					print ex
-			
+	
 			if url.find('poiuytrew.pw/') > -1:
 				url1 = 'http://filmix.net/dramy/82725-vnutri-lyuina-devisa-inside-llewyn-davis-2013.html'
 				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -111,14 +99,14 @@ class sg_parsers:
 						code = code_list[0]
 						code_url = 'http://93.188.161.204/php/filmix.php?code=' + code
 						request2 = urllib2.Request(code_url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
-							'Connection': 'Close'})
+						'Connection': 'Close'})
 						hash = urllib2.urlopen(request2).read()
 						url = url.replace('md5hash', hash)
 						print 'filmix'
 						print url
 				except Exception as ex:
 					print ex
-					
+	
 			if url.find('pirateplayer.com/') > -1:
 				url1 = 'http://online.stepashka.com/filmy/detektiv/29140-falshivaya-kukla-hamis-a-baba-1991.html'
 				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -133,7 +121,7 @@ class sg_parsers:
 						print url
 				except Exception as ex:
 					print ex
-				
+	
 			if url.find('.videokub.com/embed/') > -1:
 				request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
 				'Connection': 'Close'})
@@ -146,7 +134,7 @@ class sg_parsers:
 						print url
 				except Exception as ex:
 					print ex
-			
+	
 			if url.find('hotcloud.org/') > -1:
 				url1 = 'http://my-hit.org/film/18620/online/'
 				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -159,7 +147,74 @@ class sg_parsers:
 						url = url.replace('md5hash', md5hash)
 				except Exception as ex:
 					print ex
+	
+			if url.find('moviestape.com/') > -1:
+				url1 = 'http://fs0.moviestape.com/show.php?name=films/Captain.Phillips.mp4'
+				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+				'Connection': 'Close'})
+				try:
+					page = urllib2.urlopen(request).read()
+					code = re.findall("file : 'http:\\/\\/.*\\/video\\/(.*)\\/.*\\/.*mp4'};", page)
+					if len(code) > 0:
+						md5hash = code[0]
+						url = url.replace('md5hash', md5hash)
+				except Exception as ex:
+					print ex
 					
+			if url.find('aburmu4.tv/') > -1:
+				url1 = 'http://s1.aburmu4.tv/player/play.php?s=1&name=vsfw/antboy_2013.flv'
+				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+				'Connection': 'Close'})
+				try:
+					page = urllib2.urlopen(request).read()
+					code = re.findall("file : 'http:\\/\\/.*\\/v\\/(.*)\\/.*\\/.*flv'};", page)
+					if len(code) > 0:
+						md5hash = code[0]
+						url = url.replace('md5hash', md5hash)
+				except Exception as ex:
+					print ex
+			
+			if url.find('serialo.ru/video') > -1:
+				url5 = 'http://latino-serialo.ru/italianskie_seriali_online/2638-polny-ocharovaniya-cheias-de-charme-seriya-10.html'
+				request = urllib2.Request(url5, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+				'Connection': 'Close'})
+				try:
+					page = urllib2.urlopen(request).read()
+					hash_list = re.findall(';pl=(.*?)"', page)
+					if len(hash_list) > 0:
+						hash = hash_list[0]
+						print 'hash ' + hash
+						request2 = urllib2.Request(hash, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+						'Connection': 'Close'})
+						page = urllib2.urlopen(request2).read()
+						page = page.replace('\n', '')
+						tmp = re.findall('file":"(.*?)"', page)
+						tmp = tmp[0]
+						print 'tmp ' + tmp
+						md5hash = re.findall('\\/video\\/(.*?)\\/', tmp)
+						md5hash = md5hash[0]
+						tmp2 = tmp.replace(md5hash, 'md5hash')
+						md4hash = re.findall('\\/md5hash\\/(.*?)\\/', tmp2)
+						md4hash = md4hash[0]
+						print 'md5hash ' + md5hash
+						print 'md4hash ' + md4hash
+						url2 = url.replace('md5hash', md5hash)
+						url = url2.replace('md4hash', md4hash)
+						print "PLAY URL" + url
+				except Exception as ex:
+					print ex
+			
+			if url.find('divan.tv/') > -1 or url.find('lider-tv.ru/') > -1:
+				request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+				'Connection': 'Close'})
+				try:
+					page = urllib2.urlopen(request).read()
+					code = re.findall('file: "(.*?)",', page)
+					if len(code) > 0:
+						url = code[0]
+				except Exception as ex:
+					print ex
+			
         except Exception as ex:
             print ex
             print 'sgparsed_link'
