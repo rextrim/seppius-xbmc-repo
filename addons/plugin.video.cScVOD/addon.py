@@ -20,8 +20,7 @@ from GoshaParser import gosha_parsers
 from ArshavirParser import arshavir_parsers
 from SGParser import sg_parsers
 hos = int(sys.argv[1])
-#addon_fanart  = Addon.getAddonInfo('fanart')
-addon_id      = Addon.getAddonInfo('id')
+addon_id = Addon.getAddonInfo('id')
 xbmcplugin.setContent(hos, 'movies')
 std_headers = {
 	'User-Agent': 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.6) Gecko/20100627 Firefox/3.6.6',
@@ -29,7 +28,6 @@ std_headers = {
 	'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 	'Accept-Language': 'en-us,en;q=0.5',
 }
-start = os.path.join( Addon.getAddonInfo('path'), "cScVOD.xml" )
 
 def construct_request(params):
 	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
@@ -80,7 +78,10 @@ def Categories(params):
 		url = start
 	xml = _downloadUrl(url)
 	print 'HTTP LEN = [%s]' % len(xml)
-	xml = mn.parseString(xml)
+	if url.find('m3u') > -1:
+		m3u(xml)
+	else:
+		xml = mn.parseString(xml)
 	n = 0
 	if searchon == None:
 		try: search = xml.getElementsByTagName('search_on')[0].firstChild.data
@@ -101,183 +102,133 @@ def Categories(params):
 			xml = _downloadUrl(url)
 		print 'HTTP LEN = [%s]' % len(xml)
 		xml = mn.parseString(xml)
-		for prev_page_url in xml.getElementsByTagName('prev_page_url'):
-			prev_url = xml.getElementsByTagName('prev_page_url')[0].firstChild.data
-			prev_title =  "[COLOR FFFFFF00]<-" + prev_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
-			uri = construct_request({
-				'func': 'Categories',
-				'link':prev_url 
-				})	
-			listitem=xbmcgui.ListItem(prev_title, 'DefaultVideo.png', 'DefaultVideo.png')
-			xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-		for next_page_url in xml.getElementsByTagName('next_page_url'):
-			next_url = xml.getElementsByTagName('next_page_url')[0].firstChild.data
-			next_title =  "[COLOR FFFFFF00]->" + next_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
-			uri = construct_request({
-				'func': 'Categories',
-				'link':next_url 
-				})	
-			listitem=xbmcgui.ListItem(next_title, 'DefaultVideo.png', 'DefaultVideo.png')
-			xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-		for channel in xml.getElementsByTagName('channel'):
-			try: title = channel.getElementsByTagName('title')[0].firstChild.data.encode('utf-8')
-			except: title = 'No title or error'
-			title = title.replace('<b>', '')
-			title = title.replace('</b>', '')
-			try:
-				description = channel.getElementsByTagName('description')[0].firstChild.data.encode('utf-8')
-				img_src_list = re.findall('img .*?src="(.*?)"', description)
-				if len(img_src_list) > 0:
-					img_src = img_src_list[0]
-				else:
-					img_src_list = re.findall("img .*?src='(.*?)'", description)
-					if len(img_src_list) > 0:
-						img_src = img_src_list[0]
-					else:	
-						img_src = 'DefaultVideo.png'
-						
-				description = description.replace('<br>', '\n')
-				description = description.replace('<br/>', '\n')
-				description = description.replace('</h1>', '</h1>\n')
-				description = description.replace('</h2>', '</h2>\n')
-				description = description.replace('&nbsp;', ' ')
-				description4playlist_html = description
-				text = re.compile('<[\\/\\!]*?[^<>]*?>')
-				description = text.sub('', description)
-				plot = description
-			except: 
-				description = 'No description'
-				plot = description
-				img_src = 'DefaultVideo.png'
-			n = n+1
-			try: 
-				link = channel.getElementsByTagName('playlist_url')[0].firstChild.data
-				mysetInfo={}
-				mysetInfo['plot'] = plot
-				mysetInfo['plotoutline'] = plot
-				uri = construct_request({
-					'func': 'Categories',
-					'link':link 
-					})	
-				listitem=xbmcgui.ListItem(title, img_src, img_src)
-				listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-				xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-			except: link = None
-			try: 
-				stream = channel.getElementsByTagName('stream_url')[0].firstChild.data
-				mysetInfo={}
-				mysetInfo['plot'] = plot
-				mysetInfo['plotoutline'] = plot
-				if img_src != None:
-					uri = construct_request({
-						'func': 'Play',
-						'title':title,
-						'img':img_src,
-						'stream':stream 
-						})	
-				else:
-					uri = construct_request({
-						'func': 'Play',
-						'title':title,
-						'stream':stream 
-						})
-				listitem=xbmcgui.ListItem(title, img_src, img_src)
-				listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-				xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
-			except: stream = None
-		xbmc.executebuiltin('Container.SetViewMode(504)')
-		xbmcplugin.endOfDirectory(hos)
+		playlist(xml)
 	else:
-		for prev_page_url in xml.getElementsByTagName('prev_page_url'):
-			prev_url = xml.getElementsByTagName('prev_page_url')[0].firstChild.data
-			prev_title =  "[COLOR FFFFFF00]<-" + prev_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
-			uri = construct_request({
-				'func': 'Categories',
-				'link':prev_url 
-				})	
-			listitem=xbmcgui.ListItem(prev_title, 'DefaultVideo.png', 'DefaultVideo.png')
-			xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-		for next_page_url in xml.getElementsByTagName('next_page_url'):
-			next_url = xml.getElementsByTagName('next_page_url')[0].firstChild.data
-			next_title =  "[COLOR FFFFFF00]->" + next_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
-			uri = construct_request({
-				'func': 'Categories',
-				'link':next_url 
-				})	
-			listitem=xbmcgui.ListItem(next_title, 'DefaultVideo.png', 'DefaultVideo.png')
-			xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-		for channel in xml.getElementsByTagName('channel'):
-			try: 
-				title = channel.getElementsByTagName('title')[0].firstChild.data.encode('utf-8')
-			except: 
-				title = 'No title or error'
-			title = title.replace('<b>', '')
-			title = title.replace('</b>', '')
-			try:
-				description = channel.getElementsByTagName('description')[0].firstChild.data.encode('utf-8')
-				img_src_list = re.findall('img .*?src="(.*?)"', description)
-				if len(img_src_list) > 0:
-					img_src = img_src_list[0]
-				else:
-					img_src_list = re.findall("img .*?src='(.*?)'", description)
-					if len(img_src_list) > 0:
-						img_src = img_src_list[0]
-					else:	
-						img_src = 'DefaultVideo.png'
-							
-				description = description.replace('<br>', '\n')
-				description = description.replace('<br/>', '\n')
-				description = description.replace('</h1>', '</h1>\n')
-				description = description.replace('</h2>', '</h2>\n')
-				description = description.replace('&nbsp;', ' ')
-				description4playlist_html = description
-				text = re.compile('<[\\/\\!]*?[^<>]*?>')
-				description = text.sub('', description)
-				plot = description
-			except: 
-				description = 'No description'
-				plot = description
-				img_src = 'DefaultVideo.png'
-			n = n+1
-			try: 
-				link = channel.getElementsByTagName('playlist_url')[0].firstChild.data
-				mysetInfo={}
-				mysetInfo['plot'] = plot
-				mysetInfo['plotoutline'] = plot
-				uri = construct_request({
-					'func': 'Categories',
-					'link':link 
-					})	
-				listitem=xbmcgui.ListItem(title, img_src, img_src)
-				listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-				xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-			except: link = None
-			try: 
-				stream = channel.getElementsByTagName('stream_url')[0].firstChild.data
-				mysetInfo={}
-				mysetInfo['plot'] = plot
-				mysetInfo['plotoutline'] = plot
-				if img_src != None:
-					uri = construct_request({
-						'func': 'Play',
-						'title':title,
-						'img':img_src,
-						'stream':stream 
-						})	
-				else:
-					uri = construct_request({
-						'func': 'Play',
-						'title':title,
-						'stream':stream 
-						})
-				listitem=xbmcgui.ListItem(title, img_src, img_src)
-				listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-				xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
-			except: stream = None
-		xbmc.executebuiltin('Container.SetViewMode(504)')
-		xbmcplugin.endOfDirectory(hos)
+		if url.find('m3u') > -1:
+			m3u(xml)
+		else:
+			playlist(xml)
+		
+	if Addon.getSetting('start') == url:
+		uri = construct_request({
+			'func': 'settings'
+			})
+		listitem=xbmcgui.ListItem('\xd0\x9d\xd0\xb0\xd1\x81\xd1\x82\xd1\x80\xd0\xbe\xd0\xb9\xd0\xba\xd0\xb8 \xd0\xb0\xd0\xb4\xd0\xb4\xd0\xbe\xd0\xbd\xd0\xb0', 'DefaultVideo.png', 'DefaultVideo.png')
+		listitem.setInfo(type = 'settings', infoLabels = '')
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+	xbmc.executebuiltin('Container.SetViewMode(504)')
+	xbmcplugin.endOfDirectory(hos)
 	print 'Channels = [%s]' % n
 
+def playlist(xml):
+	n = 0
+	xml = xml
+	for prev_page_url in xml.getElementsByTagName('prev_page_url'):
+		prev_url = xml.getElementsByTagName('prev_page_url')[0].firstChild.data
+		prev_title =  "[COLOR FFFFFF00]<-" + prev_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
+		uri = construct_request({
+			'func': 'Categories',
+			'link':prev_url 
+			})	
+		listitem=xbmcgui.ListItem(prev_title, 'DefaultVideo.png', 'DefaultVideo.png')
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+	for next_page_url in xml.getElementsByTagName('next_page_url'):
+		next_url = xml.getElementsByTagName('next_page_url')[0].firstChild.data
+		next_title =  "[COLOR FFFFFF00]->" + next_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
+		uri = construct_request({
+			'func': 'Categories',
+			'link':next_url 
+			})	
+		listitem=xbmcgui.ListItem(next_title, 'DefaultVideo.png', 'DefaultVideo.png')
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+	for channel in xml.getElementsByTagName('channel'):
+		try: title = channel.getElementsByTagName('title')[0].firstChild.data.encode('utf-8')
+		except: title = 'No title or error'
+		title = title.replace('<b>', '')
+		title = title.replace('</b>', '')
+		try:
+			description = channel.getElementsByTagName('description')[0].firstChild.data.encode('utf-8')
+			img_src_list = re.findall('img .*?src="(.*?)"', description)
+			if len(img_src_list) > 0:
+				img_src = img_src_list[0]
+			else:
+				img_src_list = re.findall("img .*?src='(.*?)'", description)
+				if len(img_src_list) > 0:
+					img_src = img_src_list[0]
+				else:	
+					img_src = 'DefaultVideo.png'
+					
+			description = description.replace('<br>', '\n')
+			description = description.replace('<br/>', '\n')
+			description = description.replace('</h1>', '</h1>\n')
+			description = description.replace('</h2>', '</h2>\n')
+			description = description.replace('&nbsp;', ' ')
+			description4playlist_html = description
+			text = re.compile('<[\\/\\!]*?[^<>]*?>')
+			description = text.sub('', description)
+			plot = description
+		except: 
+			description = 'No description'
+			plot = description
+			img_src = 'DefaultVideo.png'
+		n = n+1
+		try: 
+			link = channel.getElementsByTagName('playlist_url')[0].firstChild.data
+			mysetInfo={}
+			mysetInfo['plot'] = plot
+			mysetInfo['plotoutline'] = plot
+			uri = construct_request({
+				'func': 'Categories',
+				'link':link 
+				})	
+			listitem=xbmcgui.ListItem(title, img_src, img_src)
+			listitem.setInfo(type = 'video', infoLabels = mysetInfo)
+			xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+		except: link = None
+		try: 
+			stream = channel.getElementsByTagName('stream_url')[0].firstChild.data
+			mysetInfo={}
+			mysetInfo['plot'] = plot
+			mysetInfo['plotoutline'] = plot
+			if img_src != None:
+				uri = construct_request({
+					'func': 'Play',
+					'title':title,
+					'img':img_src,
+					'stream':stream 
+					})	
+			else:
+				uri = construct_request({
+					'func': 'Play',
+					'title':title,
+					'stream':stream 
+					})
+			listitem=xbmcgui.ListItem(title, img_src, img_src)
+			listitem.setInfo(type = 'video', infoLabels = mysetInfo)
+			xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
+		except: stream = None	
+	
+def m3u(xml):
+	m3u = xml
+	regex = re.findall('#EXTINF.*,(.*\\s)\\s*(.*)', m3u)
+	if not len(regex) > 0:
+		regex = re.findall('((.*.+)(.*))', m3u)
+	for text in regex:
+		title = text[0].strip()
+		url = text[1].strip()
+		uri = construct_request({
+			'func': 'Play',
+			'title':title,
+			'stream':url
+			})
+		listitem=xbmcgui.ListItem(title, '', '')
+		listitem.setInfo(type = 'video', infoLabels = '')
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+		
+def settings(params):
+	Addon.openSettings()
+	return None
+	
 def Play(params):
 	global ARSHAVIR_PARSER
 	global SG_PARSER
@@ -324,11 +275,11 @@ def Play(params):
 		
 		if url.find('youtube.com') > -1:
 			try:
-				video = get_yt(url)
+				video = get_yt().get_youtube_link2(url)
 				url = video
 				print url
-			except Exception as ex:
-				print ex
+			except:
+				print 'error youtube'
 				
 		if url.find('m3u8') > -1:
 			best_m3u8(url)		
