@@ -470,7 +470,7 @@ Audio sources are
 
 <addon id="plugin.video.allserials.tv"
        name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]allserials.tv[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.7"
+       version="1.0.8"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -529,7 +529,7 @@ Audio sources are
 
 <addon id="plugin.video.cScVOD"
        name="[COLOR FF00FF00]cScVOD[/COLOR]"
-       version="1.1"
+       version="1.2"
        provider-name="CSC">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -540,7 +540,7 @@ Audio sources are
   <extension point="xbmc.addon.metadata">
     <summary>cScVOD</summary>
     <description>
-        Плагин сделаный командой CSC для плейлистов типа nStreamVOD. Способен заменить огромное количество плагинов. С вопросами пишите на SashaGamliy@gmail.com
+Плагин сделаный командой CSC для плейлистов типа nStreamVOD.Все стоящие русскоязычные сайты с фильмами/мультиками/сериалами и т.д. В ОДНОМ АДДОНЕ. С вопросами пишите на SashaGamliy@gmail.com
     </description>
     <platform>all</platform>
   </extension>
