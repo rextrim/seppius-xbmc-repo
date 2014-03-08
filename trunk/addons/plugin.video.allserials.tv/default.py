@@ -303,7 +303,7 @@ def Serial_Info(params):
             u += '&country_name=%s'%urllib.quote_plus(par.country_name)
             u += '&is_season=%s'%urllib.quote_plus('*')
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
-                                                    'cast' :       mi.actors,
+                                                    'artist' :     mi.actors,
                             						'year':        int(mi.year),
                             						'director':    mi.director,
                             						'plot':        mi.text,
@@ -335,7 +335,7 @@ def Serial_Info(params):
             u += '&img=%s'%urllib.quote_plus(mi.img)
             u += '&playlist=%s'%urllib.quote_plus(mi.pl_url)
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
-                                                    'cast' :       mi.actors,
+                                                    'artist' :     mi.actors,
                             						'year':        int(mi.year),
                             						'director':    mi.director,
                             						'plot':        mi.text,
@@ -390,6 +390,7 @@ def Get_Movie_Info(url):
     #actors
     try:
         mi.actors = main_rec.find('div', {'class':"field field-name-field-serial-actors field-type-text-long field-label-inline"}).find('span', {'class':"field-item even"}).text.encode('utf-8')
+        mi.actors = mi.actors.split(',')
     except:
         mi.actors = ''
     #text
