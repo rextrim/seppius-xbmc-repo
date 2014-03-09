@@ -76,7 +76,7 @@ class ExtraFunction(Main):
                           ])
         self.handle()
 
-def Shows(mode):
+def Shows():
     try: syncshows=SyncXBMC()
     except: syncshows=False
     saveCheckPoint()
@@ -84,6 +84,7 @@ def Shows(mode):
     #lockView('info')
     if mode==19:
         KB = xbmc.Keyboard()
+        if action: KB.setDefault(unicode(action))
         KB.setHeading(__language__(30203))
         KB.doModal()
         if (KB.isConfirmed()) and KB.getText() not in [None,'']:
@@ -1327,19 +1328,26 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
-    #title={u'tvshowid': 35, u'episode': 19, u'season': 1, 'tvdb_id': u'79044', u'episodeid': 974, u'label': u'Time Begins to Move Again', u'uniqueid': {u'unknown': u'305759'}, 'year': 2005, u'showtitle': u'Honey and Clover'}
-    #title=json.dumps(title)
-    #kinorate(x['item']['title'],x['item']['year'])
+    data={'item': {'label': u'\u041a\u043b\u043e\u0434 \u0432 \u043f\u043e\u043c\u043e\u0449\u044c (2012)'}}
+    file=data['item']["label"]
+    file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').strip()
+    match=re.compile('(.+) (\d{4})( |$)', re.I | re.IGNORECASE).findall(file)
+    if match:
+        data["title"], data["year"] = match[0][0],match[0][1]
+        data["type"] = "movie"
+        data["year"]=int(data["year"])
+        data["title"]=data["title"].strip()
+        kinorate(data['title'],data['year'])
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
     #Rate('24199', '0',None)
     #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
-    title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    title='{"label": "The.Daily.Show.2014.02.18.Kevin.Spacey.HDTV.x264-BATV.mp4"}'
-    try:
-        SyncXBMC(title).doaction()
-    except:
-        FakeRate(title)
+    #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
+    #title='{"label": "The.Daily.Show.2014.02.18.Kevin.Spacey.HDTV.x264-BATV.mp4"}'
+    #try:
+    #    SyncXBMC(title).doaction()
+    #except:
+    #    FakeRate(title)
     #FakeRate(title)
     #WatchedDB().onaccess()
 
@@ -1412,10 +1420,10 @@ except: pass
 if mode == None:
     Main()
 elif mode >= 10 and mode <19:
-    Shows(mode)
+    Shows()
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_TITLE)
 elif mode == 19:
-    Shows(mode)
+    Shows()
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RATING)
 elif mode == 20:
     Seasons(showId)

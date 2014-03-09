@@ -521,7 +521,7 @@ def sortext(filelist):
         ext=name.split('.')[-1]
         try:result[ext]=result[ext]+1
         except: result[ext]=1
-    lol=result.viewitems()
+    lol=result.iteritems()
     lol=sorted(lol, key=lambda x: x[1])
     Debug('[sortext]: lol:'+str(lol))
     popext=lol[-1][0]
@@ -650,6 +650,14 @@ def uTorrentBrowser():
         if action=='context':
             xbmc.executebuiltin("Action(ContextMenu)")
             return
+        if action=='search' and hash:
+            title=None
+            for data in Download().list():
+                if data['id']==hash:
+                    title=data['name']
+                    break
+            if title: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=19&action=%s)' % (title))
+            return
         if (ind or ind==0) and action in ('0','3'):
             Download().setprio_simple(hash, action, ind)
         elif (ind or ind==0) and action=='play':
@@ -718,7 +726,7 @@ def uTorrentBrowser():
         h=Handler(int(sys.argv[1]), link)
         popup=[]
         if not hash:
-            actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('removedata', __language__(30284)),('3', __language__(30320)),('0',__language__(30321))]#lang
+            actions=[('start', __language__(30281)),('stop', __language__(30282)),('remove',__language__(30283)),('search', __language__(30101)),('3', __language__(30320)),('0',__language__(30321)),('removedata', __language__(30284))]
             folder=True
         else:
             actions=[('3', __language__(30281)),('0', __language__(30282)),('play', __language__(30227))]
@@ -762,6 +770,14 @@ class PluginStatus():
             TSstatus=unicode(__language__(30267))
         except: TSstatus=unicode(__language__(30259))
 
+        try:
+            import warnings
+            warnings.filterwarnings('ignore', category=RuntimeWarning)
+            import libtorrent
+            libmode=unicode(__language__(30267))
+        except:
+            libmode=unicode(__language__(30259))
+
         from torrents import TorrentDB
         from net import Download
 
@@ -783,6 +799,9 @@ class PluginStatus():
                 text=self.lostfilm
             elif action=='torrenterstatus':
                 text=self.torrenterstatus
+                text2='Python-LibTorrent and Torrenter at http://xbmc.ru/'
+            elif action=='libmode':
+                text=libmode
                 text2='Python-LibTorrent and Torrenter at http://xbmc.ru/'
             elif action=='myshows':
                 text=self.myshows
@@ -814,6 +833,7 @@ class PluginStatus():
               {"title":'MyShows.ru (Service): %s' % self.myshows       ,"mode":"61",    "argv":{'action':'myshows',},},
               {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
               {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
+              {"title":'Python-LibTorrent: %s' % libmode  ,"mode":"61",   "argv":{'action':'libmode'}},
               {"title":'plugin.video.torrenter: %s' % self.torrenterstatus  ,"mode":"61",   "argv":{'action':'torrenterstatus'}},
               {"title":'plugin.video.LostFilm: %s' % self.lostfilm  ,"mode":"61",   "argv":{'action':'lostfilm'}},
               {"title":'uTorrent WebUI: %s' % utorrentstatus  ,"mode":"61",   "argv":{'action':'utorrentstatus'}},
