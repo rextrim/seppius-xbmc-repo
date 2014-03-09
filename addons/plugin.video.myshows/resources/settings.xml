@@ -10,6 +10,7 @@
         <setting id="refresh_always"   type="bool" label="30006" default="false"/>
         <setting id="menu_style"  type="enum" label="30016" default="0" lvalues="30014|30015"/>
         <setting id="debug"   type="bool" label="30011" default="false"/>
+        <setting type="action" label="30042" action="RunPlugin(plugin://plugin.video.myshows/?mode=1)" />
     </category>
     <category label="30037">
         <setting id="tvdb" type="bool" label="30039" default="false" />

@@ -42,6 +42,7 @@
         <string id="30039">Use TheTVDb.com for images and extra info (high traffic)</string>
         <string id="30040">Silent Offline Marks Mode</string>
         <string id="30041">[B]Send Offline Marks[/B]</string>
+        <string id="30042">[B]Перевести на Русский (Force Russian)[/B]</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
@@ -264,8 +265,8 @@
         <string id="30530">%d marks has been synced.</string>
         <string id="30531">Would you like to delete %s marks without syncing?</string>
         <string id="30532">No internet!</string>
+        <string id="30533">Forced Russian! (until next update)</string>
 
-        <string id="30533">Directory Files:</string>
         <string id="30534">Deleted from DB: %s</string>
         <string id="30535">Sources:</string>
         <string id="30536">Cache has been cleared!</string>
