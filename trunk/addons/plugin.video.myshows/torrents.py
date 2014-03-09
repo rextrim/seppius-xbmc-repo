@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.8.6"
+__version__ = "1.8.9"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -38,7 +38,7 @@ socket.setdefaulttimeout(60)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
 __tmppath__= os.path.join(__addonpath__, 'tmp')
-striplist=['the', 'tonight', 'show', 'with', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
+striplist=['the', 'tonight', '  ', 'with', 'jon', 'stewart', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 subs_ext=['ass','mpsub','rum','sbt','sbv','srt','ssa','sub','sup','w32']
 allowed_ext=['avi','mp4','mkv','flv','mov','vob','wmv','ogm','asx','mpg','mpeg','avc','vp3','fli','flc','m4v']
 allowed_ext.extend(subs_ext)
@@ -470,7 +470,7 @@ class Source:
             x=FileNamesPrepare(fn)
             if x:
                 doit=False
-                self.filename=os.path.join(filename, dirlist[cutlist.index(fn)])
+                self.filename=os.path.join(filename.encode('utf-8', 'ignore'), dirlist[cutlist.index(fn)])
                 self.episodeId=x[1]
                 if not self.seasonId and not x[0]:
                     break
@@ -1185,7 +1185,8 @@ class TorrenterSearch():
             silent,i="&silent=true",0
             dialog_items=[u'%s S%sE%s 720p' % (t, int_xx(s), int_xx(e)),
                               u'%s S%sE%s' % (t, int_xx(s), int_xx(e)),
-                              u'%s %s' % (t, rev_date(a))]
+                              u'%s %s' % (t, rev_date(a)),
+                              u'%s %s' % (StripName(t, striplist), rev_date(a))]
         elif self.silent and not self.id and self.seasonId:
             silent,i="&silent=true",0
             dialog_items=[u'%s Сезон %s  720p' % (t, s),

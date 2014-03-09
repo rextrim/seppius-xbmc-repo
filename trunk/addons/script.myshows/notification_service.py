@@ -189,9 +189,9 @@ class myshowsPlayer(xbmc.Player):
                     if self.type!="episode":
                         file=data["label"]
                         file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').strip()
-                        match=re.compile('(.+) (\d{4}) ', re.I | re.IGNORECASE).findall(file)
+                        match=re.compile('(.+) (\d{4})( |$)', re.I | re.IGNORECASE).findall(file)
                         if match:
-                            data["title"], data["year"] = match[0]
+                            data["title"], data["year"] = match[0][0],match[0][1]
                             self.type = "movie"
                             data["type"] = "movie"
                             data["year"]=int(data["year"])
