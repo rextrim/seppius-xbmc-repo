@@ -1419,6 +1419,13 @@ except: pass
 
 if mode == None:
     Main()
+elif mode==1:
+    import shutil
+    ru=os.path.join(unicode(__addonpath__), u'resources',u'language',u'Russian')
+    en=os.path.join(unicode(__addonpath__), u'resources',u'language',u'English')
+    shutil.move(os.path.join(en, u'strings.xml'), os.path.join(en, u'old_strings.xml'))
+    shutil.copy(os.path.join(ru, u'strings.xml'), en)
+    showMessage(__language__(30208), __language__(30533))
 elif mode >= 10 and mode <19:
     Shows()
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_TITLE)
