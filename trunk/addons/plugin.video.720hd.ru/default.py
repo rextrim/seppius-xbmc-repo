@@ -83,6 +83,8 @@ def get_HTML(url, post = None, ref = None, l = None):
     if ref==None:
         ref='http://'+host
 
+    print url
+
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host',   host)
     request.add_header('Accept', '*/*')
@@ -136,7 +138,7 @@ def Get_Parameters(params):
 
 #---------- get HD720.RU URL --------------------------------------------------
 def Get_URL(par):
-    url = 'http://720hd.ru/index.php?'
+    url = 'http://v720.ru/index.php?'
     #-- genre
     if par.genre <> '':
         url += 'do=cat&category='+par.genre+'&'
@@ -147,7 +149,7 @@ def Get_URL(par):
 
 #----------- get page count & number of movies ---------------------------------
 def Get_Page_and_Movies_Count(par):
-    url = 'http://720hd.ru/index.php?'
+    url = 'http://v720.ru/index.php?'
     #-- genre
     if par.genre <> '':
         url += 'do=cat&category='+par.genre
@@ -271,13 +273,16 @@ def Movie_List(params):
 
         # -- get movie info
         for rec in soup.find('div',{'id':'dle-content'}).findAll('table'):
-            try:
+            #try:
                 #--
                 mi.url      = rec.find('td',{'class':'short-story_title'}).find('a')['href']
-                mi.title    = re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(rec.find('td',{'class':'short-story_title'}).find('a').text)[0][0].encode('utf-8')
-                mi.year     = int(re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(rec.find('td',{'class':'short-story_title'}).find('a').text)[0][1])
+                print mi.url
+                name_year = rec.find('td',{'class':'short-story_title'}).find('a').text.encode('utf-8')
+                print name_year
+                mi.title    = name_year.split('(')[0]
+                mi.year     = int(name_year.split('(')[1].replace(')',''))
                 #--
-                mi.img      = 'http://720hd.ru/'+rec.find('td',{'class':'short-story_img'}).find('img')['src']
+                mi.img      = 'http://v720.ru/'+rec.find('td',{'class':'short-story_img'}).find('img')['src']
                 #--
                 for r in rec.find('td',{'class':'short-story_text'}).text.split('|'):
                     if r.split(':', 1)[0] == u'Оригинальное название':
@@ -287,7 +292,7 @@ def Movie_List(params):
                     elif r.split(':')[0] == u'Жанр':
                         mi.genre    = r.split(':')[1].encode('utf-8')
                     elif r.split(':', 1)[0] == u'В главных ролях':
-                        mi.artist   = r.split(':', 1)[1].encode('utf-8')
+                        mi.artist   = r.split(':', 1)[1].encode('utf-8').split(',')
                     elif r.split(':')[0] == u'Режиссер':
                         mi.director = r.split(':')[1].encode('utf-8')
                     elif r.split(':', 1)[0] == u'О фильме':
@@ -308,8 +313,8 @@ def Movie_List(params):
                             						'genre':       mi.genre})
                 #i.setProperty('fanart_image', mi.img)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
-            except:
-                pass
+##            except:
+##                pass
         #-- next page link
         if int(par.page) < par.max_page :
             name    = '[COLOR FF00FF00][PAGE +1][/COLOR]'
@@ -356,7 +361,7 @@ def Movie_Search(params):
             else:
                 return False
         #-- get search url
-        url = 'http://720hd.ru/index.php?do=search'
+        url = 'http://v720.ru/index.php?do=search'
         #-- serach parameters ---------
         values = {
                         'beforeafter'       :	'after',
@@ -402,11 +407,11 @@ def Movie_Search(params):
             try:
                 mi.title = rec.find('div', {'id':'sort'}).find('a').text
                 mi.year     = int(re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(mi.title)[0][1])
-                mi.title    = re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(mi.title)[0][0].encode('utf-8')
+                mi.title    = '' #re.compile(u'(.+?) \((.+?)\)', re.MULTILINE|re.DOTALL).findall(mi.title)[0][0].encode('utf-8')
 
                 mi.url      = rec.find('div', {'id':'sort'}).find('a')['href']
 
-                mi.img      = 'http://720hd.ru'+rec.find('img')['src']
+                mi.img      = 'http://v720.ru'+rec.find('img')['src']
 
                 for r in rec.find('div', {'id':re.compile('news-id-')}).text.split('|'):
                     if r.split(':', 1)[0] == u'Оригинальное название':
@@ -605,14 +610,14 @@ def Genre_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://720hd.ru/'
+    url = 'http://720.ru/'
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
     for rec in soup.findAll('div',{'class':'menu_line'}):
-        if urlparse.urlsplit(rec.find('a')['href']).hostname == '720hd.ru':
+        if urlparse.urlsplit(rec.find('a')['href']).hostname == '720.ru':
             name     = unescape(rec.find('a').text).encode('utf-8')
             genre_id = re.compile(u'category=(.+?)#', re.MULTILINE|re.DOTALL).findall(rec.find('a')['href']+'#')[0]
 
@@ -632,6 +637,63 @@ def Genre_List(params):
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
+    '''
+    try:
+        # -- parameters
+        url   = urllib.unquote_plus(params['url'])
+        img   = urllib.unquote_plus(params['img'])
+        name  = urllib.unquote_plus(params['name'])
+        vtype = urllib.unquote_plus(params['vtype'])
+
+        if url == '*':
+            return False
+
+        video = url
+        # -- get VKontakte video url
+        if vtype == 'VK':
+            url = url.replace('vkontakte.ru', 'vk.com')
+            html = get_HTML(url)
+
+            soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+            for rec in soup.findAll('script', {'type':'text/javascript'}):
+                if 'video_host' in rec.text:
+                    for r in re.compile('var (.+?) = \'(.+?)\';').findall(html):
+                        if r[0] == 'video_host':
+                            video_host = r[1]#.replace('userapi', 'vk')
+                        if r[0] == 'video_uid':
+                            video_uid = r[1]
+                        if r[0] == 'video_vtag':
+                            video_vtag = r[1]
+            video = '%su%s/videos/%s.720.mp4'%(video_host, video_uid, video_vtag)
+            html = get_HTML(video, None, None, 1000)
+
+
+            for rec in soup.findAll('param', {'name':'flashvars'}):
+                for s in rec['value'].split('&'):
+                    if s.split('=',1)[0] == 'uid':
+                        uid = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'vtag':
+                        vtag = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'host':
+                        host = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'vid':
+                        vid = s.split('=',1)[1]
+                    if s.split('=',1)[0] == 'oid':
+                        oid = s.split('=',1)[1]
+
+            url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
+            print url
+            ref = 'http://vk.com'+soup.find('param',{'name':'movie'})['value']
+            print ref
+            html = get_HTML(url, None, ref)
+
+        # -- play video
+        i = xbmcgui.ListItem(name, video, thumbnailImage=img)
+        xbmc.Player().play(video, i)
+    except:
+        pass
+    '''
     try:
         # -- parameters
         url   = urllib.unquote_plus(params['url'])
