@@ -52,6 +52,12 @@ h = int(sys.argv[1])
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
+def Debug(msg):
+    try:
+        print "[NowFilms.Ru] " + msg
+    except UnicodeEncodeError:
+        print "[NowFilms.Ru UTF-8] " + msg.encode( "utf-8", "ignore" )
+
 #---------- parameter/info structure -------------------------------------------
 class Param:
     page        = '1'
@@ -314,6 +320,7 @@ def Movie_List(params):
                     title = '[COLOR FF00FFFF]'+mi.title[0:m]+'[/COLOR]'+mi.title[m:]
                     i = xbmcgui.ListItem(title, iconImage=mi.img, thumbnailImage=mi.img)
                     u = sys.argv[0] + '?mode=SOURCE'
+                    u += '&shortname=%s'%urllib.quote_plus(mi.title[0:m])
                     u += '&name=%s'%urllib.quote_plus(mi.title)
                     u += '&url=%s'%urllib.quote_plus(mi.url)
                     u += '&img=%s'%urllib.quote_plus(mi.img)
@@ -366,6 +373,7 @@ def Movie_List(params):
 
                 i = xbmcgui.ListItem(title, iconImage=mi.img, thumbnailImage=mi.img)
                 u = sys.argv[0] + '?mode=SOURCE'
+                u += '&shortname=%s'%urllib.quote_plus(mi.title[0:m])
                 u += '&name=%s'%urllib.quote_plus(mi.title)
                 u += '&url=%s'%urllib.quote_plus(mi.url)
                 u += '&img=%s'%urllib.quote_plus(mi.img)
@@ -423,6 +431,8 @@ def Source_List(params):
         u += '&pl=%s'%urllib.quote_plus(url)
         if url <> '*':
             u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
+        if 'shortname' in params:
+            u += '&shortname=%s'%params['shortname']
         #i.setProperty('fanart_image', img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
@@ -538,6 +548,38 @@ def Type_List(params):
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.endOfDirectory(h)
 
+#-------------------------------------------------------------------------------
+
+def int_xx(intxx):
+    if intxx and intxx!='None':
+        return '%02d' % (int(intxx))
+    else:
+        return '00'
+
+def mynewtitle(title, sel, name):
+
+    #Debug('[mynewtitle]:'+str((title, sel, name)))
+
+    for repl in ['Сериал ', 'Смотреть ', 'Фильм ']:
+        if title.startswith(repl): title=title.replace(repl,'', 1)
+
+    if sel:
+        season,episode=None,None
+        match=re.compile('(\d+) (Cезон|cезон|Сезон|сезон|Season|season)').findall(sel)
+        if match:
+            season=int_xx(match[0][0])
+        else:
+            match=re.compile('(\d+) (Cезон|cезон|Сезон|сезон|Season|season)').findall(name)
+            if match:
+                season=int_xx(match[0][0])
+        if season:
+            match=re.compile('(\d+) (Cерия|cерия|Серия|серия|Episod|episod)').findall(sel)
+            if match:
+                episode=int_xx(match[0][0])
+        if season and episode:
+            title=title+'S%sE%s.flv'%(season,episode)
+
+    return title
 
 #-------------------------------------------------------------------------------
 
@@ -550,6 +592,8 @@ def PLAY(params):
 
     if plurl == '*':
         # -- play video
+        if 'shortname' in params:
+            name=mynewtitle(name, None, None)
         i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
         xbmc.Player().play(url, i)
     else:
@@ -565,7 +609,12 @@ def PLAY(params):
                 flag = 1
 
             if flag == 1:
-                i = xbmcgui.ListItem(rec['name'], path = urllib.unquote(rec['url']), thumbnailImage=img)
+                newtitle=rec['name']
+                if 'shortname' in params:
+                    newtitle=mynewtitle(urllib.unquote_plus(params['shortname']), sel, name)
+
+                i = xbmcgui.ListItem(newtitle, path = urllib.unquote(rec['url']), thumbnailImage=img)
+##                i = xbmcgui.ListItem(rec['name'], path = urllib.unquote(rec['url']), thumbnailImage=img)
                 i.setProperty('IsPlayable', 'true')
                 pl.add(rec['url'], i)
 
