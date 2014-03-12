@@ -132,7 +132,7 @@ def check_login():
             return False
 
         beautifulSoup = BeautifulSoup(http)
-        userPanel = beautifulSoup.find('div', 'b-header__user-panel')
+        userPanel = beautifulSoup.find('table', 'b-header__user')
 
         if userPanel is None:
             xbmcvfs.delete(cookiepath)
@@ -140,11 +140,11 @@ def check_login():
             loginResponse = GET(httpSiteUrl + '/login.aspx', httpSiteUrl, {
                 'login': login,
                 'passwd': password,
-                'remember': 1
+                'remember': 'on'
             })
 
             loginSoup = BeautifulSoup(loginResponse)
-            userPanel = loginSoup.find('div', 'b-header__user-panel')
+            userPanel = loginSoup.find('table', 'b-header__user')
             if userPanel is None:
                 show_message('Login', 'Check login and password', 3000)
             else:
@@ -265,12 +265,7 @@ def getCategories(params):
         return False
 
     beautifulSoup = BeautifulSoup(http)
-    topMenu = beautifulSoup.find('ul', 'b-header-menu')
-
-    if topMenu is None:
-        show_message('ОШИБКА', 'Неверная страница', 3000)
-        return False
-    categorySubmenu = topMenu.find('li', 'm-%s' % section)
+    categorySubmenu = beautifulSoup.find('div', 'b-subcategories')
     if categorySubmenu is None:
         show_message('ОШИБКА', 'Неверная страница', 3000)
         return False
