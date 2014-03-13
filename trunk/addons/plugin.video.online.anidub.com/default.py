@@ -87,28 +87,29 @@ def send_request_to_google_analytics(utm_url, ua):
     return response
 
 def track_page_view(path,nevent='', tevent='',UATRACK=GATrack):
-    domain = DOMAIN
-    document_path = unquote(path)
-    utm_gif_location = "http://www.google-analytics.com/__utm.gif"
-    extra = {}
-    extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
+    try:
+        domain = DOMAIN
+        document_path = unquote(path)
+        utm_gif_location = "http://www.google-analytics.com/__utm.gif"
+        extra = {}
+        extra['screen'] = xbmc.getInfoLabel('System.ScreenMode')
 
-    md5String = md5(str(uniq_id)).hexdigest()
-    gvid="0x" + md5String[:16]
-    utm_url = utm_gif_location + "?" + \
-        "utmwv=" + VERSION + \
-        "&utmn=" + get_random_number() + \
-        "&utmsr=" + quote(extra.get("screen", "")) + \
-        "&utmt=" + nevent + \
-        "&utme=" + tevent +\
-        "&utmhn=localhost" + \
-        "&utmr=" + quote('-') + \
-        "&utmp=" + quote(document_path) + \
-        "&utmac=" + UATRACK + \
-        "&utmvid=" + gvid + \
-        "&utmcc="+ GAcookie
-    return send_request_to_google_analytics(utm_url, UA)
-
+        md5String = md5(str(uniq_id)).hexdigest()
+        gvid="0x" + md5String[:16]
+        utm_url = utm_gif_location + "?" + \
+            "utmwv=" + VERSION + \
+            "&utmn=" + get_random_number() + \
+            "&utmsr=" + quote(extra.get("screen", "")) + \
+            "&utmt=" + nevent + \
+            "&utme=" + tevent +\
+            "&utmhn=localhost" + \
+            "&utmr=" + quote('-') + \
+            "&utmp=" + quote(document_path) + \
+            "&utmac=" + UATRACK + \
+            "&utmvid=" + gvid + \
+            "&utmcc="+ GAcookie
+        return send_request_to_google_analytics(utm_url, UA)
+    except: return None
 	
 def get_random_number():
     return str(random.randint(0, 0x7fffffff))

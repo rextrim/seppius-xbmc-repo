@@ -1,4 +1,4 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 
@@ -12,7 +12,7 @@ import re,base64,random,time
 
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from urllib import unquote, quote, quote_plus
-Addon = xbmcaddon.Addon( id = 'plugin.video.cinema-hd.ru' )
+Addon = xbmcaddon.Addon( id = 'plugin.video.kino-ray.com' )
 __language__ = Addon.getLocalizedString
 
 addon_icon    = Addon.getAddonInfo('icon')
@@ -83,8 +83,6 @@ def doSearch(params):
             out=str(out.encode("utf-8"))
         except:
             out = str(kbd.getText())
-    #url='http://yandex.ru/sitesearch?text='+out+'&web=0&l10n=ru&frame=1&v=2.0&searchid=1891946&encoding=utf-8&topdoc=xdm_e%3Dhttp%253A%252F%252Fcinema-hd.ru%26xdm_c%3Ddefault4923%26xdm_p%3D1'
-    #print url
     par={}
     par['url']='http://cinema-hd.ru/board'
     par['post']='query=%s&a=2'%out
@@ -116,127 +114,89 @@ def run_settings(params):
     Addon.openSettings()
 
 def mainMain(params):
-    http = GET('http://cinema-hd.ru/')
+    http = GET('http://kino-ray.com')
     if http == None: return False
-    listitem=xbmcgui.ListItem('Поиск',iconImage = addon_icon, thumbnailImage = addon_icon)
-    uri = construct_request({
-        'func': 'doSearch'
-        })
-    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
     beautifulSoup = BeautifulSoup(http)
-    content = beautifulSoup.find('ol',attrs={'class':'dsitemmenu'})
-    content=content.findAll('li')
-    listitem=xbmcgui.ListItem('Главная',iconImage = addon_icon, thumbnailImage = addon_icon)
-    uri = construct_request({
-        'func': 'mainScreen',
-        'url':'board/0-1'
-        })
-    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-    listitem=xbmcgui.ListItem('Top 100',iconImage = addon_icon, thumbnailImage = addon_icon)
-    uri = construct_request({
-        'func': 'top100',
-        'url':'index/top_100_films_cinema_hd_ru/0-25'
-        })
-    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-    for num in content:	
-        title=num.find('a').string
-        url=num.find('a')['href']
-        listitem=xbmcgui.ListItem(title,iconImage = addon_icon, thumbnailImage = addon_icon)
-        uri = construct_request({
-            'func': 'mainScreen',
-            'url':url
-            })
-
-        if 'board' in url: xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    content = beautifulSoup.find('ul', attrs={'class': 'menus'})
+    links=content.findAll('a')
+    for link in links:
+        m=re.findall('">(.+)</a>',str(link).replace('<strong>','').replace('</strong>',''))
+        if m:
+      
+            listitem=xbmcgui.ListItem(m[0],iconImage = addon_icon, thumbnailImage = addon_icon)
+            uri = construct_request({
+                'func': 'getcat',
+                'url':link['href']
+                })
+            xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+    
     xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 
-def top100(params):
-    host='http://cinema-hd.ru/index/top_100_films_cinema_hd_ru/0-25'
+def getcat (params):
+    host=params['url']
     http = GET(host)
     beautifulSoup = BeautifulSoup(http)
-    content = beautifulSoup.findAll('table', attrs={'width': '700'})
-    for n in content:
-        
-        txt=str(n)
-        tt=re.findall('<div style="float:right"></div> <a href="(.+?)"><font face="Georgia" size="3;">(.+?)<font color="orange" face="Georgia" size="2;">',txt)
-        url='http://cinema-hd.ru/'+tt[0][0]
-        title=tt[0][1]
+    content = beautifulSoup.find('div', attrs={'id':'dle-content'})
+    nxt= content.findAll('a')[-1]
+    for n in str(content).split('<div class="prew-film-title">'):
+        m=BeautifulSoup(n)
+        link= m.find('div',attrs={'class':'box4'})
         try:
-            desk=re.findall('<font size="1">(.+?)<hr /><font color="#ff9900">',txt)[0]
-        except: desk="no"
-        pic=re.findall('<img src="(.+?)" vspace="0" width="120" align="left" border="0" hspace="0" />',txt)[0]
-        listitem=xbmcgui.ListItem(title,iconImage = addon_icon, thumbnailImage = pic)
-        listitem.setInfo(type='video', infoLabels = {'plot':desk,'plotoutline':desk})
-        uri = construct_request({
-            'func': 'get_movies',
-            'url':url,
-            'title':title,
-            'img':pic
-            })
-        print url
-        xbmcplugin.addDirectoryItem(hos, uri, listitem,True)
-        
-    xbmcplugin.setContent(hos, 'movies')
-    xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
-def mainScreen(params):
-    host='http://cinema-hd.ru/'+params['url']
-    try:
-        page=(params['page'])
-    except:
-        page=1
-    if page==1:
-        http = GET(host)
-    else: 
-        if params['url']=='board/0-1':
-            nhost=host.split('-')[0]+'-'+host.split('-')[1]+'-'+str(page)
-            
-        else: nhost=host+'-'+str(page)+'-2'
-
-        http = GET(nhost)
-    
-    if http == None: return False
-    
-    beautifulSoup = BeautifulSoup(http)
-    #print beautifulSoup
-    #<table width="100%" cellspacing="1" cellpadding="1" border="0" style="padding-bottom: 1px;">
-    content = beautifulSoup.findAll('div', attrs={'id': re.compile('entryID[0-9]+')})
-    for n in content: 
-
-        m= re.search('a href="(http://.+?)"',str(n))
-        gg=re.findall('<font face="Georgia"><font color="3399cc">(.+?)</font><hr /><font size="2;" color="BEBEBE">(.+?)<hr />',str(n))
-        try: desk= gg[0][1]
-        except: desk='Нет описания'
-        url= m.group(1)
-        p = re.compile( 'title="(.+?)"' )
-        #<span style="font-family:'Georgia'">Омамамия (2012)</span>
-
-        m = re.findall('<span style="font-family:.+">(.+?)</span>',str(n))
-
-        title= m[0]
-        m= re.findall('<img src="(.+?)" vspace="0" width="250" ',str(n))
-        pic= m[0]
-        title=title.replace(' смотреть онлайн в хорошем качестве HD 720p бесплатно','')
-        listitem=xbmcgui.ListItem(title,iconImage = addon_icon, thumbnailImage = pic)
-        listitem.setInfo(type='video', infoLabels = {'plot':desk,'plotoutline':desk})
-        uri = construct_request({
-            'func': 'get_movies',
-            'url':url,
-            'title':title,
-            'img':pic
-            })
-        #listitem.setProperty('IsPlayable', 'true')
-        xbmcplugin.addDirectoryItem(hos, uri, listitem,True)
-    
-    listitem=xbmcgui.ListItem('Next',iconImage = addon_icon, thumbnailImage = addon_icon)
-    uri = construct_request({
-                'func': 'mainScreen',
-                'page':int(int(page)+1),
-                'url':params['url']
+            title= link.find('img')['alt'].encode('utf-8')
+            img= link.find('img')['src'].encode('utf-8')
+            if 'www.kino-ray.com' not in img: img='http://www.kino-ray.com%s'%img
+            href=link.find('a')['href']
+            listitem=xbmcgui.ListItem(title,iconImage = img, thumbnailImage = img)
+            uri = construct_request({
+                'func': 'getvid',
+                'url':href,
+                'img':img,
+                'title':title
                 })
-    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+            xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+        except: pass
+    if 'Далее' in str(nxt):
+        listitem=xbmcgui.ListItem('Далее',iconImage = addon_icon, thumbnailImage = addon_icon)
+        uri = construct_request({
+            'func': 'getcat',
+            'url':nxt['href']
+            })
+        xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
     xbmcplugin.setContent(hos, 'movies')
     xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
-
+    
+def getvid(params):
+    host=params['url']
+    img=params['img']
+    title=params['title']
+    http = GET(host)
+    beautifulSoup = BeautifulSoup(http)
+    multi=beautifulSoup.find('div',attrs={'class':'vk_multifilm'})
+    one=beautifulSoup.find('div',attrs={'class':'vk_onefilm'})
+    if multi:
+        list= multi.findAll('option')
+        for n in list:
+            href= n['value']
+            title=n.contents[0]
+            listitem=xbmcgui.ListItem(title,iconImage = params['img'], thumbnailImage = params['img'])
+            uri = construct_request({
+                'func': 'get_movie',
+                'url':href
+                })
+            listitem.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(hos, uri, listitem)
+    if one:
+        if '<li><b>Качество: </b><span>Трейлер</span></li>' in str(beautifulSoup): title="[COLOR=FFFFFF00]Трейлер:[/COLOR] %s"%title
+        href= one.find('iframe')['src']
+        listitem=xbmcgui.ListItem(title,iconImage = params['img'], thumbnailImage = params['img'])
+        uri = construct_request({
+            'func': 'get_movie',
+            'url':href
+            })
+        listitem.setProperty('IsPlayable', 'true')
+        xbmcplugin.addDirectoryItem(hos, uri, listitem)
+    xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 from urllib import unquote, quote, quote_plus
     
     
@@ -244,16 +204,15 @@ def get_movies(params):
     http=GET(params['url'])
     #print params['url']
     beautifulSoup = BeautifulSoup(http)
-    params['title']=params['title'].split("</font>")[0]
     txt=str(beautifulSoup).replace(' онлайн в хорошем качестве HD 720p','').replace(' онлайн в хорошем качестве','').replace('<font>Смотреть фильм ','').replace('<font>Смотреть сериал ','').replace('Смотреть онлайн фильм в хорошем качестве HD 720p','').replace('<font><font>','<font>').replace('<font></font>','').replace('<font> </font>','').replace('</font></font>','</font>')
     m=re.findall('<font>(?!.*Смотреть)(.+?)</font><br /><br /><iframe src="(.+?)"',txt)
-    print txt
+
     if not m: m= re.findall('</font>(.+?)</font><br /><br /><iframe src="(.+?)"',txt)
     if not m: m= re.findall('</font>(.+?)</font></i><br /><br /><iframe src="(.+?)"',txt)
 
     for n in m: 
-
-        listitem=xbmcgui.ListItem(n[0].split("</font>")[0].replace('смотреть онлайн',''),iconImage = addon_icon, thumbnailImage = params['img'])
+        print n
+        listitem=xbmcgui.ListItem(n[0].replace('смотреть онлайн',''),iconImage = addon_icon, thumbnailImage = params['img'])
         uri = construct_request({
             'func': 'get_movie',
             'url':n[1].replace('amp;','')
@@ -295,15 +254,12 @@ def get_movie(params):
             if s.split('=',1)[0] == 'hd':
                 hd = s.split('=',1)[1]
         host=host.replace('vk.me','vk.com')
-        video = host+'u'+uid+'/videos/'+vtag+'.240.mp4'
-        qual=Addon.getSetting('qual')
-
-        if int(hd)>=3 and int(qual)==3:
-            #print 'aaa'
+        video = host+'u'+uid+'/videos/'+vtag+'.360.mp4'
+        if int(hd)==3:
             video = host+'u'+uid+'/videos/'+vtag+'.720.mp4'
-        if int(hd)>=2 and int(qual)==2:
+        if int(hd)==2:
             video = host+'u'+uid+'/videos/'+vtag+'.480.mp4'
-        if int(hd)>=1 and int(qual)==1:
+        if int(hd)==1:
             video = host+'u'+uid+'/videos/'+vtag+'.360.mp4'
         #print video
         item = xbmcgui.ListItem(path=video)
