@@ -60,20 +60,110 @@ def main(params):
             'link':'http://www.1tv.ru/sfilms_editions/si6222'
             })
     xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+    listitem=xbmcgui.ListItem("Время обедать",addon_icon, addon_icon)
+    uri = construct_request({
+            'func': 'mainMain',
+            'link':'http://www.1tv.ru/sprojects_editions/si=5871'
+            })
+    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+    
     listitem=xbmcgui.ListItem("Контрольная Закупка",addon_icon, addon_icon)
     uri = construct_request({
             'func': 'mainMain',
             'link':'http://www.1tv.ru/sprojects_editions/si=5716'
             })
     xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-    listitem=xbmcgui.ListItem("Вечерний Ургант",addon_icon, addon_icon)
+    
+    listitem=xbmcgui.ListItem("О самом главном",addon_icon, addon_icon)
     uri = construct_request({
-            'func': 'urgMain',
+            'func': 'samMain',
             'link':'http://urgantshow.ru/episodes'
             })
     xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+    listitem=xbmcgui.ListItem("Вечерний Ургант",addon_icon, addon_icon)
+    uri = construct_request({
+            'func': 'mainMain',
+            'link':'http://www.1tv.ru/sprojects_editions/si=5856'
+            })
+    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+    listitem=xbmcgui.ListItem("ЖКХ",addon_icon, addon_icon)
+    uri = construct_request({
+            'func': 'mainMain',
+            'link':'http://www.1tv.ru/sprojects_editions/si=5806'
+            })
+    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+    listitem=xbmcgui.ListItem("Истина где-то рядом",addon_icon, addon_icon)
+    uri = construct_request({
+            'func': 'mainMain',
+            'link':'http://www.1tv.ru/sprojects_editions/si=5917'
+            })
+    xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
+    
+
+    
     xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
 
+    
+def samMain(params):
+    link='http://russia.tv/video/show/brand_id/5214'
+    http = GET(link)
+    if http == None: return False
+    beautifulSoup = BeautifulSoup(http)
+    #print beautifulSoup
+    content = beautifulSoup.find('div',attrs={'class':'content'})
+    link= content.find('iframe')['src']
+    link='http://russia.tv/video/show/brand_id/5214'
+    #<meta content="Новогоднее желание: бросить курить. Часть 2" itemprop="name" />
+    #<meta content="http://cdn.static4.rtr-vesti.ru/vh/pictures/md/507/521.jpg" itemprop="image" />
+    title= content.find('meta',attrs={'itemprop':'name'})['content'].encode('utf-8')
+    img= content.find('meta',attrs={'itemprop':'image'})['content'].encode('utf-8')
+    listitem=xbmcgui.ListItem(title,img, img)
+    uri = construct_request({
+            'func': 'plsam',
+            'link':link
+            })
+    listitem.setProperty('IsPlayable', 'true')
+    xbmcplugin.addDirectoryItem(hos, uri, listitem)
+    content = beautifulSoup.findAll('li',attrs={'class':'item '})
+    for vid in content:
+        print vid
+        img= vid.find('img', attrs={'class':'lazyload'})['data-original']
+        link="http://russia.tv"+ vid.find('a', attrs={'class':'pic '})['href'].replace('/viewtype/picture','')
+        title= vid.find('img', attrs={'class':'lazyload'})['alt']
+        duration= vid.find('div', attrs={'class':'duration'}).string.encode('utf-8')
+        dur=int(duration.split(':')[0])*60+int(duration.split(':')[1])
+        if dur>20: title='[COLOR=FF00FF00]%s[/COLOR]'%title
+        listitem=xbmcgui.ListItem(title,img, img)
+        uri = construct_request({
+                'func': 'plsam',
+                'link':link
+                })
+        listitem.setProperty('IsPlayable', 'true')
+        xbmcplugin.addDirectoryItem(hos, uri, listitem)
+        
+    xbmcplugin.endOfDirectory(handle=hos, succeeded=True, updateListing=False, cacheToDisc=True)
+    
+    
+def plsam(params):
+    link=params['link']
+    #print link
+    http = GET(link)
+    beautifulSoup = BeautifulSoup(http)
+    #print beautifulSoup
+    link= beautifulSoup.find('link',attrs={'rel':'video_src'})['href'].replace('/swf/','/video/')
+    http1 = GET(link)
+    #print link
+    #print http1
+    #"video":"http:\/\/cdn.v.rtr-vesti.ru\/_cdn_auth\/secure\/v\/vh\/vod_hls\/definst\/smil:vh\/smil\/094\/727_d20130619232958.smil\/playlist.m3u8?auth=mh&vid=94727"
+    vid=re.findall('"video":"(.+?)"',str(http1))[0].replace('\/','/')
+    #print vid
+    item = xbmcgui.ListItem(path=vid)
+    xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 def urgMain(params):
     try: link=params['link']
     except: link='http://www.1tv.ru/sfilms_editions/si6222'

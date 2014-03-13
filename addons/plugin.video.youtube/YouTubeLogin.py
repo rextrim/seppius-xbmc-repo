@@ -107,8 +107,8 @@ class YouTubeLogin():
             ret = self.core._fetchPage(fetch_options)
             fetch_options = False
 
-            newurl = self.common.parseDOM(ret["content"], "form", attrs={"method": "POST"}, ret="action")
-            state_wrapper = self.common.parseDOM(ret["content"], "input", attrs={"id": "state_wrapper"}, ret="value")
+            newurl = self.common.parseDOM(ret["content"].encode('utf-8'), "form", attrs={"method": "POST"}, ret="action")
+            state_wrapper = self.common.parseDOM(ret["content"].encode('utf-8'), "input", attrs={"id": "state_wrapper"}, ret="value")
 
             if len(newurl) > 0 and len(state_wrapper) > 0:
                 url_data = {"state_wrapper": state_wrapper[0],
@@ -118,7 +118,7 @@ class YouTubeLogin():
                 self.common.log("Part B")
                 continue
 
-            code = self.common.parseDOM(ret["content"], "input", attrs={"id": "code"}, ret="value")
+            code = self.common.parseDOM(ret["content"].encode('utf-8'), "input", attrs={"id": "code"}, ret="value")
             if len(code) > 0:
                 url = "https://accounts.google.com/o/oauth2/token"
                 url_data = {"client_id": "208795275779.apps.googleusercontent.com",
@@ -131,9 +131,9 @@ class YouTubeLogin():
                 continue
 
             # use token
-            if ret["content"].find("access_token") > -1:
+            if ret["content"].encode('utf-8').find("access_token") > -1:
                 self.common.log("Part D")
-                oauth = json.loads(ret["content"])
+                oauth = json.loads(ret["content"].encode('utf-8'))
 
                 if len(oauth) > 0:
                     self.common.log("Part D " + repr(oauth["expires_in"]))
@@ -178,13 +178,13 @@ class YouTubeLogin():
 
             ret = self.core._fetchPage(fetch_options)
 
-            if ret["content"].find(" captcha") > -1:
+            if ret["content"].encode('utf-8').find(" captcha") > -1:
                 self.common.log("Captcha needs to be filled")
                 break
             fetch_options = False
-
+            print ret["content"].encode('utf-8')
             # Check if we are logged in.
-            nick = self.common.parseDOM(ret["content"], "p", attrs={"class": "masthead-expanded-acct-sw-id2"})
+            nick = self.common.parseDOM(ret["content"].encode('utf-8'), "span", attrs={"id": "yt-masthead-user-displayname"})
 
             # Check if there are any errors to report
             errors = self.core._findErrors(ret, silent=True)
@@ -199,15 +199,19 @@ class YouTubeLogin():
                 return(ret, status)
 
             # Click login link on youtube.com
-            newurl = self.common.parseDOM(ret["content"], "button", attrs={"href": ".*?ServiceLogin.*?"}, ret="href")
+            #print ret["content"].encode('utf-8')
+            newurl = self.common.parseDOM(ret["content"].encode('utf-8'), "a", attrs={"href": "https://accounts.google.com/ServiceLogin?.+?"}, ret="href")
+            
+            print "newurl=%s"%newurl
             if len(newurl) > 0:
                 # Start login procedure
                 if newurl[0] != "#":
                     fetch_options = {"link": newurl[0].replace("&amp;", "&"), "referer": ret["location"]}
                     self.common.log("Part A : " + repr(fetch_options))
-
+                    print repr(fetch_options)
             # Fill out login information and send.
-            newurl = self.common.parseDOM(ret["content"].replace("\n", " "), "form", attrs={"id": "gaia_loginform"}, ret="action")
+            newurl = self.common.parseDOM(ret["content"].encode('utf-8').replace("\n", " "), "form", attrs={"id": "gaia_loginform"}, ret="action")
+            #if newurl!=[]: newurl=[newurl]
             if len(newurl) > 0:
                 (galx, url_data) = self._fillLoginInfo(ret)
                 if len(galx) > 0 and len(url_data) > 0:
@@ -216,7 +220,7 @@ class YouTubeLogin():
                     self.common.log("fetch options: " + repr(fetch_options), 10)  # WARNING, SHOWS LOGIN INFO/PASSWORD
                     continue
 
-            newurl = self.common.parseDOM(ret["content"], "meta", attrs={"http-equiv": "refresh"}, ret="content")
+            newurl = self.common.parseDOM(ret["content"].encode('utf-8'), "meta", attrs={"http-equiv": "refresh"}, ret="content")
             if len(newurl) > 0:
                 newurl = newurl[0].replace("&amp;", "&")
                 newurl = newurl[newurl.find("&#39;") + 5:newurl.rfind("&#39;")]
@@ -225,18 +229,19 @@ class YouTubeLogin():
                 continue
 
             ## 2-factor login start
-            if ret["content"].find("smsUserPin") > -1:
-                url_data = self._fillUserPin(ret["content"])
+            if ret["content"].encode('utf-8').find("smsUserPin") > -1:
+                url_data = self._fillUserPin(ret["content"].encode('utf-8'))
                 if len(url_data) == 0:
                     return (False, 500)
-
-                new_part = self.common.parseDOM(ret["content"], "form", attrs={"name": "verifyForm"}, ret="action")
+                #print ret["content"].encode('utf-8')
+                new_part = self.common.parseDOM(ret["content"].encode('utf-8'), "form", attrs={"name": "gaia_secondfactorform"}, ret="action")
+                newpart=['https://accounts.google.com/SecondFactor','']
                 fetch_options = {"link": new_part[0], "url_data": url_data, "no-language-cookie": "true", "referer": ret["location"]}
 
                 self.common.log("Part D: " + repr(fetch_options))
                 continue
 
-            smsToken = self.common.parseDOM(ret["content"].replace("\n", ""), "input", attrs={"name": "smsToken"}, ret="value")
+            smsToken = self.common.parseDOM(ret["content"].encode('utf-8').replace("\n", ""), "input", attrs={"name": "smsToken"}, ret="value")
 
             if len(smsToken) > 0 and galx != "":
                 url_data = {"smsToken": smsToken[0],
@@ -244,7 +249,7 @@ class YouTubeLogin():
                             "service": "youtube",
                             "GALX": galx}
 
-                target_url = self.common.parseDOM(ret["content"], "form", attrs={"name": "hiddenpost"}, ret="action")
+                target_url = self.common.parseDOM(ret["content"].encode('utf-8'), "form", attrs={"name": "hiddenpost"}, ret="action")
                 fetch_options = {"link": target_url[0], "url_data": url_data, "no-language-cookie": "true", "referer": ret["location"]}
                 self.common.log("Part E: " + repr(fetch_options))
                 continue
@@ -257,7 +262,7 @@ class YouTubeLogin():
         return (ret, status)
 
     def _fillLoginInfo(self, ret):
-        content = ret["content"]
+        content = ret["content"].encode('utf-8')
         rmShown = self.common.parseDOM(content, "input", attrs={"name": "rmShown"}, ret="value")
         cont = self.common.parseDOM(content, "input", attrs={"name": "continue"}, ret="value")
         uilel = self.common.parseDOM(content, "input", attrs={"name": "uilel"}, ret="value") # Deprecated?
@@ -271,7 +276,7 @@ class YouTubeLogin():
         dsh = self.common.parseDOM(content, "input", attrs={"name": "dsh"}, ret="value")
         if len(dsh) == 0:
             dsh = self.common.parseDOM(content, "input", attrs={"id": "dsh"}, ret="value")
-
+        dsh=['','']
         galx = self.common.parseDOM(content, "input", attrs={"name": "GALX"}, ret="value")
         uname = self.pluginsettings.userName()
         pword = self.pluginsettings.userPassword()
@@ -279,7 +284,7 @@ class YouTubeLogin():
         if pword == "":
             pword = self.common.getUserInput(self.language(30628), hidden=True)
 
-        if len(galx) == 0 or len(cont) == 0 or len(uilel) == 0 or len(dsh) == 0 or len(rmShown) == 0 or uname == "" or pword == "":
+        if len(galx) == 0 or len(cont) == 0 or len(uilel) == 0  or len(rmShown) == 0 or uname == "" or pword == "":
             self.common.log("_fillLoginInfo missing values for login form " + repr(galx) + repr(cont) + repr(uilel) + repr(dsh) + repr(rmShown) + repr(uname) + str(len(pword)))
             return ("", {})
         else:
@@ -309,7 +314,7 @@ class YouTubeLogin():
         smsToken = self.common.parseDOM(content, "input", attrs={"name": "smsToken"}, ret="value")
         self.smsToken = smsToken
         userpin = self.common.getUserInputNumbers(self.language(30627))
-
+        
         if len(userpin) > 0:
             url_data = {"smsToken": smsToken[0],
                         "PersistentCookie": "yes",

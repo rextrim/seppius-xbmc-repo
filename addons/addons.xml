@@ -567,10 +567,11 @@ Audio sources are
 
 <addon id="plugin.video.cinema-hd.ru"
        name="cinema-hd.ru"
-       version="0.0.6"
+       version="0.0.15"
        provider-name="NuisMons">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
+
+    <import addon="xbmc.python" version="2.1.0" />
 	<import addon="script.module.beautifulsoup"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -910,7 +911,7 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.5.1" provider-name="ivi.ru (NuisMons)">
+<addon id="plugin.video.ivi.ru" name="ivi.ru" version="2.5.1.4" provider-name="ivi.ru (NuisMons)">
   <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
@@ -970,6 +971,47 @@ Audio sources are
     </extension>
 </addon>
 
+<addon id="plugin.video.kino-ray.com"
+       name="kino-ray.com"
+       version="0.0.01"
+       provider-name="NuisMons">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+	<import addon="script.module.beautifulsoup"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>kino-ray.com</summary>
+    <description>kino-ray.com</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.kino.rf"
+       name="kino.rf"
+       version="0.1.5"
+       provider-name="NuisMons">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+	<import addon="script.module.beautifulsoup"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+
+    <summary>Просмотр аниме онлайн online.anidub.com</summary>
+    <description>Просмотр аниме онлайн online.anidub.com</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.kinobaza.tv" name="Кинобаза" version="1.0.6" provider-name="HD-Lab Team">
   <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
@@ -1025,7 +1067,7 @@ Audio sources are
        version="0.0.5"
        provider-name="nuismons">
     <requires>
-        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="xbmc.python" version="2.1.0" />
         <import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
@@ -1102,7 +1144,9 @@ Audio sources are
 </addon>
 
 <addon id="plugin.video.music.ivi.ru" name="music.ivi.ru" version="0.1.0" provider-name="ivi.ru">
-  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+  </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
 	<language>ru</language>
@@ -1229,7 +1273,7 @@ Audio sources are
 
 <addon id="plugin.video.online.anidub.com"
        name="[COLOR=FFFF0000]Ani[/COLOR][COLOR=FF00FF00]DUB[/COLOR]"
-       version="0.2.5"
+       version="0.2.6"
        provider-name="NuisMons">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1507,6 +1551,24 @@ RuTube - отличная стартовая площадка для незав�
     </extension>
 </addon>
 
+<addon id="plugin.video.serialonline.netlite"
+       name="SerialOnline.net LITE"
+       version="0.1.0.1"
+       provider-name="nuismons">
+    <requires>
+        <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.beautifulsoup"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Материалы сайта serialonline.net</summary>
+        <description>Самая большая коллекция лучших сериалов мира</description>
+        <platform>all</platform>
+    </extension>
+</addon>
+
 <addon id="plugin.video.serialu.net"
        name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]serialu.net[/COLOR][COLOR FF00FF00])[/COLOR]"
        version="1.2.6"
@@ -1596,11 +1658,11 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.sreda-obitaniya"
-       name="www.1tv.ru"
-       version="0.0.2"
+       name="Передачи Российского ТВ"
+       version="0.1.0"
        provider-name="NuisMons">
   <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
+    <import addon="xbmc.python" version="2.1.0" />
 	<import addon="script.module.beautifulsoup"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -1609,8 +1671,8 @@ RuTube - отличная стартовая площадка для незав�
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Среда обитания и Контрольная Закупка</summary>
-    <description>Среда обитания и Контрольная Закупка</description>
+    <summary>Передачи Российского ТВ</summary>
+    <description>Передачи Российского ТВ</description>
     <platform>all</platform>
   </extension>
 </addon>
@@ -1693,10 +1755,11 @@ RuTube - отличная стартовая площадка для незав�
 </addon>
 
 <addon id="plugin.video.torrent.gnu"
-       name="torrent.gnu"
-       version="0.2.9"
+       name=".torrent Player"
+       version="0.3.0"
        provider-name="nuismons">
     <requires>
+        <import addon="xbmc.python" version="2.1.0" />
 		<import addon="script.module.torrent.ts"/>
 		<import addon="script.module.beautifulsoup"/>
     </requires>
@@ -1783,6 +1846,26 @@ RuTube - отличная стартовая площадка для незав�
 		<description>Смотрите видео с сайта http://turbofilm.tv/</description>
 		<platform>all</platform>
 	</extension>
+</addon>
+
+<addon id="plugin.video.tushkan.net"
+       name="Tushkan.net"
+       version="0.0.4"
+       provider-name="NuisMons">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0" />
+	<import addon="script.module.beautifulsoup"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>Просмотр вмдео онлайн truba.com</summary>
+    <description>Просмотр вмдео онлайн truba.com</description>
+    <platform>all</platform>
+  </extension>
 </addon>
 
 <addon id="plugin.video.tv-here.ru"
@@ -1885,6 +1968,16 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
+<addon id="plugin.video.twitch.tv" name="Twitch.tv" version="0.1.9" provider-name="NuisMons">
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>TwitchTV - является крупнейшим в мире видео вещания игр сообществом.</summary>
+    <description>TwitchTV показывает видео от главных играющих лиц, игроков, турниров, лиг и комментария, в дополнение к самым активным и интересным обсуждениям вокруг видеоигр.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
 <addon id="plugin.video.ulitka.tv" name="Сериалы онлайн на Улитке" version="2.0.2" provider-name="Admin Ulitka.TV [admin@ulitka.tv]">
   <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
@@ -1966,7 +2059,7 @@ RuTube - отличная стартовая площадка для незав�
   </extension>
 </addon>
 
-<addon id="plugin.video.youtube" name="YouTube" provider-name="TheCollective" version="4.4.6nu3">
+<addon id="plugin.video.youtube" name="YouTube" provider-name="TheCollective" version="4.4.6nu5">
   <requires>
     <import addon="xbmc.python" version="2.1.0" />
     <import addon="script.module.simplejson" version="2.0.10" />

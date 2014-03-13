@@ -22,7 +22,6 @@ import time
 import socket
 import urllib
 import urllib2
-#import chardet
 
 try:
     import simplejson as json
@@ -140,7 +139,7 @@ class YouTubeCore():
     def del_playlist(self, params={}):
         self.common.log("")
         get = params.get
-        url = "http://gdata.youtube.com/feeds/api/users/default/playlists/%s" % (get("playlist"))
+        url = u"http://gdata.youtube.com/feeds/api/users/default/playlists/{0}".format(get("playlist"))
         result = self._fetchPage({"link": url, "api": "true", "login": "true", "auth": "true", "method": "DELETE"})
         return (result["content"], result["status"])
 
@@ -221,7 +220,7 @@ class YouTubeCore():
             if title.find(": ") > 0:
                 title = title[title.find(": ") + 2:]
                 title = self.common.replaceHTMLCodes(title)
-                
+
             folder['Title'] = title
             for tmp in self.common.parseDOM(node, "published"):
                 folder['published'] = tmp
@@ -398,7 +397,13 @@ class YouTubeCore():
             return ret_obj
 
         if get("url_data"):
-            request = urllib2.Request(link, urllib.urlencode(get("url_data")))
+            urldata = get("url_data")
+            url_data = {}
+
+            for key in urldata:
+                url_data[key.encode('UTF-8')] = urldata[key].encode('UTF-8')
+
+            request = urllib2.Request(link, urllib.urlencode(url_data))
             request.add_header('Content-Type', 'application/x-www-form-urlencoded')
         elif get("request", "false") == "false":
             if get("proxy"):
@@ -430,8 +435,8 @@ class YouTubeCore():
         else:
             request.add_header('User-Agent', self.common.USERAGENT)
 
-            if get("no-language-cookie", "false") == "false":
-                cookie += "PREF=f1=50000000&hl=en;"
+            if get("no-language-cookie", "false") == "false" and False:
+                cookie += "PREF=f1=50000000&hl=en; "
 
         if get("login", "false") == "true":
             self.common.log("got login")
@@ -442,16 +447,10 @@ class YouTubeCore():
                 return ret_obj
 
             # This should be a call to self.login._httpLogin()
-            if self.settings.getSetting("login_cookies") == "":
+            if self.settings.getSetting("cookies_saved") != "true":
                 if isinstance(self.login, str):
                     self.login = sys.modules["__main__"].login
                 self.login._httpLogin()
-
-            if self.settings.getSetting("login_cookies") != "":
-                tcookies = eval(self.settings.getSetting("login_cookies"))
-                self.common.log("Adding login cookies: " + repr(tcookies.keys()))
-                for key in tcookies.keys():
-                    cookie += "%s=%s;" % ( key, tcookies[key])
 
         if get("referer", "false") != "false":
             self.common.log("Added referer: %s" % get("referer"))
@@ -462,7 +461,6 @@ class YouTubeCore():
 
             if cookie:
                 self.common.log("Setting cookie: " + cookie)
-                request.add_header('Cookie', cookie)
 
             con = urllib2.urlopen(request)
 
@@ -488,23 +486,6 @@ class YouTubeCore():
             self.common.log("HTTPError : " + err)
             if e.code == 400 or True:
                 self.common.log("Unhandled HTTPError : [%s] %s " % (e.code, msg), 1)
-
-            if msg.find("yt:quota") > 1:
-                self.common.log("Hit quota... sleeping for 10 seconds")
-                time.sleep(10)
-            elif msg.find("too_many_recent_calls") > 1:
-                self.common.log("Hit quota... sleeping for 10 seconds")
-                time.sleep(10)
-            elif err.find("Token invalid") > -1:
-                self.common.log("refreshing token")
-                self._oRefreshToken()
-            elif err.find("User Rate Limit Exceeded") > -1:
-                self.common.log("Hit limit... Sleeping for 10 seconds")
-                time.sleep(10)
-            else:
-                if e.fp:
-                    cont = e.fp.read()
-                    self.common.log("HTTPError - Headers: " + str(e.headers) + " - Content: " + cont)
 
             params["error"] = get("error", 0) + 1
             ret_obj = self._fetchPage(params)
@@ -570,7 +551,7 @@ class YouTubeCore():
             if error.find("[") > -1:
                 error = error[0:error.find("[")]
             error = urllib.unquote(error.replace("\n", " ").replace("  ", " ")).replace("&#39;", "'")
-            self.common.log("returning error : " + error.strip())
+            self.common.log("returning error : " + repr(error.strip()))
             return error.strip()
 
         # If no error was found. But fetchPage has an error level of 3+, return the fetchPage content.
@@ -861,11 +842,8 @@ class YouTubeCore():
             video["Plot"] = self.getVideoDescription(node, uploadDate, viewCount)
 
             video['thumbnail'] = self.urls["thumbnail"] % video['videoid']
-            ch_list=self.settings.getSetting("BLchannels").split('|')
-            black_list=ch_list
-            if video["Studio"] not in black_list: ytobjects.append(video)
 
-            #ytobjects.append(video)
+            ytobjects.append(video)
 
         self.addNextPageLinkIfNecessary(params, xml, ytobjects)
 

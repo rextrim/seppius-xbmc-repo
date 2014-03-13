@@ -292,7 +292,7 @@ def addon_main():
 	except:
 		func = None
 		xbmc.log( '[%s]: Primary input' % addon_id, 1 )
-		mainScreen(params)
+		tpl(params)
 	if func != None:
 		try: pfunc = globals()[func]
 		except:

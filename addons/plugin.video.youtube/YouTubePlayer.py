@@ -312,6 +312,11 @@ class YouTubePlayer():
             data = data[:pos + 1]
         return data
 
+    def normalizeUrl(self, url):
+        if url[0:2] == "//":
+            url = "http:" + url
+        return url
+
     def extractFlashVars(self, data, assets):
         flashvars = {}
         found = False
@@ -333,6 +338,11 @@ class YouTubePlayer():
                 flashvars = data["assets"]
             else:
                 flashvars = data["args"]
+
+        for k in ["html", "css", "js"]:
+            if k in flashvars:
+                flashvars[k] = self.normalizeUrl(flashvars[k])
+
         self.common.log("Step2: " + repr(data))
 
         self.common.log(u"flashvars: " + repr(flashvars), 2)
@@ -392,7 +402,8 @@ class YouTubePlayer():
         self.playerData = ''
 
     def _jsToPy(self, jsFunBody):
-        pythonFunBody = jsFunBody.replace('function', 'def').replace('{', ':\n\t').replace('}', '').replace(';', '\n\t').replace('var ', '')
+	pythonFunBody = re.sub(r'function (\w*)\$(\w*)', r'function \1_S_\2', jsFunBody)
+        pythonFunBody = pythonFunBody.replace('function', 'def').replace('{', ':\n\t').replace('}', '').replace(';', '\n\t').replace('var ', '')
         pythonFunBody = pythonFunBody.replace('.reverse()', '[::-1]')
 
         lines = pythonFunBody.split('\n')
@@ -417,6 +428,7 @@ class YouTubePlayer():
 
     def _getLocalFunBody(self, funName):
         # get function body
+        funName=funName.replace('$', '\\$')
         match = re.search('(function %s\([^)]+?\){[^}]+?})' % funName, self.playerData)
         if match:
             # return jsFunBody
@@ -424,7 +436,7 @@ class YouTubePlayer():
         return ''
 
     def _getAllLocalSubFunNames(self, mainFunBody):
-        match = re.compile('[ =(,](\w+?)\([^)]*?\)').findall( mainFunBody )
+        match = re.compile('[ =(,]([\w\$_]+)\([^)]*\)').findall( mainFunBody )
         if len(match):
             # first item is name of main function, so omit it
             funNameTab = set( match[1:] )
@@ -444,7 +456,8 @@ class YouTubePlayer():
             try:
                 self.playerData = urllib2.urlopen(request).read()
                 self.playerData = self.playerData.decode('utf-8', 'ignore')
-            except:
+            except Exception as ex:
+                self.printDBG("Error: " + str(sys.exc_info()[0]) + " - " + str(ex))
                 self.printDBG('Unable to download playerUrl webpage')
                 return ''
 
@@ -521,7 +534,9 @@ class YouTubePlayer():
             funNames = self._getAllLocalSubFunNames(funBody)
             if len(funNames):
                 for funName in funNames:
+		    funName_=funName.replace('$','_S_')
                     if funName not in self.allLocalFunNamesTab:
+			funBody=funBody.replace(funName,funName_)
                         self.allLocalFunNamesTab.append(funName)
                         self.printDBG("Add local function %s to known functions" % mainFunName)
                         self._getfullAlgoCode( funName, recDepth + 1 )
