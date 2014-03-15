@@ -566,18 +566,24 @@ def Play_Mode(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
-    #-- get generes
     url  = urllib.unquote_plus(params['url'])+'online/'
     img  = urllib.unquote_plus(params['img'])
     name = urllib.unquote_plus(params['name'])
 
+    #-- get play list
     html = get_HTML(url)
+    pl = re.compile(u'var flashvars \= \{(.+?)\}', re.MULTILINE|re.DOTALL).findall(html)[0].replace("'",'')
+    for rec in pl.split(','):
+        if rec.strip().split(':')[0] == 'pl':
+            url = 'https://my-hit.org'+ rec.split(':')[1].strip()
 
+    html = get_HTML(url)
     try:
         mov = re.compile(u'\[\{"file":"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)[0]
 
         mov =  mov.replace('\\','').replace('[','#').replace(']','#')
         mov_u = mov.split('#')
+
         mov_q_def = {'9':'1080p', '8':' 720p', '7':' 480p', '6':' 360p', '5':' 320p', '4':' 240p'}
 
         #-- old movie format
@@ -621,6 +627,9 @@ def PLAY(params):
     img         = urllib.unquote_plus(params['img'])
     name        = urllib.unquote_plus(params['name'])
     type_       = urllib.unquote_plus(params['type'])
+
+    print '-------------'
+    print type_
 
     if type_ == 'FLV':
         i = xbmcgui.ListItem(name, path = urllib.unquote(movie_url), thumbnailImage=img)
