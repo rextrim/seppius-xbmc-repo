@@ -27,8 +27,10 @@ except:
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-h = int(sys.argv[1])
 Addon = xbmcaddon.Addon(id='plugin.video.igru.net.ua')
+xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+
+h = int(sys.argv[1])
 
 # load XML library
 try:
@@ -248,6 +250,7 @@ def Get_Movie_Year(params):
 def Get_Movie_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
+
     if par.type == None: return False
 
     # show search dialog
@@ -289,7 +292,7 @@ def Get_Movie_List(params):
             u += '&url=%s'%urllib.quote_plus(i['url'])
             u += '&img=%s'%urllib.quote_plus(i['img'])
             item.setInfo(type='video', infoLabels={ 'title':       i['name'],
-                                                    'cast' :       i['actors'],
+                                                    'cast' :       i['actors'].split(','),
                             						'year':        int(i['year']),
                             						'director':    i['director'],
                             						'plot':        i['text'],
