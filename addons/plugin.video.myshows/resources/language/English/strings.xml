@@ -40,9 +40,10 @@
         <string id="30037">Torrent XBMC</string>
         <string id="30038">Rate Shows on KinoPoisk.ru</string>
         <string id="30039">Use TheTVDb.com for images and extra info (high traffic)</string>
-        <string id="30040">Silent Offline Marks Mode</string>
+        <string id="30040">Silent Offline Marks Save Mode</string>
         <string id="30041">[B]Send Offline Marks[/B]</string>
         <string id="30042">[B]Перевести на Русский (Force Russian)[/B]</string>
+        <string id="30043">Silent Offline Marks Send Mode</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>

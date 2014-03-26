@@ -197,14 +197,21 @@ def get_url(cookie, url):
     try:
         conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
         array=conn.read()
-        if array=='': array=True
+        #Debug('[get_url]: arr"'+str(array)+'"')
+        if array=='':
+            #Debug('[get_url][2]: arr=""')
+            array=True
         return array
     except urllib2.HTTPError as e:
+        #Debug('[get_url]: HTTPError, e.code='+str(e.code))
         if e.code==401:
             headers['Cookie']=auth()
             conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
             array=conn.read()
             conn.close()
+            if array=='':
+                ##Debug('[get_url][3]: arr=""')
+                array=True
             return array
         else:
             if debug=='true': showMessage('HTTP Error', str(e.code), forced=True)

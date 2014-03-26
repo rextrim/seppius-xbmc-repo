@@ -470,6 +470,7 @@ class Source:
             x=FileNamesPrepare(fn)
             if x:
                 doit=False
+                Debug('[addmultifile]: filename - '+filename)
                 self.filename=os.path.join(filename.encode('utf-8', 'ignore'), dirlist[cutlist.index(fn)])
                 self.episodeId=x[1]
                 if not self.seasonId and not x[0]:
@@ -806,6 +807,8 @@ class AddSource(Source):
                     if torrent_replacement and torrent_replacement!='':
                         self.filename=os.path.join(torrent_replacement,os.path.basename(self.filename))
                     else: return
+                try: self.filename=self.filename.decode('utf-8','ignore')
+                except:pass
                 i=self.addmultifile()
                 showMessage(__language__(30208), __language__(30249) % (str(i)))
             elif self.stype=='file':
@@ -919,7 +922,8 @@ class ScanSource(Source):
             if self.stype in ('multitorrent', 'torrent'):
                 i=self.addmultijson()
             elif self.stype in ('rutracker','tpb','nnm','kz', 'torrenter'):
-                xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&silent=true&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),urllib.quote_plus(self.stringdata)))
+                xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&silent=true&external=%s&url=%s&sdata=%s)' %
+                                    (self.filename.split('::')[0],urllib.quote_plus(self.filename),urllib.quote_plus(self.stringdata)))
                 xbmc.sleep(3000)
                 self.filename=xbmcaddon.Addon(id='plugin.video.torrenter').getSetting('lastTorrent')
                 i=self.addmultijson()
@@ -1244,7 +1248,7 @@ class MoveToXBMC(Source):
 
         folder=self.filename
         if self.stype=='file': folder=os.path.dirname(self.filename)
-        orig_xbmclib=xbmclib
+        self.orig_xbmclib=xbmclib
         if xbmclib.startswith('smb://'):xbmclib=smbtopath(xbmclib)
         if folder.startswith('smb://'):folder=smbtopath(folder)
 
@@ -1254,6 +1258,9 @@ class MoveToXBMC(Source):
             success=self.move(folder)
 
             subtitledirs=xbmcvfs.listdir(folder)[0]
+            for d in subtitledirs:
+                for x in xbmcvfs.listdir(folder.encode('utf-8','ignore')+os.sep+d)[0]:
+                    subtitledirs.append(d+os.sep+x)
             if len(subtitledirs)>0 and success:
                 subtitledirs.insert(0,__language__(30505))
                 ret = dialog.select(__language__(30506), subtitledirs)
@@ -1265,7 +1272,7 @@ class MoveToXBMC(Source):
                     self.move(os.path.join(folder, subtitledirs[ret].decode('utf-8','ignore')),renamebool)
 
             if success:
-                items=[__language__(30507),__language__(30508),orig_xbmclib]
+                items=[__language__(30507),__language__(30508),self.orig_xbmclib]
                 ret = dialog.select(__language__(30509), items)
                 if ret==1:
                     xbmc.executebuiltin('XBMC.UpdateLibrary(video)')
@@ -1312,6 +1319,7 @@ class MoveToXBMC(Source):
 
         if self.movemode==3: #Windows: Symbolic link
             junction_path = os.path.join(__addonpath__, 'resources', 'junction.exe')
+            if not xbmcvfs.exists(junction_path): shutil.move(junction_path.replace('junction.exe','junction'),junction_path)
             delete=xbmcvfs.rmdir(newfolder)
             if not delete:
                 if xbmcgui.Dialog().yesno(__language__(30510),__language__(30511),newfolder):
@@ -1328,6 +1336,7 @@ class MoveToXBMC(Source):
                     shutil.rmtree(newfolder, ignore_errors=True)
             shutil.move(folder, newfolder)
             junction_path = os.path.join(__addonpath__, 'resources', 'junction.exe')
+            if not xbmcvfs.exists(junction_path): shutil.move(junction_path.replace('junction.exe','junction'),junction_path)
             folder=folder.rstrip('\\')
             newfolder=newfolder.rstrip('\\')
             Debug('[MoveToXBMC][move]: Linking "'+newfolder+'" "'+folder+'"')
@@ -1365,12 +1374,12 @@ class MoveToXBMC(Source):
         return True
 
     def mkdirs(self, seasonId):
-        xbmclib=self.xbmclib
+        dirs=''
         for subdir in (PrepareFilename(self.title), 'Season '+str(seasonId)):
-            xbmclib = os.path.join(xbmclib, subdir)
-            if not xbmcvfs.exists(xbmclib):
-                xbmcvfs.mkdir(xbmclib)
-        return xbmclib
+            dirs = os.path.join(dirs, subdir)
+            if not xbmcvfs.exists(os.path.join(self.orig_xbmclib, dirs)):
+                xbmcvfs.mkdir(os.path.join(self.orig_xbmclib, dirs))
+        return os.path.join(self.xbmclib, dirs)
 
     def uTorrentCheck(self, folder, action):
         socket.setdefaulttimeout(3)

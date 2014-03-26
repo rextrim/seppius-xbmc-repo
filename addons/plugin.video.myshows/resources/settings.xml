@@ -46,7 +46,8 @@
         <setting id="label"   type="bool" label="30021" default="true"/>
         <setting id="rateandcheck"   type="bool" label="30022" default="true"/>
         <setting id="ratekinopoisk"   type="bool" label="30038" default="true"/>
-        <setting id="silentoffline"   type="bool" label="30040" default="false"/>
+        <setting id="silentoffline"   type="bool" label="30040" default="true"/>
+        <setting id="silentofflinesend"   type="bool" label="30043" default="true"/>
         <setting type="action" label="30041" action="RunPlugin(plugin://plugin.video.myshows/?mode=71)" />
     </category>
 </settings>

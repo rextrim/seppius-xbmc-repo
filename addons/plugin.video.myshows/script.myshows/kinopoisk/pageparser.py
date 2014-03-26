@@ -166,7 +166,8 @@ class PageParser:
         Returns title results as they are returned (no sorting is done here!).
     """
     results = []
-    encodedName = urllib.quote(mediaName.encode(S.ENCODING_KINOPOISK_PAGE))
+    try:encodedName = urllib.quote(mediaName.encode(S.ENCODING_KINOPOISK_PAGE))
+    except:encodedName=urllib.quote(mediaName.encode('utf-8'))
     page = self.httpUtils.requestAndParseHtmlPage(S.KINOPOISK_SEARCH_SIMPLE % encodedName)
     if page is None:
       self.log.Warn(' ### nothing was found on kinopoisk for media name "%s"' % mediaName)
