@@ -163,6 +163,17 @@ def Get_EPG(params):
     url = urllib.unquote_plus(params['url'])
     img = urllib.unquote_plus(params['img'])
 
+    #---------------------------------------------------------------------------
+    name    = '[COLOR FF00FF00]' + urllib.unquote_plus(params['name']) + '[/COLOR]'
+    i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
+    u = sys.argv[0] + '?mode=EMPTY'
+    u += '&name=%s'%urllib.quote_plus(name)
+    u += '&url=%s'%urllib.quote_plus(url)
+    u += '&img=%s'%urllib.quote_plus(img)
+    u += '&ref=%s'%urllib.quote_plus(url)
+    xbmcplugin.addDirectoryItem(h, u, i, False)
+    #---------------------------------------------------------------------------
+
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
@@ -181,6 +192,11 @@ def Get_EPG(params):
                     prg = ins.find('a')['href']
             except:
                 time = ins.text
+
+        #-- check if playable
+        if rec.find('div')['class'].find('is-able') == -1:
+            prg = '*'
+        #--
         name1    = rec.find('dfn').find('a').text
         try:
             detail  = rec.find('dfn').find('small').text
@@ -212,25 +228,46 @@ def Get_EPG(params):
             u += '&name=%s'%urllib.quote_plus(rec['name'])
             u += '&url=%s'%urllib.quote_plus(rec['url'])
             u += '&img=%s'%urllib.quote_plus(rec['img'])
-            xbmcplugin.addDirectoryItem(h, u, i, True)
+            u += '&ref=%s'%urllib.quote_plus(url)
+            xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
 #-------------------------------------------------------------------------------
 
+def Empty():
+    return False
 
 #-------------------------------------------------------------------------------
 
 def PLAY(params):
     # -- parameters
     url  = urllib.unquote_plus(params['url'])
+    ref  = urllib.unquote_plus(params['ref'])
     img  = urllib.unquote_plus(params['img'])
     name = urllib.unquote_plus(params['name'])
 
     if url == '*':
         return False
 
+    #-- get playlist
+    html = get_HTML(url, None, ref)
+
+    url = re.compile('file: (.+?),', re.MULTILINE|re.DOTALL).findall(html)[0].replace("'",'')
+    url = url.split('?')[0]
+
+    #--
+    print url
+##    html = get_HTML(url)
+##
+##    f = open("d:\\test.m3u8", "w")
+##    f.write(html)
+##    f.close()
+
+    #url = 'd:\\30066714.m3u8'
+
     i = xbmcgui.ListItem(name, path = urllib.unquote(url), thumbnailImage=img)
     xbmc.Player().play(url, i)
+    #xbmcplugin.setResolvedUrl(h, False, i)
 
 #-------------------------------------------------------------------------------
 
@@ -292,6 +329,8 @@ elif mode == 'EPG':
 	Get_EPG(params)
 elif mode == 'PLAY':
 	PLAY(params)
+elif mode == 'EMPTY':
+    Empty()
 
 #-- store cookies
 cj.save()
