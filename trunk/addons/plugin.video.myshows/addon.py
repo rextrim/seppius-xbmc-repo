@@ -289,7 +289,7 @@ def MyTorrents():
                 try:
                     if ruName=='true' and jdata[str_showId]['ruTitle']: show_title=jdata[str_showId]['ruTitle']
                     else: show_title=jdata[str_showId]['title']
-                except: show_title=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())['title']
+                except KeyError: show_title=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())['title']
                 title=show_title
                 if str_showId not in showlist:
                     showlist.append(str_showId)
@@ -472,7 +472,11 @@ def EpisodeList(action):
             show_title=show_jdata[str_showId]['title']
         except KeyError:
             show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
-            show_title=show_jdata[str_showId]['title']
+            try:show_title=show_jdata[str_showId]['title']
+            except KeyError:
+                show_direct=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())
+                show_title=show_direct['title']
+                show_jdata[str_showId]=show_direct
         if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
         pre=prefix(id=int(id))
         left=dates_diff(str(jdata[id]["airDate"]), 'today')
@@ -503,8 +507,16 @@ def ShowList(action):
     for id in jdata:
         str_showId=str(jdata[id]["showId"])
         str_date=str(jdata[id]["airDate"])
+        try:
+            show_title=show_jdata[str_showId]['title']
+        except KeyError:
+            show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
+            try:show_title=show_jdata[str_showId]['title']
+            except KeyError:
+                show_direct=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())
+                show_title=show_direct['title']
+                show_jdata[str_showId]=show_direct
         if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
-        else: show_title=show_jdata[str_showId]['title']
         if num_eps.get(str_showId)==None:
             num_eps[str_showId]=1
             shows[str_showId]=show_title.encode('utf-8')
@@ -664,16 +676,19 @@ def Profile(action, sort='profile'):
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=False)
 
 def Change_Status_Episode(showId, id, action, playcount, refresh_url, selftitle=None):
+    Debug('[Change_Status_Episode]:'+str((showId, id, action, playcount, refresh_url, selftitle)))
     if action==None:
         if playcount=='0': action='check'
         else: action='uncheck'
 
     status_url='http://api.myshows.ru/profile/episodes/'+action+'/'+str(id)
-    ok=Data(cookie_auth, status_url, refresh_url).get()
-    if ok:
+    ok2=Data(cookie_auth, status_url, refresh_url).get()
+    #Debug('[TEST][Change_Status_Episode]:ok2 '+str(ok2))
+    if ok2:
         showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
         WatchedDB().onaccess()
     else:
+        Debug('[Change_Status_Episode]: Not ok2! Starting offline check and adding!')
         if not showId: showId=0
         if not selftitle: selftitle=json.dumps({"myshows_showId":int(showId),"myshows_id":int(id)})
         if action=='check':
@@ -727,10 +742,12 @@ def Rate(showId, id, refresh_url, selftitle=None):
         else:
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
         ok=Data(cookie_auth, rate_url, refresh_url).get()
+        #Debug('[TEST][Rate]:ok '+str(ok))
         if ok:
             showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
             WatchedDB().onaccess()
         else:
+            Debug('[Rate]: Not ok! Starting offline check and adding!')
             if not selftitle: selftitle=json.dumps({"myshows_showId":int(showId),"myshows_id":int(id)})
             WatchedDB().check(selftitle,int(rate[ret]))
             return False
@@ -886,19 +903,20 @@ class SyncXBMC():
                 idlist=[]
                 if 'label' in self.match and re.search('.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', self.match['label'], re.I | re.DOTALL):
                     self.match['label']=self.match['label'].replace(os.path.dirname(self.match['label']),'').encode('utf-8','ignore').lstrip('\\/')
-                    Debug('[doaction] Trying to find filename on myshows.ru: '+self.match['label'])
-                    data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+urllib.quote_plus(self.match['label'])).get()
-                    if data:
-                        jdata=json.loads(data)
-                        showId=jdata['show']['id']
-                        ids=jdata['show']['episodes']
-                        for x in ids:
-                            idlist.append(x)
-                        if len(idlist)==1:
-                            id=idlist[0]
-                    else:
-                        self.match=filename2match(self.match['label'])
-                        showId, id=self.doaction_simple()
+                    self.old_match=self.match
+                    self.match=filename2match(self.match['label'])
+                    showId, id=self.doaction_simple()
+                    if not id:
+                        Debug('[doaction] Trying to find filename on myshows.ru: '+self.old_match['label'])
+                        data=Data(cookie_auth, 'http://api.myshows.ru/shows/search/file/?q='+urllib.quote_plus(self.old_match['label'])).get()
+                        if data:
+                            jdata=json.loads(data)
+                            showId=jdata['show']['id']
+                            ids=jdata['show']['episodes']
+                            for x in ids:
+                                idlist.append(x)
+                            if len(idlist)==1:
+                                id=idlist[0]
                         #Debug('[doaction] [filename2match] '+unicode(self.match))
             if showId or id:
                 if not id and 'season' in self.match and 'episode' in self.match:
@@ -907,21 +925,28 @@ class SyncXBMC():
                 if id:
                     if self.rating:
                         rate_url=('http://api.myshows.ru/profile/episodes/rate/'+str(self.rating)+'/'+str(id))
-                        Data(cookie_auth, rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        d=Data(cookie_auth, rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        #Debug('[TEST][self.rating]: Rate answer %s' % (str(d)))
                     if self.rating or self.rating==0:
+                        #xbmc.sleep(500)
                         status_url='http://api.myshows.ru/profile/episodes/check/'+str(id)
-                        Data(cookie_auth, status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        c=Data(cookie_auth, status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        #Debug('[TEST][self.rating]: Check answer %s' % (str(c)))
                         return 1
                     rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
                     if scrobrate=='true':
+                        #Debug('[TEST][doaction]: Start rateOK')
                         rateOK=Rate(str(showId), str(id), 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', self.title)
+                        #Debug('[TEST][doaction]: rateOK '+str(rateOK))
                     else:
                         rateOK=True
                     if rateOK or rateandcheck=='false':
                         if str(showId) not in self.jdatashows or self.jdatashows[str(showId)]['watchStatus']!='watching':
-                            Debug('[doaction] New show! Marking as watching')
+                            #Debug('[doaction]: New show! Marking as watching')
                             Change_Status_Show(str(showId), 'watching', 'http://api.myshows.ru/profile/shows/')
                             xbmc.sleep(500)
+                        #Debug('[TEST][doaction]: Start Change_Status_Episode')
+                        #xbmc.sleep(500)
                         Change_Status_Episode(showId, id, action, '0', 'http://api.myshows.ru/profile/shows/'+str(showId)+'/', self.title)
 
     def showtitle2showId(self):
@@ -1265,6 +1290,7 @@ class WatchedDB:
             return True
 
     def onaccess(self):
+        #Debug('[WatchedDB][onaccess]: Start')
         self._connect()
         self.cur.execute('select count(id) from watched')
         x=self.cur.fetchone()
@@ -1273,7 +1299,10 @@ class WatchedDB:
         i=0
 
         if res>0:
-            ok2=self.dialog.yesno(__language__(30521),__language__(30528) % (str(res)), __language__(30529))
+            #Debug('[WatchedDB][onaccess]: Found %s' % (str(res)))
+            silentofflinesend=getSettingAsBool('silentofflinesend')
+            if not silentofflinesend: ok2=self.dialog.yesno(__language__(30521),__language__(30528) % (str(res)), __language__(30529))
+            else: ok2=True
             if ok2:
                 for id,rating in self._get_all():
                     j=SyncXBMC(id,int(rating)).doaction()
@@ -1328,28 +1357,41 @@ def Test():
                 filelist.append(f.path[f.path.find('\\')+1:])
         print 'filelist.append('+str(filelist)+')'
     pass'''
-    data={'item': {'label': u'\u041a\u043b\u043e\u0434 \u0432 \u043f\u043e\u043c\u043e\u0449\u044c (2012)'}}
-    file=data['item']["label"]
-    file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').strip()
-    match=re.compile('(.+) (\d{4})( |$)', re.I | re.IGNORECASE).findall(file)
-    if match:
-        data["title"], data["year"] = match[0][0],match[0][1]
-        data["type"] = "movie"
-        data["year"]=int(data["year"])
-        data["title"]=data["title"].strip()
-        kinorate(data['title'],data['year'])
+
+    #data={'item': {'label': u'\u041a\u043b\u043e\u0434 \u0432 \u043f\u043e\u043c\u043e\u0449\u044c (2012)'}}
+    #file=data['item']["label"]
+    #file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').strip()
+    #match=re.compile('(.+) (\d{4})( |$)', re.I | re.IGNORECASE).findall(file)
+    #if match:
+    #    data["title"], data["year"] = match[0][0],match[0][1]
+    #    data["type"] = "movie"
+    #    data["year"]=int(data["year"])
+    #    data["title"]=data["title"].strip()
+    #    kinorate(data['title'],data['year'])
+
+    #data={"year": "2013", "titleAlt": "\u041f\u0440\u043e\u043a\u043b\u044f\u0442\u0438\u0435 \u043c\u0443\u043b\u044c\u0442\u0438\u0432\u044b\u0431\u043e\u0440\u0430 \u043f\u0440\u0435\u0432\u0440\u0430\u0442\u0438\u043b\u043e \u043c\u043e\u044e \u0436\u0438\u0437\u043d\u044c \u0432 \u0430\u0434", "title": "Ore no N\u014dnai Sentakushi ga, Gakuen Love Come o Zenryoku de Jama S"}
+    #kinorate(data['title'],data['year'],titleAlt=data['titleAlt'])
     #kinorate('Мальчишник Часть 3',2013)
     #RateShow(24199).count()
     #Rate('24199', '0',None)
     #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
     #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    #title='{"label": "The.Daily.Show.2014.02.18.Kevin.Spacey.HDTV.x264-BATV.mp4"}'
+    title='{"tvshowid": 51, "episode": 10, "uniqueid": {"unknown": "4606529"}, "season": 1, "tvdb_id": "269877", "episodeid": 1204, "label": "The Best of the Student Council (Photos)", "file": "smb://192.168.0.2/xbmc_seriez/Love Lab/Season 1/Love.Lab.S01E10.mkv", "year": 2013, "showtitle": "Love Lab"}'
     #try:
     #    SyncXBMC(title).doaction()
-    #except:
+    #except ValueError or AttributeError:
     #    FakeRate(title)
     #FakeRate(title)
     #WatchedDB().onaccess()
+    folder=u'D:\\seriez\\xxx1и\\'
+    folder=folder.encode('utf-8','ignore')
+    subtitledirs=xbmcvfs.listdir(folder)[0]
+    for d in subtitledirs:
+        for x in xbmcvfs.listdir(folder+os.sep+d)[0]:
+            subtitledirs.append(d+os.sep+x)
+    if len(subtitledirs)>0:
+        subtitledirs.insert(0,__language__(30505))
+        ret = xbmcgui.Dialog().select(__language__(30506), subtitledirs)
 
 params = get_params()
 try: apps=get_apps()
@@ -1421,8 +1463,8 @@ if mode == None:
     Main()
 elif mode==1:
     import shutil
-    ru=os.path.join(unicode(__addonpath__), u'resources',u'language',u'Russian')
-    en=os.path.join(unicode(__addonpath__), u'resources',u'language',u'English')
+    ru=os.path.join(__addonpath__, u'resources',u'language',u'Russian')
+    en=os.path.join(__addonpath__, u'resources',u'language',u'English')
     shutil.move(os.path.join(en, u'strings.xml'), os.path.join(en, u'old_strings.xml'))
     shutil.copy(os.path.join(ru, u'strings.xml'), en)
     showMessage(__language__(30208), __language__(30533))
@@ -1470,11 +1512,12 @@ elif mode == 61:
 elif mode == 62:
     ExtraFunction()
 elif mode == 70:
-    #SyncXBMC()
     #if 1==0:
     try:
         SyncXBMC(title).doaction()
-    except:
+        Debug('[mode 70]: SyncXBMC(title).doaction() success')
+    except ValueError or AttributeError:
+        Debug('[mode 70]: ValueError or AttributeError, start FakeRate for %s' % (title))
         if action=='check':
             FakeRate(title)
 elif mode == 71:
