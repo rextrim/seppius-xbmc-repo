@@ -84,3 +84,5 @@ Updated keymaps. Now possible to seekInTime by pressing right/left-keys (+1/-1mi
 -pagedownfix.py updated to support other addons by using default xbmc functionality of the key.
 [B]1.0.9[/B]
 -Fix: if description of film missing crash
+[B]1.1.0[/B]
+-Fix: Server choice is not correctly interpreted. Always used GER server
