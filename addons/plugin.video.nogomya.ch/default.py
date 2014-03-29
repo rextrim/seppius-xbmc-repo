@@ -125,10 +125,10 @@ def Get_TV_Channels():
         print 'ERROR: Login'
         return False
 
-    for rec in soup.find('div', {'class':"items"}).findAll('div', {'style':" margin: 10px"}):
+    for rec in soup.find('div', {'class':"wrapper"}).findAll('div', {'style':"padding-bottom:10px"}):
         ch_url  = 'http://nogomya.ch'+rec.find('a')['href']
         title   = rec.find('a').text
-        descr   = rec.text[len(title):]
+        descr   = rec.text
         img     = icon
 
         name = ('[COLOR FFCCFF33][B]'+title+'[/B][/COLOR] [COLOR FFB8B8B8][I]'+descr+'[/I][/COLOR]').encode('utf-8')
@@ -160,7 +160,6 @@ def PLAY(params):
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
-
 #-------------------------------------------------------------------------------
 
 def unescape(text):
