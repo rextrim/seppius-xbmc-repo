@@ -400,6 +400,7 @@ def Allsr(http):
 	http=http.replace('<nobr><span style="color:#4b4b4b">',chr(10)+"Flag3:'")
 	http=http.replace(')" onMouseOver="StartScrollTitle',")',"+chr(10))
 	http=http.replace('</span><br />(',"','")
+	http=http.replace(' PROPER', '')
 	http=http.replace(')</nobr></div></div></td>',"']"+chr(10))
 	http=http.replace('</span><br /></nobr></div></div></td>',"']"+chr(10))
 	http=http.replace(').</nobr></div></div></td>',"']"+chr(10))
@@ -1128,22 +1129,26 @@ except:
 
 
 
-try:
+#try:
 	if  mode == "OpenRel" or mode == "myshows":#mode == None or
 		post = urllib.urlencode(values)
 		html = get_HTML(url1, post, 'http://www.lostfilm.tv/')
 		soup = BeautifulSoup(html, fromEncoding="utf-8")
+		#print soup
 		#-- step 2
 		ref = url1
 		url1 = soup.find('form')['action']
 		values={}
 		for rec in soup.findAll('input'):
-			values[rec['name'].encode('utf-8')] = rec['value'].encode('utf-8')
+			try:
+				values[rec['name'].encode('utf-8')] = rec['value'].encode('utf-8')
+			except:
+				print "err: value"
 
 		post = urllib.urlencode(values)
 		html = get_HTML(url1, post, ref)
-except:
-		print 'lostfilm: Ошибка доступа'
+#except:
+#		print 'lostfilm: Ошибка доступа'
 		#showMessage('lostfilm', "Ошибка доступа", times = 50000)
 
 
