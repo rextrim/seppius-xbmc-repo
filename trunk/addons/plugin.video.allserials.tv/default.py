@@ -226,8 +226,9 @@ def Movie_List(params):
         skbd.doModal()
         if skbd.isConfirmed():
             SearchStr = skbd.getText().split(':')
-            url = 'http://allserials.tv/search/node/'+urllib.quote(SearchStr[0])
-            par.search = SearchStr[0]
+            print Translit(SearchStr[0])
+            url = 'http://allserials.tv/search/node/'+urllib.quote(Translit(SearchStr[0]))
+            par.search = Translit(SearchStr[0])
         else:
             return False
     else:
@@ -513,6 +514,28 @@ def PLAY(params):
         i.setProperty('IsPlayable', 'true')
         xbmcplugin.setResolvedUrl(h, True, i)
 
+
+def Translit(srch):
+    rez = srch
+
+    if Addon.getSetting('translit') == 'true':
+        url = 'http://translit.ru/classic/'
+        #-- serach parameters ---------
+        values = {
+                        'direction'     :   'ru',
+                        'transliterate' :   'транслит',
+                        'subject'       :   srch,
+                        'account'       :   ''
+                    }
+
+        post = urllib.urlencode(values)
+        html = get_HTML(url, post)
+        soup = BeautifulSoup(html, fromEncoding="UTF-8")
+
+        for rec in soup.findAll('textarea', {'class' : "txtarea"}):
+            rez = rec.text
+
+    return rez.encode('utf8')
 #-------------------------------------------------------------------------------
 
 def unescape(text):
