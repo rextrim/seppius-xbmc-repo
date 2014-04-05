@@ -55,6 +55,8 @@ def get_HTML(url, post = None, ref = None, get_url = False):
     if ref==None:
         ref='http://'+host
 
+    print url
+
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host',   host)
     request.add_header('Accept', '*/*')
@@ -354,11 +356,11 @@ def Serial_Info(params):
             u += '&playlist=%s'%urllib.quote_plus(pl_url)
             u += '&is_season=%s'%urllib.quote_plus('*')
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
-                                                    'cast' :       mi.actors,
+                                                    'cast' :       mi.actors.split(','),
                             						'year':        int(mi.year[:4]),
                             						'director':    mi.director,
                             						'plot':        mi.text,
-                            						'genre':       mi.genre})
+                            						'genre':       mi.genre.split(',')})
             i.setProperty('fanart_image', mi.img)
             xbmcplugin.addDirectoryItem(h, u, i, True)
     else:
@@ -397,11 +399,11 @@ def Serial_Info(params):
             u += '&playlist=%s'%urllib.quote_plus(pl_url)
             u += '&is_season=%s'%urllib.quote_plus(sname)
             i.setInfo(type='video', infoLabels={    'title':       mi.title,
-                                                    'cast' :       mi.actors,
+                                                    'cast' :       mi.actors.split(','),
                             						'year':        int(mi.year),
                             						'director':    mi.director,
                             						'plot':        mi.text,
-                            						'genre':       mi.genre})
+                            						'genre':       mi.genre.split(',')})
             i.setProperty('fanart_image', mi.img)
             #i.setProperty('IsPlayable', 'true')
             xbmcplugin.addDirectoryItem(h, u, i, False)
@@ -525,7 +527,7 @@ def PLAY(params):
         playlist = Get_PlayList(par.playlist, par.is_season, par.name, 'e')
         for rec in playlist:
             name  = rec['comment']
-            s_url = rec['file']
+            s_url = Check_Video_URL(rec['file'])
             #-- add item to play list
             i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
             i.setProperty('IsPlayable', 'true')
@@ -534,9 +536,30 @@ def PLAY(params):
         xbmc.Player().play(pl)
     # -- play only selected item
     else:
-        i = xbmcgui.ListItem(par.name, path = urllib.unquote(par.url), thumbnailImage=par.img)
+        s_url = Check_Video_URL(par.url)
+        i = xbmcgui.ListItem(par.name, path = urllib.unquote(s_url), thumbnailImage=par.img)
         i.setProperty('IsPlayable', 'true')
         xbmcplugin.setResolvedUrl(h, True, i)
+
+def Check_Video_URL(url):
+
+    if '[' in url:
+        p1 = url.split('[')[0]
+        l  = url.split('[')[1].split(']')[0]
+        p3 = url.split('[')[1].split(']')[1]
+
+        i = 0
+        for r in l.split(','):
+            if len(r.replace(' ','')) > 0:
+                if i < int(r):
+                    p2 = r.replace(' ','')
+                    i = int(r)
+
+        vlink = p1+p2+p3
+    else:
+        vlink = url
+
+    return vlink
 
 #-------------------------------------------------------------------------------
 
