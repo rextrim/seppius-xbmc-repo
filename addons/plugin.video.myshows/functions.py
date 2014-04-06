@@ -21,7 +21,7 @@ __plugin__ = "MyShows.ru " + __version__
 __language__ = __settings__.getLocalizedString
 ruName=__settings__.getSetting("ruName")
 cookie_auth=__settings__.getSetting("cookie_auth")
-socket.setdefaulttimeout(60)
+socket.setdefaulttimeout(30)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
 __tmppath__= os.path.join(__addonpath__, 'tmp')
@@ -1083,3 +1083,37 @@ def auth_xbmc():
     cookie='SiteUser[login]='+login+'; SiteUser[password]='+su_pass+'; PHPSESSID='+session
     conn.close()
     return cookie
+
+def changeDBTitle(showId):
+    from utilities import xbmcJsonRequest
+    shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {'properties': ['title']}, 'id': 0})
+
+    if not shows:
+        Debug('[changeDBTitle]: XBMC JSON Result was empty.')
+        return
+
+    if 'tvshows' in shows:
+        shows = shows['tvshows']
+        Debug("[changeDBTitle]: XBMC JSON Result: '%s'" % str(shows))
+    else:
+        Debug("[changeDBTitle]: Key 'tvshows' not found")
+        return
+
+    if len(shows)>0:
+        newtitle=id2title(showId,None,True)[0]
+        dialog = xbmcgui.Dialog()
+        dialog_items,dialog_ids=[__language__(30205)],[-1]
+        for show in shows:
+            dialog_ids.append(show['tvshowid'])
+            dialog_items.append(show['title'])
+
+        ret = dialog.select(newtitle, dialog_items)
+        if ret>0:
+            ok=dialog.yesno(__language__(30322),__language__(30534),__language__(30535) % (dialog_items[ret],newtitle))
+            if ok:
+                result=xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.SetTVShowDetails', 'params': {'tvshowid': int(dialog_ids[ret]), 'title': unicode(newtitle)}, 'id': 1})#lang
+                if result in [newtitle,'OK']:
+                    showMessage(__language__(30208), __language__(30536) % (newtitle), forced=True)
+                else:
+                    Debug("[changeDBTitle]: XBMC JSON Result: '%s'" % str(result))
+        return

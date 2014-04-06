@@ -253,6 +253,9 @@
         <string id="30531">Удалить %s оценок\отметок без отправки?</string>
         <string id="30532">Нет интернетов!</string>
         <string id="30533">Переведено на Русский! (до следующего обновления)</string>
+        <string id="30534">Хотите изменить название сериала в базе XBMC?</string>
+        <string id="30535">%s на %s</string>
+        <string id="30536">Новое название: %s</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
@@ -277,6 +280,7 @@
         <string id="30319">Информация</string>
         <string id="30320">Пуск Всем Файлам</string>
         <string id="30321">Стоп Всем Файлам</string>
+        <string id="30322">Изменить название в XBMC</string>
 
 ///Other plugins
         <string id="30400">Назад</string>

@@ -8,7 +8,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.8.9"
+__version__ = "1.9.1"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -18,7 +18,7 @@ ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
 useTVDB=getSettingAsBool('tvdb')
-socket.setdefaulttimeout(60)
+socket.setdefaulttimeout(30)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
 __tmppath__= os.path.join(__addonpath__, 'tmp')
@@ -807,6 +807,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
               __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
               __language__(30315)+'|:|'+sys_url+'5',
+              __language__(30322)+'|:|'+sys_url+'7',
               __language__(30303)+'|:|'+sys_url+'1&id=0',
               __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url,
               __language__(30319)+'|:|'+sys_url+'6',]
@@ -1383,15 +1384,7 @@ def Test():
     #    FakeRate(title)
     #FakeRate(title)
     #WatchedDB().onaccess()
-    folder=u'D:\\seriez\\xxx1и\\'
-    folder=folder.encode('utf-8','ignore')
-    subtitledirs=xbmcvfs.listdir(folder)[0]
-    for d in subtitledirs:
-        for x in xbmcvfs.listdir(folder+os.sep+d)[0]:
-            subtitledirs.append(d+os.sep+x)
-    if len(subtitledirs)>0:
-        subtitledirs.insert(0,__language__(30505))
-        ret = xbmcgui.Dialog().select(__language__(30506), subtitledirs)
+    changeDBTitle(27514)
 
 params = get_params()
 try: apps=get_apps()
@@ -1590,6 +1583,8 @@ elif mode == 304 or mode==204 or mode==254:
     PlaySource()
 elif mode in (205,255):
     ontop('update', stringdata)
+elif mode in (207,):
+    changeDBTitle(showId)
 elif mode == 999:
     Test()
 

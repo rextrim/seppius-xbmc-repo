@@ -34,7 +34,7 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
 ruName=__settings__.getSetting("ruName")
 cookie_auth=__settings__.getSetting("cookie_auth")
-socket.setdefaulttimeout(60)
+socket.setdefaulttimeout(30)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
 __tmppath__= os.path.join(__addonpath__, 'tmp')
@@ -732,7 +732,7 @@ class AddSource(Source):
             if self.id:
                 myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242), __language__(30273), __language__(30274), __language__(30243)]
                 myshows_items=['torrenterall','file', 'vk-file', 'lostfilm', 'torrent', 'tpb', 'utorrent', None]
-                socket.setdefaulttimeout(3)
+                socket.setdefaulttimeout(1)
                 try:
                     if 'lostfilm' in get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+str(self.id)+'/'):
                         myshows_titles[3]=__language__(30514)
