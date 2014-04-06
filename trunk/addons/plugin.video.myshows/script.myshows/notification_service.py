@@ -165,7 +165,7 @@ class myshowsPlayer(xbmc.Player):
                     data["episode"] = int(episode)
                     data["showtitle"] = showtitle
                     data["title"] = xbmc.getInfoLabel("VideoPlayer.Title")
-                    Debug("[myshowsPlayer] onPlayBackStarted() - Playing a non-library 'episode' - %s - S%02dE%02d - %s." % (data["title"], data["season"], data["episode"]))
+                    Debug("[myshowsPlayer] onPlayBackStarted() - Playing a non-library 'episode' - %s - S%02dE%02d." % (data["title"], data["season"], data["episode"]))
                 elif year and not season and not showtitle:
                     # we have a year and no season/showtitle info, enough for a movie
                     self.type = "movie"

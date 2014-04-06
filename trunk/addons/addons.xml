@@ -1188,7 +1188,7 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="[COLOR FFFFFFFF][/COLOR][COLOR FF00AAFF]MyShows.ru[/COLOR]"
-       version="1.9.0a"
+       version="1.9.1"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1200,7 +1200,7 @@ Audio sources are
     <summary>MyShows.ru</summary>
     <description>
 Плагин для сайта MyShows.ru позволяет управлять вашим профилем.
-Смотреть сериалы онлайн (AceStream, libtorrent, ВКонтакте), скачивать в µTorrent или Transmission.
+Смотреть сериалы онлайн (Ace Stream, libtorrent, ВКонтакте), скачивать в µTorrent или Transmission.
 Переносить сериалы в библиотеку XBMC.
 Подробнее на xbmc.ru
     </description>
@@ -2257,7 +2257,7 @@ provider-name="Roman_V_M">
   <extension point='xbmc.python.module'/>
 </addon>
 
-<addon id="script.myshows" name="[COLOR FF00AAFF]MyShows.ru (Service)[/COLOR]" version="0.1.3d" provider-name="DiMartino">
+<addon id="script.myshows" name="[COLOR FF00AAFF]MyShows.ru (Service)[/COLOR]" version="0.1.3e" provider-name="DiMartino">
 	<requires>
 		<import addon="xbmc.python" version="2.1.0"/>
 		<import addon="script.module.simplejson" version="2.0.10"/>

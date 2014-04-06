@@ -267,10 +267,10 @@
         <string id="30531">Would you like to delete %s marks without syncing?</string>
         <string id="30532">No internet!</string>
         <string id="30533">Forced Russian! (until next update)</string>
+        <string id="30534">Would you like to change show title in XBMC DB?</string>
+        <string id="30535">%s to %s</string>
+        <string id="30536">New title: %s</string>
 
-        <string id="30534">Deleted from DB: %s</string>
-        <string id="30535">Sources:</string>
-        <string id="30536">Cache has been cleared!</string>
         <string id="30537">Can't add to DB: %s</string>
         <string id="30538">Choose path with files:</string>
         <string id="30539">Add File</string>
@@ -309,8 +309,8 @@
         <string id="30319">Information</string>
         <string id="30320">Start All Files</string>
         <string id="30321">Stop All Files</string>
+        <string id="30322">Change XBMC DB Title</string>
 
-        <string id="30322">MyShows.ru password</string>
         <string id="30323">All Hail Shchvova</string>
         <string id="30324">Season %d - %d episode(s)</string>
         <string id="30325">Episode %s</string>
