@@ -533,9 +533,9 @@ def Translit(srch):
         soup = BeautifulSoup(html, fromEncoding="UTF-8")
 
         for rec in soup.findAll('textarea', {'class' : "txtarea"}):
-            rez = rec.text
+            rez = rec.text.encode('utf8')
 
-    return rez.encode('utf8')
+    return rez
 #-------------------------------------------------------------------------------
 
 def unescape(text):
