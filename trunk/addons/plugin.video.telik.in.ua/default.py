@@ -65,7 +65,11 @@ def showMessage(heading, message, times = 3000):
 #---------- get web page -------------------------------------------------------
 def get_HTML(url, post = None, ref = None):
     request = urllib2.Request(url, post)
-
+    print url
+    if post == None:
+        print '--- GET'
+    else:
+        print '--- POST'
     host = urlparse.urlsplit(url).hostname
     if ref==None:
         ref='http://'+host
@@ -76,16 +80,18 @@ def get_HTML(url, post = None, ref = None):
     request.add_header('Accept-Language', 'ru-RU')
     request.add_header('Referer',             ref)
 
-    try:
-        f = urllib2.urlopen(request)
-    except IOError, e:
-        if hasattr(e, 'reason'):
-           xbmc.log('We failed to reach a server.')
-        elif hasattr(e, 'code'):
-           xbmc.log('The server couldn\'t fulfill the request.')
-
-    html = f.read()
-
+    #try:
+    f = urllib2.urlopen(request)
+    #except IOError, e:
+	#if hasattr(e, 'reason'):
+	 #  xbmc.log('We failed to reach a server.')
+	#elif hasattr(e, 'code'):
+	 #  xbmc.log('The server couldn\'t fulfill the request.')    
+    if f == None:
+	html = ''
+    else:
+        html = f.read()
+	
     return html
 
 #---------- get list of TV channels --------------------------------------------
@@ -170,10 +176,10 @@ params=get_params(sys.argv[2])
 
 # get cookies from last session
 cj = cookielib.MozillaCookieJar(fcookies)
-try:
-    cj.load(ignore_discard=True)
-except:
-    pass
+#try:
+#   cj.load(ignore_discard=True)
+#except:
+#    pass
 hr  = urllib2.HTTPCookieProcessor(cj)
 opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
@@ -189,6 +195,6 @@ if mode == 'PLAY':
 	PLAY(params)
 
 #-- store cookies
-cj.save(ignore_discard=True)
+#cj.save(ignore_discard=True)
 
 
