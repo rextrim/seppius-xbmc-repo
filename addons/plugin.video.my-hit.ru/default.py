@@ -45,12 +45,13 @@ import Queue
 import thread
 #-----------------------------------------------
 
+import urllib2
 try:
     import urllib3
     from urllib3.exceptions import HTTPError
     hasUrllib3 = True
 except ImportError:
-    import urllib2
+    #import urllib2
     from urllib2 import HTTPError
     hasUrllib3 = False
 
@@ -452,7 +453,7 @@ def Genre_List(params):
 
     for item in nav.findAll('li'):
     	if item.get('class') == "nav-header":
-    		if is_genre == False and item.text == u'Жанры :':
+    		if is_genre == False and item.text == u'Жанр :':
     			is_genre = True
     		else:
     			is_genre = False
@@ -491,6 +492,7 @@ def Year_List(params):
     soup = BeautifulSoup(html)
     nav = soup.find('div', {'class':"sidebar-nav"}).find('ul', {'class':"nav nav-list"})
     is_year = False
+    is_Found = False
 
     for item in nav.findAll('li'):
     	if item.get('class') == "nav-header":
@@ -500,6 +502,12 @@ def Year_List(params):
     			is_year = False
 
         if is_year:
+            if item.find('a'):
+                if item.find('a')['href']=='#':
+                    is_Found = True
+                    continue
+
+        if is_Found:
             if item.find('a'):
                 name = (item.find('a').text).encode('utf-8')
                 year_id = item.find('a').get('href').replace('/film/','').replace('/','')
