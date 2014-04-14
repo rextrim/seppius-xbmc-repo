@@ -86,12 +86,12 @@ def get_HTML(url, post = None, ref = None):
 	#if hasattr(e, 'reason'):
 	 #  xbmc.log('We failed to reach a server.')
 	#elif hasattr(e, 'code'):
-	 #  xbmc.log('The server couldn\'t fulfill the request.')    
+	 #  xbmc.log('The server couldn\'t fulfill the request.')
     if f == None:
 	html = ''
     else:
         html = f.read()
-	
+
     return html
 
 #---------- get list of TV channels --------------------------------------------
@@ -102,6 +102,20 @@ def Get_TV_Channels():
     soup = BeautifulSoup(html)
 
     for rec in soup.findAll('div', {'class':"movie"}):
+        ch_url  = rec.find('a')['href']
+        title   = rec.find('span', {'class':"name"}).text
+        img     = "http://telik.in.ua/"+rec.find('img')['src']
+
+        name = ('[COLOR FFCCFF33][B]'+title+'[/B][/COLOR]').encode('utf-8')
+
+        i = xbmcgui.ListItem(name, iconImage=img, thumbnailImage=img)
+        u = sys.argv[0] + '?mode=PLAY'
+        u += '&name=%s'%urllib.quote_plus(name)
+        u += '&url=%s'%urllib.quote_plus(ch_url)
+        u += '&img=%s'%urllib.quote_plus(img)
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    for rec in soup.findAll('div', {'class':"movie last"}):
         ch_url  = rec.find('a')['href']
         title   = rec.find('span', {'class':"name"}).text
         img     = "http://telik.in.ua/"+rec.find('img')['src']
