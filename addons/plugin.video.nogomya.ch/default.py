@@ -88,17 +88,167 @@ def get_HTML(url, post = None, ref = None):
 
     return html
 
+
+#----------  -----------------------------------------------------
+
+#---------- archive ------------------------------------------------------------
+def Archive_List(params):
+
+    #-- get generes
+    url = 'http://nogomya.ch/match/filter'
+
+    values = {
+                #'items[league][]' : '10'
+             }
+
+    post = urllib.urlencode(values)
+
+    html = get_HTML(url, post)
+    j = json.loads(html)
+
+    soup = BeautifulSoup(j['match_filter'])
+
+    for rec in soup.findAll('div', {'class':"block"}):
+        url       = 'http://nogomya.ch' + rec.find('a', {'class':"block"})['href']
+        img_home  = 'http://nogomya.ch' + rec.find('div', {'class':"home"}).find('img')['src']
+        img_guest = 'http://nogomya.ch' + rec.find('div', {'class':"guest"}).find('img')['src']
+        league  = rec.find('div', {'class':"league"}).text
+        season  = rec.find('div', {'class':"season"}).text
+        team    = rec.find('div', {'class':"team"}).text
+
+        name    = (league+' '+season+' '+team).encode('utf-8')
+
+        i = xbmcgui.ListItem(name, iconImage=img_home, thumbnailImage=img_guest)
+        #i.setProperty('fanart_image', img_guest)
+        u = sys.argv[0] + '?mode=EMPTY'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        #u += '&page=%s'%urllib.quote_plus(par.page)
+        #u += '&liga=%s'%urllib.quote_plus(liga_id)
+        #u += '&liga_name=%s'%urllib.quote_plus(name)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
+    xbmcplugin.endOfDirectory(h)
+
+
+#---------- get liga list -----------------------------------------------------
+def Liga_List(params):
+
+    #-- get generes
+    url = 'http://nogomya.ch/match'
+    html = get_HTML(url)
+
+    # -- parsing web page ------------------------------------------------------
+    soup = BeautifulSoup(html)
+
+    for rec in soup.find('ul', {'data-type':"league"}).findAll('li'):
+        name    = rec.find('a').text.encode('utf-8')
+        liga_id = rec.find('input')['value']
+
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=EMPTY'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        #u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&liga=%s'%urllib.quote_plus(liga_id)
+        u += '&liga_name=%s'%urllib.quote_plus(name)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
+    xbmcplugin.endOfDirectory(h)
+
+#----------- get Header string -------------------------------------------------
+def Get_Header(par):
+
+    info  = 'Фильмов: ' + '[COLOR FF00FF00]' + str(par.count) + '[/COLOR]'
+
+    if par.max_page > 1:
+        info += ' | Pages: ' + '[COLOR FF00FF00]'+ par.page + '/' + str(par.max_page) +'[/COLOR]'
+
+    if par.genre <> '':
+        info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre_name + '[/COLOR]'
+
+    if par.search <> '':
+        info  += ' | Поиск: ' + '[COLOR FFFFFF00]'+ par.search +'[/COLOR]'
+
+    #-- info line
+    name    = info
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=EMPTY'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&page=%s'%urllib.quote_plus(par.page)
+    u += '&genre=%s'%urllib.quote_plus(par.genre)
+    u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+    u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+    u += '&count=%s'%urllib.quote_plus(str(par.count))
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- genres & search
+    if par.genre == '' and par.search == '' and par.page == '1':
+        name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=GENRES'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+        u += '&count=%s'%urllib.quote_plus(str(par.count))
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        name    = '[COLOR FFFFFF00]' + '[ПОИСК]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=SEARCH'
+        #-- filter parameters
+        u += '&search=%s'%urllib.quote_plus('Y')
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- previous page
+    if int(par.page) > 1 and par.search == '':
+        name    = '[COLOR FF00FF00][PAGE -1][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+        u += '&count=%s'%urllib.quote_plus(str(par.count))
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- previous page
+    if int(par.page) >= 10 and par.search == '':
+        name    = '[COLOR FF00FF00][PAGE -10][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(str(int(par.page)-10))
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+        u += '&count=%s'%urllib.quote_plus(str(par.count))
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+def Empty():
+    return False
+
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
-    url = 'http://nogomya.ch/login'
+    url = 'http://nogomya.ch/stream'
     html = get_HTML(url)
     soup = BeautifulSoup(html)
 
-    if soup.find('div', {'class':"hello"}) == None:
+    if soup.find('form', {'class':"form-signin"}) != None:
         try:
+            print '-------------'
             #-- login to tvisio.tv
-            login       = Addon.getSetting('Login')
-            password    = Addon.getSetting('Password')
+            login       = 'Silen'
+            password    = 'privet'
 
             print login
             print password
@@ -107,7 +257,7 @@ def Get_TV_Channels():
                     'LoginForm[username]'   : login,
                     'LoginForm[password]'   : password,
                     'LoginForm[rememberMe]' : 0,
-                    'yt0'                   : 'Войти'
+                    'yt0'                   : 'впустите'
                 }
 
             post = urllib.urlencode(values)
@@ -117,19 +267,32 @@ def Get_TV_Channels():
         except:
             pass
 
-        url = 'http://nogomya.ch/'
+        url = 'http://nogomya.ch/stream'
         html = get_HTML(url)
         soup = BeautifulSoup(html)
 
-    if soup.find('div', {'class':"hello"}) == None:
+    if soup.find('form', {'class':"form-signin"}) != None:
         print 'ERROR: Login'
         return False
 
-    for rec in soup.find('div', {'class':"wrapper"}).findAll('div', {'style':"padding-bottom:10px"}):
+
+##    name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
+##    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+##    u = sys.argv[0] + '?mode=LIGA'
+##    u += '&name=%s'%urllib.quote_plus(name)
+##    #-- filter parameters
+##    #u += '&page=%s'%urllib.quote_plus(par.page)
+##    #u += '&genre=%s'%urllib.quote_plus(par.genre)
+##    #u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+##    #u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+##    #u += '&count=%s'%urllib.quote_plus(str(par.count))
+##    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    for rec in soup.findAll('div', {'class':re.compile("col-sm-6  highlight")}):
         ch_url  = 'http://nogomya.ch'+rec.find('a')['href']
-        title   = rec.find('a').text
-        descr   = rec.text
-        img     = icon
+        title   = rec.find('span').text
+        descr   = rec.find('h4').text
+        img     = rec.find('img')['src']
 
         name = ('[COLOR FFCCFF33][B]'+title+'[/B][/COLOR] [COLOR FFB8B8B8][I]'+descr+'[/I][/COLOR]').encode('utf-8')
 
@@ -154,9 +317,9 @@ def PLAY(params):
     html = get_HTML(url)
 
     # -- parsing web page ----------------------------------------------------------
-    for rec in re.compile('var flashvars =\{(.+?)\}', re.MULTILINE|re.DOTALL).findall(html)[0].split(','):
-        if rec.split('":"')[0] == '"file':
-            video = rec.split('":"')[1][:-1]
+    for rec in re.compile('var flashvars =.\{(.+?)\}', re.MULTILINE|re.DOTALL).findall(html)[0].split(','):
+        if rec.split(':')[0].strip() == 'src':
+            video = rec.split(': "')[1][:-1]
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
@@ -216,6 +379,10 @@ except:
 
 if mode == 'PLAY':
 	PLAY(params)
+elif mode == 'LIGA':
+    Archive_List(params) #Liga_List(params)
+elif mode == 'EMPTY':
+    Empty()
 
 #-- store cookies
 cj.save(ignore_discard=True)
