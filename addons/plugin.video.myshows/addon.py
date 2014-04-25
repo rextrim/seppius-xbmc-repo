@@ -51,8 +51,8 @@ class Main(Handler):
                        {"title":__language__(30106),"mode":"27"},
                        {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                        {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
-                       {"title":__language__(30137),"mode":"60"}, {"title":__language__(30101),"mode":"19"},
-                       {"title":__language__(30146),"mode":"61"}, {"title":__language__(30141),"mode":"510"}])
+                       {"title":__language__(30101),"mode":"19"},
+                       {"title":__language__(30146),"mode":"61"},{"title":__language__(30287),"mode":"52"},])
         if __settings__.getSetting("debug")=='true':
             self.menu.append({"title":"TEST","mode":"999"})
         self.handle()
@@ -1384,7 +1384,12 @@ def Test():
     #    FakeRate(title)
     #FakeRate(title)
     #WatchedDB().onaccess()
-    changeDBTitle(27514)
+    #changeDBTitle(27514)
+    dialog = xbmcgui.Dialog()
+    #x=xbmcvfs.rename('D:\1.txt','smb://192.168.0.2/xbmc/xbmc_seriez/1.txt')
+    #dialog.ok(unicode(__language__(30146)), str(x))
+    #import shutil
+    #shutil.move('D:\\1.txt','\\\\192.168.0.2\\xbmc\\xbmc_seriez\\1.txt')
 
 params = get_params()
 try: apps=get_apps()

@@ -44,6 +44,7 @@
         <string id="30041">[B]Send Offline Marks[/B]</string>
         <string id="30042">[B]Перевести на Русский (Force Russian)[/B]</string>
         <string id="30043">Silent Offline Marks Send Mode</string>
+        <string id="30044">Auto find and play in torrent-client on Play Source</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
