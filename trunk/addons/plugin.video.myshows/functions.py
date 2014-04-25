@@ -54,7 +54,7 @@ def showMessage(heading, message, times = 10000, forced=False):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8'), unicode(message).encode('utf-8'), times, icon))
 
 def id2title(showId, id=None, norus=False):
-    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     if jload:
         jdata = json.loads(jload)
         if ruName=='true' and jdata['ruTitle'] and not norus:
@@ -64,17 +64,24 @@ def id2title(showId, id=None, norus=False):
         Debug('[id2title]: '+ title)
         if id:
             try:
-                return title.encode('utf-8'), jdata['episodes'][id]['title'].encode('utf-8')
+                return title.encode('utf-8'), jdata['episodes'][str(id)]['title'].encode('utf-8')
             except:
                 return title.encode('utf-8'), None
         else:
             return title.encode('utf-8'), None
 
 def id2date(showId, id):
-    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     if jload:
         jdata = json.loads(jload)
         if str(id) in jdata["episodes"]: return jdata["episodes"][str(id)]["airDate"]
+
+def id2SE(showId, id):
+    jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
+    if jload:
+        jdata = json.loads(jload)
+        if str(id) in jdata["episodes"]:
+            return jdata["episodes"][str(id)]["seasonNumber"], jdata["episodes"][str(id)]["episodeNumber"]
 
 def date2SE(showId, date):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
@@ -213,6 +220,9 @@ def get_url(cookie, url):
                 ##Debug('[get_url][3]: arr=""')
                 array=True
             return array
+        elif e.code in [503]:
+            Debug('[get_url]: Denied, HTTP Error, e.code='+str(e.code))
+            return False
         else:
             if debug=='true': showMessage('HTTP Error', str(e.code), forced=True)
             xbmc.sleep(2000)
@@ -356,9 +366,9 @@ class Data():
                 self.refresh=True
                 __settings__.setSetting("forced_refresh_data","false")
 
-    def get(self):
+    def get(self, force_cache=False):
         if self.filename:
-            if self.refresh==True or not xbmcvfs.File(self.filename, 'r').size():
+            if self.refresh==True and force_cache==False or not xbmcvfs.File(self.filename, 'r').size():
                 self.write()
             self.fg = xbmcvfs.File(self.filename, 'r')
             try:self.data = self.fg.read()
@@ -608,14 +618,14 @@ def filename2match(filename):
         #print str(results)
         if match:
             results['showtitle'], results['season'], results['episode']=match[0]
-            results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip()
+            results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip().replace('The Daily Show','The Daily Show With Jon Stewart')
             Debug('[filename2match] '+str(results))
             return results
     urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})','(.+)(\d{4}) (\d{2}) (\d{2})'] #same in service
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         if match:
-            results['showtitle']=match[0][0].replace('.',' ').strip()
+            results['showtitle']=match[0][0].replace('.',' ').strip().replace('The Daily Show','The Daily Show With Jon Stewart')
             results['date']='%s.%s.%s' % (match[0][3],match[0][2],match[0][1])
             Debug('[filename2match] '+str(results))
             return results
@@ -663,7 +673,13 @@ def uTorrentBrowser():
                 if data['id']==hash:
                     title=data['name']
                     break
-            if title: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=19&action=%s)' % (title))
+            if title:
+                titles=PrepareSearch(title)
+                if len(titles)>1:
+                    ret=xbmcgui.Dialog().select(unicode(__language__(30101)), titles)
+                else: ret=0
+                if ret>-1:
+                    xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=19&action=%s)' % (titles[ret]))
             return
         if (ind or ind==0) and action in ('0','3'):
             Download().setprio_simple(hash, action, ind)
@@ -837,6 +853,7 @@ class PluginStatus():
             return
 
         menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
+              {"title":__language__(30137),    "mode":"60",    "argv":{'action':''}},
               {"title":'MyShows.ru (Service): %s' % self.myshows       ,"mode":"61",    "argv":{'action':'myshows',},},
               {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
               {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
@@ -943,6 +960,7 @@ def smbtopath(path):
     x=path.split('@')
     if len(x)>1: path=x[1]
     else:path=path.replace('smb://','')
+    Debug('[smbtopath]:'+'\\\\'+path.replace('/','\\'))
     return '\\\\'+path.replace('/','\\')
 
 def PrepareFilename(filename):
@@ -950,6 +968,30 @@ def PrepareFilename(filename):
     for b in badsymb:
         filename=filename.replace(b,' ')
     return filename.rstrip('. ')
+
+def PrepareSearch(filename):
+    titles=[filename]
+    rstr='. -'
+    badsymb=[':','"',r'\\','/',r'\'','!','&','*','_','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ']
+    for b in badsymb:
+        filename=filename.replace(b,' ')
+
+    filename=re.sub("\([^)]*\)([^(]*)", "\\1", filename)
+    filename=re.sub("\[[^\]]*\]([^\[]*)", "\\1", filename)
+    filename=filename.strip().rstrip(rstr)
+
+    if titles[0]!=filename and filename!='': titles.insert(0,filename)
+
+    title_array=[(u'(.+?)(Cезон|cезон|Сезон|сезон|Season|season)',titles[0],0),
+                 (u'(.+?) (s|S)(\d){1,2}( |E)',titles[0].replace('.',' '),0),
+                 ]
+    for regex, title, i in title_array:
+        recomp=re.compile(regex)
+        match=recomp.findall(title)
+        if match:
+            titles.insert(0,match[0][i].rstrip(rstr))
+
+    return titles
 
 def kinorate(title,year,titleAlt=None,kinopoiskId=None):
     if kinopoiskId:
@@ -1103,6 +1145,7 @@ def changeDBTitle(showId):
         newtitle=id2title(showId,None,True)[0]
         dialog = xbmcgui.Dialog()
         dialog_items,dialog_ids=[__language__(30205)],[-1]
+        shows=sorted(shows,key=lambda x:x['tvshowid'],reverse=True)
         for show in shows:
             dialog_ids.append(show['tvshowid'])
             dialog_items.append(show['title'])

@@ -246,14 +246,14 @@ class Scrobbler(threading.Thread):
                 #else:
                 match = utilities.getEpisodeDetailsFromXbmc(self.curVideo['id'],
                                                             ['showtitle', 'season', 'episode', 'tvshowid', 'uniqueid', 'file'])
-            elif 'showtitle' in self.curVideoData and 'season' in self.curVideoData and 'episode' in self.curVideoData:
+            elif 'item' in self.curVideoData and 'showtitle' in self.curVideoData['item'] and 'season' in self.curVideoData['item'] and 'episode' in self.curVideoData['item']:
                 match = {}
                 match['tvdb_id'] = None
                 match['year'] = None
-                match['showtitle'] = self.curVideoData['showtitle']
-                match['season'] = self.curVideoData['season']
-                match['episode'] = self.curVideoData['episode']
-                match['uniqueid'] = self.curVideoData['uniqueid']['unknown']
+                match['showtitle'] = self.curVideoData['item']['showtitle']
+                match['season'] = self.curVideoData['item']['season']
+                match['episode'] = self.curVideoData['item']['episode']
+                if 'title' in self.curVideoData['item']: match['label'] = self.curVideoData['item']['title']
             elif 'label' in self.curVideo and len(self.curVideo['label']) > 0:
                 match = {}
                 match['label'] = self.curVideo['label']

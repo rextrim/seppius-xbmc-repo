@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.8.9"
+__version__ = "1.9.2"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -630,10 +630,11 @@ class DownloadSource(Source):
                     if self.title: TorrentDB().add(self.filename, 'json', self.showId, self.seasonId, self.id, self.episodeId)
             else: showMessage(__language__(30206), __language__(30271), forced=True)
 
-def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None):
+def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None, auto_only=False):
+    socket.setdefaulttimeout(3)
     dialog_items,dialog_items_clean=[], []
     dialog_files=[]
-    hash=None
+    hash, title=None, None
     dat=Download().list()
     for data in dat:
         Debug('[chooseHASH]: '+str((data['id'], data['dir'].encode('utf-8'))))
@@ -646,7 +647,7 @@ def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None):
         for d_item in dialog_items_clean:
             d_fileindex=dialog_items_clean.index(d_item)
             f2m=filename2match(d_item)
-            if f2m and re.search(title,f2m['showtitle']):
+            if f2m and (re.search(title,f2m['showtitle']) or re.search(PrepareFilename(title).replace('The Daily Show With Jon Stewart','The Daily Show'),f2m['showtitle'])):
                 items.append(dialog_items[d_fileindex])
                 files.append(dialog_files[d_fileindex])
                 if 'date' in f2m and id2date(showId, id)==f2m['date'] or \
@@ -655,6 +656,7 @@ def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None):
                     match=d_fileindex
         if count==1:
             return dialog_files[match]
+        if auto_only: return
         if len(items)>1:
             items.append(unicode(__language__(30205)))
             ret = xbmcgui.Dialog().select(unicode(__language__(30272)), items)
@@ -785,7 +787,7 @@ class AddSource(Source):
         elif stype=='utorrent':
             self.uTorrentAdd()
 
-    def uTorrentAdd(self, id=None, ind=None):
+    def uTorrentAdd(self, id=None, ind=None, play=False):
         if not id: id, self.filename=chooseHASH(self.showId, self.id, self.seasonId, self.episodeId)
         else: id, self.filename=id
         ret=None
@@ -864,6 +866,7 @@ class AddSource(Source):
                             else: dirname=__settings__.getSetting("torrent_dir")
                             Debug('[uTorrentAdd]: dirname is "'+dirname+'"')
                             self.filename=self.filename.replace('\\\\','\\')
+                            dirname, torrent_replacement=dirname.rstrip('\\/'), torrent_replacement.rstrip('\\/')
                             Debug('[Remote Torrent] Try to replace %s to %s in %s' % (dirname, torrent_replacement,self.filename))
                             self.filename=self.filename.replace(dirname, torrent_replacement)
                             self.filename=os.path.join(self.filename,dirlist[ret]).replace('\\','/')
@@ -873,7 +876,9 @@ class AddSource(Source):
                         try:
                             self.addsource()
                             showMessage(__language__(30208), __language__(30230) % (self.filename))
-                            if dllist[ret][1]==100: AskPlay()
+                            if dllist[ret][1]==100:
+                                if not play: AskPlay()
+                                else: PlayFile()
                             else: showMessage(unicode(__language__(30208)),unicode(__language__(30275))+unicode(dllist[ret][1])+'%.')
                         except:
                             showMessage(__language__(30206), __language__(30231) % (self.filename), forced=True)
@@ -901,6 +906,13 @@ class PlaySource(Source):
             if len(TorrentDB().get_all(True, self.showId, self.seasonId))>0 or self.stype=='xbmc':
                 ShowAllSources()
             else:
+                if getSettingAsBool('torrent_addsource'):
+                    id=chooseHASH(self.showId, self.id, self.seasonId, self.episodeId, True)
+                    if id:
+                        stringdata=json.loads(urllib.unquote_plus(self.stringdata))
+                        stringdata['stype']='BLANK'
+                        AddSource(json.dumps(stringdata)).uTorrentAdd(id=id, play=True)
+                        return
                 AddSource()
 
 class DeleteSource(Source):
@@ -995,7 +1007,26 @@ class PlayFile(Source):
             self.stype='file'
             self.filename=xbmcEpisode(self.showId, self.seasonId, self.episodeId)['file']
         if self.stype=='file' or self.stype=='vk-file':
-            xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
+            if self.showId and self.id:
+                if not self.seasonId or not self.episodeId and self.episodeId!=0:
+                    Debug('[PlayFile]: not self.seasonId or not self.episodeId')
+                    self.seasonId, self.episodeId=id2SE(self.showId, self.id)
+                if self.seasonId:
+                    title, label=id2title(self.showId, self.id)
+                    i = xbmcgui.ListItem(label, path = self.filename.encode('utf-8'), thumbnailImage='')
+
+                    i.setInfo(type='video', infoLabels={    'title':      label,
+                                                                'episode': self.episodeId,
+                                                                'season': self.seasonId,
+                                                                'tvshowtitle': title})
+                    i.setProperty('IsPlayable', 'true')
+                    xbmc.Player().play(self.filename.encode('utf-8'), i)
+                else:
+                    Debug('[PlayFile]: did not found self.seasonId')
+                    xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
+            else:
+                Debug('[PlayFile]: not self.showId and self.id')
+                xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
         elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
             if self.stype in ['tpb', 'torrenter']: showMessage(__language__(30211), __language__(30212))
             xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),self.stringdata))
@@ -1250,7 +1281,6 @@ class MoveToXBMC(Source):
         if self.stype=='file': folder=os.path.dirname(self.filename)
         self.orig_xbmclib=xbmclib
         if xbmclib.startswith('smb://'):xbmclib=smbtopath(xbmclib)
-        if folder.startswith('smb://'):folder=smbtopath(folder)
 
         if xbmclib!='' and xbmcvfs.exists(folder):
             self.xbmclib=xbmclib
@@ -1293,7 +1323,7 @@ class MoveToXBMC(Source):
                     if filelist[i].lower().split('.')[-1] in allowed_ext and\
                         filename_if.lower()==filename_if2.lower():
                         movelist.append((filelist[i],self.episodeId,self.seasonId))
-                except: pass
+                except: Debug('[move]: except for i='+str(i))
         elif self.stype in ['dir',' multifile']:
             if len(filelist)>1:
                 cutfilelist=cutFileNames(filelist)
@@ -1305,6 +1335,8 @@ class MoveToXBMC(Source):
                 except:
                     Debug('[MoveToXBMC][move]: Error finding epnum for '+ filelist[i])
                     movelist.append((filelist[i],None,None))
+
+        if folder.startswith('smb://'):folder=smbtopath(folder)
 
         if self.movemode in (1,2,3,4):
             newfolder=newfolder.decode('utf-8','ignore')
@@ -1359,7 +1391,7 @@ class MoveToXBMC(Source):
             file=file.decode('utf-8','ignore')
             newfilename=newfilename.decode('utf-8','ignore')
             if self.movemode==1 or self.movemode==5: #Copy
-                shutil.copy(os.path.join(folder, file), newfolder)
+                shutil.copyfile(os.path.join(folder, file), os.path.join(newfolder, file))
                 if renamebool:shutil.move(os.path.join(newfolder, file), os.path.join(newfolder, newfilename))
             if self.movemode==2 or self.movemode==6: #Move
                 shutil.move(os.path.join(folder, file), os.path.join(newfolder, newfilename))
@@ -1374,12 +1406,9 @@ class MoveToXBMC(Source):
         return True
 
     def mkdirs(self, seasonId):
-        dirs=''
-        for subdir in (PrepareFilename(self.title), 'Season '+str(seasonId)):
-            dirs = os.path.join(dirs, subdir)
-            if not xbmcvfs.exists(os.path.join(self.orig_xbmclib, dirs)):
-                xbmcvfs.mkdir(os.path.join(self.orig_xbmclib, dirs))
-        return os.path.join(self.xbmclib, dirs)
+        newdir=os.path.join(self.xbmclib, PrepareFilename(self.title), 'Season '+str(seasonId))
+        xbmcvfs.mkdirs(newdir)
+        return newdir
 
     def uTorrentCheck(self, folder, action):
         socket.setdefaulttimeout(3)
