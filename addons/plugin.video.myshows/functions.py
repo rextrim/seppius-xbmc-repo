@@ -212,14 +212,17 @@ def get_url(cookie, url):
     except urllib2.HTTPError as e:
         #Debug('[get_url]: HTTPError, e.code='+str(e.code))
         if e.code==401:
-            headers['Cookie']=auth()
-            conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
-            array=conn.read()
-            conn.close()
-            if array=='':
-                ##Debug('[get_url][3]: arr=""')
-                array=True
-            return array
+            try:
+                headers['Cookie']=auth()
+                conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
+                array=conn.read()
+                conn.close()
+                if array=='':
+                    array=True
+                return array
+            except:
+                Debug('[get_url]: Denied! Wrong login or api is broken!')
+                return False
         elif e.code in [503]:
             Debug('[get_url]: Denied, HTTP Error, e.code='+str(e.code))
             return False
@@ -891,6 +894,7 @@ class PluginStatus():
                 original=os.path.join(plugpath, f)
                 if os.path.isfile(original):
                     if not filecmp.cmp(original, patch):
+                        Debug('[PluginStatus][check_status]: diffrent file '+original)
                         plugstatus="NOT PATCHED"
             except: pass
         if not plugstatus: plugstatus="PATCHED"
