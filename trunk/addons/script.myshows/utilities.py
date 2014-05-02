@@ -19,7 +19,7 @@ def Debug(msg, force = False):
         try:
             print "[myshows] " + msg
         except UnicodeEncodeError:
-            print "[myshows] " + msg.encode( "utf-8", "ignore" )
+            print "[myshows utf-8] " + msg.encode( "utf-8", "ignore" )
         except:
             print "[myshows] Debug Error"
 
