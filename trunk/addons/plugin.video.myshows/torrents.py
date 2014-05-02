@@ -1007,26 +1007,7 @@ class PlayFile(Source):
             self.stype='file'
             self.filename=xbmcEpisode(self.showId, self.seasonId, self.episodeId)['file']
         if self.stype=='file' or self.stype=='vk-file':
-            if self.showId and self.id:
-                if not self.seasonId or not self.episodeId and self.episodeId!=0:
-                    Debug('[PlayFile]: not self.seasonId or not self.episodeId')
-                    self.seasonId, self.episodeId=id2SE(self.showId, self.id)
-                if self.seasonId:
-                    title, label=id2title(self.showId, self.id)
-                    i = xbmcgui.ListItem(label, path = self.filename.encode('utf-8'), thumbnailImage='')
-
-                    i.setInfo(type='video', infoLabels={    'title':      label,
-                                                                'episode': self.episodeId,
-                                                                'season': self.seasonId,
-                                                                'tvshowtitle': title})
-                    i.setProperty('IsPlayable', 'true')
-                    xbmc.Player().play(self.filename.encode('utf-8'), i)
-                else:
-                    Debug('[PlayFile]: did not found self.seasonId')
-                    xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
-            else:
-                Debug('[PlayFile]: not self.showId and self.id')
-                xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
+            self.playfile()
         elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
             if self.stype in ['tpb', 'torrenter']: showMessage(__language__(30211), __language__(30212))
             xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),self.stringdata))
@@ -1046,9 +1027,9 @@ class PlayFile(Source):
             filename=os.path.join(self.filename, myshows_files[i])
             if os.path.isdir(filename): PlayFile(makeapp({'filename':filename}))
             else:
-                try:filename=filename.encode('utf-8')
-                except: pass
-                xbmc.executebuiltin('xbmc.PlayMedia("'+filename+'")')
+                try:self.filename=filename.decode('utf-8')
+                except: self.filename=filename
+                self.playfile()
         elif self.stype=='serialu':
             i=0
             getdat=Serialu().read()
@@ -1064,6 +1045,29 @@ class PlayFile(Source):
             dialog = xbmcgui.Dialog()
             i = dialog.select(__language__(30235), myshows_items)
             if i and i not in (-1, len(myshows_files)-1): xbmc.executebuiltin('xbmc.PlayMedia("'+urllib.unquote_plus(myshows_files[i])+'")')
+
+    def playfile(self):
+        if self.showId and self.id:
+            if not self.seasonId or not self.episodeId and self.episodeId!=0:
+                Debug('[PlayFile]: not self.seasonId or not self.episodeId')
+                self.seasonId, self.episodeId=id2SE(self.showId, self.id)
+            if self.seasonId:
+                title, label=id2title(self.showId, self.id)
+                #label='%s [myshows_showId|%d|myshows_id|%d]' % (label, self.showId, self.id)
+                i = xbmcgui.ListItem(label, path = self.filename.encode('utf-8'), thumbnailImage='')
+
+                i.setInfo(type='video', infoLabels={    'title':      label,
+                                                        'episode': self.episodeId,
+                                                        'season': self.seasonId,
+                                                        'tvshowtitle': title})
+                i.setProperty('IsPlayable', 'true')
+                xbmc.Player().play(self.filename.encode('utf-8'), i)
+            else:
+                Debug('[PlayFile]: did not found self.seasonId')
+                xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
+        else:
+            Debug('[PlayFile]: not self.showId and self.id')
+            xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
 
 class ShowAllSources(Source):
     def handle(self):
@@ -1089,7 +1093,14 @@ class ShowAllSources(Source):
         except: pass
         if i==myshows_files.index(unicode(__language__(30232))): AddSource()
         elif i==-1 or i==myshows_files.index(unicode(__language__(30205))): return False
-        else: PlayFile(myshows_files[i])
+        else:
+            if self.id and (self.episodeId or self.episodeId==0):
+                stringdata=json.loads(urllib.unquote_plus(myshows_files[i]))
+                stringdata['episodeId']=self.episodeId
+                stringdata['id']=self.id
+                Debug('[ShowAllSources]: PlayFile '+str(stringdata))
+                PlayFile(json.dumps(stringdata))
+            else:PlayFile(myshows_files[i])
 
 def VKSearch(showId, id):
     PluginStatus().use('vkstatus')

@@ -271,10 +271,10 @@
         <string id="30534">Would you like to change show title in XBMC DB?</string>
         <string id="30535">%s to %s</string>
         <string id="30536">New title: %s</string>
+        <string id="30537">Error: No Shows Found!</string>
+        <string id="30538">Using "Search MyShows.ru" mark as "Watching" some shows,</string>
+        <string id="30539">or do it on http://myshows.ru and Clear Cache in Plugin Status</string>
 
-        <string id="30537">Can't add to DB: %s</string>
-        <string id="30538">Choose path with files:</string>
-        <string id="30539">Add File</string>
         <string id="30540">Search VK (need patched xbmc.vk-svoka)</string>
         <string id="30541">Search LostFilm.tv (need patch plugin.video.LostFilm)</string>
         <string id="30542">Add .torrent</string>

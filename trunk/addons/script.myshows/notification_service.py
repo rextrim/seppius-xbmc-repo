@@ -157,11 +157,12 @@ class myshowsPlayer(xbmc.Player):
                 showtitle = xbmc.getInfoLabel("VideoPlayer.TVShowTitle")
                 year = xbmc.getInfoLabel("VideoPlayer.Year")
                 
-                if season and episode and showtitle:
+                if season and showtitle: #and episode
                     # we have season, episode and show title, can scrobble this as an episode
                     self.type = "episode"
                     data["type"] = "episode"
                     data["season"] = int(season)
+                    if not episode: episode=0
                     data["episode"] = int(episode)
                     data["showtitle"] = showtitle
                     data["title"] = xbmc.getInfoLabel("VideoPlayer.Title")
@@ -227,7 +228,7 @@ class myshowsPlayer(xbmc.Player):
                         season = int(result["episodedetails"]["season"])
                         episode = int(result["episodedetails"]["episode"])
                         episode_index = episode - 1
-                        
+
                         result = xbmcJsonRequest({"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {"tvshowid": tvshowid, "season": season, "properties": ["episode", "file"], "sort": {"method": "episode"}}, "id": 1})
                         if result:
                             Debug("[myshowsPlayer] onPlayBackStarted() - %s" % result)

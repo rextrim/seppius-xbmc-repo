@@ -96,7 +96,15 @@ def Shows():
 
     jload=data.get()
     if jload:
-        jdata = json.loads(jload)
+        try:
+            jdata = json.loads(jload)
+        except ValueError:
+            dialog = xbmcgui.Dialog()
+            ok=dialog.ok(unicode(__language__(30537)), unicode(__language__(30538)), unicode(__language__(30539)))
+            if ok: xbmc.executebuiltin('ActivateWindow(Videos,plugin://plugin.video.myshows/?mode=19&action=%s)' % ('Friends'))
+            return
+        except:
+            jdata = json.loads('{}')
     else: return
 
     #if mode in(11,12):
@@ -897,6 +905,8 @@ class SyncXBMC():
         if self.action=='check':
             if 'myshows_id' in self.match:
                  showId, id=self.match['myshows_showId'],self.match['myshows_id']
+            #elif 'label' in self.match and len(re.compile(r"\[myshows_showId\|(\d+?)\|myshows_id\|(\d+?)\]").findall(self.match['label']))>0:
+            #    showId, id=re.compile(r"\[myshows_showId\|(\d+?)\|myshows_id\|(\d+?)\]").findall(self.match['label'])
             else:
                 showId, id=self.doaction_simple()
             if __settings__.getSetting("label")=='true' and not id:
