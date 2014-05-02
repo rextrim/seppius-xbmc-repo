@@ -257,6 +257,9 @@
         <string id="30534">Хотите изменить название сериала в базе XBMC?</string>
         <string id="30535">%s на %s</string>
         <string id="30536">Новое название: %s</string>
+        <string id="30537">Ошибка: Нет шоу в списке!</string>
+        <string id="30538">Используя "Поиск MyShows.ru" нужно пометить шоу "Смотрю",</string>
+        <string id="30539">либо через http://myshows.ru и Очистить кэш в Статус Плагина  and Clear Cache in Plugin Status</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
