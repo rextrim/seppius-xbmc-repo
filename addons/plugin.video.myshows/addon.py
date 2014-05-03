@@ -18,10 +18,9 @@ ruName=__settings__.getSetting("ruName")
 change_onclick=__settings__.getSetting("change_onclick")
 cookie_auth=__settings__.getSetting("cookie_auth")
 useTVDB=getSettingAsBool('tvdb')
-socket.setdefaulttimeout(30)
+socket.setdefaulttimeout(TimeOut().timeout())
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
-__tmppath__= os.path.join(__addonpath__, 'tmp')
 forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
@@ -1271,6 +1270,7 @@ class WatchedDB:
         ok1,ok3=None,None
         db_rating=self._get(id)
         title=titlesync(id)
+        TimeOut().go_offline()
         if getSettingAsBool("silentoffline"):
             if db_rating==None and rating>=0:
                 showMessage(__language__(30520),__language__(30522) % (str(rating)))
@@ -1302,6 +1302,7 @@ class WatchedDB:
 
     def onaccess(self):
         #Debug('[WatchedDB][onaccess]: Start')
+        TimeOut().go_online()
         self._connect()
         self.cur.execute('select count(id) from watched')
         x=self.cur.fetchone()

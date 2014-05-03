@@ -21,10 +21,9 @@ __plugin__ = "MyShows.ru " + __version__
 __language__ = __settings__.getLocalizedString
 ruName=__settings__.getSetting("ruName")
 cookie_auth=__settings__.getSetting("cookie_auth")
-socket.setdefaulttimeout(30)
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
-__tmppath__= os.path.join(__addonpath__, 'tmp')
+__tmppath__= os.path.join(xbmc.translatePath('special://temp'), 'xbmcup', 'plugin.video.myshows')
 forced_refresh_data=__settings__.getSetting("forced_refresh_data")
 refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
 refresh_always=__settings__.getSetting("refresh_always")
@@ -351,7 +350,7 @@ def auto_scan():
 class Data():
     def __init__(self, cookie_auth, url, refresh_url=None):
         if not xbmcvfs.exists(__tmppath__):
-            xbmcvfs.mkdir(__tmppath__)
+            xbmcvfs.mkdirs(__tmppath__)
         self.cookie=cookie_auth
         self.filename = self.url2filename(url)
         self.refresh=False
@@ -360,11 +359,12 @@ class Data():
             if re.search('profile', refresh_url):
                 CacheDB(unicode('http://api.myshows.ru/profile/episodes/unwatched/')).delete()
         self.url=url
+        self.cache=CacheDB(self.url)
         if self.filename:
             if not xbmcvfs.exists(self.filename) \
                 or forced_refresh_data=='true' \
-                or not CacheDB(self.url).get() \
-                or int(time.time())-CacheDB(self.url).get()>refresh_period*3600 \
+                or not self.cache.get() \
+                or int(time.time())-self.cache.get()>refresh_period*3600 \
                 or str(refresh_always)=='true':
                 self.refresh=True
                 __settings__.setSetting("forced_refresh_data","false")
@@ -386,8 +386,7 @@ class Data():
         else: return get_url(self.cookie, self.url)
 
     def write(self):
-        try: CacheDB(self.url).delete()
-        except: pass
+        if self.cache.get(): self.cache.delete()
         self.data=get_url(self.cookie, self.url)
         if self.data:
             try:
@@ -396,7 +395,9 @@ class Data():
                 self.fw = open(self.filename, 'w')
             self.fw.write(self.data)
             self.fw.close()
-            CacheDB(self.url).add()
+            self.cache.add()
+        else:
+            TimeOut().go_offline()
 
     def url2filename(self, url):
         self.files=[r'shows.txt', r'showId_%s.txt', r'watched_showId_%s.txt', r'action_%s.txt', r'top_%s.txt']
@@ -1164,3 +1165,30 @@ def changeDBTitle(showId):
                 else:
                     Debug("[changeDBTitle]: XBMC JSON Result: '%s'" % str(result))
         return
+
+class TimeOut():
+    def __init__(self):
+        self.scan=CacheDB('web_timeout')
+        self.get=self.scan.get()
+        self.online=30
+        self.offline=1
+
+    def go_offline(self):
+        if self.timeout()==self.online:
+            Debug('[TimeOut]: Gone offline!')
+            if self.get: self.scan.delete()
+            self.scan.add()
+
+    def go_online(self):
+        Debug('[TimeOut]: Gone online!')
+        if self.get: self.scan.delete()
+
+    def timeout(self):
+        if self.get and int(time.time())-self.get<refresh_period*3600:
+            to=self.offline
+        else:
+            to=self.online
+        #Debug('[TimeOut]: '+str(to))
+        return to
+
+socket.setdefaulttimeout(TimeOut().timeout())
