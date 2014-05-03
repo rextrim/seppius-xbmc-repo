@@ -27,17 +27,17 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.9.2"
+__version__ = "1.9.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
 ruName=__settings__.getSetting("ruName")
 cookie_auth=__settings__.getSetting("cookie_auth")
-socket.setdefaulttimeout(30)
+socket.setdefaulttimeout(TimeOut().timeout())
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
-__tmppath__= os.path.join(__addonpath__, 'tmp')
+__tmppath__= os.path.join(xbmc.translatePath('special://temp'), 'xbmcup', 'plugin.video.myshows')
 striplist=['the', 'tonight', '  ', 'with', 'jon', 'stewart', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 subs_ext=['ass','mpsub','rum','sbt','sbv','srt','ssa','sub','sup','w32']
 allowed_ext=['avi','mp4','mkv','flv','mov','vob','wmv','ogm','asx','mpg','mpeg','avc','vp3','fli','flc','m4v']
