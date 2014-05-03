@@ -8,7 +8,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.9.1"
+__version__ = "1.9.3"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -1352,7 +1352,7 @@ class WatchedDB:
 
 def Test():
     #SyncXBMC()
-    #RunPlugin='{"mode": "60", "argv": {"content": "videos"}}'
+    #RunPlugin='stringdata={"seasonId": 1, "showId": 917, "episodeId": 0, "id": 1718313}&seasonNumber=1&showId=917&episodeId=0&id=1718313&playcount=0&mode=304'
     #xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
     #print Rate('9237', '2031031', 'http://api.myshows.ru/profile/shows/9237/', True)
     #PluginStatus().use('myshows')
@@ -1390,7 +1390,7 @@ def Test():
     title='{"tvshowid": 51, "episode": 10, "uniqueid": {"unknown": "4606529"}, "season": 1, "tvdb_id": "269877", "episodeid": 1204, "label": "The Best of the Student Council (Photos)", "file": "smb://192.168.0.2/xbmc_seriez/Love Lab/Season 1/Love.Lab.S01E10.mkv", "year": 2013, "showtitle": "Love Lab"}'
     #try:
     #    SyncXBMC(title).doaction()
-    #except ValueError or AttributeError:
+    #except:
     #    FakeRate(title)
     #FakeRate(title)
     #WatchedDB().onaccess()
@@ -1524,8 +1524,8 @@ elif mode == 70:
     try:
         SyncXBMC(title).doaction()
         Debug('[mode 70]: SyncXBMC(title).doaction() success')
-    except ValueError or AttributeError:
-        Debug('[mode 70]: ValueError or AttributeError, start FakeRate for %s' % (title))
+    except:
+        Debug('[mode 70]: start FakeRate for %s' % (title))
         if action=='check':
             FakeRate(title)
 elif mode == 71:
