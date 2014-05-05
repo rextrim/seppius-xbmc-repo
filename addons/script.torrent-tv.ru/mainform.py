@@ -5,7 +5,7 @@
 import xbmcgui
 import xbmc
 import xbmcaddon
-import threading
+
 import json
 import urllib2
 import time
@@ -17,7 +17,7 @@ from menu import MenuForm
 from infoform import InfoForm
 from dateform import DateForm
 from datetime import datetime
-from okdialog import OkDialog
+
 
 import defines
 
@@ -31,23 +31,6 @@ def LogToXBMC(text, type = 1):
     log.write('[MainForm %s] %s %s\r' % (time.strftime('%X'),ttext, text))
     log.close()
     del log
-
-#classes
-
-class MyThread(threading.Thread):
-
-    def __init__(self, func, params, back = True):
-        threading.Thread.__init__(self)
-        self.func = func
-        self.params = params
-        #self.parent = parent
-
-    def run(self):
-        self.func(self.params)
-    def stop(self):
-        pass
-
-
 
 class WMainForm(xbmcgui.WindowXML):
     CANCEL_DIALOG  = ( 9, 10, 11, 92, 216, 247, 257, 275, 61467, 61448, )
@@ -205,18 +188,18 @@ class WMainForm(xbmcgui.WindowXML):
             #li.setProperty('icon', '')
             #self.translation.append(li)
             
-            thr = MyThread(self.checkPort, defines.ADDON.getSetting("outport"))
-            thr.start()
+            #thr = MyThread(self.checkPort, defines.ADDON.getSetting("outport"))
+            #thr.start()
 
         except Exception, e:
             LogToXBMC('OnInit: %s' % e, 2)
 
-    def checkPort(self, params):
-        frminfo = InfoForm("inform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
-        if not frminfo.checkPort(params):
-            dialog = OkDialog("okdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
-            dialog.setText("Порт %s закрыт. Для стабильной работы сервиса и трансляций, настоятельно рекомендуется его открыть." % defines.ADDON.getSetting('outport'))
-            dialog.doModal()
+    #def checkPort(self, params):
+    #    frminfo = InfoForm("inform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+    #    if not frminfo.checkPort(params):
+    #        dialog = OkDialog("okdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+    #        dialog.setText("Порт %s закрыт. Для стабильной работы сервиса и трансляций, настоятельно рекомендуется его открыть." % defines.ADDON.getSetting('outport'))
+    #        dialog.doModal()
 
     def onFocus(self, ControlID):
         if ControlID == 50:
@@ -237,7 +220,7 @@ class WMainForm(xbmcgui.WindowXML):
                     self.showSimpleEpg(epg_id)
                 else:
                     self.showStatus('Загрузка программы')
-                    thr = MyThread(self.getEpg, epg_id)
+                    thr = defines.MyThread(self.getEpg, epg_id)
                     thr.start()
                 img = self.getControl(1111)
                 img.setImage(selItem.getProperty('icon'))
@@ -480,18 +463,18 @@ class WMainForm(xbmcgui.WindowXML):
         self.showStatus("Получение списка каналов")
         self.list = self.getControl(50)
         self.initLists()
-        thr = MyThread(self.getChannels, 'channel', not (self.cur_category in (WMainForm.CHN_TYPE_TRANSLATION, WMainForm.CHN_TYPE_MODERATION, WMainForm.CHN_TYPE_FAVOURITE)))
+        thr = defines.MyThread(self.getChannels, 'channel', not (self.cur_category in (WMainForm.CHN_TYPE_TRANSLATION, WMainForm.CHN_TYPE_MODERATION, WMainForm.CHN_TYPE_FAVOURITE)))
         thr.daemon = False
         thr.start()
-        thr1 = MyThread(self.getChannels, 'translation', self.cur_category == WMainForm.CHN_TYPE_TRANSLATION)
+        thr1 = defines.MyThread(self.getChannels, 'translation', self.cur_category == WMainForm.CHN_TYPE_TRANSLATION)
         thr1.daemon = False
         thr1.start()
-        thr2 = MyThread(self.getChannels, 'moderation', self.cur_category == WMainForm.CHN_TYPE_MODERATION)
+        thr2 = defines.MyThread(self.getChannels, 'moderation', self.cur_category == WMainForm.CHN_TYPE_MODERATION)
         thr2.daemon = False
         thr2.start()
-        thr3 = MyThread(self.getChannels, 'favourite', self.cur_category == WMainForm.CHN_TYPE_FAVOURITE)
+        thr3 = defines.MyThread(self.getChannels, 'favourite', self.cur_category == WMainForm.CHN_TYPE_FAVOURITE)
         thr3.start()
-        thr4 = MyThread(self.getArcChannels, "", False)
+        thr4 = defines.MyThread(self.getArcChannels, "", False)
         thr4.start()
         LogToXBMC('Ожидание результата')
         if self.cur_category == WMainForm.CHN_TYPE_FAVOURITE:

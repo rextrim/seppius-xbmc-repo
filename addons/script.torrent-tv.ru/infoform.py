@@ -49,7 +49,7 @@ class InfoForm(xbmcgui.WindowXMLDialog):
         print 'OnInit infoform %s' % self.parent
         if self.parent and self.parent.user:
             userLabel.setLabel(self.parent.user["login"])
-            if int(self.parent.user["ballance"]) > 7:
+            if float(self.parent.user["ballance"]) > 7:
                 ballanceLabel.setLabel("[COLOR=blue]%sp.[/COLOR]" % self.parent.user["ballance"])
             else:
                 ballanceLabel.setLabel("[COLOR=red]%sp.[/COLOR]" % self.parent.user["ballance"])
@@ -76,13 +76,9 @@ class InfoForm(xbmcgui.WindowXMLDialog):
         print "InfoForm адрес получен"
         
 
-    def checkPort(self, params):
-        
+    def checkPort(self, params):        
         data = defines.GET("http://2ip.ru/check-port/?port=%s" % params)
-        #print data
-        beautifulSoup = BeautifulSoup(data)
-        port = beautifulSoup.find('div', attrs={'class': 'ip-entry'}).text
-        if port.encode('utf-8').find("Порт закрыт") > -1:
+        if defines.checkPort(params):
             self.printCheckPort(params, False)
             return False
         else:
