@@ -3,11 +3,25 @@ import xbmc
 import sys
 import urllib2
 import urllib
+import threading
+from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 
 ADDON = xbmcaddon.Addon( id = 'script.torrent-tv.ru' )
 ADDON_ICON	 = ADDON.getAddonInfo('icon')
 ADDON_PATH = ADDON.getAddonInfo('path')
 ADDON_ICON	 = ADDON.getAddonInfo('icon')
+
+class MyThread(threading.Thread):
+    def __init__(self, func, params, back = True):
+        threading.Thread.__init__(self)
+        self.func = func
+        self.params = params
+        #self.parent = parent
+
+    def run(self):
+        self.func(self.params)
+    def stop(self):
+        pass
 
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
     ADDON_PATH = ADDON_PATH.decode('utf-8')
@@ -33,3 +47,13 @@ def GET(target, post=None, cookie = None):
         return http
     except Exception, e:
         xbmc.log( 'GET EXCEPT [%s]' % (e), 4 )
+
+def checkPort(params):
+        data = GET("http://2ip.ru/check-port/?port=%s" % params)
+        print "CHECK_PORT" + data
+        beautifulSoup = BeautifulSoup(data)
+        port = beautifulSoup.find('div', attrs={'class': 'ip-entry'}).text
+        if port.encode('utf-8').find("Порт закрыт") > -1:
+            return False
+        else:
+            return True

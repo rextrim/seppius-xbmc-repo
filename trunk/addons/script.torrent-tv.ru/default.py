@@ -7,15 +7,15 @@ import cPickle
 import defines
 import os
 
-#from ACEStream.Core.Utilities.TSCrypto import AES_encrypt, AES_decrypt, m2_AES_encrypt, m2_AES_decrypt
-
-#defines.showMessage('Start plugin')
-
 import mainform 
+from okdialog import OkDialog
 
-def AES_decrypt(data, key):
-        aes = AES.new(key, AES.MODE_CFB)
-        return aes.decrypt(data)
+def checkPort(params):
+    if not defines.checkPort(params):
+        
+        dialog = OkDialog("okdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        dialog.setText("Порт %s закрыт. Для стабильной работы сервиса и трансляций, настоятельно рекомендуется его открыть." % defines.ADDON.getSetting('outport'))
+        dialog.doModal()
 
 if __name__ == '__main__':
     if not defines.ADDON.getSetting('skin'):
@@ -25,11 +25,12 @@ if __name__ == '__main__':
     if not defines.ADDON.getSetting("login"):
        defines.ADDON.setSetting("login", "anonymous")
        defines.ADDON.setSetting("password", "anonymous")
-       
+
+    thr = defines.MyThread(checkPort, defines.ADDON.getSetting("outport"))
+    thr.start()
+
     w = mainform.WMainForm("mainform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
-    
     w.doModal()
-    #del w
     defines.showMessage('Close plugin')
     del w
     
