@@ -221,10 +221,10 @@ def get_url(cookie, url):
                 return array
             except:
                 Debug('[get_url]: Denied! Wrong login or api is broken!')
-                return False
+                return
         elif e.code in [503]:
             Debug('[get_url]: Denied, HTTP Error, e.code='+str(e.code))
-            return False
+            return
         else:
             if debug=='true': showMessage('HTTP Error', str(e.code), forced=True)
             xbmc.sleep(2000)
@@ -396,7 +396,8 @@ class Data():
             self.fw.write(self.data)
             self.fw.close()
             self.cache.add()
-        else:
+        elif self.data==False:
+            Debug('[Data][write] Going offline cuz no self.data '+str(self.data)+' self.filename '+self.filename)
             TimeOut().go_offline()
 
     def url2filename(self, url):
@@ -1180,8 +1181,9 @@ class TimeOut():
             self.scan.add()
 
     def go_online(self):
-        Debug('[TimeOut]: Gone online!')
-        if self.get: self.scan.delete()
+        if self.get:
+            self.scan.delete()
+            Debug('[TimeOut]: Gone online!')
 
     def timeout(self):
         if self.get and int(time.time())-self.get<refresh_period*3600:
