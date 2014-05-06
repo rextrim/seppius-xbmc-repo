@@ -924,8 +924,8 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.6.1" provider-name="Silhouette">
-  <requires><import addon="xbmc.python" version="1.0"/></requires>
+<addon id="plugin.video.kaban.tva" name="[COLOR FFE55BB0]Kaban.TVA[/COLOR]" version="0.6.2" provider-name="Silhouette">
+  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
   <extension point="xbmc.addon.metadata">
     <summary>Archives from http://kaban.tv/</summary>
@@ -1020,16 +1020,6 @@ Audio sources are
   <extension point="xbmc.addon.metadata">
     <summary>Кинобаза: Что смотреть? Где скачать?</summary>
     <description>У нас на сайте вы можете найти новинки фильмов в хорошем качестве или HD быстро и без регистрации. Фильмы в HD качестве и DVDRip. Каждый день новые добавления. У нас можно найти что посмотреть сегодня вечером и получить уведомления о появлении новых серий и фильмов в Сети. больше не нужно ждать когда появится фильм онлайн, можно пордписаться на уведомление о выходе</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="plugin.video.kinochi.org" name="[COLOR FFFD0100]KINOCHI.ORG[/COLOR]" version="0.3.2" provider-name="Silhouette">
-  <requires><import addon="xbmc.python" version="2.1.0"/></requires>
-  <extension point="xbmc.python.pluginsource"  provides="video" library="default.py"><provides>video</provides></extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>KINOCHI.ORG - Проект бесплатного онлайн видео</summary>
-    <description>КИНОЧИ - сайт, позволяющий в реальном времени просмотривать качественный видеоконтент пользуясь удобным функционалом и навигацией, настраивать обновления ваших любимых жанров и сериалов используя систему профилей</description>
     <platform>all</platform>
   </extension>
 </addon>
