@@ -591,8 +591,10 @@ Audio sources are
        version="1.1.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
-    <import addon="plugin.video.youtube"/>
+	<import addon="xbmc.python" version="2.1.0"/>
+	<import addon="script.module.simplejson" version="3.3.0"/>
+	<import addon="script.module.beautifulsoup" version="3.2.1"/>
+    	<import addon="plugin.video.youtube"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
