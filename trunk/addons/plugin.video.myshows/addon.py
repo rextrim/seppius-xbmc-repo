@@ -694,6 +694,8 @@ def Change_Status_Episode(showId, id, action, playcount, refresh_url, selftitle=
     if ok2:
         showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
         WatchedDB().onaccess()
+        if getSettingAsBool('torrent_deletefile'):
+            askDeleteFile(showId, id)
     else:
         Debug('[Change_Status_Episode]: Not ok2! Starting offline check and adding!')
         if not showId: showId=0
@@ -1155,7 +1157,7 @@ class SyncXBMC():
         if not self.menu:
             return False
         for i in range(len(self.menu)):
-            if title in self.menu[i]['title']:
+            if title==self.menu[i]['title']:
                 for episode in self.menu[i]['episodes']:
                     if episode['episode']==episodeNumber and episode['season']==seasonId:
                         return True
@@ -1318,9 +1320,10 @@ class WatchedDB:
             if ok2:
                 for id,rating in self._get_all():
                     j=SyncXBMC(id,int(rating)).doaction()
-                    i=i+int(j)
-                    self._delete(id)
-                    showMessage(__language__(30521),__language__(30530) % (i))
+                    if j:
+                        i=i+int(j)
+                        self._delete(id)
+                        showMessage(__language__(30521),__language__(30530) % (i))
             else:
                 ok2=self.dialog.yesno(__language__(30521),__language__(30531) % (str(res)))
                 if ok2:
@@ -1401,6 +1404,7 @@ def Test():
     #dialog.ok(unicode(__language__(30146)), str(x))
     #import shutil
     #shutil.move('D:\\1.txt','\\\\192.168.0.2\\xbmc\\xbmc_seriez\\1.txt')
+    #askDeleteFile('36135', '2147115')
 
 params = get_params()
 try: apps=get_apps()

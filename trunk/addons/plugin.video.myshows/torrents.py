@@ -670,6 +670,24 @@ def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None, auto_only=Fa
     if ret>-1 and ret<len(dialog_files): hash=dialog_files[ret]
     return hash
 
+def askDeleteFile(showId, id):
+    seasonId, episodeId=id2SE(showId, id)
+    id=chooseHASH(showId, id, int(seasonId), int(episodeId), True)
+    action='removedata'
+    if id:
+        id=id[0]
+        name=None
+        dat=Download().list()
+        for data in dat:
+            if data['id']==id:
+                name=data['name']
+                break
+        if name:
+            dialog = xbmcgui.Dialog()
+            ok=dialog.yesno(__language__(30512),__language__(30513) % (action),name)
+            if ok:
+                Download().action_simple(action, id)
+
 class Serialu(Source):
     def handle(self):
         self.data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId))
@@ -1244,7 +1262,7 @@ class TorrenterSearch():
         query=dialog_items[ret].encode('utf-8')
         if ret>-1 and ret<len(dialog_items)-i:
             url='plugin://plugin.video.torrenter/?action=search&url=%s&sdata=%s&external=%s%s' %\
-                (query, urllib.quote_plus(json.dumps('{"stype":%s, "showId":%s, "seasonId":%s, "episodeId":%s, "id":%s}' %
+                (urllib.quote_plus(query), urllib.quote_plus(json.dumps('{"stype":%s, "showId":%s, "seasonId":%s, "episodeId":%s, "id":%s}' %
                 (jstr(self.stype), jstr(self.showId), jstr(self.seasonId), jstr(self.episodeId), jstr(self.id)))),self.externals[self.stype],silent)
             if self.silent: xbmc.executebuiltin('xbmc.RunPlugin(%s)' % (url))
             else: xbmc.executebuiltin('ActivateWindow(Videos,"%s")' % (url))
@@ -1417,8 +1435,15 @@ class MoveToXBMC(Source):
         return True
 
     def mkdirs(self, seasonId):
-        newdir=os.path.join(self.xbmclib, PrepareFilename(self.title), 'Season '+str(seasonId))
+        prepare=PrepareFilename(self.title)
+        newdir=os.path.join(self.xbmclib, prepare, 'Season '+str(seasonId))
         xbmcvfs.mkdirs(newdir)
+        if not os.path.exists(newdir):
+            newdir=self.xbmclib
+            for subdir in (prepare, 'Season '+str(seasonId)):
+                newdir = os.path.join(newdir, subdir)
+                if not os.path.exists(newdir):
+                    os.mkdir(newdir)
         return newdir
 
     def uTorrentCheck(self, folder, action):

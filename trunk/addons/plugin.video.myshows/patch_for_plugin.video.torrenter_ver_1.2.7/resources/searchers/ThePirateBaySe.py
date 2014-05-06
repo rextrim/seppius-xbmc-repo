@@ -62,15 +62,16 @@ class ThePirateBaySe(SearcherABC.SearcherABC):
     def search(self, keyword):
         filesList = []
         url = "http://thepiratebay.se/search/%s/0/99/200" % (urllib.quote_plus(keyword))
-        #try:response = self.makeRequest(url)
-        #except:return filesList
+        from StringIO import StringIO
+        import gzip
         request = urllib2.Request(url)
-        try:
-            results = urllib2.urlopen(request)
-        except urllib2.URLError, e:
-            print "Pirate Bay: did not respond"
-            return []
-        response = results.read()
+        request.add_header('Accept-encoding', 'gzip')
+        response = urllib2.urlopen(request)
+        if response.info().get('Content-Encoding') == 'gzip':
+            buf = StringIO( response.read())
+            f = gzip.GzipFile(fileobj=buf)
+            response = f.read()
+
         if None != response and 0 < len(response):
             dat=re.compile(r'<div class="detName">.+?">(.+?)</a>.+?<a href="(.+?)".+?<td align="right">(\d+?)</td>.+?<td align="right">(\d+?)</td>', re.DOTALL).findall(response)
             for (title, link, leechers, seeds) in dat:
