@@ -341,7 +341,7 @@ Audio sources are
        version="1.1.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -614,7 +614,7 @@ Audio sources are
        version="1.0.3"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1164,7 +1164,7 @@ Audio sources are
        version="1.2.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1510,7 +1510,7 @@ RuTube - отличная стартовая площадка для незав�
        version="2.2.1"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
@@ -1586,7 +1586,7 @@ RuTube - отличная стартовая площадка для незав�
        version="2.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="2.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.script"
              provides="video"
@@ -1605,7 +1605,7 @@ RuTube - отличная стартовая площадка для незав�
        version="1.0.2"
        provider-name="Silen">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
              provides="video"
