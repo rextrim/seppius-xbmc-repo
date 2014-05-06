@@ -77,7 +77,7 @@ class WMainForm(xbmcgui.WindowXML):
         self.playditem = -1
         self.user = None
         self.infoform = None
-    
+
     def initLists(self):
         self.category = {}
         self.category[WMainForm.CHN_TYPE_MODERATION] = { "name" : WMainForm.CHN_TYPE_MODERATION, "channels": []}
@@ -181,27 +181,13 @@ class WMainForm(xbmcgui.WindowXML):
             
             self.session = jdata['session']
             self.updateList()
-            #li = xbmcgui.ListItem('Test')
-            #li.setProperty('url_type', 'torrent')
-            #li.setProperty('url', '401c6e3029a374f0bc345f1e35136eb525759cb7')
-            #li.setProperty('epg_cdn_id', '')
-            #li.setProperty('icon', '')
-            #self.translation.append(li)
             
-            #thr = MyThread(self.checkPort, defines.ADDON.getSetting("outport"))
-            #thr.start()
 
         except Exception, e:
             LogToXBMC('OnInit: %s' % e, 2)
 
-    #def checkPort(self, params):
-    #    frminfo = InfoForm("inform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
-    #    if not frminfo.checkPort(params):
-    #        dialog = OkDialog("okdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
-    #        dialog.setText("Порт %s закрыт. Для стабильной работы сервиса и трансляций, настоятельно рекомендуется его открыть." % defines.ADDON.getSetting('outport'))
-    #        dialog.doModal()
-
     def onFocus(self, ControlID):
+        print '%s %s' % (self.i, ControlID)
         if ControlID == 50:
             if not self.list:
                 return

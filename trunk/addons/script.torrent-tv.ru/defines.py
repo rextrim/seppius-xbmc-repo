@@ -50,7 +50,6 @@ def GET(target, post=None, cookie = None):
 
 def checkPort(params):
         data = GET("http://2ip.ru/check-port/?port=%s" % params)
-        print "CHECK_PORT" + data
         beautifulSoup = BeautifulSoup(data)
         port = beautifulSoup.find('div', attrs={'class': 'ip-entry'}).text
         if port.encode('utf-8').find("Порт закрыт") > -1:
