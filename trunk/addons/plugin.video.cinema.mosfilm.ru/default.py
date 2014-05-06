@@ -277,7 +277,7 @@ def Movie_List(params):
                             						'year':        mi.year,
                             						'director':    mi.director,
                             						'plot':        mi.text,
-                            						'artist':      mi.actors,
+                            						'artist':      mi.actors.split(','),
                             						'genre':       mi.genre})
                 i.setProperty('fanart_image', mi.img)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
