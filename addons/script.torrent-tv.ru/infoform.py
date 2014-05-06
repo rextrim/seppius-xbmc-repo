@@ -76,9 +76,8 @@ class InfoForm(xbmcgui.WindowXMLDialog):
         print "InfoForm адрес получен"
         
 
-    def checkPort(self, params):        
-        data = defines.GET("http://2ip.ru/check-port/?port=%s" % params)
-        if defines.checkPort(params):
+    def checkPort(self, params):
+        if not defines.checkPort(params):
             self.printCheckPort(params, False)
             return False
         else:
