@@ -430,7 +430,10 @@ def Source_List(params):
         u += '&img=%s'%urllib.quote_plus(img)
         u += '&pl=%s'%urllib.quote_plus(url)
         if url <> '*':
-            u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
+            try:
+                u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
+            except:
+                u += '&sel=%s'%urllib.quote_plus(rec['name'])
         if 'shortname' in params:
             u += '&shortname=%s'%params['shortname']
         #i.setProperty('fanart_image', img)
@@ -439,17 +442,14 @@ def Source_List(params):
     xbmcplugin.endOfDirectory(h)
 
 def Get_PlayList(url, name):
-	html = get_HTML(url)
-	print url
-
-	list = []
-	# -- parsing web page --------------------------------------------------
-	soup = BeautifulSoup(html, fromEncoding="windows-1251")
-	# -- get movie info
-	allResults = soup.findAll('param', attrs={'name': 'flashvars'})
-
+    html = get_HTML(url)
+    list = []
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+    # -- get movie info
+    allResults = soup.findAll('param', attrs={'name': 'flashvars'})
 	#xbmc.log('[NOWFILMS.RU] found links =%s' %allResults)
-	for res in allResults:
+    for res in allResults:
 		video = ''
 		#xbmc.log('[NOWFILMS.RU] processing result=%s' %res)
 		for rec in res['value'].split('&'):
@@ -477,7 +477,40 @@ def Get_PlayList(url, name):
 			else:
 				list.append({'name': name, 'url': video})
 
-	return list
+    if len(list) == 0:
+        res = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html)[0]
+        video = ''
+
+        for rec in res.split('","'):
+            #-- movie
+            if rec.split('":"')[0].replace('"','') == 'file':
+                video = rec.split('":"')[1].replace('"','')
+            #-- serial
+            if rec.split('":"')[0].replace('"','') == 'pl':
+                video = rec.split('":"')[1].replace('"','')
+
+        if video <> '':
+            if video[-3:] == 'txt':
+                html = get_HTML(video)
+                html = html[html.index('{'):]
+
+                html = html.replace('\n', '')
+                if html[0] <> '[' and html[-1] == ']':
+                	html = html[:-1]
+
+                pl = json.loads(html.decode('utf-8'))
+
+                for rec in pl['playlist']:
+                	try:
+                		for rec1 in rec['playlist']:
+                			list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
+                	except:
+                		list.append({'name': rec['comment'].replace('<br>',' '), 'url': rec['file']})
+            else:
+                for v in video.split(','):
+                    list.append({'name': name +' ('+ v.split('.')[-2]+')', 'url': v})
+
+    return list
 
 #---------- get genge list -----------------------------------------------------
 def Genre_List(params):
