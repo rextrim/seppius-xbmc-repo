@@ -36,6 +36,7 @@ class WMainForm(xbmcgui.WindowXML):
     CANCEL_DIALOG  = ( 9, 10, 11, 92, 216, 247, 257, 275, 61467, 61448, )
     CONTEXT_MENU_IDS = (117, 101)
     ARROW_ACTIONS = (1,2,3,4)
+    ACTION_MOUSE = 107
     BTN_CHANNELS_ID = 102
     BTN_TRANSLATIONS_ID = 103
     BTN_ARCHIVE_ID = 104
@@ -187,7 +188,6 @@ class WMainForm(xbmcgui.WindowXML):
             LogToXBMC('OnInit: %s' % e, 2)
 
     def onFocus(self, ControlID):
-        print '%s %s' % (self.i, ControlID)
         if ControlID == 50:
             if not self.list:
                 return
@@ -441,7 +441,9 @@ class WMainForm(xbmcgui.WindowXML):
             elif res == 'TSCLOSE':
                 LogToXBMC("Закрыть TS");
                 self.player.EndTS();
-                    
+        elif action.getId() == WMainForm.ACTION_MOUSE:
+            if (self.getFocusId() == WMainForm.CONTROL_LIST):
+                self.onFocus(WMainForm.CONTROL_LIST)
         else:
             super(WMainForm, self).onAction(action)
 
