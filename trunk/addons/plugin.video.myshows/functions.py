@@ -25,9 +25,8 @@ __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
 __tmppath__= os.path.join(xbmc.translatePath('special://temp'), 'xbmcup', 'plugin.video.myshows')
 forced_refresh_data=__settings__.getSetting("forced_refresh_data")
-refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
+refresh_period=[1,4,12,24][int(__settings__.getSetting("refresh_period"))]
 refresh_always=__settings__.getSetting("refresh_always")
-striplist=['the', 'tonight', 'show', 'with', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 debug = __settings__.getSetting("debug")
 
 def sortcomma(dict, json):
@@ -174,7 +173,7 @@ def auth():
     except urllib2.HTTPError as e:
         Debug('[auth]: url - '+str(url)+'; HTTPError - '+str(e)+' ;e -'+str(e.code), True)
         if e.code in (403,404) or not login or login=='' or not passwd or passwd=='':
-            if __settings__.getSetting("lastlogin")=='' or int(time.time())-int(__settings__.getSetting("lastlogin"))>60*1000:
+            if __settings__.getSetting("lastlogin")=='' or float(time.time())-float(__settings__.getSetting("lastlogin"))>60*1000:
                 __settings__.setSetting( "lastlogin", str(round(time.time())) )
                 dialog = xbmcgui.Dialog()
                 ok=dialog.yesno( __language__(30201), __language__(30201), __language__(30202))
@@ -271,7 +270,7 @@ def creat_db(dbfilename):
     cur.close()
     db.close()
 
-def ClearCache():
+def ClearCache(silent=False):
     dirname = xbmc.translatePath('special://temp')
     for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
         dirname = os.path.join(dirname, subdir)
@@ -284,9 +283,10 @@ def ClearCache():
     db.commit()
     cur.close()
     db.close()
-    xbmcgui.Dialog().ok( __language__(30208), __language__(30236))
-    ontop('update')
-    xbmc.executebuiltin("Action(back)")
+    if not silent:
+        xbmcgui.Dialog().ok( __language__(30208), __language__(30236))
+        ontop('update')
+        xbmc.executebuiltin("Action(back)")
 
 def invert_bool(var):
     if bool(var): var=False
@@ -362,7 +362,7 @@ class Data():
         self.cache=CacheDB(self.url)
         if self.filename:
             if not xbmcvfs.exists(self.filename) \
-                or forced_refresh_data=='true' \
+                or getSettingAsBool('forced_refresh_data') \
                 or not self.cache.get() \
                 or int(time.time())-self.cache.get()>refresh_period*3600 \
                 or str(refresh_always)=='true':
@@ -371,7 +371,7 @@ class Data():
 
     def get(self, force_cache=False):
         if self.filename:
-            if self.refresh==True and force_cache==False or not xbmcvfs.File(self.filename, 'r').size():
+            if self.refresh==True and force_cache==False or not xbmcvfs.File(self.filename, 'r').size() or re.search('='+__settings__.getSetting("username")+';', cookie_auth):
                 self.write()
             self.fg = xbmcvfs.File(self.filename, 'r')
             try:self.data = self.fg.read()
@@ -668,13 +668,18 @@ def uTorrentBrowser():
     try: tdir=urllib.unquote_plus(apps['argv']['tdir'])
     except: tdir=None
 
+    DownloadList=Download().list()
+    if not DownloadList:
+        showMessage(__language__(30206), __language__(30148), forced=True)
+        return
+
     if action:
         if action=='context':
             xbmc.executebuiltin("Action(ContextMenu)")
             return
         if action=='search' and hash:
             title=None
-            for data in Download().list():
+            for data in DownloadList:
                 if data['id']==hash:
                     title=data['name']
                     break
@@ -689,7 +694,7 @@ def uTorrentBrowser():
         if (ind or ind==0) and action in ('0','3'):
             Download().setprio_simple(hash, action, ind)
         elif (ind or ind==0) and action=='play':
-            p,dllist,i,folder,filename=Download().list(),Download().listfiles(hash),0,None,None
+            p,dllist,i,folder,filename=DownloadList,Download().listfiles(hash),0,None,None
             for data in p:
                 if data['id']==hash:
                     folder=data['dir']
@@ -717,7 +722,7 @@ def uTorrentBrowser():
         return
 
     if not hash:
-        for data in Download().list():
+        for data in DownloadList:
             status=" "
             if data['status'] in ('seed_pending','stopped'): status=TextBB(' [||] ','b')
             elif data['status'] in ('seeding','downloading'): status=TextBB(' [>] ','b')
@@ -988,8 +993,8 @@ def PrepareSearch(filename):
 
     if titles[0]!=filename and filename!='': titles.insert(0,filename)
 
-    title_array=[(u'(.+?)(Cезон|cезон|Сезон|сезон|Season|season)',titles[0],0),
-                 (u'(.+?) (s|S)(\d){1,2}( |E)',titles[0].replace('.',' '),0),
+    title_array=[(u'(.+?)(Cезон|cезон|Сезон|сезон|Season|season|СЕЗОН|SEASON)',titles[0],0),
+                 (u'(.+?)[sS](\d{1,2})',titles[0].replace('.',' '),0),
                  ]
     for regex, title, i in title_array:
         recomp=re.compile(regex)
@@ -1118,12 +1123,27 @@ def titlesync(id):
     except:pass
     return title
 
-def auth_xbmc():
-    login='xbmchub'
-    passwd='c4a915feabca7186e589ff095b116d54'
+def auth_xbmc(login=None, passwd=None):
+    if not login:
+        login='xbmchub'
+        passwd='c4a915feabca7186e589ff095b116d54'
+    if len(passwd)!=32:
+            passwd=md5(passwd).hexdigest()
     url = 'http://api.myshows.ru/profile/login?login='+login+'&password='+passwd
     headers = {'User-Agent':'XBMC', 'Content-Type':'application/x-www-form-urlencoded'}
-    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
+    try: conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode({}), headers))
+    except urllib2.HTTPError as e:
+        Debug('[auth]: url - '+str(url)+'; HTTPError - '+str(e)+' ;e -'+str(e.code), True)
+        if e.code in (403,404) or not login or login=='' or not passwd or passwd=='':
+            if __settings__.getSetting("lastlogin")=='' or int(time.time())-int(__settings__.getSetting("lastlogin"))>60*1000:
+                __settings__.setSetting( "lastlogin", str(round(time.time())) )
+                dialog = xbmcgui.Dialog()
+                ok=dialog.yesno( __language__(30201), __language__(30201), __language__(30202))
+                if ok:
+                    __settings__.openSettings()
+            else:
+                showMessage('HTTP - '+str(e.code), __language__(30201))
+        return
     cookie_src = conn.info().get('Set-Cookie')
     cookie_str = re.sub(r'(expires=.*?;\s|path=\/;\s|domain=\.myshows\.ru(?:,\s)?)', '', cookie_src)
     session =  cookie_str.split("=")[1].split(";")[0].strip()
@@ -1192,5 +1212,58 @@ class TimeOut():
             to=self.online
         #Debug('[TimeOut]: '+str(to))
         return to
+
+class DuoCookie():
+    def __init__(self):
+        self.login=__settings__.getSetting("username")
+        self.passwd=__settings__.getSetting("password")
+        self.login2=__settings__.getSetting("username2")
+        self.passwd2=__settings__.getSetting("password2")
+        self.duo_bool=__settings__.getSetting("duo_bool")
+
+    def switch(self):
+        if self.login2!='' and self.passwd2!='':
+            __settings__.setSetting("username",self.login2)
+            __settings__.setSetting("password",self.passwd2)
+            __settings__.setSetting("username2",self.login)
+            __settings__.setSetting("password2",self.passwd)
+            ClearCache(silent=True)
+            __settings__.setSetting("forced_refresh_data","true")
+
+    def cookie(self,i):
+        if i==1:
+            #Debug('[DuoCookie][cookie]:cookie_auth - '+str(cookie_auth))
+            return cookie_auth
+        elif i==2:
+            return auth_xbmc(self.login2,self.passwd2)
+
+    def ask(self, id):
+        if self.duo_bool=='false' or self.login2=='' or self.passwd2=='':
+            return cookie_auth
+        else:
+            duo_last_id=__settings__.getSetting("duo_last_id")
+            if id!=duo_last_id or duo_last_id=='':
+                titles=[__language__(30540) % self.login,
+                        __language__(30541) % self.login2,
+                        __language__(30542) % self.login2,
+                        __language__(30543),]
+                dialog = xbmcgui.Dialog()
+                i = dialog.select(__language__(30544), titles)
+            else:
+                i=int(__settings__.getSetting("duo_last_i"))
+
+            if i>-1:
+                __settings__.setSetting("duo_last_id",id)
+                __settings__.setSetting("duo_last_i",str(i))
+
+            if i<1:
+                return cookie_auth
+            elif i==1:
+                return auth_xbmc(self.login2,self.passwd2)
+            elif i==2:
+                self.switch()
+                return auth_xbmc(self.login2,self.passwd2)
+            elif i==3:
+                return "BOTH"
 
 socket.setdefaulttimeout(TimeOut().timeout())

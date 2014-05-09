@@ -8,7 +8,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.9.3"
+__version__ = "1.9.4"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -21,10 +21,6 @@ useTVDB=getSettingAsBool('tvdb')
 socket.setdefaulttimeout(TimeOut().timeout())
 __addonpath__= __settings__.getAddonInfo('path')
 icon   = __addonpath__+'/icon.png'
-forced_refresh_data=__settings__.getSetting("forced_refresh_data")
-refresh_period=int('1|4|12|24'.split('|')[int(__settings__.getSetting("refresh_period"))])
-refresh_always=__settings__.getSetting("refresh_always")
-striplist=['the', 'tonight', 'show', 'with', '(2005)', '(2009)', '(2012)', '  ', '  ', '  ', '  ', '  ', '  ', '  ']
 Debug('[SYS ARGV]: '+str(urllib.unquote_plus(sys.argv[2]))[1:])
 
 check_login = re.search('='+login+';', cookie_auth)
@@ -38,7 +34,7 @@ class Main(Handler):
         top=ontop()
         if top: self.menu.append(top)
         if menu_style=='1':
-            self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30100),"mode":"10"},
+            self.menu.extend([{"title":__language__(30111) % login.decode('utf-8'),"mode":"41"},{"title":__language__(30100),"mode":"10"},
                               {"title":__language__(30102),"mode":"17"},{"title":__language__(30150),"mode":"18"},
                               {"title":__language__(30103),"mode":"14"},{"title":__language__(30104),"mode":"15"},
                               {"title":__language__(30105),"mode":"16"},{"title":__language__(30106),"mode":"27"},
@@ -46,7 +42,7 @@ class Main(Handler):
                               {"title":__language__(30112),"mode":"40"}, {"title":__language__(30101),"mode":"19"},
                               {"title":__language__(30149),"mode":"62"},])
         else:
-            self.menu.extend([{"title":__language__(30111),"mode":"41"},{"title":__language__(30139),"mode":"13"},
+            self.menu.extend([{"title":__language__(30111) % login.decode('utf-8'),"mode":"41"},{"title":__language__(30139),"mode":"13"},
                        {"title":__language__(30106),"mode":"27"},
                        {"title":__language__(30107),"mode":"28"}, {"title":__language__(30108),"mode":"100"},
                        {"title":__language__(30112),"mode":"40"}, {"title":__language__(30136),"mode":"50"},
@@ -689,7 +685,15 @@ def Change_Status_Episode(showId, id, action, playcount, refresh_url, selftitle=
         else: action='uncheck'
 
     status_url='http://api.myshows.ru/profile/episodes/'+action+'/'+str(id)
-    ok2=Data(cookie_auth, status_url, refresh_url).get()
+    cookie_auth=DuoCookie().ask(str(id))
+    __settings__.setSetting("duo_last_id",'')
+    if cookie_auth!='BOTH':
+        ok2=Data(cookie_auth, status_url, refresh_url).get()
+    else:
+        ok2=Data(DuoCookie().cookie(1), status_url, refresh_url).get()
+        if ok2:
+            showMessage(__language__(30208)+' 1', status_url.strip('http://api.myshows.ru/profile/episodes/'))
+            ok2=Data(DuoCookie().cookie(2), status_url, refresh_url).get()
     #Debug('[TEST][Change_Status_Episode]:ok2 '+str(ok2))
     if ok2:
         showMessage(__language__(30208), status_url.strip('http://api.myshows.ru/profile/episodes/'), 70)
@@ -732,6 +736,7 @@ def Change_Status_Season(showId, seasonNumber, action, refresh_url):
     if ok:showMessage(__language__(30208), showId+'/episodes?'+action+'='+eps_string)
 
 def Rate(showId, id, refresh_url, selftitle=None):
+    cookie_auth=__settings__.getSetting("cookie_auth")
     ratewindow=__settings__.getSetting("ratewindow")
     rate=['5', '4', '3', '2', '1', unicode(__language__(30205))]
     if id=='0':
@@ -750,7 +755,14 @@ def Rate(showId, id, refresh_url, selftitle=None):
             rate_url=('http://api.myshows.ru/profile/shows/'+showId+'/rate/'+rate[ret])
         else:
             rate_url=('http://api.myshows.ru/profile/episodes/rate/'+rate[ret]+'/'+id)
-        ok=Data(cookie_auth, rate_url, refresh_url).get()
+            cookie_auth=DuoCookie().ask(id)
+        if cookie_auth!='BOTH':
+            ok=Data(cookie_auth, rate_url, refresh_url).get()
+        else:
+            ok=Data(DuoCookie().cookie(1), rate_url, refresh_url).get()
+            if ok:
+                showMessage(__language__(30208)+' 1', rate_url.strip('http://api.myshows.ru/profile/'))
+                ok=Data(DuoCookie().cookie(2), rate_url, refresh_url).get()
         #Debug('[TEST][Rate]:ok '+str(ok))
         if ok:
             showMessage(__language__(30208), rate_url.strip('http://api.myshows.ru/profile/'))
@@ -903,6 +915,7 @@ class SyncXBMC():
 
     def doaction(self):
         friend_xbmc()
+        cookie_auth=__settings__.getSetting("cookie_auth")
         if self.action=='check':
             if 'myshows_id' in self.match:
                  showId, id=self.match['myshows_showId'],self.match['myshows_id']
@@ -935,14 +948,26 @@ class SyncXBMC():
                     Debug('[doaction2] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
                     id=self.getid(showId, self.match['season'],self.match['episode'],self.match['label'])
                 if id:
+                    if self.rating or self.rating==0:
+                        cookie_auth=DuoCookie().ask('WATCHED')
                     if self.rating:
                         rate_url=('http://api.myshows.ru/profile/episodes/rate/'+str(self.rating)+'/'+str(id))
-                        d=Data(cookie_auth, rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        if cookie_auth!='BOTH':
+                            d=Data(cookie_auth, rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        else:
+                            d=Data(DuoCookie().cookie(1), rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                            if d:
+                                d=Data(DuoCookie().cookie(2), rate_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
                         #Debug('[TEST][self.rating]: Rate answer %s' % (str(d)))
                     if self.rating or self.rating==0:
                         #xbmc.sleep(500)
                         status_url='http://api.myshows.ru/profile/episodes/check/'+str(id)
-                        c=Data(cookie_auth, status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        if cookie_auth!='BOTH':
+                            c=Data(cookie_auth, status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                        else:
+                            c=Data(DuoCookie().cookie(1), status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
+                            if c:
+                                c=Data(DuoCookie().cookie(2), status_url, 'http://api.myshows.ru/profile/shows/'+str(showId)+'/').get()
                         #Debug('[TEST][self.rating]: Check answer %s' % (str(c)))
                         return 1
                     rateOK, scrobrate, rateandcheck=False, __settings__.getSetting("scrobrate"), __settings__.getSetting("rateandcheck")
@@ -1324,6 +1349,7 @@ class WatchedDB:
                         i=i+int(j)
                         self._delete(id)
                         showMessage(__language__(30521),__language__(30530) % (i))
+                __settings__.setSetting("duo_last_id",'')
             else:
                 ok2=self.dialog.yesno(__language__(30521),__language__(30531) % (str(res)))
                 if ok2:
@@ -1332,6 +1358,7 @@ class WatchedDB:
         return res
 
     def _add(self, id, rating=0):
+        __settings__.setSetting("duo_last_id",'')
         self._connect()
         id=id.replace("'","<&amp>").decode('utf-8','ignore')
         Debug('[WatchedDB][_add]: Adding %s with rate %d' % (id, rating))
@@ -1397,6 +1424,8 @@ def Test():
     #except:
     #    FakeRate(title)
     #FakeRate(title)
+    #WatchedDB()._add('{"myshows_showId": 36135, "myshows_id": 2069804}',4)
+    #WatchedDB()._add('{"myshows_showId": 36135, "myshows_id": 2147115}',4)
     #WatchedDB().onaccess()
     #changeDBTitle(27514)
     dialog = xbmcgui.Dialog()
@@ -1405,6 +1434,9 @@ def Test():
     #import shutil
     #shutil.move('D:\\1.txt','\\\\192.168.0.2\\xbmc\\xbmc_seriez\\1.txt')
     #askDeleteFile('36135', '2147115')
+    #Rate('36135', '2069804', '')
+    #Rate('36135', '2147115', '')
+    #Change_Status_Episode('36135', '2147115', 'check', '0', '', selftitle=None)
 
 params = get_params()
 try: apps=get_apps()
@@ -1481,6 +1513,8 @@ elif mode==1:
     shutil.move(os.path.join(en, u'strings.xml'), os.path.join(en, u'old_strings.xml'))
     shutil.copy(os.path.join(ru, u'strings.xml'), en)
     showMessage(__language__(30208), __language__(30533))
+elif mode==2:
+    DuoCookie().switch()
 elif mode >= 10 and mode <19:
     Shows()
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_TITLE)

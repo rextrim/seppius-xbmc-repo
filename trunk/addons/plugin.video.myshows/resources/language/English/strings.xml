@@ -46,6 +46,10 @@
         <string id="30043">Silent Offline Marks Send Mode</string>
         <string id="30044">Auto find and play in torrent-client on Play Source</string>
         <string id="30045">Ask to remove with file in torrent-client after watching</string>
+        <string id="30046">Use second MyShows.ru account</string>
+        <string id="30047">Second Login MyShows.ru</string>
+        <string id="30048">Second Password MyShows.ru</string>
+        <string id="30049">[B]Switch second and main account[/B]</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
@@ -73,7 +77,7 @@
         <string id="30108">Top Rated Shows and Recommendations</string>
         <string id="30109">Male Top</string>
         <string id="30110">Female Top</string>
-        <string id="30111">My Profile</string>
+        <string id="30111">My Profile [%s]</string>
         <string id="30112">Friend's News and XBMC's users</string>
         <string id="30113">S%sE%s [%s days] %s (%s)</string>
         <string id="30114">Group by Show</string>
@@ -275,12 +279,12 @@
         <string id="30537">Error: No Shows Found!</string>
         <string id="30538">Using "Search MyShows.ru" mark as "Watching" some shows,</string>
         <string id="30539">or do it on http://myshows.ru and Clear Cache in Plugin Status</string>
+        <string id="30540">%s: [Main]</string>
+        <string id="30541">%s: [Stay Second]</string>
+        <string id="30542">%s: [Make it Main]</string>
+        <string id="30543">Mark for both accounts</string>
+        <string id="30544">Choose account:</string>
 
-        <string id="30540">Search VK (need patched xbmc.vk-svoka)</string>
-        <string id="30541">Search LostFilm.tv (need patch plugin.video.LostFilm)</string>
-        <string id="30542">Add .torrent</string>
-        <string id="30543">Back</string>
-        <string id="30544">Add Directory</string>
         <string id="30545">Add Multiple Files</string>
         <string id="30546">Add Multiple Files from .torrent</string>
         <string id="30547">Choose .torrent for multifile add:</string>
