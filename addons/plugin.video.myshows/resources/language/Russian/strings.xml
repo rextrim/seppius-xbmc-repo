@@ -46,6 +46,10 @@
         <string id="30043">Не спрашивать при отправке офлайн оценки\отметки</string>
         <string id="30044">Поиск в торрент-клиенте и запуск на Проиграть Источник</string>
         <string id="30045">Спросить об удалении с файлом эпизод в торрент-клиенте после просмотра</string>
+        <string id="30046">Использовать второй аккаунт MyShows.ru</string>
+        <string id="30047">Второй Логин MyShows.ru</string>
+        <string id="30048">Второй Пароль MyShows.ru</string>
+        <string id="30049">[B]Поменять местами второй и основной аккаунты[/B]</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -71,7 +75,7 @@
         <string id="30108">Топ сериалов и Рекомендации</string>
         <string id="30109">Мужской топ</string>
         <string id="30110">Женский топ</string>
-        <string id="30111">Мой профиль</string>
+        <string id="30111">Мой профиль [%s]</string>
         <string id="30112">Новости Друзей и Пользователей плагина</string>
         <string id="30113">S%sE%s [%s дн.] %s (%s)</string>
         <string id="30114">Группировать по сериалу</string>
@@ -260,7 +264,12 @@
         <string id="30536">Новое название: %s</string>
         <string id="30537">Ошибка: Нет шоу в списке!</string>
         <string id="30538">Используя "Поиск MyShows.ru" нужно пометить шоу "Смотрю",</string>
-        <string id="30539">либо через http://myshows.ru и Очистить кэш в Статус Плагина  and Clear Cache in Plugin Status</string>
+        <string id="30539">либо через http://myshows.ru и Очистить кэш в Статус Плагина</string>
+        <string id="30540">%s: [Основной]</string>
+        <string id="30541">%s: [Оставить Вторым]</string>
+        <string id="30542">%s: [Сделать Основным]</string>
+        <string id="30543">Отметить для обоих аккаунтов</string>
+        <string id="30544">Выберите аккаунт:</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
