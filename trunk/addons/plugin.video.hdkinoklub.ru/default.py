@@ -101,6 +101,51 @@ def get_HTML(url, post = None, ref = None, l = None):
 
     return html
 
+
+def makeCookie(name, value):
+    return cookielib.Cookie(
+        version=0,
+        name=name,
+        value=value,
+        port=None,
+        port_specified=False,
+        domain="hdkinoklub.ru",
+        domain_specified=True,
+        domain_initial_dot=False,
+        path="/",
+        path_specified=True,
+        secure=False,
+        expires=None,
+        discard=False,
+        comment=None,
+        comment_url=None,
+        rest=None
+    )
+
+def is_Activated():
+    for c in cj:
+        if c.name == 'BPC' and c.domain == 'hdkinoklub.ru':
+            return
+
+    #-- activate
+    url = 'http://hdkinoklub.ru'
+    html = get_HTML(url)
+
+    c_name  = ''
+    c_value = ''
+    c = ''
+
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+    for rec in soup.find('script').text.split(';'):
+        if rec.split('="')[0] == 'document.cookie':
+            c = rec.split('="')[1].replace('"', '').split('=')
+            c_name  = c[0]
+            c_value = c[1]
+
+            cookie = makeCookie(c_name, c_value)
+            cj.set_cookie(cookie)
+
 #---------- get parameters -----------------------------------------------------
 def Get_Parameters(params):
     #-- page
@@ -179,8 +224,12 @@ def Get_Page_and_Movies_Count(par):
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
     max_page = 0
+
+    print html
+
     for rec in soup.find('div',{'class':'catPages1'}).findAll('a'):
         try:
+            print rec.text
             if max_page < int(rec.text):
                 max_page = int(rec.text)
         except:
@@ -612,6 +661,8 @@ p  = Param()
 mi = Info()
 
 mode = None
+
+is_Activated()
 
 try:
 	mode = urllib.unquote_plus(params['mode'])
