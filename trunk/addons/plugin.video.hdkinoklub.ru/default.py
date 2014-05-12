@@ -21,7 +21,7 @@
 # */
 import re, os, urllib, urllib2, cookielib, time
 from time import gmtime, strftime
-import urlparse
+import urlparse, json
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
@@ -225,11 +225,8 @@ def Get_Page_and_Movies_Count(par):
     soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
     max_page = 0
 
-    print html
-
     for rec in soup.find('div',{'class':'catPages1'}).findAll('a'):
         try:
-            print rec.text
             if max_page < int(rec.text):
                 max_page = int(rec.text)
         except:
@@ -457,6 +454,41 @@ def Source_List(params):
     # -- get movie info
     source_number = 1
 
+    #-- VK.ME -----------------------------------------------------------------
+    for rec in soup.findAll('iframe', {'src' :  re.compile("http://kodik.biz")}):
+        if soup.find('option'):
+            for m in soup.findAll('option'):
+                s_url  = m['value']
+                s_name = m.text.encode('utf-8')
+                q, s_url = Kodik_Biz(s_url)
+
+                s_title = s_name+' [COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте ('+str(q)+')[/COLOR][COLOR FF00FF00])[/COLOR]'
+                #--
+                i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+                u = sys.argv[0] + '?mode=PLAY'
+                u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+                u += '&url=%s'%urllib.quote_plus(s_url)
+                u += '&img=%s'%urllib.quote_plus(img)
+                u += '&vtype=%s'%urllib.quote_plus('VM')
+                #i.setProperty('fanart_image', img)
+                xbmcplugin.addDirectoryItem(h, u, i, False)
+        else:
+            s_url   = rec['src']
+            q, s_url = Kodik_Biz(s_url)
+
+            s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте ('+str(q)+')[/COLOR][COLOR FF00FF00])[/COLOR]'
+            #--
+            i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+            u = sys.argv[0] + '?mode=PLAY'
+            u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+            u += '&url=%s'%urllib.quote_plus(s_url)
+            u += '&img=%s'%urllib.quote_plus(img)
+            u += '&vtype=%s'%urllib.quote_plus('VM')
+            #i.setProperty('fanart_image', img)
+            xbmcplugin.addDirectoryItem(h, u, i, False)
+        source_number = source_number + 1
+
+    #-- VK.COM -----------------------------------------------------------------
     for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php')}): #\?
         s_url   = rec['src']
 
@@ -466,8 +498,6 @@ def Source_List(params):
             soup = BeautifulSoup(html, fromEncoding="windows-1251")
             for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php\?')}): #\?
                 s_url   = rec['src']
-
-        print s_url
 
         s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
         source_number = source_number + 1
@@ -481,6 +511,7 @@ def Source_List(params):
         #i.setProperty('fanart_image', img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
+    #-- RuVideo ----------------------------------------------------------------
     for rec in soup.findAll('param', {'name':'flashvars'}):
         for s in rec['value'].split('&'):
             if s.split('=',1)[0] == 'file':
@@ -603,9 +634,7 @@ def PLAY(params):
                         oid = s.split('=',1)[1]
 
             url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
-            print url
             ref = 'http://vk.com'+soup.find('param',{'name':'movie'})['value']
-            print ref
             html = get_HTML(url, None, ref)
 
         # -- play video
@@ -614,6 +643,28 @@ def PLAY(params):
     except:
         pass
 
+#-- conver video urk from kodik.biz --------------------------------------------
+def Kodik_Biz(vurl):
+    p = vurl.split('/')
+
+    url = 'http://api.vk.com/method/video.getEmbed?oid='+p[4]+'&video_id='+p[5]+'&embed_hash='+p[6]+'&callback=responseWork'
+    html = get_HTML(url)
+
+    str = html.replace('responseWork(','')[:-2]
+    j = json.loads(str)
+    quality = 0
+
+    for key, value in  j['response'].items():
+        if key.find('url') != -1 and len(key) < 8:
+            if int(key.replace('url', '')) > quality:
+                quality = int(key.replace('url', ''))
+                url     = value
+
+    if quality == 0:
+        quality = 720
+        url = j['response']['host']+'u'+j['response']['uid']+'/videos/'+j['response']['vtag']+'.720.mp4'
+
+    return quality, url
 #-------------------------------------------------------------------------------
 
 def unescape(text):
