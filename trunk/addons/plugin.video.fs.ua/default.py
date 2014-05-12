@@ -265,17 +265,19 @@ def getCategories(params):
         return False
 
     beautifulSoup = BeautifulSoup(http)
-    categorySubmenu = beautifulSoup.find('div', 'b-subcategories')
+    categorySubmenu = beautifulSoup.find('div', 'm-header__menu-section_type_' + section)
     if categorySubmenu is None:
         show_message('ОШИБКА', 'Неверная страница', 3000)
         return False
 
-    subcategories = categorySubmenu.findAll('a')
+    subcategories = categorySubmenu.findAll('a', 'b-header__menu-subsections-item')
     if len(subcategories) == 0:
         show_message('ОШИБКА', 'Неверная страница', 3000)
         return False
+
     for subcategory in subcategories:
-        li = xbmcgui.ListItem(subcategory.string)
+        label = subcategory.find('span')
+        li = xbmcgui.ListItem('[' + label.string + ']')
         uri = construct_request({
             'href': httpSiteUrl + subcategory['href'],
             'mode': 'readcategory',
@@ -286,7 +288,14 @@ def getCategories(params):
         })
         xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-    xbmcplugin.endOfDirectory(h)
+    readcategory({
+        'href': params['href'],
+        'cleanUrl': params['href'],
+        'section': section,
+        'start': 0,
+        'filter': '',
+    })
+    #xbmcplugin.endOfDirectory(h)
 
 
 def getFavoriteCategories(params):
@@ -422,18 +431,13 @@ def readfavorites(params):
 
 def readcategory(params):
     start = int(params['start'])
-    showUpdateInfo = __settings__.getSetting("Show update info") == "true"
     category_href = urllib.unquote_plus(params['href'])
-
-    viewMode = 'list'
-    if not showUpdateInfo:
-        viewMode = 'detailed'
 
     categoryUrl = get_url_with_sort_by(
         category_href,
         params['section'],
         params['start'],
-        viewMode
+        'detailed'
     )
 
     data = GET(categoryUrl, httpSiteUrl)
@@ -442,7 +446,7 @@ def readcategory(params):
     data = json.loads(data)
     if data is None:
         return False
-    http = data['content']
+    http = str(data['content'])
 
     try:
         params['filter']
@@ -450,10 +454,9 @@ def readcategory(params):
         params['filter'] = ''
 
     beautifulSoup = BeautifulSoup(http)
-    if showUpdateInfo:
-        items = beautifulSoup.findAll('div', 'b-poster-section')
-    else:
-        items = beautifulSoup.findAll('div', 'b-poster-section-detail')
+    itemsClass = 'b-poster-detail'
+
+    items = beautifulSoup.findAll('div', itemsClass)
 
     if len(items) == 0:
         show_message('ОШИБКА', 'Неверная страница', 3000)
@@ -463,38 +466,26 @@ def readcategory(params):
             load_first_page_sections(category_href, params)
 
         for item in items:
-            title = None
             cover = None
             href = None
 
             img = item.find('img')
-            link = item.find('a', 'subject-link')
+            link = item.find('a', itemsClass + '__link')
+            title = item.find('span', 'b-poster-detail__title').contents
             if img is not None:
                 cover = img['src']
-                title = img['alt']
                 href = httpSiteUrl + link['href']
 
             if title is not None:
-                plot = ''
-                if showUpdateInfo:
-                    additionalInfo = ''
-                    numItem = item.find('b', 'num')
-                    if numItem is not None:
-                        additionalInfo = " / " + numItem.string.strip() + " "
-                    dateInfo = item.find('b', 'date')
-                    if dateInfo is not None:
-                        additionalInfo += dateInfo.string.strip()
-                    title += additionalInfo
-                else:
-                    plot = []
-                    details = item.find('div', 'text').contents
-                    for detail in details:
-                        try:
-                            plot.append(detail.encode('utf-8'))
-                        except:
-                            pass
-                    plot = htmlEntitiesDecode("\n".join(plot))
-                titleText = htmlEntitiesDecode(title)
+                plot = []
+                details = item.find('span', 'b-poster-detail__description').contents
+                for detail in details:
+                    try:
+                        plot.append(detail.decode('unicode-escape'))
+                    except:
+                        pass
+                plot = htmlEntitiesDecode("\n".join(plot))
+                titleText = htmlEntitiesDecode(title[0].decode('unicode-escape'))
                 li = xbmcgui.ListItem(titleText, iconImage=getThumbnailImage(cover),
                                       thumbnailImage=getPosterImage(cover))
                 if plot != '':
@@ -569,7 +560,8 @@ def load_first_page_sections(href, params):
     if beautifulSoup is None:
         return False
 
-    groups = beautifulSoup.find('ul', 'm-group')
+    groups = beautifulSoup.find('div', 'b-section-menu')
+    print groups
     if groups is not None:
         yearLink = groups.find('a', href=re.compile(r'year'))
         if yearLink is not None:
