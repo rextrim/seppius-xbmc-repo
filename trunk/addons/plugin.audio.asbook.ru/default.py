@@ -25,7 +25,7 @@ from urlparse import urlparse
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 #import json
-import simplejson as json
+import demjson3 as json
 
 Addon = xbmcaddon.Addon(id='plugin.audio.asbook.ru')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
@@ -210,7 +210,7 @@ def Book_List(params):
     if par.pcount == '0':
         pc = 1
         try:
-            for rec in soup.find('div', {'class':'navigation'}).findAll('a'):
+            for rec in soup.find('div', {'class':'b-paginator'}).findAll('a'):
                 try:
                     if pc < int(rec.text):
                         pc = int(rec.text)
@@ -225,8 +225,8 @@ def Book_List(params):
 
     #-- get book info
     #try:
-    for rec in soup.findAll('div', {'class':'short'}):
-        b_name  = unescape(rec.find('div', {'class':'title'}).find('a').text).encode('utf-8')
+    for rec in soup.findAll('div', {'class':'b-showshort'}):
+        b_name  = unescape(rec.find('div', {'class':'b-showshort__title'}).find('a').text).encode('utf-8')
 
         b_name_s = b_name.split('"')
         try:
@@ -244,7 +244,7 @@ def Book_List(params):
             except:
                 b_name_f = '[COLOR FF00FFF0]"'+b_name+'"[/COLOR]'
         #---
-        b_url   = rec.find('div', {'class':'title'}).find('a')['href']
+        b_url   = rec.find('div', {'class':'b-showshort__title'}).find('a')['href']
         try:
             b_img   = rec.find('img')['src']
         except:
@@ -296,11 +296,11 @@ def Book_Info(params):
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    b_name      = urllib.unquote(soup.find('h1', {'class':'fulltitle'}).text)
-    b_score     = str(int(float(soup.find('li' ,{'class':'current-rating'}).text)/160.00))
+    b_name      = urllib.unquote(soup.find('h1', {'class':'b-maintitle'}).text)
+    b_score     = soup.find('div' ,{'class':'mark'}).text.replace(',', '.')
 
     try:
-        b_img       = soup.find('div', {'class':'fullstory'}).find('img')['src']
+        b_img       = soup.find('div', {'class':'b-searchpost__cover'}).find('img')['src']
     except:
         try:
             b_img = re.compile('\<img (.+?)\/>').findall(html)
@@ -311,19 +311,24 @@ def Book_Info(params):
         except:
             b_img = icon
 
-    b_descr     = urllib.unquote(soup.find('div', {'class':'tab_content tab_descr'}).find('div', {'class':'text'}).text)
+    b_descr     = urllib.unquote(soup.find('div', {'class':'b-searchpost__text'}).text)
 
-    for rec in soup.find('table', {'class':'data'}).findAll('td'):
-        if rec['class'] == 'e':
-            b_year = int(rec.find('span').text)
-        if rec['class'] == 'a':
-            b_autor = rec.find('a').text
-        if rec['class'] == 'b':
-            b_actor = rec.find('a').text
-        if rec['class'] == 'c':
-            b_publisher = rec.find('a').text
-        if rec['class'] == 'd':
-            b_duration = int(rec.find('span').text.split(':')[0])*60*60+int(rec.find('span').text.split(':')[1])*60+int(rec.find('span').text.split(':')[2])
+    for rec in soup.find('div', {'class':'b-searchpost__data'}).findAll('div', {'class': "row"}):
+        if rec.find('i', {'class' : "b-sprt icon-10-2"}):
+            b_year = int(rec.find('div', {'class' : "cell string"}).find('a').text)
+
+        if rec.find('i', {'class' : "b-sprt icon-7-2"}):
+            b_publisher = rec.find('div', {'class' : "cell string"}).find('a').text
+
+        if rec.find('i', {'class' : "b-sprt icon-9-1"}):
+            s = rec.find('div', {'class' : "cell string"}).text
+            b_duration = int(s.split(':')[0])*60*60+int(s.split(':')[1])*60+int(s.split(':')[2])
+
+        if rec.find('i', {'class' : "b-sprt icon-5-2"}):
+            b_autor = rec.find('div', {'class' : "cell string"}).find('a').text
+
+        if rec.find('i', {'class' : "b-sprt icon-6-2"}):
+            b_actor = rec.find('div', {'class' : "cell string"}).find('a').text
 
     for j in soup.findAll('script', {'type':'text/javascript'}):
         if 'var flashvars = {' in j.text:
@@ -352,7 +357,7 @@ def Book_Info(params):
                         						'year':        b_year,
                         						'artist':      b_actor,
                         						'comment':     b_descr,
-                        						'genre':       b_genre,
+                        						'genre':       par.genre,
                                                 'rating':      b_score})
         i.setProperty('fanart_image', b_img)
         xbmcplugin.addDirectoryItem(h, u, i, False)
@@ -370,13 +375,13 @@ def Genre_List(params):
     html = get_URL(url)
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for rec in soup.find('ul', {'class':'menu'}).findAll('li'):
+    for rec in soup.find('ul', {'class':'b-header__menu clearfix'}).findAll('li'):
         try:
-            if rec['class'] == 'search': continue
+            if rec['class'] == 'sub-item': continue
         except:
             pass
 
-        is_parent = (rec.find('ul', {'class':'sub'}) != None)
+        is_parent = (rec.find('a', {'class' : "b-header__menu_item_link"}) != None)
 
 
         if is_parent:
