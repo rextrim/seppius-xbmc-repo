@@ -22,6 +22,43 @@
 import re, os, urllib, urllib2, cookielib, time, sys, urlparse
 from time import gmtime, strftime
 
+import sqlite3
+
+class EasyDB:
+    def __init__(self, filename):
+        exists = os.path.exists(filename)
+
+        self.connection = sqlite3.connect(filename)
+        if not exists:
+            query = "CREATE TABLE ignore (channel)"
+            self.query(query)
+
+    def __del__(self):
+        self.connection.commit()
+        self.connection.close()
+
+    def query(self, *args, **kwargs):
+        cursor = self.connection.cursor()
+        result = cursor.execute(*args, **kwargs)
+        return result
+
+    def add(self, channel):
+        query = "INSERT INTO ignore(channel) VALUES ('%s')" % channel
+        self.query(query)
+
+    def delete(self, channel):
+        query = "DELETE FROM ignore WHERE channel = '%s'" % channel
+        self.query(query)
+
+    def exists(self, channel):
+        query = "SELECT COUNT(*) as Cnt FROM ignore WHERE channel = '%s'" % channel
+        rez = self.query(query)
+        for rec in rez.fetchall():
+            if rec[0] > 0:
+                return True
+            else:
+                return False
+
 try:
     import json
 except ImportError:
@@ -62,6 +99,10 @@ h = int(sys.argv[1])
 def showMessage(heading, message, times = 3000):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading, message, times, icon))
 
+#-- ignore list ----------------------------------------------------------------
+def Add_To_Ignore(str):
+    f = open('ignore.cfg', 'r')
+
 #---------- get web page -------------------------------------------------------
 def get_HTML(url, post = None, ref = None):
     request = urllib2.Request(url, post)
@@ -96,6 +137,17 @@ def get_HTML(url, post = None, ref = None):
 
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
+    db = EasyDB('ignore.db')
+
+    #-- add config command
+    name = ('[COLOR FFFF9900][B]'+'Настройки каналов'+'[/B][/COLOR]')#.encode('utf-8')
+
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=CONFIG'
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+
+    #-- list of available channels
     url = 'http://telik.in.ua/'
     html = get_HTML(url)
 
@@ -104,6 +156,11 @@ def Get_TV_Channels():
     for rec in soup.findAll('div', {'class':"movie"}):
         ch_url  = rec.find('a')['href']
         title   = rec.find('span', {'class':"name"}).text
+
+        #-- check if channel in ignore list
+        if db.exists(title):
+            continue
+
         img     = "http://telik.in.ua/"+rec.find('img')['src']
 
         name = ('[COLOR FFCCFF33][B]'+title+'[/B][/COLOR]').encode('utf-8')
@@ -130,6 +187,66 @@ def Get_TV_Channels():
         xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
+
+#---------- config TV channels --------------------------------------------
+def Config_TV_Channels():
+    db = EasyDB('ignore.db')
+
+    #-- list of available channels
+    url = 'http://telik.in.ua/'
+    html = get_HTML(url)
+
+    soup = BeautifulSoup(html)
+
+    for rec in soup.findAll('div', {'class':"movie"}):
+        title   = rec.find('span', {'class':"name"}).text
+
+        #-- check if channel in ignore list
+        if db.exists(title):
+            color = 'FFFF3300'
+        else:
+            color = 'FF99CC00'
+
+        name = ('[COLOR '+color+'][B]'+title+'[/B][/COLOR]').encode('utf-8')
+
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=?IGNORE'
+        u += '&name=%s'%urllib.quote_plus(title.encode('utf-8'))
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    for rec in soup.findAll('div', {'class':"movie last"}):
+        title   = rec.find('span', {'class':"name"}).text
+
+        #-- check if channel in ignore list
+        if db.exists(title):
+            color = 'FFFF3300'
+        else:
+            color = 'FF99CC00'
+
+        name = ('[COLOR '+color+'][B]'+title+'[/B][/COLOR]').encode('utf-8')
+
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=?IGNORE'
+        u += '&name=%s'%urllib.quote_plus(title.encode('utf-8'))
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+
+    xbmcplugin.endOfDirectory(h)
+
+#-------------------------------------------------------------------------------
+
+def Ignore_TV_Channel(params):
+    name = urllib.unquote_plus(params['name'])
+
+    db = EasyDB('ignore.db')
+
+    if db.exists(name):
+        db.delete(name)
+    else:
+        db.add(name)
+
+    xbmc.executebuiltin("Container.Refresh")
+    xbmc.executebuiltin("Container.Update(plugin://plugin.video.telik.in.ua)")
+    return False
 
 #-------------------------------------------------------------------------------
 
@@ -207,6 +324,10 @@ except:
 
 if mode == 'PLAY':
 	PLAY(params)
+elif mode == 'CONFIG':
+    Config_TV_Channels()
+elif mode == 'IGNORE':
+    Ignore_TV_Channel(params)
 
 #-- store cookies
 #cj.save(ignore_discard=True)
