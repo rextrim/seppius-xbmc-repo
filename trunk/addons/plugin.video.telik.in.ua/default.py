@@ -77,6 +77,7 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 Addon = xbmcaddon.Addon(id='plugin.video.telik.in.ua')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'cookies.txt'))
+db_file = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'ignore.db'))
 
 # load XML library
 try:
@@ -137,7 +138,7 @@ def get_HTML(url, post = None, ref = None):
 
 #---------- get list of TV channels --------------------------------------------
 def Get_TV_Channels():
-    db = EasyDB('ignore.db')
+    db = EasyDB(db_file)
 
     #-- add config command
     name = ('[COLOR FFFF9900][B]'+'Настройки каналов'+'[/B][/COLOR]')#.encode('utf-8')
@@ -190,7 +191,7 @@ def Get_TV_Channels():
 
 #---------- config TV channels --------------------------------------------
 def Config_TV_Channels():
-    db = EasyDB('ignore.db')
+    db = EasyDB(db_file)
 
     #-- list of available channels
     url = 'http://telik.in.ua/'
@@ -237,7 +238,7 @@ def Config_TV_Channels():
 def Ignore_TV_Channel(params):
     name = urllib.unquote_plus(params['name'])
 
-    db = EasyDB('ignore.db')
+    db = EasyDB(db_file)
 
     if db.exists(name):
         db.delete(name)
