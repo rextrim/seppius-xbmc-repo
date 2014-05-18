@@ -42,7 +42,8 @@
 	<string id="11008">Сервер вещания</string>
 	<string id="11009">Часовой пояс</string>
 	<string id="11010">Управлять режимом просмотра</string>
-	<string id="11011">ТВ программа во 2й линии</string>	
+	<string id="11011">ТВ программа во 2й линии</string>
+	<string id="11012">Начинать архив с даты</string	
 	<string id="20001">Понедельник</string>
 	<string id="20002">Вторник</string>
 	<string id="20003">Среда</string>
@@ -50,6 +51,7 @@
 	<string id="20005">Пятница</string>
 	<string id="20006">Суббота</string>
 	<string id="20007">Воскресение</string>	
-	<string id="20008">-ДАЛЕЕ-></string>	
-	<string id="20009">Часть</string>	
+	<string id="20008">-ДАЛЕЕ-></string>
+	<string id="20009">-ВЧЕРА-^</string>
+	<string id="20010">Часть</string>	
 </strings>

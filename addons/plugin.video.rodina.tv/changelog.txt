@@ -48,5 +48,15 @@ new way of favorites handling
 high res icons
 [B]2.3.3[/B]
 high res icons for archives
+[B]2.3.4[/B]
+date is top archive level
+[B]2.3.5[/B]
+bug fix
+[B]2.3.6[/B]
+added next/prev for archives
+[B]2.3.7[/B]
+bug fix
+[B]2.4.0[/B]
+added us streaming server
 
 
