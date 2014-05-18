@@ -394,10 +394,10 @@ Audio sources are
 
 <addon id="plugin.video.KinoPoisk.ru"
        name="KinoPoisk"
-       version="0.9.6"
+       version="0.9.9"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.torrent.ts"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
@@ -1331,7 +1331,7 @@ I hope you like this!
     </extension>
 </addon>
 
-<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.3.3" provider-name="Rodina TV">
+<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.4.0" provider-name="Rodina TV">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.service.rodina.tv" version="1.0.1"/>
@@ -1728,7 +1728,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.telik.in.ua"
        name="[COLOR FF00FF00]ТВ Онлайн ([/COLOR][COLOR FFFFF000]telik.in.ua[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.3"
+       version="1.0.4"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
