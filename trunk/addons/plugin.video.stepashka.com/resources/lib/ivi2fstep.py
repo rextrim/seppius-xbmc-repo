@@ -159,6 +159,7 @@ def mainScreen(params):
 	uri = construct_request({
 		'href': 'http://online.stepashka.com/',
 		'title': 'Последние',
+		'page':1,
 		'func': 'readCategory'
 		})
 	xbmcplugin.addDirectoryItem(hos, uri, li, True)
@@ -199,7 +200,7 @@ def subcat(params):
 		for line in cats[1:-1]:
 			title= line.string.encode('utf-8')
 			#xbmc.log('[STEPASHKA.COM] in god title='+str(title))
-			href=httpSiteUrl+'select/фильмы/'+title
+			href=httpSiteUrl+'select/фильмы/'+title+'/'
 			#xbmc.log('[STEPASHKA.COM] in god href='+str(href))
 			if title!='None':
 				li = xbmcgui.ListItem(title, addon_fanart, thumbnailImage = addon_icon)
@@ -266,6 +267,7 @@ def readCategory(params, postParams = None):
 			search=True
 	except:
 		search=False
+	#print 'hlink: '+str(hlink)
 	http = GET(hlink)
 	if http == None: return False
 	li = xbmcgui.ListItem('[COLOR=FF00FF00]%s, стр. %s[/COLOR]' % (params['title'],page), addon_icon, thumbnailImage = addon_icon)
@@ -368,6 +370,7 @@ def readCategory(params, postParams = None):
 				xbmcplugin.addDirectoryItem(hos, uri, li, True)
 	xbmc.executebuiltin('Container.SetViewMode(500)')
 	xbmcplugin.endOfDirectory(hos)
+
 
 def readFile(params):
 	http = GET(params['href'])
