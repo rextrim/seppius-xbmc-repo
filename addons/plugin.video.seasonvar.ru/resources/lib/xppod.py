@@ -47,7 +47,6 @@ class XPpod():
     # Юppod decoder (for seasonvar.ru)
     #-------------------------------------------------------------------------------
     def Decode(self, param, swf_player = None, page_url = None, cj = None):
-
         #-- load cookies
         if cj:
             hr  = urllib2.HTTPCookieProcessor(cj)
@@ -83,7 +82,7 @@ class XPpod():
 
             elif os.path.isdir(self.path) == True:
                 print '** Decompile SWF to get hash'
-                hash_list = self.Get_SWF_Hash(swf_player)
+                hash_list = self.Get_SWF_Hash(swf_player, page_url)
                 #-- assemble hash key
                 hash_key = hash_list[0]+'\n'+hash_list[1]
                 rez = self.Decode_String(param, hash_key)
@@ -114,9 +113,9 @@ class XPpod():
             hash1 = hash_key.split('\n')[0]
             hash2 = hash_key.split('\n')[1]
 
-            print '** Try to decode'
-            print '**     HASH1: '+hash1
-            print '**     HASH2: '+hash2
+##            print '** Try to decode'
+##            print '**     HASH1: '+hash1
+##            print '**     HASH2: '+hash2
 
             #-- decode
             for i in range(0, len(hash1)):
@@ -154,7 +153,7 @@ class XPpod():
         return loc_2
 
     #---------------------------------------------------------------------------
-    def Get_SWF_Hash(self, swf_player):
+    def Get_SWF_Hash(self, swf_player, page_url):
         #---- clean up SWF folder ----------------------------------------------
         try:
             print '** Clean up SWF folder'
@@ -169,7 +168,8 @@ class XPpod():
         url = swf_player
         swf = open(os.path.join(self.path, 'player.swf'), 'wb')
         post = None
-        code = self.get_HTML(url, post, 'http://seasonvar.ru')
+
+        code = self.get_HTML(url, post, page_url) #'http://seasonvar.ru')
         swf.write(code)
         swf.close()
 

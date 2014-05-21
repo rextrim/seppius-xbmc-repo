@@ -57,7 +57,7 @@ def get_HTML(url, post = None, ref = None, is_pl = False):
     if ref==None:
         ref='http://'+host
 
-    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
+    request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 9.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
     request.add_header('Host',   host)
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
@@ -92,6 +92,8 @@ class Param:
     search          = ''
     history         = ''
     playlist        = ''
+    title           = ''
+    full_name       = ''
 
 class Info:
     img         = ''
@@ -118,6 +120,12 @@ def Get_Parameters(params):
     #-- name
     try:    p.name = urllib.unquote_plus(params['name'])
     except: p.name = ''
+    #-- title
+    try:    p.title = urllib.unquote_plus(params['title'])
+    except: p.title = ''
+    #-- full_name
+    try:    p.full_name = urllib.unquote_plus(params['full_name'])
+    except: p.full_name = ''
     #-- genre
     try:    p.genre = urllib.unquote_plus(params['genre'])
     except: p.genre = 'all'
@@ -282,6 +290,7 @@ def Movie_List(params):
         i = xbmcgui.ListItem(rec['title'], iconImage=rec['img'], thumbnailImage=rec['img'])
         u = sys.argv[0] + '?mode=SERIAL'
         u += '&name=%s'%urllib.quote_plus(rec['title'])
+        u += '&title=%s'%urllib.quote_plus(rec['title'])
         u += '&url=%s'%urllib.quote_plus(rec['url'])
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
@@ -303,6 +312,8 @@ def Serial_Info(params):
     #-- get filter parameters
     par = Get_Parameters(params)
     #== get serial details =================================================
+    tvshowtitle=par.title
+    full_name=par.name
     url = par.url
     html = get_HTML(url)
     # -- parsing web page --------------------------------------------------
@@ -324,6 +335,7 @@ def Serial_Info(params):
             u = sys.argv[0] + '?mode=SERIAL'
             #-- filter parameters
             u += '&name=%s'%urllib.quote_plus(s_name)
+            u += '&title=%s'%urllib.quote_plus(tvshowtitle)
             u += '&url=%s'%urllib.quote_plus(s_url)
             u += '&genre=%s'%urllib.quote_plus(par.genre)
             u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
@@ -347,6 +359,8 @@ def Serial_Info(params):
             else:
                 mi.text = rec.text.encode('utf-8')
 
+        mi.actors = mi.actors.split(',')
+
         mi.img = soup.find('td', {'class':'td-for-content'}).find('img')['src']
 
         # -- get serial parts info
@@ -354,7 +368,7 @@ def Serial_Info(params):
         i = xbmcgui.ListItem('[COLOR FFFFF000]'+par.name + '[/COLOR]', path='', thumbnailImage=icon)
         u = sys.argv[0] + '?mode=EMPTY'
         xbmcplugin.addDirectoryItem(h, u, i, False)
-
+        pname=par.name
         # -- get list of season parts
         s_url = ''
         s_num = 0
@@ -379,11 +393,16 @@ def Serial_Info(params):
             i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=mi.img) # iconImage=mi.img
             u = sys.argv[0] + '?mode=PLAY'
             u += '&url=%s'%urllib.quote_plus(s_url)
-            u += '&name=%s'%urllib.quote_plus(name)
+            u += '&name=%s'%urllib.quote_plus(pname)
+            u += '&full_name=%s'%urllib.quote_plus(full_name)
+            u += '&title=%s'%urllib.quote_plus(tvshowtitle)
             u += '&img=%s'%urllib.quote_plus(mi.img)
             u += '&playlist=%s'%urllib.quote_plus(playlist_url)
-            i.setInfo(type='video', infoLabels={    'title':       mi.title,
-                                                    'cast' :       mi.actors,
+            try:cast=re.compile(">(.+?)</a>").findall(mi.actors)
+            except: cast=[]
+            i.setInfo(type='video', infoLabels={    'title':       name,
+                                                    'cast' :       cast,
+                                                    'artist' :     mi.actors,
                             						'year':        int(mi.year),
                             						'director':    mi.director,
                             						'plot':        mi.text,
@@ -393,6 +412,60 @@ def Serial_Info(params):
             xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
+
+#-------------------------------------------------------------------------------
+def int_xx(intxx):
+    if intxx and intxx!='None':
+        return '%02d' % (int(intxx))
+    else:
+        return '00'
+
+def original_title(name, lenseason):
+    if '/' in name:
+        title=name.split('/')[1]
+        if 'сезон' in title:
+            title=title[:len(title)-len('  сезон')-lenseason]
+        return title
+
+def mynewtitle(title, sel, name):
+    myshows={
+                'episode': 1,
+                'season': 1,
+                'tvshowtitle': '',
+                'title': sel}
+
+    #print ('[mynewtitle]:'+str((title, sel, name)))
+
+    #for repl in ['Сериал ', 'Смотреть ', 'Фильм ']:
+    #    if title.startswith(repl): myshows['title']=title.replace(repl,'', 1)
+
+    if sel:
+        season,episode,orig=0,0,None
+        match=re.compile('(\d+) (Cезон|cезон|Сезон|сезон|Season|season)').findall(sel)
+        if match:
+            season=int_xx(match[0][0])
+        else:
+            match=re.compile('(\d+) (Cезон|cезон|Сезон|сезон|Season|season)').findall(name)
+            if match:
+                season=int_xx(match[0][0])
+
+        match=re.compile('(\d+) (Cерия|cерия|Серия|серия|Episod|episod)').findall(sel)
+        if match:
+            episode=int_xx(match[0][0])
+
+        orig=original_title(name,len(str(int(season))))
+        if not orig: orig=title
+
+        #print ('[mynewtitle]:'+str((episode, season, title)))
+        if episode:
+            if not season: season=1
+            myshows={
+                    'episode': int(episode),
+                    'season': int(season),
+                    'tvshowtitle': orig,
+                    'title':title+' S%sE%s.mp4'%(season,episode)}
+
+    return myshows
 
 #---------- get genre list -----------------------------------------------------
 def Genre_List(params):
@@ -453,6 +526,8 @@ def Country_List(params):
 def PLAY(params):
     #-- get filter parameters
     par = Get_Parameters(params)
+    tvshowtitle=par.title
+    full_name=par.full_name
 
     # -- if requested continious play
     if Addon.getSetting('continue_play') == 'true':
@@ -461,7 +536,8 @@ def PLAY(params):
         pl.clear()
         # -- get play list
         html = get_HTML(par.playlist, is_pl = True)
-        html = Decoder.Decode(html)
+
+        #html = Decoder.Decode(html)
 
         if html == '':
             return False
@@ -481,7 +557,14 @@ def PLAY(params):
                     is_found = True
 
             if is_found:
-                i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=par.img)
+                myshows=mynewtitle(tvshowtitle,name,full_name)
+                newtitle=myshows['title']
+                i = xbmcgui.ListItem(newtitle, path = urllib.unquote(s_url), thumbnailImage=par.img)
+                if 'tvshowtitle' in myshows and myshows['tvshowtitle']!='':
+                    i.setInfo(type='video', infoLabels={    'title':      newtitle,
+                                                    'episode': myshows['episode'],
+                                                    'season': myshows['season'],
+                                                    'tvshowtitle': myshows['tvshowtitle']})
                 i.setProperty('IsPlayable', 'true')
                 pl.add(s_url, i)
             s_num += 1
@@ -489,7 +572,14 @@ def PLAY(params):
         xbmc.Player().play(pl)
     # -- play only selected item
     else:
-        i = xbmcgui.ListItem(par.name, path = urllib.unquote(par.url), thumbnailImage=par.img)
+        myshows=mynewtitle(tvshowtitle,par.name,full_name)
+        newtitle=myshows['title']
+        i = xbmcgui.ListItem(newtitle, path = urllib.unquote(par.url), thumbnailImage=par.img)
+        if 'tvshowtitle' in myshows and myshows['tvshowtitle']!='':
+                    i.setInfo(type='video', infoLabels={    'title':      newtitle,
+                                                    'episode': myshows['episode'],
+                                                    'season': myshows['season'],
+                                                    'tvshowtitle': myshows['tvshowtitle']})
         i.setProperty('IsPlayable', 'true')
         xbmcplugin.setResolvedUrl(h, True, i)
 
@@ -542,9 +632,6 @@ def Get_PlayList(soup, parent_url):
     #-- get play list url
     plcode = ''
     plcode = Run_Java(parent_url)
-##    print '-----------------'
-##    print plcode
-##    print '-----------------'
     #---
     soup = BeautifulSoup(plcode, fromEncoding="windows-1251")
 
@@ -554,6 +641,7 @@ def Get_PlayList(soup, parent_url):
     plcode      = re.compile('pl=(.+?)&uid', re.MULTILINE|re.DOTALL).findall(str)[0]
 
     get_HTML(swf_player)
+
 
     url = Decoder.Decode(plcode, swf_player, parent_url, cj=cj)
 
@@ -568,7 +656,7 @@ def Get_PlayList(soup, parent_url):
 
     # -- get play list
     html = get_HTML(url, None, swf_player, True)
-    html = Decoder.Decode(html)
+    #html = Decoder.Decode(html)
 
     return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url, swf_player
 
@@ -629,14 +717,6 @@ def Run_Java(seasonvar_url):
             fcode = get_HTML(url, post)
         except:
             fcode = get_HTML(url, post)
-
-        try:
-            print '----------------------'
-            print seasonvar_url
-            #print fcode
-            print '----------------------'
-        except:
-            pass
 
         return fcode
 
