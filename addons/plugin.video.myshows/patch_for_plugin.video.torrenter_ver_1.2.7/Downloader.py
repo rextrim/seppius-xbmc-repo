@@ -72,6 +72,10 @@ class Torrent:
         except:
             pass
         try:
+            from python_libtorrent.windows_27 import libtorrent
+        except:
+            pass
+        try:
             import libtorrent
         except:
             pass
