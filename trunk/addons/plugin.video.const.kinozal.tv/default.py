@@ -487,9 +487,10 @@ def get_info(params):
     if 'http' not in img: 
         img='http://kinozal.tv%s'%img
     menu = all.find('ul', attrs={"class": "men w200"})
-    mitems = menu.findAll('a', attrs={'href': "#"})
+    mitems = menu.findAll('a')
     sp = "";
     fc = 1;
+    bookmark = None
     for link in mitems:
         if "Раздают" in link.getText().encode('utf-8'):
             sp = link.find('span', attrs={'class': 'floatright'}).getText()
@@ -497,6 +498,8 @@ def get_info(params):
             sp =  sp + '/' + link.find('span', attrs={'class': 'floatright'}).getText()
         elif "Список файлов" in link.getText().encode('utf-8'):
             fc = int(link.span.getText())
+        elif "Добавить в закладки" in link.getText().encode('utf-8'):
+            bookmark = link['href']
 
     star = menu.find('div', attrs={'class' : 'starbar'}).findAll('a')
 
@@ -545,6 +548,13 @@ def get_info(params):
             })
         if fc == 1:
             li.setProperty('IsPlayable', 'true')
+
+    if bookmark:
+        addbookmarkuri = construct_request({
+            'func': 'http_request',
+            'url': "http://kinozal.tv/" + bookmark
+        })
+        li.addContextMenuItems([('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в Закладки[/COLOR]', 'XBMC.RunPlugin(%s)' % (addbookmarkuri),)])
 
     xbmcplugin.addDirectoryItem(hos, uri, li, fc > 1)
     
@@ -738,6 +748,18 @@ def login():
     url = urlOpener.open(request)
     return cookiejar
 
+def http_request(params):
+    cookie = login()
+    req = params['url']
+    urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookie))
+    url = urlOpener.open(req)
+    http = url.read()
+    return http
+
+def del_bookmark(params):
+    http_request(params)
+    xbmc.executebuiltin("Container.Refresh")
+
 def get_bookmarks(params):
     cookie = login()
     req = 'http://kinozal.tv/bookmarks.php?type=1'
@@ -760,6 +782,12 @@ def get_bookmarks(params):
                 'func': 'get_info',
                 'url': "http://kinozal.tv/" + desc['url'],
             })
+            tds = line.findAll("td", attrs={'class': 's'})
+            delbookmarkuri = construct_request({
+                'func': 'del_bookmark',
+                'url': "http://kinozal.tv/" + tds[tds.__len__()-1].a['href']
+            })
+            li.addContextMenuItems([('[COLOR FF669933]Удалить[/COLOR][COLOR FFB77D00] из Закладок[/COLOR]', 'XBMC.RunPlugin(%s)' % (delbookmarkuri),)])
             xbmcplugin.addDirectoryItem(hos, uri, li, True)
     xbmcplugin.endOfDirectory(hos)
 
