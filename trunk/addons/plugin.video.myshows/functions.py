@@ -1168,7 +1168,7 @@ def changeDBTitle(showId):
         return
 
     if len(shows)>0:
-        newtitle=id2title(showId,None,True)[0]
+        newtitle=id2title(showId,None,True)[0].decode('utf-8', 'ignore')
         dialog = xbmcgui.Dialog()
         dialog_items,dialog_ids=[__language__(30205)],[-1]
         shows=sorted(shows,key=lambda x:x['tvshowid'],reverse=True)
@@ -1180,7 +1180,7 @@ def changeDBTitle(showId):
         if ret>0:
             ok=dialog.yesno(__language__(30322),__language__(30534),__language__(30535) % (dialog_items[ret],newtitle))
             if ok:
-                result=xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.SetTVShowDetails', 'params': {'tvshowid': int(dialog_ids[ret]), 'title': unicode(newtitle)}, 'id': 1})#lang
+                result=xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.SetTVShowDetails', 'params': {'tvshowid': int(dialog_ids[ret]), 'title': unicode(newtitle)}, 'id': 1})
                 if result in [newtitle,'OK']:
                     showMessage(__language__(30208), __language__(30536) % (newtitle), forced=True)
                 else:

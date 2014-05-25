@@ -841,6 +841,13 @@ class AddSource(Source):
                     if match:
                         videolist.append(x[0].encode('utf-8','ignore'))
                 #print str(videolist)
+                if len(videolist)==2 and self.id:
+                    samplelist=[]
+                    for z in (0,1):
+                        match=re.match('sample', videolist[z], re.I)
+                        if not match:
+                            samplelist.append(videolist[z])
+                    if len(samplelist)==1: videolist=samplelist
                 if len(videolist)==1:
                     cutlist.extend(dirlist)
                     ret=dirlist.index(videolist[0].encode('utf-8','ignore'))
@@ -1070,7 +1077,7 @@ class PlayFile(Source):
                 Debug('[PlayFile]: not self.seasonId or not self.episodeId')
                 self.seasonId, self.episodeId=id2SE(self.showId, self.id)
             if self.seasonId:
-                title, label=id2title(self.showId, self.id)
+                title, label=id2title(self.showId, self.id, norus=True)
                 #label='%s [myshows_showId|%d|myshows_id|%d]' % (label, self.showId, self.id)
                 i = xbmcgui.ListItem(label, path = self.filename.encode('utf-8'), thumbnailImage='')
 
@@ -1208,7 +1215,7 @@ class TorrenterSearch():
             self.handle()
 
     def handle(self):
-        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId)).get()
+        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId)).get(force_cache=True)
         jdata = json.loads(data)
 
         if self.id:

@@ -50,6 +50,7 @@
         <string id="30047">Second Login MyShows.ru</string>
         <string id="30048">Second Password MyShows.ru</string>
         <string id="30049">[B]Switch second and main account[/B]</string>
+        <string id="30050">Automation</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
@@ -125,8 +126,8 @@
         <string id="30156">XBMC Users Top</string>
         <string id="30157">XBMC Users News</string>
         <string id="30158">Friend's News</string>
+        <string id="30159">Full Season</string>
 
-        <string id="30159">NOT INSTALLED</string>
         <string id="30160">DiMartino on xbmc.ru and bitbucket.org</string>
         <string id="30161">You can install it via context menu</string>
         <string id="30162">Status:</string>

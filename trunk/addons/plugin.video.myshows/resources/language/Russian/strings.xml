@@ -3,11 +3,11 @@
 ///Settings
         <string id="30001">Логин MyShows.ru</string>
         <string id="30002">Пароль MyShows.ru</string>
-        <string id="30003">Использовать Русские названия</string>
+        <string id="30003">Русские названия</string>
         <string id="30004">Изменять статус эпизода по клику</string>
         <string id="30005">Время устаревания кэша (ч)</string>
         <string id="30006">Отключить кэш</string>
-        <string id="30007">Автоматическое сканирование</string>
+        <string id="30007">Автоматическое сканирование раздач</string>
         <string id="30008">Плеер торрентов</string>
         <string id="30009">Общие</string>
         <string id="30010">Торренты</string>
@@ -45,11 +45,12 @@
         <string id="30042">[B]Перевести на Русский (Force Russian)[/B]</string>
         <string id="30043">Не спрашивать при отправке офлайн оценки\отметки</string>
         <string id="30044">Поиск в торрент-клиенте и запуск на Проиграть Источник</string>
-        <string id="30045">Спросить об удалении с файлом эпизод в торрент-клиенте после просмотра</string>
+        <string id="30045">"Удалить с файлом" эпизод в торрент-клиенте после просмотра</string>
         <string id="30046">Использовать второй аккаунт MyShows.ru</string>
         <string id="30047">Второй Логин MyShows.ru</string>
         <string id="30048">Второй Пароль MyShows.ru</string>
         <string id="30049">[B]Поменять местами второй и основной аккаунты[/B]</string>
+        <string id="30050">Автоматизация</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -123,6 +124,7 @@
         <string id="30156">Топ Пользователей плагина</string>
         <string id="30157">Новости Пользователей плагина</string>
         <string id="30158">Новости Друзей</string>
+        <string id="30159">Полный сезон</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>

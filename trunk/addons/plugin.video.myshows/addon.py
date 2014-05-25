@@ -113,9 +113,9 @@ def Shows():
               {"title":TextBB(__language__(30150), 'b'),"mode":"18", "argv":{}},
               {"title":TextBB(__language__(30103), 'b'),"mode":"14", "argv":{}},
               {"title":TextBB(__language__(30104), 'b'),"mode":"15", "argv":{}},
-              {"title":TextBB(__language__(30105), 'b'),"mode":"16", "argv":{}},]
+              {"title":TextBB(__language__(30105), 'b'),"mode":"16", "argv":{}},
               #{"title":TextBB('ONGOING', 'b'),"mode":"11", "argv":{}},
-              #{"title":TextBB('FULLSEASON', 'b'),"mode":"12", "argv":{}},]
+              {"title":TextBB(__language__(30159), 'b'),"mode":"12", "argv":{}},]
 
         for i in menu:
             link=Link(i['mode'], i['argv'])
@@ -160,6 +160,70 @@ def Shows():
         item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
+def Full_Season():
+    def sort_episodes(action):
+        data= Data(cookie_auth, 'http://api.myshows.ru/profile/episodes/'+action+'/')
+        jdata = json.loads(data.get())
+        sort_next={}
+
+        for id in jdata:
+            jid=jdata[id]
+            showId=jid['showId']
+            seasonNumber=jid['seasonNumber']
+            episodeNumber=jid['episodeNumber']
+
+            if showId not in sort_next:
+                sort_next[showId]={seasonNumber:[episodeNumber,episodeNumber]}
+            elif seasonNumber not in sort_next[showId]:
+                sort_next[showId][seasonNumber]=[episodeNumber,episodeNumber]
+            elif sort_next[showId][seasonNumber][0]>episodeNumber:
+                sort_next[showId][seasonNumber][0]=episodeNumber
+            elif sort_next[showId][seasonNumber][1]<episodeNumber:
+                sort_next[showId][seasonNumber][1]=episodeNumber
+        return sort_next
+
+    def sort_one():
+        sort_next=sort_episodes('next')
+        sort_unwatched=sort_episodes('unwatched')
+        #print str(sort_unwatched)
+        sort_one=[]
+
+        for showId in sort_unwatched:
+            if len(sort_unwatched[showId])>1 \
+                    or showId not in sort_next \
+                    or (len(sort_next[showId].keys())==1 and sort_next[showId][sort_next[showId].keys()[0]][1]==1):
+                sort_one.append(str(showId))
+
+        return sort_one
+
+    try: syncshows=SyncXBMC()
+    except: syncshows=False
+    data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/')
+    jdata = json.loads(data.get())
+
+    for showId in sort_one():
+        if showId in jdata and jdata[showId]['totalEpisodes']-jdata[showId]['watchedEpisodes']!=0:
+            if ruName=='true' and jdata[showId]['ruTitle']:
+                title=jdata[showId]['ruTitle'].encode('utf-8')
+            else:
+                title=jdata[showId]['title']
+
+            rating=float(jdata[showId]['rating'])
+            pre=prefix(showId=int(showId))
+
+            item = xbmcgui.ListItem(pre+title, iconImage='DefaultFolder.png', thumbnailImage=str(jdata[showId]['image']))
+            info={'title': title, 'label':title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating*2, 'votes':1, 'year': '', } #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
+            try:
+                info['plot']=__language__(30265) % (str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes']))+'\r\n'+__language__(30266)+' '+str(rating)+'\r\n'
+            except:info['plot']=''
+            if syncshows: item=syncshows.shows(jdata[showId]['title'], item, info)
+            else: item.setInfo( type='Video', infoLabels=info)
+            stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
+            refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
+            sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+
 def Seasons(showId):
     data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+showId)
     try: syncshows=SyncXBMC()
@@ -171,9 +235,11 @@ def Seasons(showId):
         seasonNumber=jdata['episodes'][id]['seasonNumber']
         if seasonNumber not in seasons:
             seasons.append(seasonNumber)
-            epdict[str(jdata['episodes'][id]['seasonNumber'])]=str(jdata['episodes'][id]['id'])
-        else:
-            epdict[str(jdata['episodes'][id]['seasonNumber'])]=epdict[str(jdata['episodes'][id]['seasonNumber'])]+','+str(jdata['episodes'][id]['id'])
+        if jdata['episodes'][id]['episodeNumber']:
+            if str(jdata['episodes'][id]['seasonNumber']) not in epdict:
+                epdict[str(jdata['episodes'][id]['seasonNumber'])]=str(jdata['episodes'][id]['id'])
+            else:
+                epdict[str(jdata['episodes'][id]['seasonNumber'])]=epdict[str(jdata['episodes'][id]['seasonNumber'])]+','+str(jdata['episodes'][id]['id'])
     seasons.sort()
     watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
     try:watched_jdata = json.loads(watched_data.get())
@@ -470,30 +536,31 @@ def EpisodeList(action):
     jdata = json.loads(data.get())
 
     for id in jdata:
-        str_showId=str(jdata[id]["showId"])
-        try:
-            show_title=show_jdata[str_showId]['title']
-        except KeyError:
-            show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
-            try:show_title=show_jdata[str_showId]['title']
+        if jdata[id]['episodeNumber'] or action=='next':
+            str_showId=str(jdata[id]["showId"])
+            try:
+                show_title=show_jdata[str_showId]['title']
             except KeyError:
-                show_direct=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())
-                show_title=show_direct['title']
-                show_jdata[str_showId]=show_direct
-        if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
-        pre=prefix(id=int(id))
-        left=dates_diff(str(jdata[id]["airDate"]), 'today')
-        title=pre+(__language__(30113) % (int_xx(str(jdata[id]['seasonNumber'])), int_xx(str(jdata[id]['episodeNumber'])), left, show_title, jdata[id]['title']))
-        item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage=show_jdata[ str_showId ]['image'] )
-        item.setInfo( type='Video', infoLabels={'title': title,
-                                                'episode': jdata[id]['episodeNumber'],
-                                                'season': jdata[id]['seasonNumber'],
-                                                'date': jdata[id]['airDate'] } )
-        stringdata={"showId":int(str_showId), "episodeId":int(jdata[id]['episodeNumber']), "id":int(id), "seasonId":int(jdata[id]['seasonNumber'])}
-        sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str_showId + '&id='+str(id)+'&seasonNumber=' + str(jdata[id]['seasonNumber']) + '&playcount=0&mode=30'
-        refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url+refresh_url, listitem=item, isFolder=False)
+                show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
+                try:show_title=show_jdata[str_showId]['title']
+                except KeyError:
+                    show_direct=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())
+                    show_title=show_direct['title']
+                    show_jdata[str_showId]=show_direct
+            if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
+            pre=prefix(id=int(id))
+            left=dates_diff(str(jdata[id]["airDate"]), 'today')
+            title=pre+(__language__(30113) % (int_xx(str(jdata[id]['seasonNumber'])), int_xx(str(jdata[id]['episodeNumber'])), left, show_title, jdata[id]['title']))
+            item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage=show_jdata[ str_showId ]['image'] )
+            item.setInfo( type='Video', infoLabels={'title': title,
+                                                    'episode': jdata[id]['episodeNumber'],
+                                                    'season': jdata[id]['seasonNumber'],
+                                                    'date': jdata[id]['airDate'] } )
+            stringdata={"showId":int(str_showId), "episodeId":int(jdata[id]['episodeNumber']), "id":int(id), "seasonId":int(jdata[id]['seasonNumber'])}
+            sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str_showId + '&id='+str(id)+'&seasonNumber=' + str(jdata[id]['seasonNumber']) + '&playcount=0&mode=30'
+            refresh_url='&refresh_url='+urllib.quote_plus(str(data.url))
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url+refresh_url, listitem=item, isFolder=False)
 
 def ShowList(action):
     show_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/')
@@ -508,28 +575,29 @@ def ShowList(action):
     images=dict()
 
     for id in jdata:
-        str_showId=str(jdata[id]["showId"])
-        str_date=str(jdata[id]["airDate"])
-        try:
-            show_title=show_jdata[str_showId]['title']
-        except KeyError:
-            show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
-            try:show_title=show_jdata[str_showId]['title']
+        if jdata[id]['episodeNumber'] or action=='next':
+            str_showId=str(jdata[id]["showId"])
+            str_date=str(jdata[id]["airDate"])
+            try:
+                show_title=show_jdata[str_showId]['title']
             except KeyError:
-                show_direct=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())
-                show_title=show_direct['title']
-                show_jdata[str_showId]=show_direct
-        if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
-        if num_eps.get(str_showId)==None:
-            num_eps[str_showId]=1
-            shows[str_showId]=show_title.encode('utf-8')
-            last_date[str_showId]=str_date
-            first_date[str_showId]=str_date
-            images[str_showId]=show_jdata[str_showId]['image']
-        else: num_eps[str_showId]=int(num_eps[str_showId])+1
+                show_jdata=json.loads(Data(cookie_auth, 'http://api.myshows.ru/profile/shows/', 'http://api.myshows.ru/profile/shows/').get())
+                try:show_title=show_jdata[str_showId]['title']
+                except KeyError:
+                    show_direct=json.loads(Data(cookie_auth, 'http://api.myshows.ru/shows/'+str_showId).get())
+                    show_title=show_direct['title']
+                    show_jdata[str_showId]=show_direct
+            if ruName=='true' and show_jdata[str_showId]['ruTitle']: show_title=show_jdata[str_showId]['ruTitle']
+            if num_eps.get(str_showId)==None:
+                num_eps[str_showId]=1
+                shows[str_showId]=show_title.encode('utf-8')
+                last_date[str_showId]=str_date
+                first_date[str_showId]=str_date
+                images[str_showId]=show_jdata[str_showId]['image']
+            else: num_eps[str_showId]=int(num_eps[str_showId])+1
 
-        if fdate_bigger_ldate(last_date[str_showId],str_date)==False: last_date[str_showId]=str_date
-        elif fdate_bigger_ldate(first_date[str_showId],str_date)==True: first_date[str_showId]=str_date
+            if fdate_bigger_ldate(last_date[str_showId],str_date)==False: last_date[str_showId]=str_date
+            elif fdate_bigger_ldate(first_date[str_showId],str_date)==True: first_date[str_showId]=str_date
 
     for str_showId in num_eps:
         if num_eps[str_showId]==1:
@@ -1515,6 +1583,9 @@ elif mode==1:
     showMessage(__language__(30208), __language__(30533))
 elif mode==2:
     DuoCookie().switch()
+elif mode==12:
+    Full_Season()
+    xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_TITLE)
 elif mode >= 10 and mode <19:
     Shows()
     xbmcplugin.addSortMethod(handle=int(sys.argv[1]), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_TITLE)
