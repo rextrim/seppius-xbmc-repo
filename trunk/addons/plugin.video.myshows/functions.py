@@ -371,7 +371,7 @@ class Data():
 
     def get(self, force_cache=False):
         if self.filename:
-            if self.refresh==True and force_cache==False or not xbmcvfs.File(self.filename, 'r').size() or re.search('='+__settings__.getSetting("username")+';', cookie_auth):
+            if self.refresh==True and force_cache==False or not xbmcvfs.File(self.filename, 'r').size() or not re.search('='+__settings__.getSetting("username")+';', cookie_auth):
                 self.write()
             self.fg = xbmcvfs.File(self.filename, 'r')
             try:self.data = self.fg.read()
