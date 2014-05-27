@@ -23,7 +23,8 @@ import re, os, urllib, urllib2, cookielib, time, random, sys
 from time import gmtime, strftime
 
 import urlparse
-import demjson3 as json
+
+import json #as json
 import subprocess, ConfigParser
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon, xbmcvfs
 
@@ -383,12 +384,8 @@ def Serial_Info(params):
                 return False
 
         for rec in playlist:
-            for par in rec.replace('"','').split(','):
-                if par.split(':')[0]== 'comment':
-                    name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
-                if par.split(':')[0]== 'file':
-                    s_url = par.split(':')[1]+':'+par.split(':')[2]
-            s_num += 1
+            name    = rec['name']
+            s_url   = rec['video']
 
             i = xbmcgui.ListItem(name, path = urllib.unquote(s_url), thumbnailImage=mi.img) # iconImage=mi.img
             u = sys.argv[0] + '?mode=PLAY'
@@ -546,15 +543,15 @@ def PLAY(params):
         s_url = ''
         is_found = False
 
-        for rec in re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')):
-            for item in rec.replace('"','').split(','):
-                if item.split(':')[0]== 'comment':
-                    name = str(s_num+1) + ' серия' #par.split(':')[1]+' '
-                if item.split(':')[0]== 'file':
-                    s_url = item.split(':')[1]+':'+item.split(':')[2]
-                #-- add item to play list
-                if s_url == par.url:
-                    is_found = True
+        video_name  = re.compile('"comment"\:"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
+        video_url   = re.compile('"file"\:"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
+
+        for i in range(len(video_name)):
+            name    = video_name[i]
+            s_url   = video_url[i]
+            #-- add item to play list
+            if s_url == par.url:
+                is_found = True
 
             if is_found:
                 myshows=mynewtitle(tvshowtitle,name,full_name)
@@ -658,7 +655,14 @@ def Get_PlayList(soup, parent_url):
     html = get_HTML(url, None, swf_player, True)
     #html = Decoder.Decode(html)
 
-    return re.compile('{(.+?)}', re.MULTILINE|re.DOTALL).findall(html.replace('{"playlist":[', '')), url, swf_player
+    pl = []
+    name    = re.compile('"comment"\:"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
+    video   = re.compile('"file"\:"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
+
+    for i in range(len(name)):
+        pl.append({'name':name[i], 'video':video[i]})
+
+    return pl, url, swf_player
 
 #-------------------------------------------------------------------------------
 def Initialize():
