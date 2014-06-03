@@ -208,14 +208,32 @@ class Core:
 
             from Proxier import Proxier
             import thread
-            proxier = Proxier()
+            #proxier = Proxier()
             #thread.start_new_thread(proxier.server, (torrent.getFilePath(contentId), ))
             #xbmc.Player().play('http://127.0.0.1:51515/play.avi')
             #return
-
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
-            listitem = xbmcgui.ListItem(torrent.getContentList()[contentId].path)
+            try:
+                seasonId=get("seasonId")
+                episodeId=get("episodeId")
+                label=urllib.unquote_plus(get("label"))
+                title=urllib.unquote_plus(get("title"))
+            except:
+                seasonId=None
+                episodeId=None
+                label=None
+                title=None
+            if seasonId and episodeId and label and title:
+                listitem = xbmcgui.ListItem(label, path = torrent.getContentList()[contentId].path)
+
+                listitem.setInfo(type='video', infoLabels={'title': label,
+                                                        'episode': int(episodeId),
+                                                        'season': int(seasonId),
+                                                        'tvshowtitle': title})
+                #listitem.setProperty('IsPlayable', 'true')
+            else:
+                listitem = xbmcgui.ListItem(torrent.getContentList()[contentId].path)
             playlist.add('file:///' + torrent.getFilePath(contentId), listitem)
             #playlist.add('http://127.0.0.1:51515/%s.avi' % torrent.md5(torrent.getFilePath(contentId)), listitem)
             xbmc.Player().play(playlist)

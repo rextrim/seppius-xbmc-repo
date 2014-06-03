@@ -49,7 +49,7 @@ def Debug(msg, force = False):
 def showMessage(heading, message, times = 10000, forced=False):
     notification = __settings__.getSetting("notification")
     if debug=='true' or notification=='true' or forced:
-        xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8'), unicode(message).encode('utf-8'), times, icon))
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")'%(heading.encode('utf-8').replace('"',"'"), unicode(message).replace('"',"'").encode('utf-8'), times, icon))
 
 def id2title(showId, id=None, norus=False):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
@@ -781,7 +781,7 @@ class PluginStatus():
     def __init__(self):
         self.patchfiles=[('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_1.1.0',['xbmcvkui.py','xvvideo.py']),
-                ('lostfilm','plugin.video.LostFilm','patch_for_lostfilm_ver_0.4.2',['default.py']),
+                ('lostfilm','plugin.video.LostFilm','patch_for_lostfilm_ver_0.4.2',['default.py','Downloader.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.2.7',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
                  'resources/searchers/NNMClubRu.py'])]
         self.status={}
@@ -849,7 +849,14 @@ class PluginStatus():
                 text=unicode(__language__(30260))
             elif action=='torrent_dir':
                 return torrent_dir()
-            if action not in ['tscheck', 'torrenterstatus', 'utorrentstatus']:
+            elif action=='timeout':
+                if TimeOut().timeout()==TimeOut().online:
+                    TimeOut().go_offline()
+                else:
+                    TimeOut().go_online()
+                text=unicode(__language__(30546))
+                text2=unicode(__language__(30545)) % TimeOut().timeout()
+            if action not in ['tscheck', 'torrenterstatus', 'utorrentstatus','timeout']:
                 if text!=unicode(__language__(30257)):
                     text2=unicode(__language__(30261))
             try:
@@ -864,6 +871,7 @@ class PluginStatus():
 
         menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
               {"title":__language__(30137),    "mode":"60",    "argv":{'action':''}},
+              {"title":unicode(__language__(30545)) % TimeOut().timeout()  ,"mode":"61",   "argv":{'action':'timeout'}},
               {"title":'MyShows.ru (Service): %s' % self.myshows       ,"mode":"61",    "argv":{'action':'myshows',},},
               {"title":__language__(30143) % self.vkstatus       ,"mode":"61",    "argv":{'action':'vkstatus',},},
               {"title":'script.module.torrent.ts (ACE TStream): %s' % TSstatus  ,"mode":"61",   "argv":{'action':'tscheck'}},
@@ -975,7 +983,7 @@ def smbtopath(path):
     return '\\\\'+path.replace('/','\\')
 
 def PrepareFilename(filename):
-    badsymb=[':','"','\\','/','\'','!','&','*','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ']
+    badsymb=[':','"','\\','/','\'','!','&','*','?','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ','  ']
     for b in badsymb:
         filename=filename.replace(b,' ')
     return filename.rstrip('. ')
@@ -1197,6 +1205,7 @@ class TimeOut():
     def go_offline(self):
         if self.timeout()==self.online:
             Debug('[TimeOut]: Gone offline!')
+            showMessage(__language__(30520), __language__(30545) % (self.offline))
             if self.get: self.scan.delete()
             self.scan.add()
 
@@ -1204,6 +1213,7 @@ class TimeOut():
         if self.get:
             self.scan.delete()
             Debug('[TimeOut]: Gone online!')
+            showMessage(__language__(30521), __language__(30545) % (self.online))
 
     def timeout(self):
         if self.get and int(time.time())-self.get<refresh_period*3600:
