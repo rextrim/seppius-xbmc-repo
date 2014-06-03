@@ -8,7 +8,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.9.4"
+__version__ = "1.9.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -489,40 +489,45 @@ def Recommendations(action):
         orig_before=u'                        <p class="description">'
         orig_after=u'</p>                    </th>'
         orig_false=u'                                            </th>'
-        subject=Data(cookie_auth, 'http://myshows.ru/profile/recommendations/').get().decode('utf-8')
-        reobj = re.compile(u'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>', re.DOTALL | re.MULTILINE)
-        result = reobj.findall(subject)
+        subject=Data(cookie_auth, 'http://myshows.ru/profile/recommendations/').get()
+        if subject:
+            subject=subject.decode('utf-8')
+            reobj = re.compile(u'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>', re.DOTALL | re.MULTILINE)
+            result = reobj.findall(subject)
     elif action=='friends':
         orig_before=u'							<p class="description">'
         orig_after=u'</p>						</th>'
         orig_false=u'                            </th>'
-        subject=Data(cookie_auth, 'http://myshows.ru/'+login+'/friends/rating').get().decode('utf-8')
-        reobj = re.compile(u'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>', re.DOTALL | re.MULTILINE)
-        result = reobj.findall(subject)
+        subject=Data(cookie_auth, 'http://myshows.ru/'+login+'/friends/rating').get()
+        if subject:
+            subject=subject.decode('utf-8')
+            reobj = re.compile(u'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^'+orig_before+'.+?'+orig_after+'|'+orig_false+').+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>', re.DOTALL | re.MULTILINE)
+            result = reobj.findall(subject)
     j=0
-    for i in result:
-        j+=1
-        if action=='recomm':
-            showId,title,origtitle,rating,recomm=i[0],i[1],i[2],i[3],i[4]
-            listtitle=str(j)+'. ['+recomm+'%] '+title
-        elif action=='friends':
-            showId,title,origtitle,rating,friends,recomm=i[0],i[1],i[2],i[3],i[4],i[5]
-            listtitle=str(j)+'. ['+friends+']['+recomm+'%] '+title
-        if origtitle==orig_false: origtitle=title.encode('utf-8')
-        else: origtitle=origtitle.replace(orig_before,'').replace(orig_after,'')
-        title=title.encode('utf-8')
-        if ruName!='true': title=origtitle
+    if result:
+        for i in result:
+            j+=1
+            if action=='recomm':
+                showId,title,origtitle,rating,recomm=i[0],i[1],i[2],i[3],i[4]
+                listtitle=str(j)+'. ['+recomm+'%] '+title
+            elif action=='friends':
+                showId,title,origtitle,rating,friends,recomm=i[0],i[1],i[2],i[3],i[4],i[5]
+                listtitle=str(j)+'. ['+friends+']['+recomm+'%] '+title
+            if origtitle==orig_false: origtitle=title.encode('utf-8')
+            else: origtitle=origtitle.replace(orig_before,'').replace(orig_after,'')
+            title=title.encode('utf-8')
+            if ruName!='true': title=origtitle
 
-        rating=float(rating)/10
-        item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png',)
-        info={'title': title, 'label':title, 'tvshowtitle': origtitle, 'rating': rating, 'year':''}
-        if syncshows: item=syncshows.shows(title, item, info)
-        else: item.setInfo( type='Video', infoLabels=info )
-        stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
-        refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
-        sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + showId + '&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+            rating=float(rating)/10
+            item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png',)
+            info={'title': title, 'label':title, 'tvshowtitle': origtitle, 'rating': rating, 'year':''}
+            if syncshows: item=syncshows.shows(title, item, info)
+            else: item.setInfo( type='Video', infoLabels=info )
+            stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
+            refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
+            sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + showId + '&mode=20'
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def EpisodeList(action):
     saveCheckPoint()
@@ -1399,7 +1404,11 @@ class WatchedDB:
         #Debug('[WatchedDB][onaccess]: Start')
         TimeOut().go_online()
         self._connect()
-        self.cur.execute('select count(id) from watched')
+        try:
+            self.cur.execute('select count(id) from watched')
+        except:
+            self.cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
+            self.cur.execute('select count(id) from watched')
         x=self.cur.fetchone()
         res=int(x[0])
         self._close()

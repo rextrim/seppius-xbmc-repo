@@ -285,9 +285,9 @@
         <string id="30542">%s: [Make it Main]</string>
         <string id="30543">Mark for both accounts</string>
         <string id="30544">Choose account:</string>
+        <string id="30545">Timeout is %d (s)</string>
+        <string id="30546">Timeout changed!</string>
 
-        <string id="30545">Add Multiple Files</string>
-        <string id="30546">Add Multiple Files from .torrent</string>
         <string id="30547">Choose .torrent for multifile add:</string>
         <string id="30548">Choose directory:</string>
         <string id="30549">Added %s new sources!</string>

@@ -272,6 +272,8 @@
         <string id="30542">%s: [Сделать Основным]</string>
         <string id="30543">Отметить для обоих аккаунтов</string>
         <string id="30544">Выберите аккаунт:</string>
+        <string id="30545">Таймаут - %d (с)</string>
+        <string id="30546">Таймаут изменился!</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>

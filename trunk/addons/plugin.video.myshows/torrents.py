@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.9.3"
+__version__ = "1.9.6"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -542,7 +542,16 @@ class Source:
         else:
             torrenter_setting=xbmcaddon.Addon(id='plugin.video.torrenter')
             torrenter_setting.setSetting("lastTorrent", self.filename)
-            xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.torrenter/?action=playTorrent&external=1&url='+str(self.ind)+'")')
+            epinfo=''
+            if self.showId and self.id:
+                if not self.seasonId or not self.episodeId and self.episodeId!=0:
+                    Debug('[play_it]: not self.seasonId or not self.episodeId')
+                    self.seasonId, self.episodeId=id2SE(self.showId, self.id)
+                if self.seasonId:
+                    title, label=id2title(self.showId, self.id, norus=True)
+                    if title and label:
+                        epinfo='&seasonId=%s&episodeId=%s&title=%s&label=%s' % (str(self.seasonId), str(self.episodeId), urllib.quote_plus(title), urllib.quote_plus(label))
+            xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.torrenter/?action=playTorrent&external=1&url=%s%s")' % (str(self.ind),epinfo))
 
 class DownloadSource(Source):
     def handle(self):
@@ -627,7 +636,9 @@ class DownloadSource(Source):
                     stringdata['stype']='BLANK'
                     add=AddSource(json.dumps(stringdata))
                     add.uTorrentAdd(id, self.ind)
-                    if self.title: TorrentDB().add(self.filename, 'json', self.showId, self.seasonId, self.id, self.episodeId)
+                    if self.title:
+                        xbmc.sleep(1)
+                        TorrentDB().add(self.filename, 'json', self.showId, self.seasonId, self.id, self.episodeId)
             else: showMessage(__language__(30206), __language__(30271), forced=True)
 
 def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None, auto_only=False):
@@ -1180,9 +1191,9 @@ def LFSearch(showId, id):
 
     lostlink=None
     LFshowId=None
-    socket.setdefaulttimeout(3)
     int_html=get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+id+'/')
-    if 'lostfilm' in int_html:
+    Debug('[LFSearch] int_html: '+str(int_html))
+    if int_html and 'lostfilm' in int_html:
         try:lostlink=re.findall('<a.*?href=\"(http://lostfilm.tv/.*?)\">', int_html)[0]
         except: pass
     else:
@@ -1329,7 +1340,10 @@ class MoveToXBMC(Source):
                     subtitledirs.append(d+os.sep+x)
             if len(subtitledirs)>0 and success:
                 subtitledirs.insert(0,__language__(30505))
-                ret = dialog.select(__language__(30506), subtitledirs)
+                subtitledirs_titles=[__language__(30505)]
+                for i in range(1,len(subtitledirs)):
+                    subtitledirs_titles.append(subtitledirs[i]+' (%d)' % self.count_subs(folder.encode('utf-8','ignore')+os.sep+subtitledirs[i]))
+                ret = dialog.select(__language__(30506), subtitledirs_titles)
                 if self.movemode in (3,4):
                     self.movemode=1
                     renamebool=False
@@ -1452,6 +1466,14 @@ class MoveToXBMC(Source):
                 if not os.path.exists(newdir):
                     os.mkdir(newdir)
         return newdir
+
+    def count_subs(self, folder):
+        count=0
+        filelist=xbmcvfs.listdir(folder)[1]
+        for i in range(0, len(filelist)):
+            if filelist[i].lower().split('.')[-1] in subs_ext:
+                count+=1
+        return count
 
     def uTorrentCheck(self, folder, action):
         socket.setdefaulttimeout(3)

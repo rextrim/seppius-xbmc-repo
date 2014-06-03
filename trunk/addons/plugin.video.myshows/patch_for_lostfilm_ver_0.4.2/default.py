@@ -350,7 +350,7 @@ urllib2.install_opener(opener)
 #----------- LOGIN to lostfilm.tv ----------------------------------------------
 #-- step 1
 
-url1 = 'http://login1.bogi.ru/login.php' #?referer=http%3A%2F%2Fwww.lostfilm.tv%2F'
+url1 = 'http://login1.bogi.ru/login.php?referer=http%3A%2F%2Fwww.lostfilm.tv%2F'
 
 #-- enter your login/pass
 login = __settings__.getSetting("login")
