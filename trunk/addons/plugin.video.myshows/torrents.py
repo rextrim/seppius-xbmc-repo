@@ -647,6 +647,7 @@ def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None, auto_only=Fa
     dialog_files=[]
     hash, title=None, None
     dat=Download().list()
+    if not dat: socket.setdefaulttimeout(TimeOut().timeout())
     for data in dat:
         Debug('[chooseHASH]: '+str((data['id'], data['dir'].encode('utf-8'))))
         dialog_files.append((data['id'], data['dir'].encode('utf-8')))
@@ -768,6 +769,7 @@ class AddSource(Source):
                     if 'lostfilm' in get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+str(self.id)+'/'):
                         myshows_titles[3]=__language__(30514)
                 except:pass
+                socket.setdefaulttimeout(TimeOut().timeout())
             else:
                 myshows_titles=[__language__(30291),__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246), __language__(30274), __language__(30243)]
                 myshows_items=['torrenterall', 'dir', 'rutracker' , 'nnm', 'torrent', 'multifile', 'multitorrent', 'utorrent', None]
@@ -1182,6 +1184,7 @@ def LFSearch(showId, id):
 
     id=str(id)
     t=jdata['title']
+    if t=='House': t='House M.D.'
     Debug('[LFSearch] t is '+t)
     match=re.compile('(.+) \(\d{4}\)').findall(t)
     if match:
@@ -1195,20 +1198,21 @@ def LFSearch(showId, id):
     Debug('[LFSearch] int_html: '+str(int_html))
     if int_html and 'lostfilm' in int_html:
         try:lostlink=re.findall('<a.*?href=\"(http://lostfilm.tv/.*?)\">', int_html)[0]
-        except: pass
-    else:
+        except: Debug('[LFSearch]: not lostlink on id_html')
+    elif int_html:
         show_html=get_url(cookie_auth, 'http://myshows.ru/view/'+id+'/')
         try:lostlink=re.findall('<a.*?href=\"(http://lostfilm.tv/.*?)\">', show_html)[0]
-        except: pass
+        except: Debug('[LFSearch]: not lostlink on show_html')
 
     if lostlink:
         lostlink_html=get_url('', lostlink)
         try:LFshowId=re.findall("ShowAllReleases\('(\d*?)',.*?\)", lostlink_html)[0]
-        except:pass
+        except: Debug('[LFSearch]: LFshowId not on lostlink_html')
     else:
+        Debug('[LFSearch]: getting serials.php')
         lostlink_html=get_url('', 'http://www.lostfilm.tv/serials.php')
         try:LFshowId=re.findall('<a href="/browse\.php\?cat=(\d*?)" .*?<span>\('+t+'\)</span></a>', lostlink_html)[0]
-        except:pass
+        except: Debug('[LFSearch]: t not found on serials.php')
 
     if LFshowId:
         sdata='&sdata='+str('%s, %s, %s, %s') %(str(showId), s, id, e)
@@ -1231,6 +1235,10 @@ class TorrenterSearch():
 
         if self.id:
             id=str(self.id)
+            if id not in jdata['episodes']:
+                __settings__.setSetting("forced_refresh_data","true")
+                data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId)).get()
+                jdata = json.loads(data)
             e=str(jdata['episodes'][id]['episodeNumber'])
             a=jdata['episodes'][id]['airDate']
             et=jdata['episodes'][id]['title']
@@ -1478,6 +1486,7 @@ class MoveToXBMC(Source):
     def uTorrentCheck(self, folder, action):
         socket.setdefaulttimeout(3)
         ulist=Download().list()
+        socket.setdefaulttimeout(TimeOut().timeout())
         if ulist:
             utordirs=[]
             for data in ulist: utordirs.append((data['id'], data['name']))

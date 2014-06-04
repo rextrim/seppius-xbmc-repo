@@ -55,6 +55,10 @@ def id2title(showId, id=None, norus=False):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     if jload:
         jdata = json.loads(jload)
+        if id and str(id) not in jdata['episodes']:
+            __settings__.setSetting("forced_refresh_data","true")
+            data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+            jdata = json.loads(data)
         if ruName=='true' and jdata['ruTitle'] and not norus:
             title=jdata['ruTitle']
         else:
@@ -72,12 +76,21 @@ def id2date(showId, id):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     if jload:
         jdata = json.loads(jload)
-        if str(id) in jdata["episodes"]: return jdata["episodes"][str(id)]["airDate"]
+        if str(id) not in jdata['episodes']:
+                __settings__.setSetting("forced_refresh_data","true")
+                data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+                jdata = json.loads(data)
+        if str(id) in jdata["episodes"]:
+            return jdata["episodes"][str(id)]["airDate"]
 
 def id2SE(showId, id):
     jload=Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     if jload:
         jdata = json.loads(jload)
+        if str(id) not in jdata['episodes']:
+                __settings__.setSetting("forced_refresh_data","true")
+                data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+                jdata = json.loads(data)
         if str(id) in jdata["episodes"]:
             return jdata["episodes"][str(id)]["seasonNumber"], jdata["episodes"][str(id)]["episodeNumber"]
 
