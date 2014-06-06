@@ -283,24 +283,6 @@ def creat_db(dbfilename):
     cur.close()
     db.close()
 
-def ClearCache(silent=False):
-    dirname = xbmc.translatePath('special://temp')
-    for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
-        dirname = os.path.join(dirname, subdir)
-        if not xbmcvfs.exists(dirname):
-            xbmcvfs.mkdir(dirname)
-    dbfilename = os.path.join(dirname, 'data.db3')
-    db = sqlite.connect(dbfilename)
-    cur = db.cursor()
-    cur.execute('delete from cache')
-    db.commit()
-    cur.close()
-    db.close()
-    if not silent:
-        xbmcgui.Dialog().ok( __language__(30208), __language__(30236))
-        ontop('update')
-        xbmc.executebuiltin("Action(back)")
-
 def invert_bool(var):
     if bool(var): var=False
     else:  var=True
@@ -320,6 +302,16 @@ class CacheDB:
         self.url=url
         if not xbmcvfs.exists(self.dbfilename):
             creat_db(self.dbfilename)
+
+    def ClearCache(self, silent=False):
+        self._connect()
+        self.cur.execute('delete from cache')
+        self.db.commit()
+        self._close()
+        if not silent:
+            xbmcgui.Dialog().ok( __language__(30208), __language__(30236))
+            ontop('update')
+            xbmc.executebuiltin("Action(back)")
 
     def get(self):
         self._connect()
@@ -359,6 +351,58 @@ def auto_scan():
             scan.add()
             ScanAll()
     except: showMessage(__language__(30279), __language__(30277))
+
+def DownloadCache():
+    useTVDB=getSettingAsBool('tvdb')
+    urls=['http://api.myshows.ru/profile/shows/',
+          'http://api.myshows.ru/profile/episodes/next/',
+          'http://api.myshows.ru/profile/episodes/unwatched/',
+          'http://api.myshows.ru/shows/top/all/',
+          'http://api.myshows.ru/shows/top/male/',
+          'http://api.myshows.ru/shows/top/female/',]
+    titles=[]
+    lang=[30100,30107,30106,30108,30109,30110]
+    for l in lang: titles.append(__language__(l))
+
+    data=Data(cookie_auth, 'http://api.myshows.ru/profile/shows/').get()
+    if data:
+        jdata = json.loads(data)
+        count=len(jdata)
+
+        dialog = xbmcgui.Dialog()
+        ok=dialog.yesno(__language__(30548),__language__(30517) % count,__language__(30518))
+        if ok:
+            for showId in jdata:
+                if ruName=='true' and jdata[showId]['ruTitle']:
+                    title=jdata[showId]['ruTitle'].encode('utf-8')
+                else:
+                    title=jdata[showId]['title']
+                titles.append(title)
+                urls.append('http://api.myshows.ru/shows/'+showId)
+                titles.append(title)
+                urls.append('http://api.myshows.ru/profile/shows/'+showId+'/')
+
+            if useTVDB:
+                from search.scrapers import Scrapers
+                TVDB=Scrapers()
+
+            full_count=len(urls)
+            progressBar = xbmcgui.DialogProgress()
+            progressBar.create(__language__(30548), __language__(30518))
+            for i in range(0,len(urls)):
+                dat=Data(cookie_auth, urls[i]).get()
+                if useTVDB:
+                    match=re.compile('http://api.myshows.ru/shows/(\d{1,20}?$)').findall(urls[i])
+                    if match:
+                        jdat=json.loads(dat)
+                        TVDB.scraper('tvdb', {'label':titles[i], 'search':[jdat['title'], titles[i]], 'year':str(jdat['year'])})
+                iterator = int(round(i*100/full_count))
+                progressBar.update(iterator, __language__(30549) % (i,full_count), titles[i])
+                if progressBar.iscanceled():
+                    progressBar.update(0)
+                    progressBar.close()
+                    break
+    return
 
 class Data():
     def __init__(self, cookie_auth, url, refresh_url=None):
@@ -864,7 +908,7 @@ class PluginStatus():
                 return torrent_dir()
             elif action=='timeout':
                 if TimeOut().timeout()==TimeOut().online:
-                    TimeOut().go_offline()
+                    TimeOut().go_offline(manual=True)
                 else:
                     TimeOut().go_online()
                 text=unicode(__language__(30546))
@@ -883,6 +927,7 @@ class PluginStatus():
             return
 
         menu=[{"title":__language__(30142) % len(TorrentDB().get_all()),    "mode":"50",    "argv":{'action':''}},
+              {"title":__language__(30160),    "mode":"63",    "argv":{'action':''}},
               {"title":__language__(30137),    "mode":"60",    "argv":{'action':''}},
               {"title":unicode(__language__(30545)) % TimeOut().timeout()  ,"mode":"61",   "argv":{'action':'timeout'}},
               {"title":'MyShows.ru (Service): %s' % self.myshows       ,"mode":"61",    "argv":{'action':'myshows',},},
@@ -1211,13 +1256,19 @@ def changeDBTitle(showId):
 class TimeOut():
     def __init__(self):
         self.scan=CacheDB('web_timeout')
+        self.gone_online=CacheDB('go_online')
         self.get=self.scan.get()
         self.online=30
         self.offline=1
 
-    def go_offline(self):
+    def go_offline(self, manual=False):
+        gone_online=int(self.gone_online.get())
+        if not manual:
+            if gone_online and gone_online+self.online>=int(round(time.time())):
+                Debug('[TimeOut]: too soon to go back offline! %d s' % ((gone_online+self.online)-int(round(time.time()))))
+                return
         if self.timeout()==self.online:
-            Debug('[TimeOut]: Gone offline!')
+            Debug('[TimeOut]: Gone offline! %d s' % ((gone_online+self.online)-int(round(time.time()))))
             showMessage(__language__(30520), __language__(30545) % (self.offline))
             if self.get: self.scan.delete()
             self.scan.add()
@@ -1227,6 +1278,9 @@ class TimeOut():
             self.scan.delete()
             Debug('[TimeOut]: Gone online!')
             showMessage(__language__(30521), __language__(30545) % (self.online))
+            if self.gone_online.get():
+                self.gone_online.delete()
+            self.gone_online.add()
 
     def timeout(self):
         if self.get and int(time.time())-self.get<refresh_period*3600:
@@ -1250,7 +1304,7 @@ class DuoCookie():
             __settings__.setSetting("password",self.passwd2)
             __settings__.setSetting("username2",self.login)
             __settings__.setSetting("password2",self.passwd)
-            ClearCache(silent=True)
+            CacheDB('').ClearCache(silent=True)
             __settings__.setSetting("forced_refresh_data","true")
 
     def cookie(self,i):

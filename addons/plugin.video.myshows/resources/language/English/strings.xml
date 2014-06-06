@@ -51,6 +51,7 @@
         <string id="30048">Second Password MyShows.ru</string>
         <string id="30049">[B]Switch second and main account[/B]</string>
         <string id="30050">Automation</string>
+        <string id="30051">Edit Add Source menu</string>
 
         <string id="50301">Save path</string>
         <string id="50302">Call dialog</string>
@@ -127,8 +128,8 @@
         <string id="30157">XBMC Users News</string>
         <string id="30158">Friend's News</string>
         <string id="30159">Full Season</string>
+        <string id="30160">Full caching (for offline browsing)</string>
 
-        <string id="30160">DiMartino on xbmc.ru and bitbucket.org</string>
         <string id="30161">You can install it via context menu</string>
         <string id="30162">Status:</string>
         <string id="30163">Scanning:</string>
@@ -287,10 +288,10 @@
         <string id="30544">Choose account:</string>
         <string id="30545">Timeout is %d (s)</string>
         <string id="30546">Timeout changed!</string>
+        <string id="30547">RuTor.Org Distribution (need patch plugin.video.torrenter)</string>
+        <string id="30548">Full caching</string>
+        <string id="30549">Downloaded %d out of %d pages</string>
 
-        <string id="30547">Choose .torrent for multifile add:</string>
-        <string id="30548">Choose directory:</string>
-        <string id="30549">Added %s new sources!</string>
         <string id="30550">Can't play: %s</string>
 
 ///Context menus

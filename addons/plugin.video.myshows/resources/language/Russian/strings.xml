@@ -51,6 +51,7 @@
         <string id="30048">Второй Пароль MyShows.ru</string>
         <string id="30049">[B]Поменять местами второй и основной аккаунты[/B]</string>
         <string id="30050">Автоматизация</string>
+        <string id="30051">Редактировать меню Добавить источник</string>
 
         <string id="50301">Директория для сохранения файлов</string>
         <string id="50302">Вызывать диалог</string>
@@ -125,6 +126,7 @@
         <string id="30157">Новости Пользователей плагина</string>
         <string id="30158">Новости Друзей</string>
         <string id="30159">Полный сезон</string>
+        <string id="30160">Полное кэширование (для офлайн просмотра)</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
@@ -244,8 +246,8 @@
         <string id="30514">[B]Найдено[/B] на LostFilm.tv (требует патч plugin.video.LostFilm)</string>
         <string id="30515">Установить этот плагин?</string>
         <string id="30516">Установить патч на плагин?</string>
-        <string id="30517">Вы уверены, что хотите скачать информацию о 500 сериалах?</string>
-        <string id="30518">Первый раз это займет 5-10 минут (осторожно, трафик!).</string>
+        <string id="30517">Вы уверены, что хотите скачать информацию о %d сериалах?</string>
+        <string id="30518">Это займет 5-10 минут (осторожно, трафик!).</string>
         <string id="30519">TheTVDb.com</string>
         <string id="30520">MyShows.ru Offline!</string>
         <string id="30521">MyShows.ru Online!</string>
@@ -274,6 +276,9 @@
         <string id="30544">Выберите аккаунт:</string>
         <string id="30545">Таймаут - %d (с)</string>
         <string id="30546">Таймаут изменился!</string>
+        <string id="30547">Раздача RuTor.Org (требует патч plugin.video.torrenter)</string>
+        <string id="30548">Полное кэширование</string>
+        <string id="30549">Загружено %d из %d страниц</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>

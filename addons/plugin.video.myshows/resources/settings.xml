@@ -59,4 +59,22 @@
         <setting id="silentofflinesend"   type="bool" label="30043" default="true"/>
         <setting id="change_onclick"   type="bool" label="30004" default="false"/>
     </category>
+    <category label="30232">
+        <setting id="flexmenu" type="bool" label="30051" default="false"/>
+
+        <setting id="utorrent" type="bool" label="30274" visible="eq(-1,true)" default="true" />
+        <setting id="lostfilm" type="bool" label="30241" visible="eq(-2,true)"  default="true" />
+        <setting id="torrenterall" type="bool" label="30291" visible="eq(-3,true)" default="true" />
+        <setting id="tpb" type="bool" label="30273" visible="eq(-4,true)" default="true" />
+		<setting id="rutracker" type="bool" label="30268" visible="eq(-5,true)" default="true" />
+		<setting id="nnm" type="bool" label="30288" visible="eq(-6,true)" default="true" />
+
+        <setting id="file" type="bool" label="30239" visible="eq(-7,true)" default="true" />
+        <setting id="dir" type="bool" label="30244" visible="eq(-8,true)" default="false" />
+		<setting id="multifile" type="bool" label="30245" visible="eq(-9,true)" default="true" />
+        <setting id="vk-file" type="bool" label="30240" visible="eq(-10,true)" default="true" />
+
+        <setting id="torrent_menu" type="bool" label="30242" visible="eq(-11,true)" default="false" />
+        <setting id="multitorrent" type="bool" label="30246" visible="eq(-12,true)" default="false" />
+    </category>
 </settings>
