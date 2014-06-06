@@ -27,7 +27,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.9.6"
+__version__ = "1.9.7"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -613,7 +613,9 @@ class DownloadSource(Source):
                 success=Download().add_url(self.filename, dirname)
                 showMessage(__language__(30211), __language__(30212))
                 xbmc.sleep(1500)
-                if self.stype in ['tpb', 'torrenter']: xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode(__language__(30270)))
+                if self.stype in ['tpb', 'torrenter']:
+                    xbmc.sleep(15000)
+                    #xbmcgui.Dialog().ok(unicode(__language__(30269)), unicode(__language__(30270)))
 
             if success:
                 self.filename=self.getfilename()
@@ -636,8 +638,8 @@ class DownloadSource(Source):
                     stringdata['stype']='BLANK'
                     add=AddSource(json.dumps(stringdata))
                     add.uTorrentAdd(id, self.ind)
+                    xbmc.sleep(10)
                     if self.title:
-                        xbmc.sleep(1)
                         TorrentDB().add(self.filename, 'json', self.showId, self.seasonId, self.id, self.episodeId)
             else: showMessage(__language__(30206), __language__(30271), forced=True)
 
@@ -761,20 +763,12 @@ class AddSource(Source):
     def handle(self):
         if self.stype=='xbmc': self.stype=None
         if not self.stype:
-            if self.id:
-                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242), __language__(30273), __language__(30274), __language__(30243)]
-                myshows_items=['torrenterall','file', 'vk-file', 'lostfilm', 'torrent', 'tpb', 'utorrent', None]
-                socket.setdefaulttimeout(1)
-                try:
-                    if 'lostfilm' in get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+str(self.id)+'/'):
-                        myshows_titles[3]=__language__(30514)
-                except:pass
-                socket.setdefaulttimeout(TimeOut().timeout())
+            myshows_titles, myshows_items=self.menu()
+            if getSettingAsBool('flexmenu') and len(myshows_items)==2:
+                i = 0
             else:
-                myshows_titles=[__language__(30291),__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246), __language__(30274), __language__(30243)]
-                myshows_items=['torrenterall', 'dir', 'rutracker' , 'nnm', 'torrent', 'multifile', 'multitorrent', 'utorrent', None]
-            dialog = xbmcgui.Dialog()
-            i = dialog.select(__language__(30235), myshows_titles)
+                dialog = xbmcgui.Dialog()
+                i = dialog.select(__language__(30235), myshows_titles)
             if i>-1: stype=myshows_items[i]
             if i==-1: return
         else:
@@ -817,6 +811,62 @@ class AddSource(Source):
             self.DirAdd()
         elif stype=='utorrent':
             self.uTorrentAdd()
+
+    def menu(self):
+        if getSettingAsBool('flexmenu'):
+            Debug('[AddSource][menu]: Using flexmenu')
+            myshows_titles, myshows_items=[],[]
+
+            menu={ # name: 'setting_name',lang,mode (0 - all, 1 - ep only, 2 - season/show only
+                'torrenterall':['torrenterall',30291,0],
+                'multifile':['multifile',30245,2],
+                'dir':['dir',30244,2],
+                'rutracker':['rutracker',30268,2],
+                'nnm':['nnm',30288,2],
+                #'rutor':['rutor',30547,2],
+                'multitorrent':['multitorrent',30246,2],
+                'file':['file',30239,1],
+                'vk-file':['vk-file',30240,1],
+                'lostfilm':['lostfilm',30241,1],
+                'tpb':['tpb',30273,1],
+                'torrent':['torrent_menu',30242,0],
+                'utorrent':['utorrent',30274,0]
+            }
+
+            for key in menu.iterkeys():
+                item=menu[key]
+                if self.id and item[2] in (0,1) or not self.id and item[2] in (0,2):
+                    if getSettingAsBool(item[0]):
+                        if item[0]=='lostfilm':
+                            socket.setdefaulttimeout(1)
+                            try:
+                                if 'lostfilm' in get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+str(self.id)+'/'):
+                                    item[1]=30514
+                            except:pass
+                            socket.setdefaulttimeout(TimeOut().timeout())
+
+                        if isinstance(item[1], int):
+                            myshows_titles.append(__language__(item[1]))
+                        else:
+                            myshows_titles.append(item[1])
+                        myshows_items.append(key)
+            myshows_titles.append(__language__(30243))
+            myshows_items.append(None)
+        else:
+            if self.id:
+                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242), __language__(30273), __language__(30274), __language__(30243)]
+                myshows_items=['torrenterall','file', 'vk-file', 'lostfilm', 'torrent', 'tpb', 'utorrent', None]
+                socket.setdefaulttimeout(1)
+                try:
+                    if 'lostfilm' in get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+str(self.id)+'/'):
+                        myshows_titles[3]=__language__(30514)
+                except:pass
+                socket.setdefaulttimeout(TimeOut().timeout())
+            else:
+                myshows_titles=[__language__(30291),__language__(30244),__language__(30268), __language__(30288), __language__(30242), __language__(30245), __language__(30246), __language__(30274), __language__(30243)]
+                myshows_items=['torrenterall', 'dir', 'rutracker' , 'nnm', 'torrent', 'multifile', 'multitorrent', 'utorrent', None]
+
+        return myshows_titles, myshows_items
 
     def uTorrentAdd(self, id=None, ind=None, play=False):
         if not id: id, self.filename=chooseHASH(self.showId, self.id, self.seasonId, self.episodeId)
@@ -1195,7 +1245,7 @@ def LFSearch(showId, id):
     lostlink=None
     LFshowId=None
     int_html=get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+id+'/')
-    Debug('[LFSearch] int_html: '+str(int_html))
+    #Debug('[LFSearch] int_html: '+str(int_html))
     if int_html and 'lostfilm' in int_html:
         try:lostlink=re.findall('<a.*?href=\"(http://lostfilm.tv/.*?)\">', int_html)[0]
         except: Debug('[LFSearch]: not lostlink on id_html')

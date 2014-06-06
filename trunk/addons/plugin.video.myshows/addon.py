@@ -442,7 +442,7 @@ def TopShows(action):
     elif action=='tvdb':
         if not useTVDBtop:
             dialog = xbmcgui.Dialog()
-            ok=dialog.yesno(__language__(30519),__language__(30517),__language__(30518))
+            ok=dialog.yesno(__language__(30519),__language__(30517) % 500,__language__(30518))
             if ok:
                 __settings__.setSetting('tvdb','true')
                 __settings__.setSetting('tvdbtop','true')
@@ -1633,11 +1633,13 @@ elif mode == 51:
 elif mode == 52:
     uTorrentBrowser()
 elif mode == 60:
-    ClearCache()
+    CacheDB('').ClearCache()
 elif mode == 61:
     PluginStatus().menu()
 elif mode == 62:
     ExtraFunction()
+elif mode == 63:
+    DownloadCache()
 elif mode == 70:
     #if 1==0:
     try:

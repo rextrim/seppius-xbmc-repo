@@ -206,8 +206,8 @@ class Core:
             progressBar.update(0)
             progressBar.close()
 
-            from Proxier import Proxier
-            import thread
+            #from Proxier import Proxier
+            #import thread
             #proxier = Proxier()
             #thread.start_new_thread(proxier.server, (torrent.getFilePath(contentId), ))
             #xbmc.Player().play('http://127.0.0.1:51515/play.avi')
@@ -715,17 +715,7 @@ class Core:
         self.showFilesList(filesList)
 
     def addRate(self, name):
-        #xbmcplugin.endOfDirectory(handle=int(sys.argv[1]), succeeded=False)
-        import Rates
-        rating = Rates.Rates()
-        rating.doModal()
-        result = rating.rate
-        del rating
-        #xbmc.executebuiltin("Notification(%s, %s, 2500)" % ('Rating', str(rating.rate)))
-        if 0 < len(self.__settings__.getSetting("auth")):
-            response = json.loads(self.fetchData(self.URL + '/rating/add?link=%s&name=%s&rating=%s' % (urllib.quote_plus(self.__settings__.getSetting("lastTorrentUrl")), urllib.quote_plus(name), str(result))).encode('utf-8'))
-            if not self.checkForAuth(response):
-                return
+        return
 
     def search(self, params = {}):
         defaultKeyword = params.get('url')
