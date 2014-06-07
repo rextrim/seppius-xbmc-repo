@@ -1262,7 +1262,9 @@ class TimeOut():
         self.offline=1
 
     def go_offline(self, manual=False):
-        gone_online=int(self.gone_online.get())
+        gone_online=self.gone_online.get()
+        if gone_online: gone_online=int(gone_online)
+        else:gone_online=0
         if not manual:
             if gone_online and gone_online+self.online>=int(round(time.time())):
                 Debug('[TimeOut]: too soon to go back offline! %d s' % ((gone_online+self.online)-int(round(time.time()))))
