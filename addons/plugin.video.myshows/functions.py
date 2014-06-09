@@ -239,6 +239,7 @@ def get_url(cookie, url):
             return
         else:
             if debug=='true': showMessage('HTTP Error', str(e.code), forced=True)
+            Debug('[get_url]: HTTP Error, e.code='+str(e.code))
             xbmc.sleep(2000)
             return
     except:
@@ -294,7 +295,7 @@ def getSettingAsBool(setting):
 class CacheDB:
     def __init__(self, url):
         dirname = xbmc.translatePath('special://temp')
-        for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
+        for subdir in ('xbmcup', __settings__.getAddonInfo('id').replace('plugin://', '').replace('/', '')):
             dirname = os.path.join(dirname, subdir)
             if not xbmcvfs.exists(dirname):
                 xbmcvfs.mkdir(dirname)
@@ -1267,10 +1268,10 @@ class TimeOut():
         else:gone_online=0
         if not manual:
             if gone_online and gone_online+self.online>=int(round(time.time())):
-                Debug('[TimeOut]: too soon to go back offline! %d s' % ((gone_online+self.online)-int(round(time.time()))))
+                Debug('[TimeOut]: too soon to go back offline! %d s' % ((gone_online+self.online*4)-int(round(time.time()))))
                 return
         if self.timeout()==self.online:
-            Debug('[TimeOut]: Gone offline! %d s' % ((gone_online+self.online)-int(round(time.time()))))
+            Debug('[TimeOut]: Gone offline! %d s' % ((gone_online+self.online*4)-int(round(time.time()))))
             showMessage(__language__(30520), __language__(30545) % (self.offline))
             if self.get: self.scan.delete()
             self.scan.add()
@@ -1344,5 +1345,134 @@ class DuoCookie():
                 return auth_xbmc(self.login2,self.passwd2)
             elif i==3:
                 return "BOTH"
+
+class WatchedDB:
+    def __init__(self):
+        dirname = xbmc.translatePath('special://temp')
+        for subdir in ('xbmcup', __settings__.getAddonInfo('id').replace('plugin://', '').replace('/', '')):
+            dirname = os.path.join(dirname, subdir)
+            if not xbmcvfs.exists(dirname):
+                xbmcvfs.mkdir(dirname)
+        self.dbfilename = os.path.join(dirname, 'data.db3')
+        if not xbmcvfs.exists(self.dbfilename):
+            creat_db(self.dbfilename)
+        self.dialog = xbmcgui.Dialog()
+
+    def _get(self, id):
+        self._connect()
+        Debug('[WatchedDB][_get]: Checking '+id)
+        id=id.replace("'","<&amp>").decode('utf-8','ignore')
+        self.where=" where id='%s'" % (id)
+        try:
+            self.cur.execute('select rating from watched'+self.where)
+        except:
+            self.cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
+            self.cur.execute('select rating from watched'+self.where)
+        res=self.cur.fetchone()
+        self._close()
+        return res[0] if res else None
+
+    def _get_all(self):
+        self._connect()
+        self.cur.execute('select id, rating from watched order by addtime desc')
+        res = [[unicode(x[0]).replace("<&amp>","'").encode('utf-8','ignore'),x[1]] for x in self.cur.fetchall()]
+        self._close()
+        return res
+
+    def check(self, id, rating=0):
+        ok1,ok3=None,None
+        db_rating=self._get(id)
+        title=titlesync(id)
+        TimeOut().go_offline()
+        if getSettingAsBool("silentoffline"):
+            if db_rating==None and rating>=0:
+                showMessage(__language__(30520),__language__(30522) % (str(rating)))
+                ok1=True
+            elif db_rating>=0 and rating!=db_rating and rating>0:
+                showMessage(__language__(30520),__language__(30523) % (str(rating)))
+                ok3=True
+            elif db_rating!=None and rating==db_rating:
+                showMessage(__language__(30520),__language__(30524) % (str(rating)))
+        else:
+            if db_rating==None and rating>=0:
+                ok1=self.dialog.yesno(__language__(30520),__language__(30525) % (str(rating)), str(title))
+            elif db_rating and rating!=db_rating:
+                ok3=self.dialog.yesno(__language__(30520),__language__(30526) % (str(db_rating), str(rating)),str(title))
+            elif db_rating==0 and rating!=db_rating:
+                ok3=True
+            elif db_rating!=None and rating==db_rating:
+                showMessage(__language__(30520),__language__(30527) % (str(rating)))
+
+        Debug('[WatchedDB][check]: rating: %s DB: %s, ok1: %s, ok3: %s' % (str(rating), str(db_rating), str(ok1), str(ok3)))
+
+        if ok1:
+            self._add(id, rating)
+            return True
+        if ok3:
+            self._delete(id)
+            self._add(id, rating)
+            return True
+
+    def onaccess(self):
+        #Debug('[WatchedDB][onaccess]: Start')
+        TimeOut().go_online()
+        self._connect()
+        try:
+            self.cur.execute('select count(id) from watched')
+        except:
+            self.cur.execute('create table watched(addtime integer, rating integer, id varchar(32) PRIMARY KEY)')
+            self.cur.execute('select count(id) from watched')
+        x=self.cur.fetchone()
+        res=int(x[0])
+        self._close()
+        i=0
+
+        if res>0:
+            #Debug('[WatchedDB][onaccess]: Found %s' % (str(res)))
+            silentofflinesend=getSettingAsBool('silentofflinesend')
+            if not silentofflinesend: ok2=self.dialog.yesno(__language__(30521),__language__(30528) % (str(res)), __language__(30529))
+            else: ok2=True
+            if ok2:
+                for id,rating in self._get_all():
+                    from addon import SyncXBMC
+                    j=SyncXBMC(id,int(rating)).doaction()
+                    if j:
+                        i=i+int(j)
+                        self._delete(id)
+                        showMessage(__language__(30521),__language__(30530) % (i))
+                __settings__.setSetting("duo_last_id",'')
+            else:
+                ok2=self.dialog.yesno(__language__(30521),__language__(30531) % (str(res)))
+                if ok2:
+                    for id,rating in self._get_all():
+                        self._delete(id)
+        return res
+
+    def _add(self, id, rating=0):
+        __settings__.setSetting("duo_last_id",'')
+        self._connect()
+        id=id.replace("'","<&amp>").decode('utf-8','ignore')
+        Debug('[WatchedDB][_add]: Adding %s with rate %d' % (id, rating))
+        self.cur.execute('insert into watched(addtime, rating, id) values(?,?,?)', (int(time.time()), int(rating), id))
+        self.db.commit()
+        self._close()
+
+    def _delete(self, id):
+        self._connect()
+        id=id.replace("'","<&amp>").decode('utf-8','ignore')
+        self.cur.execute("delete from watched where id=('"+id+"')")
+        self.db.commit()
+        self._close()
+
+    def count(self):
+        return len(self._get_all())
+
+    def _connect(self):
+        self.db = sqlite.connect(self.dbfilename)
+        self.cur = self.db.cursor()
+
+    def _close(self):
+        self.cur.close()
+        self.db.close()
 
 socket.setdefaulttimeout(TimeOut().timeout())

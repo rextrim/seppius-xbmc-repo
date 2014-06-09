@@ -58,7 +58,7 @@ except: aceport=62062
 class TorrentDB:
     def __init__(self):
         dirname = xbmc.translatePath('special://temp')
-        for subdir in ('xbmcup', sys.argv[0].replace('plugin://', '').replace('/', '')):
+        for subdir in ('xbmcup', __settings__.getAddonInfo('id').replace('plugin://', '').replace('/', '')):
             dirname = os.path.join(dirname, subdir)
             if not xbmcvfs.exists(dirname):
                 xbmcvfs.mkdir(dirname)
@@ -352,7 +352,7 @@ class Source:
                 ret = dialog.select(__language__(30223), myshows_items)
                 if ret==myshows_items.index(unicode(__language__(30205))): return None
             runstring={"filename":myshows_files[ret], "stype":"json", "showId":self.showId, "episodeId":self.episodeId, "id":self.id, "seasonId":self.seasonId}
-            sys_url = sys.argv[0] + '?mode=3010&stringdata='+makeapp(runstring)
+            sys_url = __settings__.getAddonInfo('id') + '?mode=3010&stringdata='+makeapp(runstring)
             xbmc.executebuiltin('xbmc.RunPlugin("'+sys_url+'")')
         if not self.libmode:self.TSplayer.end()
 
