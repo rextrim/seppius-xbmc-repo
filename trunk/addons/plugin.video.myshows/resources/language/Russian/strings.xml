@@ -316,6 +316,11 @@
         <string id="30407">Возможно названия не совпадают</string>
         <string id="30408">или вам нужно обновить базу Serialu.net</string>
         <string id="30409">Добавить в MyShows.ru</string>
+        <string id="30410">Ожидание ответа:</string>
+        <string id="30411">Офлайн Режим</string>
+        <string id="30412">Закрыть</string>
+        <string id="30413">Открыть Настройки</string>
+        <string id="30414">Офлайн отметок: %d</string>
 
 /// Rating
         <string id="1314">Средняя оценка эпизодов: %s

@@ -353,6 +353,19 @@
         <string id="30407">Titles could not match</string>
         <string id="30408">or you should update Serialu.net database</string>
         <string id="30409">Add to MyShows.ru</string>
+        <string id="30410">Timeout:</string>
+        <string id="30411">Offline Mode</string>
+        <string id="30412">Close</string>
+        <string id="30413">Open Settings</string>
+        <string id="30414">Offline Marks: %d</string>
+
+        <string id="30415">Set as Main top</string>
+        <string id="30416">Install Plugin</string>
+        <string id="30417">Rate episode</string>
+        <string id="30418">Move to Library</string>
+        <string id="30419">Information</string>
+        <string id="30420">Start All Files</string>
+        <string id="30421">Stop All Files</string>
 
 /// Rating
         <string id="1314">Average rate: %s
