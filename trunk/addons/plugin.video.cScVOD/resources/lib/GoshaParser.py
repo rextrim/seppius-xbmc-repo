@@ -27,7 +27,7 @@ class gosha_parsers:
                 try:
                     page = urllib2.urlopen(request).read()
                     page = page.replace('\n', '')
-                    hash_list = re.findall(';file=(.*?)\\.flv', page)
+                    hash_list = re.findall(';file=(.*?)&amp', page)
                     if len(hash_list) > 0:
                         hash = hash_list[0]
                         url = hash + '.flv'
@@ -410,6 +410,7 @@ class gosha_parsers:
                     page = urllib2.urlopen(request).read()
                     code = re.findall('file: "(.*?)"', page)
                     code = code[0]
+                    code = code.replace('#', '')
                     if len(code) > 0:
                         code_url = 'http://gegen-abzocke.com/xml/nstrim/kinostok/code.php?code_url=' + code
                         request3 = urllib2.Request(code_url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -465,15 +466,15 @@ class gosha_parsers:
                 hash = hash[0]
                 url = url.replace('md5hash', hash)
                 print ex
-            if url.find('.kinoxa-x.ru') > -1:
+            if url.find('.kinoxa-x.ru') > -1  or url.find('50.7.172.194/kino.php') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
                 try:
                     page = urllib2.urlopen(request).read()
-                    code = re.findall('"http://srv(.*?)"', page)
+                    code = re.findall('<video.*src="(.*)" controls', page)
                     code = code[0]
                     if len(code) > 0:
-                        url = 'http://srv' + code
+                        url = code
                 except Exception as ex:
                     print ex
 
@@ -535,6 +536,18 @@ class gosha_parsers:
                     if len(code) > 0:
                         md5hash = code[0]
                         url = url.replace('md5hash', md5hash)
+                except Exception as ex:
+                    print ex
+
+            if url.find('hdrezka.tv') > -1:
+                request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+                 'Connection': 'Close'})
+                try:
+                    page = urllib2.urlopen(request).read()
+                    code = re.findall('"mp4":"(.*?)"', page)
+                    if len(code) > 0:
+                        code = code[0]
+                        url = code.replace('\\', '')
                 except Exception as ex:
                     print ex
 
@@ -720,7 +733,9 @@ class gosha_parsers:
                  'Connection': 'Close'})
                 try:
                     page = urllib2.urlopen(request).read()
-                    code_list = re.findall('file:"(.*?)"', page)
+                    str = page.find('(loadPlayer')
+                    tmp = page[page.find('file:', str):page.find('};', str)]
+                    code_list = re.findall("'(.*?)'", tmp)
                     if len(code_list) > 0:
                         code = code_list[0]
                         code_url = 'http://gegen-abzocke.com/xml/nstrim/bigcinema/code.php?code_url=' + code
