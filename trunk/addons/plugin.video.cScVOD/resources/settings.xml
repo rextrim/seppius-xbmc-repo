@@ -1,4 +1,5 @@
 <settings>
 	<setting id="mac" type="text" default="" />
+	<setting id="vk" type="enum" values="On|Off" default="1" /> 
 	<setting id="start" type="text" default="http://93.188.161.204/vod/start.xml" />
 </settings>
