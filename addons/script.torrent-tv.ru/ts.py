@@ -182,17 +182,7 @@ class TSengine(xbmc.Player):
         self.sendCommand('HELLOBG version=4')
         self.Wait(TSMessage.HELLOTS)
         msg = self.thr.getTSMessage()
-        print msg.getType()
-        if msg.getType() == TSMessage.HELLOTS and msg.getParams().has_key('key'):
-            if msg.getParams().has_key('version') and msg.getParams()['version'].find('2.1') == -1:
-                strerr = 'Unsupport TS version %s' % msg.getParams()['version']
-                if self.parent: self.parent.showStatus("Не поддерживаемая версия TS")
-                self.last_error = strerr
-                LogToXBMC('init: %s' % strerr, 2)
-                self.thr.msg = TSMessage()
-                self.end()
-                return         
-        else:
+        if msg.getType() == TSMessage.HELLOTS and not msg.getParams().has_key('key'):
             self.last_error = 'Incorrect msg from TS'
             if self.parent: self.parent.showStatus("Неверный ответ от TS. Операция прервана")
             LogToXBMC('Incorrect msg from TS %s' % msg.getType(), 2)
@@ -597,10 +587,12 @@ class SockThread(threading.Thread):
         if _msg == TSMessage.HELLOTS:
             self.msg = TSMessage()
             self.msg.setType(TSMessage.HELLOTS)
+            print strmsg
             prms = strmsg[posparam+1:].split(" ")
+            self.msg.setParams({})
             for prm in prms:
                 _prm = prm.split('=')
-                self.msg.setParams({_prm[0]: _prm[1]})
+                self.msg.getParams()[_prm[0]] = _prm[1]
         elif _msg == TSMessage.AUTH:
             self.msg = TSMessage()
             self.msg.setType(TSMessage.AUTH)
