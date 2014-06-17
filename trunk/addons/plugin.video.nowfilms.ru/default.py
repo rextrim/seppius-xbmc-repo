@@ -23,6 +23,11 @@ import re, os, urllib, urllib2, cookielib, time
 from time import gmtime, strftime
 import urlparse
 
+#-- by bigbax :) ------------------
+reload(sys)
+sys.setdefaultencoding("UTF8")
+#----------------------------------
+
 import demjson3 as json
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
