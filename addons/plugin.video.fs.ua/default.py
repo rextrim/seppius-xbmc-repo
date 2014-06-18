@@ -156,7 +156,6 @@ def check_login():
 
 def get_url_with_sort_by(url, section, start, view_mode):
     sortBy = __settings__.getSetting("Sort by")
-    perPage = __settings__.getSetting("Items per page")
     sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
 
     separator = '?'
@@ -166,9 +165,7 @@ def get_url_with_sort_by(url, section, start, view_mode):
     request_params = {
         'view': view_mode,
         'sort': sortByMap[sortBy],
-        'scrollload': 1,
-        'start': start,
-        'length': perPage
+        'page': start
     }
     return url + get_filters(section) + separator + urllib.urlencode(request_params)
 
@@ -287,15 +284,17 @@ def getCategories(params):
             'filter': ''
         })
         xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-    readcategory({
-        'href': params['href'],
-        'cleanUrl': params['href'],
-        'section': section,
-        'start': 0,
-        'filter': '',
-    })
-    #xbmcplugin.endOfDirectory(h)
+    loadMainPageItems = __settings__.getSetting('Load main page items')
+    if loadMainPageItems == 'true':
+        readcategory({
+            'href': params['href'],
+            'cleanUrl': params['href'],
+            'section': section,
+            'start': 0,
+            'filter': '',
+        })
+    else:
+        xbmcplugin.endOfDirectory(h)
 
 
 def getFavoriteCategories(params):
@@ -420,12 +419,13 @@ def readfavorites(params):
             })
             xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-    if data['islast'] is False:
-        li = xbmcgui.ListItem('[NEXT PAGE >]')
-        li.setProperty('IsPlayable', 'false')
-        params['page'] = int(params['page']) + 1
-        uri = construct_request(params)
-        xbmcplugin.addDirectoryItem(h, uri, li, True)
+
+    li = xbmcgui.ListItem('[NEXT PAGE >]')
+    li.setProperty('IsPlayable', 'false')
+    params['page'] = int(params['page']) + 1
+    uri = construct_request(params)
+    xbmcplugin.addDirectoryItem(h, uri, li, True)
+
     xbmcplugin.endOfDirectory(h)
 
 
@@ -440,13 +440,9 @@ def readcategory(params):
         'detailed'
     )
 
-    data = GET(categoryUrl, httpSiteUrl)
-    if data is None:
+    http = GET(categoryUrl, httpSiteUrl)
+    if http is None:
         return False
-    data = json.loads(data)
-    if data is None:
-        return False
-    http = str(data['content'])
 
     try:
         params['filter']
@@ -471,7 +467,7 @@ def readcategory(params):
 
             img = item.find('img')
             link = item.find('a', itemsClass + '__link')
-            title = item.find('span', 'b-poster-detail__title').contents
+            title = item.find('span', 'b-poster-detail__title').contents[0]
             if img is not None:
                 cover = img['src']
                 href = httpSiteUrl + link['href']
@@ -481,11 +477,10 @@ def readcategory(params):
                 details = item.find('span', 'b-poster-detail__description').contents
                 for detail in details:
                     try:
-                        plot.append(detail.decode('unicode-escape'))
+                        plot.append(detail.encode('utf8'))
                     except:
                         pass
-                plot = htmlEntitiesDecode("\n".join(plot))
-                titleText = htmlEntitiesDecode(title[0].decode('unicode-escape'))
+                titleText = htmlEntitiesDecode(title.encode('utf8'))
                 li = xbmcgui.ListItem(titleText, iconImage=getThumbnailImage(cover),
                                       thumbnailImage=getPosterImage(cover))
                 if plot != '':
@@ -525,7 +520,6 @@ def readcategory(params):
 
                 xbmcplugin.addDirectoryItem(h, uri, li, True)
 
-    perPage = int(__settings__.getSetting("Items per page"))
     li = xbmcgui.ListItem('[NEXT PAGE >]')
     li.setProperty('IsPlayable', 'false')
     uri = construct_request({
@@ -533,7 +527,7 @@ def readcategory(params):
         'mode': 'readcategory',
         'section': params['section'],
         'filter': params['filter'],
-        'start': start + perPage,
+        'start': start + 1,
         'firstPage': 'no'
     })
     xbmcplugin.addDirectoryItem(h, uri, li, True)
@@ -561,7 +555,6 @@ def load_first_page_sections(href, params):
         return False
 
     groups = beautifulSoup.find('div', 'b-section-menu')
-    print groups
     if groups is not None:
         yearLink = groups.find('a', href=re.compile(r'year'))
         if yearLink is not None:
