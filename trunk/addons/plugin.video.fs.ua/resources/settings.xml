@@ -1,10 +1,10 @@
 <settings>
     <category label="General">
-        <setting id="Items per page" type="slider" option="int" range="5,5,50" default="15" label="Items per page"/>
         <setting id="Download Path" type="folder" label="Download Path"/>
         <setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
         <setting id="Show hidden materials" type="bool" label="Show hidden by default" default="true"/>
         <setting id="Autoplay next" type="bool" label="30004" default="false"/>
+        <setting id="Load main page items" type="bool" label="Load main page items" default="true"/>
         <setting id="Use flv files for playback" type="bool" label="30005" default="false"/>
         <setting type="sep"/>
         <setting id="Login" type="text" label="30002"/>
