@@ -84,7 +84,7 @@ def Categories(params):
 	else:
 		xml = _downloadUrl(url)
 		print 'HTTP LEN = [%s]' % len(xml)
-		if url.find('.m3u') > -1:
+		if url.find('m3u') > -1:
 			m3u(xml)
 		else:
 				xml = mn.parseString(xml)
