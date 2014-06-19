@@ -441,6 +441,30 @@ class sg_parsers:
 				except Exception as ex:
 					print ex
 			
+			if url.find('serialon.com/') > -1:
+				url1 = 'http://www.serialon.com/serial/10601-agent-osobogo-naznacheniya-4-15-seriya.html'
+				request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+				'Connection': 'Close'})
+				try:
+					page = urllib2.urlopen(request).read()
+					code = re.findall("file':'http:\\/\\/www.serialon.com\\/.*\\/(.*)\\/.*\\/.*\\/.*.flv", page)
+					if len(code) > 0:
+						md5hash = code[0]
+						url = url.replace('md5hash', md5hash)
+				except Exception as ex:
+					print ex
+			
+			if url.find('serialsonline.net/clip') > -1:
+				request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+				'Connection': 'Close'})
+				try:
+					page = urllib2.urlopen(request).read()
+					code = re.findall('file:"(.*)"', page)
+					if len(code) > 0:
+						url = code[0]
+				except Exception as ex:
+					print ex
+			
 		except Exception as ex:
 			print ex
 			print 'sgparsed_link'
