@@ -317,9 +317,12 @@ def PLAY(params):
     html = get_HTML(url)
 
     # -- parsing web page ----------------------------------------------------------
-    str = re.compile('<embed (.+?)><\/embed>', re.MULTILINE|re.DOTALL).findall(html)[0]
-    str = re.compile('flashvars="(.+?)"', re.MULTILINE|re.DOTALL).findall(str)[0]
-    str = urllib.unquote(str).replace('src=','')
+    try:
+        str = re.compile('<embed (.+?)><\/embed>', re.MULTILINE|re.DOTALL).findall(html)[0]
+        str = re.compile('flashvars="(.+?)"', re.MULTILINE|re.DOTALL).findall(str)[0]
+        str = urllib.unquote(str).replace('src=','')
+    except:
+        str = re.compile('"file":"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)[0]
 
 
     p_r = "rtmp://stream.nogomya.ch:1935/live"
