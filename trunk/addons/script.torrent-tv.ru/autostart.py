@@ -12,6 +12,10 @@ for set in dom.find('category').findall('setting'):
          skins.append(set.attrib['values'])
          xset = set
 
-dirs = os.listdir(defines.ADDON_PATH + '/resources/skins/');
-xset.attrib['values'] = "|".join(dirs);
-dom.write(defines.ADDON_PATH + '/resources/settings.xml', 'utf-8')            
+if os.path.exists(defines.DATA_PATH + '/resources/skins/'):
+    dirs = os.listdir(defines.DATA_PATH + '/resources/skins/');
+    xset.attrib['values'] = "st.anger|"+"|".join(dirs);
+    dom.write(defines.ADDON_PATH + '/resources/settings.xml', 'utf-8')   
+else:
+    xset.attrib['values'] = "st.anger";
+    dom.write(defines.ADDON_PATH + '/resources/settings.xml', 'utf-8')         

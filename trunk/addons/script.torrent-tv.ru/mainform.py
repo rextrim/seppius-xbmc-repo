@@ -70,9 +70,9 @@ class WMainForm(xbmcgui.WindowXML):
         self.img_progress = None
         self.txt_progress = None
         self.list = None
-        self.player = MyPlayer("player.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        self.player = MyPlayer("player.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
         self.player.parent = self
-        self.amalkerWnd = AdsForm("adsdialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        self.amalkerWnd = AdsForm("adsdialog.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
         self.cur_category = WMainForm.CHN_TYPE_FAVOURITE
         self.epg = {}
         self.selitem_id = -1
@@ -284,7 +284,7 @@ class WMainForm(xbmcgui.WindowXML):
                 
                 if not selItem:
                     print "SELITEM EMPTY"
-                datefrm = DateForm("dateform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+                datefrm = DateForm("dateform.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
                 if datefrm == None:
                     print "From not created"
 
@@ -363,7 +363,7 @@ class WMainForm(xbmcgui.WindowXML):
             return
 
     def showInfoWindow(self):
-        self.infoform = InfoForm("inform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        self.infoform = InfoForm("inform.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
         self.infoform.parent = self
         self.infoform.doModal()
         self.infoform = None
@@ -423,7 +423,7 @@ class WMainForm(xbmcgui.WindowXML):
         elif action.getId() in WMainForm.CONTEXT_MENU_IDS and self.getFocusId() == WMainForm.CONTROL_LIST:
             if action.getId() == 101:
                 return
-            mnu = MenuForm("menu.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+            mnu = MenuForm("menu.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
             mnu.li = self.getFocus().getSelectedItem()
             print "mnu.li = %s" % mnu.li.getProperty("commands")
             mnu.get_method = defines.GET
