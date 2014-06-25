@@ -47,6 +47,7 @@ class WMainForm(xbmcgui.WindowXML):
     PANEL_ADS = 105
     PROGRESS_BAR = 110
     BTN_INFO = 209
+    LBL_FIRST_EPG = 300
     
     CHN_TYPE_FAVOURITE = 'Избранное'
     CHN_TYPE_TRANSLATION = 'Трансляции'
@@ -368,7 +369,7 @@ class WMainForm(xbmcgui.WindowXML):
         self.infoform = None
 
     def showSimpleEpg(self, epg_id = None):
-        controlEpg = self.getControl(109)
+        controlEpg = self.getControl(WMainForm.LBL_FIRST_EPG)
         if epg_id and self.epg[epg_id].__len__() > 0:
             ctime = time.time()
             curepg = filter(lambda x: (float(x['etime']) > ctime), self.epg[epg_id])
@@ -379,13 +380,19 @@ class WMainForm(xbmcgui.WindowXML):
             self.progress.setPercent((ctime - bt)*100/(et - bt))
             controlEpg.setLabel('%.2d:%.2d - %.2d:%.2d %s' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[0]['name']))
             nextepg = ''
-            for i in (1,2,3):
+            for i in range(1,99):
+                ce = None
+                try:
+                    ce = self.getControl(WMainForm.LBL_FIRST_EPG + i)
+                except:
+                    break
+                if ce == None:
+                    brea;
                 if i >= curepg.__len__():
                     break
                 sbt = time.localtime(float(curepg[i]['btime']))
                 set = time.localtime(float(curepg[i]['etime']))
                 nextepg = '%.2d:%.2d - %.2d:%.2d %s' % (sbt.tm_hour, sbt.tm_min, set.tm_hour, set.tm_min, curepg[i]['name'])
-                ce = self.getControl(112 + i - 1)
                 ce.setLabel(nextepg);
             #controlEpg1.setLabel(nextepg)
 
