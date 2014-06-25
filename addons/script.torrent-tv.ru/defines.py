@@ -4,12 +4,20 @@ import sys
 import urllib2
 import urllib
 import threading
+import os
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 
 ADDON = xbmcaddon.Addon( id = 'script.torrent-tv.ru' )
 ADDON_ICON	 = ADDON.getAddonInfo('icon')
 ADDON_PATH = ADDON.getAddonInfo('path')
 ADDON_ICON	 = ADDON.getAddonInfo('icon')
+DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'script.torrent-tv.ru') )
+
+skin = ADDON.getSetting('skin')
+SKIN_PATH = ADDON_PATH
+print skin
+if (skin != None) and (skin != "") and (skin != 'st.anger'):
+    SKIN_PATH = DATA_PATH
 
 class MyThread(threading.Thread):
     def __init__(self, func, params, back = True):

@@ -13,7 +13,7 @@ from okdialog import OkDialog
 def checkPort(params):
     if not defines.checkPort(params):
         
-        dialog = OkDialog("dialog.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+        dialog = OkDialog("dialog.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
         dialog.setText("Порт %s закрыт. Для стабильной работы сервиса и трансляций, настоятельно рекомендуется его открыть." % defines.ADDON.getSetting('outport'))
         dialog.doModal()
 
@@ -29,8 +29,9 @@ if __name__ == '__main__':
     thr = defines.MyThread(checkPort, defines.ADDON.getSetting("outport"))
     thr.start()
 
-    print defines.ADDON_PATH + '|' + defines.ADDON.getSetting('skin')
-    w = mainform.WMainForm("mainform.xml", defines.ADDON_PATH, defines.ADDON.getSetting('skin'))
+    print defines.ADDON_PATH
+    print defines.SKIN_PATH
+    w = mainform.WMainForm("mainform.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
     w.doModal()
     defines.showMessage('Close plugin')
     del w
