@@ -1,15 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="Основные">
-		<setting id="login" type="text" label="Логин" default="" />
-		<setting id="password" type="text" label="Пароль" option="hidden" default="" />
-		<setting label="Пол" type="enum" id="gender" values="Мужской|Женский"/>
-		<setting label="Возраст" type="enum" id="age" values="Младше 13|13-17|18-24|25-34|35-44|45-54|55-64|Старше 64"/>
-    <setting label="Обложка" type="labelenum" id="skin" values="st.anger"/>
-    <setting id="winmode" type="bool" label="Оконный режим плеера" default="true" />
-    <setting id="outport" type="number" default="8621" label="Внеший порт AceStream"/>
-		<!--<setting id="adult" type="bool" label="Скрывать каналы для взрослых" default="false"/>
-		<setting id="ip_addr" type="text" label="IP-адрес tsengine" default="127.0.0.1" />
-		<setting id="port" type="number" label="Порт tsengine (только при удаленном подключении)" default="62062" /> -->
+		<setting default="" id="login" label="Логин" type="text" />
+		<setting default="" id="password" label="Пароль" option="hidden" type="text" />
+		<setting id="gender" label="Пол" type="enum" values="Мужской|Женский" />
+		<setting id="age" label="Возраст" type="enum" values="Младше 13|13-17|18-24|25-34|35-44|45-54|55-64|Старше 64" />
+    <setting id="skin" label="Обложка" type="labelenum" values="st.anger" />
+    <setting default="true" id="winmode" label="Оконный режим плеера" type="bool" />
+    <setting default="8621" id="outport" label="Внеший порт AceStream" type="number" />
+		
 	</category>
 </settings>

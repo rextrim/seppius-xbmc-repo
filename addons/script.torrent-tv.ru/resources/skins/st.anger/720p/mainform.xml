@@ -289,7 +289,7 @@
           <texture>unkchannel.jpg</texture>
           <aspectratio>keep</aspectratio>
         </control>
-        <control type="label" id = "109">
+        <control type="label" id = "300">
           <description>Current EPG</description>
           <posx>145</posx>
           <posy>590</posy>
@@ -300,7 +300,7 @@
           <textcolor>FFFFFFFF</textcolor>
           <shadowcolor>FF000000</shadowcolor>
         </control>
-        <control type="label" id ="112">
+        <control type="label" id ="301">
           <description>Next EPG1</description>
           <posx>145</posx>
           <posy>627</posy>
@@ -311,7 +311,7 @@
           <height>200</height>
           <font>font10</font>
         </control>
-        <control type="label" id ="113">
+        <control type="label" id ="302">
           <description>Next EPG2</description>
           <posx>145</posx>
           <posy>647</posy>
@@ -322,7 +322,7 @@
           <height>200</height>
           <font>font10</font>
         </control>
-        <control type="label" id ="114">
+        <control type="label" id ="303">
           <description>Next EPG3</description>
           <posx>145</posx>
           <posy>667</posy>
