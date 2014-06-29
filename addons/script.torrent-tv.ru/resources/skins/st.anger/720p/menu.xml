@@ -11,7 +11,7 @@
 			<posx>-</posx>
 			<posy>-</posy>
 			<width>270</width>
-			<height>auto</height>
+			<height>200</height>
 			<texture border="20">ContextMenu.png</texture>
 		</control>
 		<control type="list" id="301">

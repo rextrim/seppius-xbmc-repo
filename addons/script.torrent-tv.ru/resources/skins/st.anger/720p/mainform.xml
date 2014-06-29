@@ -129,7 +129,7 @@
             <height>510</height>
             <visible>true</visible>
             <onup>101</onup>
-            <ondown>200</ondown>
+            <ondown>209</ondown>
             <orientation>horizontal</orientation>
             <viewtype>list</viewtype>
             <pagecontrol>70</pagecontrol>
@@ -275,6 +275,7 @@
           <height>26</height>
           <onleft>208</onleft>
           <onright>204</onright>
+			 <onup>50</onup>
           <visible>true</visible>
           <texturefocus>infofocus.png</texturefocus>
           <texturenofocus>infonofocus.png</texturenofocus>
