@@ -398,9 +398,12 @@ class WMainForm(xbmcgui.WindowXML):
 
         else:
             controlEpg.setLabel('Нет программы')
-            self.getControl(112).setLabel('')
-            self.getControl(113).setLabel('')
-            self.getControl(114).setLabel('')
+            for i in range(1,99):
+                ce = None
+                try:
+                    self.getControl(WMainForm.LBL_FIRST_EPG + i).setLabel('');
+                except:
+                    break
             self.progress.setPercent(1)
 
     def onAction(self, action):
@@ -505,12 +508,15 @@ class WMainForm(xbmcgui.WindowXML):
             self.showStatus("Список не инициализирован")
             return
         self.list.reset()
-        li = xbmcgui.ListItem('..')
-        self.list.addItem(li)
-        for ch in self.category[self.cur_category]["channels"]:
-            self.list.addItem(ch)
-        self.img_progress.setVisible(True)
-        self.hideStatus()
+        if len(self.category[self.cur_category]["channels"]) == 0:
+            self.fillCategory()
+            self.hideStatus()
+        else:
+            li = xbmcgui.ListItem('..')
+            self.list.addItem(li)
+            for ch in self.category[self.cur_category]["channels"]:
+                self.list.addItem(ch)
+            self.hideStatus()
 
     def fillTranslation(self):
         if not self.list:
