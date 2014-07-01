@@ -55,6 +55,7 @@ __status__ = "Production"
 __language__ = __settings__.getLocalizedString
 
 siteUrl = 'brb.to'
+proxyScriptUrl = __settings__.getSetting('Proxy URL')
 httpSiteUrl = 'http://' + siteUrl
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 if isinstance(cookiepath, unicode):
@@ -742,7 +743,12 @@ def read_directory_unuthorized(params):
     cover = urllib.unquote_plus(params['cover'])
     folder = params['folder']
 
-    http = GET(folderUrl + '?ajax&folder=' + folder, httpSiteUrl)
+    getUrl = folderUrl + '?ajax&folder=' + folder
+    if proxyScriptUrl:
+        cookieData = open(cookiepath, 'r').read()
+        getUrl = proxyScriptUrl + '?url=' + urllib.quote(getUrl) + '&cookies=' + urllib.quote(cookieData)
+
+    http = GET(getUrl, httpSiteUrl)
     if http is None:
         return False
 
@@ -911,6 +917,11 @@ def add_folder_file(item):
             'mode': 'playflv',
             'fallbackHref': fallbackHref
         })
+    elif proxyScriptUrl:
+        uri = construct_request({
+            'file': href,
+            'mode': 'playProxy',
+        })
     else:
         uri = get_full_url(href)
 
@@ -1009,7 +1020,7 @@ def playflv(params):
     referer = urllib.unquote_plus(params['referer'])
     plfile = urllib.unquote_plus(params['file'])
     try:
-        http = GET(plfile, referer)
+        http = GET(get_full_url(plfile), referer)
         if http is None:
             raise Exception('HTTP Error', 'page loading error')
 
@@ -1038,6 +1049,12 @@ def play(params):
     i = xbmcgui.ListItem(path=get_full_url(fileUrl))
     xbmcplugin.setResolvedUrl(h, True, i)
 
+def playProxy(params):
+    file = get_full_url(urllib.unquote_plus(params['file']))
+    realFile = GET(proxyScriptUrl + '?resolveUrl=' + urllib.quote(file), httpSiteUrl)
+    print realFile
+    i = xbmcgui.ListItem(path=realFile)
+    xbmcplugin.setResolvedUrl(h, True, i)
 
 def get_params(paramstring):
     param = []

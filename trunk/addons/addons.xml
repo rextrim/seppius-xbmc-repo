@@ -111,7 +111,7 @@
        version="0.2.1"
        provider-name="TDW">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.python.pluginsource"
             library="default.py">
@@ -796,7 +796,7 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.9.12"
+       version="1.9.13"
        provider-name="x86demon">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
@@ -811,8 +811,7 @@ Audio sources are
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>Просмотр контента с brb.to (fs.ua, fs.to)</summary>
-        <description>РАБОТАЕТ ТОЛЬКО В УКРАИНЕ!!!
-
+        <description>
 На этом портале вы можете найти и, что самое главное бесплатно скачать последний новинки кино, музыкальные
 файлы, любимые видеоклипы и сериалы.
         </description>
