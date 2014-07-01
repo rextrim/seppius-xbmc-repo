@@ -734,8 +734,9 @@ def readdir(params):
 
 
 def is_hidden_allowed():
-    show_hidden = __settings__.getSetting('Show hidden materials') == 'true'
-    return show_hidden and check_login()
+    return False
+    # show_hidden = __settings__.getSetting('Show hidden materials') == 'true'
+    # return show_hidden and check_login()
 
 
 def read_directory_unuthorized(params):
@@ -827,7 +828,7 @@ def read_directory_unuthorized(params):
                 if lang is not None:
                     title = lang.upper() + ' - ' + title
 
-                useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
+                useFlv = False #__settings__.getSetting('Use flv files for playback') == 'true'
                 fallbackHref = linkItem['href']
                 if useFlv and playLink is not None and playLink.name == 'a':
                     try:
@@ -882,7 +883,7 @@ def add_folder_file(item):
     referer = item['referer']
     item_type = item['type']
     fallbackHref = item['fallbackHref']
-    useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
+    useFlv = False #__settings__.getSetting('Use flv files for playback') == 'true'
 
     li = xbmcgui.ListItem(
         htmlEntitiesDecode(title),
