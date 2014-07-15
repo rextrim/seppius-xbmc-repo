@@ -413,7 +413,7 @@ Audio sources are
 
 <addon id="plugin.video.LostFilm"
        name="LostFilm"
-       version="0.4.2"
+       version="0.4.3"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1060,7 +1060,7 @@ Audio sources are
     </extension>
 </addon>
 
-<addon id="plugin.video.kinoxa-x.ru" name="[COLOR FFcFFF48]Kinoxa-X.ru[/COLOR]" version="0.3.2" provider-name="Silhouette">
+<addon id="plugin.video.kinoxa-x.ru" name="[COLOR FFcFFF48]Kinoxa-X.ru[/COLOR]" version="0.4.0" provider-name="Silhouette">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.beautifulsoup" version="3.0.8"/>
