@@ -3,7 +3,7 @@
         <setting id="Proxy URL" type="text" label="Proxy URL"/>
         <setting id="Download Path" type="folder" label="Download Path"/>
         <setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
-        <!--<setting id="Show hidden materials" type="bool" label="Show hidden by default" default="true"/>-->
+        <setting id="Show hidden materials" type="bool" label="Show hidden by default" default="false"/>
         <setting id="Autoplay next" type="bool" label="30004" default="false"/>
         <setting id="Load main page items" type="bool" label="Load main page items" default="true"/>
         <!--<setting id="Use flv files for playback" type="bool" label="30005" default="false"/>-->
