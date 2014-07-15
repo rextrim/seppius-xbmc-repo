@@ -667,7 +667,7 @@ def read_material_files(files, params):
                 uri = construct_request({
                     'href': href,
                     'referer': httpSiteUrl,
-                    'mode': 'read_materials',
+                    'mode': 'readdir',
                     'cover': cover,
                     'folder': item['id'],
                     'isMusic': params['isMusic']
@@ -724,7 +724,8 @@ def get_material_ids(material_id, params):
 
 
 def readdir(params):
-    if is_hidden_allowed():
+    folder = params['folder']
+    if is_hidden_allowed() and folder == '0':
         try:
             read_materials(params)
         except:
@@ -734,9 +735,7 @@ def readdir(params):
 
 
 def is_hidden_allowed():
-    return False
-    # show_hidden = __settings__.getSetting('Show hidden materials') == 'true'
-    # return show_hidden and check_login()
+    show_hidden = __settings__.getSetting('Show hidden materials') == 'true'
 
 
 def read_directory_unuthorized(params):
@@ -767,7 +766,7 @@ def read_directory_unuthorized(params):
                 uri = construct_request({
                     'href': folderUrl,
                     'referer': httpSiteUrl,
-                    'mode': 'read_materials',
+                    'mode': 'readdir',
                     'cover': cover,
                     'folder': "0",
                     'isMusic': params['isMusic']
