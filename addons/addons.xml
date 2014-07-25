@@ -1506,7 +1506,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.seasonvar.ru"
        name="[COLOR FF00FF00]Сериалы ([/COLOR][COLOR FFFFF000]seasonvar.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="2.2.3"
+       version="2.2.4"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

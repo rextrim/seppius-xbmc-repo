@@ -60,6 +60,8 @@ class XPpod():
         f.close()
         rez = self.Decode_String(param, hash_key)
 
+        print('-----------------')
+
         if not 'html://' in rez and not '/list.xml' in rez and not 'playlist' in rez and not '/playls/' in rez:
             if self.Addon.getSetting('External_PhantomJS') == 'true':
                 url = 'http://'+self.Addon.getSetting('PhantomJS_IP')+':'+self.Addon.getSetting('PhantomJS_Port')
@@ -219,7 +221,7 @@ class XPpod():
             print('ERROR 2')
 
         #---- grab hash for decoder ----------------------------------------------------
-        fname = os.path.join(self.path,'player-0','com','uppod', 'Main.class.asasm')
+        fname = os.path.join(self.path,'player-0','com','uppod', 'Uppod.class.asasm')
 
         f = open(fname, 'r')
         code = f.read()
