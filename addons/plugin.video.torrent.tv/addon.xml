@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.torrent.tv"
        name="Torrent-TV.RU"
-       version="2.1.0"
+       version="2.1.2"
        provider-name="Const86, -=St.Anger=-">
     <requires>
 		<import addon="script.module.torrent.ts"/>
 		<import addon="script.module.beautifulsoup"/>
-		<import addon="xbmc.python" version="2.0" />
+		<import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>

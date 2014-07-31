@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="Настройки">
-		<setting id="port_path" type="file" label="Местонахождение файла acestream.port" default="" />
 		<setting id="login" type="text" label="Логин" default="" />
 		<setting id="password" type="text" label="Пароль" option="hidden" default="" />
 		<setting id="logopack" type="bool" label="Использовать внешние лого" default="false"/>
 		<setting id="adult" type="bool" label="Скрывать каналы для взрослых" default="false"/>
 		<setting id="archive" type="number" label="Количество дней в архиве" default="30" />
+		<setting id="view" type="enum" label="Вид плейлиста для фильмов" values="Список|Широкий список|Эскизы|Карусель постеров|Фанарт|Информация|Информация 2|Информация 3" />
 	</category>
 	<category label="Настройки программы">
 		<setting id="fanart" type="bool" label="Скрыть фоновую картинку" default="false"/>
@@ -20,6 +20,5 @@
 		<setting id="ch_i" type="bool" label="Выделить курсивом канал" default="false"/>
 		<setting id="prog_i" type="bool" label="Выделить курсивом программу" default="false"/>
 		<setting id="prog_str" type="bool" label="Канал и программа в одну строку" default="false"/>
-		<setting id="autostart" type="enum" values="Нет|Последние просмотренные|Избранные" label="Автозапуск категории" default="Нет" />
 	</category>
 </settings>

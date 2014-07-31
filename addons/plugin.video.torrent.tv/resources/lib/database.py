@@ -416,7 +416,7 @@ class DataBase:
         return self.GetChannels(where = 'count > 0', adult = adult)
     
     def GetFavouriteChannels(self, adult = True):
-        return self.GetChannels(where = 'favourite = 1', adult = adult)
+        return self.GetChannels(where = 'favourite > 0', adult = adult)
         
     def IncChannel(self, id):
         self.Connect()
@@ -451,7 +451,7 @@ class DataBase:
                 page = GET('http://1ttv.org/channels.php', cookie = self.cookie)
                 if page == None:
                     showMessage('Torrent TV', 'Сайты не отвечают')
-
+            
             beautifulSoup = BeautifulSoup(page)
             el = beautifulSoup.findAll('a', attrs={'class': 'simple-link'})
             
@@ -459,45 +459,52 @@ class DataBase:
             chdict = []
             grstr = ""
             chstr = ""
+            ch_fav = []
+            ch_fav1 = ''
             for gr in el:
                 link = gr['href'].find('category')
                 access = 0
+                fav = 0
                 
                 if link > -1:
                     if gr.string.encode('utf-8').find('Для взрослых') > -1:
                         access = 1
-                    grdict.append({'id': gr['href'][17:], 'name': gr.string, 'url': gr['href'], 'adult': access})
-                    grstr = grstr + gr['href'][17:] + ","
+                    if not gr['href'].find('fav') > -1:
+                        grdict.append({'id': gr['href'][18:], 'name': gr.string, 'url': gr['href'], 'adult': access})
+                        grstr = grstr + gr['href'][18:] + ","
                     
                 chs = gr.parent.findAll('a')
                 for ch in chs:
-                    hd = 0
-                    if ch.string.encode('utf-8') == gr.string.encode('utf-8'):
-                        continue
-                    
-                    if gr['href'][17:].encode('utf-8') == '':
-                        continue
-                    
-                    if (ch.string.encode('utf-8').find(' HD') > -1) or (ch.string.encode('utf-8').find('HD ') > -1):
-                        hd = 1
+                    if gr['href'].find('fav') > -1 and len(ch['href'][32:])>0:
+                        ch_fav.append({'id': ch['href'][32:], 'name': ch.string, 'url': ch['href'], 'adult': access, 'group_id': '', 'sheduleurl': '', 'imgurl': '', 'hd': hd, 'fav': 2})
+                        ch_fav1 = ch_fav1 + ch['href'][32:]
+                    else:
+                        hd = 0
+                        if ch.string.encode('utf-8') == gr.string.encode('utf-8'):
+                            continue
+                        
+                        if gr['href'][17:].encode('utf-8') == '':
+                            continue
+                        
+                        if (ch.string.encode('utf-8').find(' HD') > -1) or (ch.string.encode('utf-8').find('HD ') > -1):
+                            hd = 1
 
-                    chdict.append({'id': ch['href'][31:], 'name': ch.string, 'url': ch['href'], 'adult': access, 'group_id': gr['href'][17:], 'sheduleurl': '', 'imgurl': '', 'hd': hd})
-                    chstr = chstr + ch['href'][31:] + ","
+                        chdict.append({'id': ch['href'][32:], 'name': ch.string, 'url': ch['href'], 'adult': access, 'group_id': gr['href'][18:], 'sheduleurl': '', 'imgurl': '', 'hd': hd, 'fav': 0})
+                        chstr = chstr + ch['href'][32:] + ","
             chs = beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
-            for ch in chs:
-                try:
-                    grid = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['group_id'].decode('utf-8')
-                    hd = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['hd']
-                    access = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['adult']
-                    try:
-                        chdict.append({'id': ch.find('a')['href'][31:], 'name': ch.find('strong').string.encode('utf-8').replace('\n', '').strip().decode('utf-8'), 'url': ch.find('a')['href'], 'adult': access, 'group_id':grid, 'sheduleurl': '', 'imgurl': '', 'hd': hd})
-                        chstr = chstr + ch.find('a')['href'][31:] + ","
-                    except Exception, e:
-                        print e
-                except: pass
+            #for ch in chs:
+                #try:
+                    #grid = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['group_id'].decode('utf-8')
+                    #hd = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['hd']
+                    #access = AddChannels[ch.find('strong').string.encode('utf-8').replace('\n', '').strip()]['adult']
+                    #try:
+                        #chdict.append({'id': ch.find('a')['href'][32:], 'name': ch.find('strong').string.encode('utf-8').replace('\n', '').strip().decode('utf-8'), 'url': ch.find('a')['href'], 'adult': access, 'group_id':grid, 'sheduleurl': '', 'imgurl': '', 'hd': hd, 'fav': 0})
+                        #chstr = chstr + ch.find('a')['href'][32:] + ","
+                    #except Exception, e:
+                        #print e
+                #except: pass
             grstr = grstr[:grstr.count(grstr)-2]
             chstr = chstr[:chstr.count(chstr)-2]
-
             self.lock.acquire()
             try:
                 self.cursor.execute('DELETE FROM groups WHERE id NOT IN (%s)' % grstr)
@@ -505,7 +512,7 @@ class DataBase:
                 self.connection.commit()
                 self.lock.release()
             except Exception, e:
-                print '[DataBase.UpdateDB] Error: %s' % e
+                print '[DataBase.UpdateDB1] Error: %s' % e
                 self.lock.release()
                 self.last_error = e
                 return
@@ -517,11 +524,20 @@ class DataBase:
             for line in bdgrres:
                 bdgr.append('%s' % line[0])
             newgr = filter(lambda gr: not (gr['id'] in bdgr), grdict)
-            self.cursor.execute('SELECT id, name, urlstream FROM channels')
+            self.cursor.execute('SELECT id, name, urlstream, favourite FROM channels')
             bdchres = self.cursor.fetchall()
+            self.cursor.execute('SELECT id FROM channels WHERE favourite=1')
+            bdfavres = self.cursor.fetchall()
             for line in bdchres:
-                bdch.append('%s' % (unicode(line[0])+line[1]))
-            newch = filter(lambda ch: not ((unicode(ch['id'])+unicode(ch['name'])) in bdch), chdict)
+                bdch.append('%s' % (unicode(line[0])+line[1]+str(line[3])))
+            bdfav = []
+            for line in bdfavres:
+                bdfav.append('%s' % (unicode(line[0])))
+            newch = filter(lambda ch: not ((unicode(ch['id'])+unicode(ch['name'])+unicode(str(ch['fav']))) in bdch), chdict)
+            if len(newch) > 0:
+                newch = newch + ch_fav
+            else:
+                newch = ch_fav
             self.lock.acquire()
             try:
                 for gr in newgr:
@@ -530,19 +546,29 @@ class DataBase:
                 for ch in newch:
                     try:
                         td = datetime.date.today()
-                        self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
-                            ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
-                        )
+                        if ch['id'] in ch_fav:
+                            self.cursor.execute('INSERT INTO channels (id, name, url, adult, sheduleurl, addsdate, imgurl, hd, favourite) VALUES ("%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s", "%s");\r' % (
+                                ch['id'], ch['name'], ch['url'], ch['adult'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], 2)
+                            )
+                        else:
+                            self.cursor.execute('INSERT INTO channels (id, name, url, adult, group_id,sheduleurl, addsdate, imgurl, hd) VALUES ("%s", "%s", "%s", "%d", "%s", "%s", "%s", "%s", "%s");\r' % (
+                                ch['id'], ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'])
+                            )
                         self.connection.commit()
                     except Exception, e:
                         td = datetime.date.today()
-                        self.cursor.execute('UPDATE channels SET name = "%s", url = "%s", adult = "%s", group_id = "%s", sheduleurl = "%s", addsdate = "%s", imgurl = "%s", hd = "%s" WHERE id = "%s"' % (ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], ch['id']))
+                        if ch['id'] in ch_fav1:
+                            self.cursor.execute('UPDATE channels SET name = "%s", url = "%s", adult = "%s",  sheduleurl = "%s", addsdate = "%s", imgurl = "%s", hd = "%s", favourite = "%s" WHERE id = "%s"' % (ch['name'], ch['url'], ch['adult'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], 2, ch['id']))
+                        elif ch['id'] in bdfav:
+                            self.cursor.execute('UPDATE channels SET name = "%s", url = "%s", adult = "%s", sheduleurl = "%s", addsdate = "%s", imgurl = "%s", hd = "%s" WHERE id = "%s"' % (ch['name'], ch['url'], ch['adult'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], ch['id']))
+                        else:
+                            self.cursor.execute('UPDATE channels SET name = "%s", url = "%s", adult = "%s", group_id = "%s", sheduleurl = "%s", addsdate = "%s", imgurl = "%s", hd = "%s", favourite = "%s" WHERE id = "%s"' % (ch['name'], ch['url'], ch['adult'], ch['group_id'], ch['sheduleurl'], td, ch['imgurl'], ch['hd'], 0, ch['id']))
                         self.connection.commit()
                 self.cursor.execute('UPDATE settings SET lastupdate = "%s"' % datetime.datetime.now())
                 self.connection.commit()
                 self.lock.release()
             except Exception, e:
-                print '[DataBase.UpdateDB] Error: %s' % e
+                print '[DataBase.UpdateDB2] Error: %s' % e
                 self.lock.release()
                 self.last_error = e
                 return
@@ -557,7 +583,7 @@ class DataBase:
                 self.connection.commit()
                 self.lock.release()
             except Exception, e:
-                print '[DataBase.UpdateDB] Error: %s' % e
+                print '[DataBase.UpdateDB3] Error: %s' % e
                 self.lock.release()
                 self.last_error = e
                 return
