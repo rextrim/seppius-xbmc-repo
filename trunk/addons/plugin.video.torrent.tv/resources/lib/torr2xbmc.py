@@ -15,10 +15,12 @@ import xbmc
 import xbmcaddon
 import datetime
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
-from TSCore import TSengine as tsengine
+from ASCore import TSengine,_TSPlayer
 import base64
 import time
 from database import DataBase
+from urllib import unquote, quote
+
 
 hos = int(sys.argv[1])
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,11 +47,20 @@ prog_str = __addon__.getSetting('prog_str')
 ch_i = __addon__.getSetting("ch_i")
 prog_i = __addon__.getSetting('prog_i')
 archive = __addon__.getSetting('archive')
+view = __addon__.getSetting('view')
 aceport=62062
 cookie = ""
 PLUGIN_DATA_PATH = xbmc.translatePath( os.path.join( "special://profile/addon_data", 'plugin.video.torrent.tv') )
 
-
+view_mode = ""
+if view == str(0):view_mode = 50
+elif view == str(1): view_mode = 51
+elif view == str(2): view_mode = 500
+elif view == str(3): view_mode = 501
+elif view == str(4): view_mode = 508
+elif view == str(5): view_mode = 504
+elif view == str(6): view_mode = 503
+elif view == str(7): view_mode = 515
 
 if (sys.platform == 'win32') or (sys.platform == 'win64'):
     PLUGIN_DATA_PATH = PLUGIN_DATA_PATH.decode('utf-8')
@@ -208,6 +219,7 @@ def GetScript(params):
 #####################################
 
 dx={
+"1 HD": "1329",
 "1+1": "620",
 "112 Украина": "921vsetv",
 "112": "921vsetv",
@@ -217,14 +229,18 @@ dx={
 "24 Техно": "710",
 "24 Украина": "298vsetv",
 "2x2": "323",
+"2х2 (+2)": "809vsetv",
 "365 Дней": "250",
+"360 градусов": "653vsetv",
 "5 канал (Украина)": "586",
 "5 канал Украина": "586",
 "8 канал": "217",
 "9 ТВ Орбита": "782vsetv",
 "ab moteurs": "127vsetv",
+"Al Jazeera English": "240vsetv",
 "Amedia 1": "895vsetv",
 "Amedia Premium": "896vsetv",
+"Amedia Premium HD": "896vsetv",
 "Amazing Life": "658",
 "Amedia 2": "918",
 "Animal Planet": "365",
@@ -232,11 +248,13 @@ dx={
 "ATR": "763vsetv",
 "A-One": "680",
 "A-ONE UA": "772vsetv",
+"A-One UA": "772vsetv",
 "AXN Sci-Fi": "516",
 "SONY Sci-Fi": "516",
 "Sony Sci-Fi": "516",
 "BBC World News": "828",
 "Bridge TV": "151",
+"Bloomberg": "90vsetv",
 "Business": "386vsetv",
 "Cartoon Network": "601",
 "CCTV 4": "904vsetv",
@@ -250,16 +268,24 @@ dx={
 "Da Vinci Learning": "410",
 "DIVA Universal Russia": "713",
 "Dobro TV": "937",
+"Deutsche Welle": "84vsetv",
 "Discovery Channel": "325",
 "Discovery Science": "409",
+"Discovery Science HD": "409",
 "Discovery World": "437",
 "Investigation Discovery Europe": "19",
 "Investigation Discovery": "19",
+"ID Xtra": "943vsetv",
 "Daring TV": "696vsetv",
 "Discovery HD Showcase": "111",
 "Discowery HD Showcase": "111",
 "Discovery Showcase HD": "111",
+"Discovery Channel HD": "938vsetv",
 "Disney Channel": "150",
+"Disney Channel(+2)": "645vsetv",
+"E Entertainment": "713",
+"Е! Entertainment": "713",
+"Е Entertainment": "713",
 "English Club TV": "757",
 "Enter Film": "281",
 "EuroNews": "23",
@@ -293,7 +319,10 @@ dx={
 "HD Life": "415",
 "HD Спорт": "429",
 "HD СПОРТ": "429",
+"HD Кино": "987",
+"HD Кино 2": "988",
 "History Channel": "902vsetv",
+"History Channel HD": "905vsetv",
 "Hustler TV": "666vsetv",
 "ICTV": "709",
 "iConcerts TV HD": "797vsetv",
@@ -303,13 +332,16 @@ dx={
 "Kids co": "598",
 "KidsCo": "598",
 "Lale": "911vsetv",
+"Life News": "1032",
 "Look TV": "726vsetv",
 "Luxe TV HD": "536vsetv",
+"Luxury World": "946vsetv",
 "Maxxi-TV": "228",
 "MCM Top": "533",
 "MGM": "608",
 "MGM HD": "934",
 "Mezzo": "575",
+"Mezzo Live HD": "672vsetv",
 "Motor TV": "531",
 "Motors TV": "531",
 "Motors Tv": "531",
@@ -333,6 +365,7 @@ dx={
 "National Geographic": "102",
 "National Geographic HD": "389",
 "News One": "247",
+"NHK World TV": "789vsetv",
 "Nick Jr.": "917",
 "Nickelodeon": "567",
 "Nickelodeon HD": "423",
@@ -341,6 +374,7 @@ dx={
 "Outdoor HD": "322",
 "Outdoor Channel": "322",
 "Paramount Comedy": "920",
+"Paramount Channel": "935vsetv",
 "Playboy TV": "663vsetv",
 "Private Spice": "143vsetv",
 "Brazzers TV Europe": "143vsetv",
@@ -352,6 +386,8 @@ dx={
 "Rusong TV": "591",
 "Russian Travel Guide": "648",
 "Russia Today Documentary": "788vsetv",
+"Russia Today": "313",
+"Russia Today HD": "313",
 "SHOPping-TV (Ukraine)": "810vsetv",
 "SET": "311",
 "SET HD": "311",
@@ -366,10 +402,12 @@ dx={
 "TiJi": "555",
 "TLC": "425",
 "TLC Europe": "777vsetv",
+"TLC HD": "901vsetv",
 "Tonis": "627",
 "Tonis HD": "627",
 "TVCI": "435",
 "TV Rus": "799vsetv",
+"TV5 Monde": "74vsetv",
 "TV 1000": "127",
 "TV1000": "127",
 "TV 1000 Action East": "125",
@@ -387,6 +425,8 @@ dx={
 "Travel Channel": "88vsetv",
 "Travel Channel HD": "690vsetv",
 "Travel+ adventure": "832vsetv",
+"Travel + adventure": "832vsetv",
+"Travel + adventure HD": "1035",
 "TV XXI (TV21)": "309",
 #"Ukrainian Fashion": "939",
 "Universal Channel": "213",
@@ -411,6 +451,7 @@ dx={
 "Zee TV": "626",
 "Zoom": "1009",
 "Авто плюс": "153",
+"Авто 24": "924vsetv",
 "Агро тв": "11",
 "Амедиа": "918",
 "Астро ТВ": "249",
@@ -422,6 +463,7 @@ dx={
 "БТБ": "877vsetv",
 "БСТ": "272vsetv",
 "Вопросы и ответы": "333",
+"Вместе РФ": "967vsetv",
 "Время": "669",
 "ВТВ": "139vsetv",
 "Гамма": "479vsetv",
@@ -442,6 +484,7 @@ dx={
 "Еда": "931",
 "Еда ТВ": "931",
 "ЕДА HD": "930",
+"Еда HD": "930",
 "Живи": "113",
 "Звезда": "405",
 "Закон ТВ": "178",
@@ -467,6 +510,7 @@ dx={
 "Карусель": "740",
 "Кинопоказ": "22",
 "Комедия ТВ": "821",
+"комедия тв": "821",
 "Комсомольская правда": "852",
 "Кто есть кто": "769",
 "Кто Есть Кто": "769",
@@ -478,14 +522,20 @@ dx={
 "КХЛ HD": "481",
 "Ля-минор": "257",
 "Львов ТВ": "920vsetv",
+"Lviv TV": "920vsetv",
 "М1": "632",
 "М2": "445vsetv",
 "Мега": "788",
 "Меню ТВ": "348vsetv",
 "Мир": "726",
+"Мир HD": "965vsetv",
+"Мир (+3)": "529vsetv",
+"Меню ТВ": "348vsetv",
+"Мир 24": "838vsetv",
 "Мир сериала": "145",
 "Мир Сериала": "145",
 "Много ТВ": "799",
+"Многосерийное ТВ": "799",
 "Моя планета": "675",
 "Москва 24": "334",
 "Москва Доверие": "655",
@@ -498,6 +548,7 @@ dx={
 "Мать и Дитя": "618",
 "Мультимания": "31",
 "Муз ТВ": "808vsetv",
+"Мульт": "962vsetv",
 "Надия": "871vsetv",
 "Надiя": "871vsetv",
 "Нано ТВ": "35",
@@ -515,6 +566,7 @@ dx={
 "НТВ+ Кинолюкс": "8",
 "НТВ+ Киносоюз": "71",
 "НТВ+ Кино Cоюз": "71",
+"НТВ+ Кино Союз": "71",
 "НТВ+ Кинохит": "542",
 "НТВ+ Наше кино": "12",
 "НТВ+ Наше новое кино": "485",
@@ -530,12 +582,15 @@ dx={
 "НТВ+ Спорт плюс": "377",
 "НТВ+ СпортХит": "910vsetv",
 "НТВ+ Спорт Хит": "910vsetv",
+"НТВ+ Спорт Хит HD": "917vsetv",
+"НТВ+ СпортХит HD": "917vsetv",
 "НТВ+ Спортхит": "910vsetv",
 "НТВ+ Теннис": "358",
 "НТВ+ Футбол": "664",
 "НТВ+ Футбол 2": "563",
 "НТВ+ Футбол HD": "664",
 "НТВ+ Футбол 2 HD": "563",
+"НТВ+ 3D": "702vsetv",
 "НТН (Украина)": "140",
 "НТС Севастополь": "884vsetv",
 "О2ТВ": "777",
@@ -550,10 +605,13 @@ dx={
 "Охотник и рыболов HD": "842vsetv",
 "Парк развлечений": "37",
 "Первый автомобильный (укр)": "507",
+"Первый автомобильный (Украина)": "507",
 "Первый деловой": "85",
 "Первый канал": "146",
+"Первый канал (+4)": "542vsetv",
 "Первый канал (Европа)": "391",
 "Первый канал (Украина)": "339vsetv",
+"Первый канал Украина": "339vsetv",
 "Первый канал (СНГ)": "391",
 "Первый канал HD": "983",
 "ПЕРВЫЙ HD": "983",
@@ -573,15 +631,19 @@ dx={
 "Психология 21": "434",
 "Пятый канал": "427",
 "Пятница": "1003",
+"Пятница (+2)": "625vsetv",
 "Рада Украина": "823vsetv",
+"Радость Моя": "693vsetv",
+"Радость моя": "693vsetv",
 "Раз ТВ": "363",
 "РАЗ ТВ": "363",
 "РБК": "743",
 "РЕН ТВ": "689",
-"РЕН ТВ (+7)": "572vsetv",
+"РЕН ТВ  (+7)": "572vsetv",
 "РЖД": "509",
 "Ретро ТВ": "6",
 "Россия 1": "711",
+"Россия 1 (+4)": "549vsetv",
 "Россия 2": "515",
 "Россия 24": "291",
 "Россия К": "187",
@@ -589,10 +651,14 @@ dx={
 "Россия HD": "984",
 "РТР-Планета": "143",
 "РТР Планета": "143",
+"РТР Россия": "98vsetv",
 "Русский Бестселлер": "994",
+"Русский бестселлер": "994",
 "Русский иллюзион": "53",
 "Русский роман": "401",
 "Русский экстрим": "406",
+"Русский детектив": "942vsetv",
+"Русский Детектив": "942vsetv",
 "Русская ночь": "296vsetv",
 "Сарафан ТВ": "663",
 "Сарафан": "663",
@@ -607,10 +673,14 @@ dx={
 "Союз": "349",
 "СТБ": "670",
 "СТС": "79",
+"СТС (+2)": "538vsetv",
+"СТС Love": "952vsetv",
+"Стиль и мода": "863vsetv",
 "Страна": "284",
 "ТБН": "576",
 "Тбн": "576",
 #"ТБН": "694vsetv",
+"ТНВ-Планета": "781vsetv",
 "ТНВ-Татарстан": "145vsetv",
 "ТНВ-ТАТАРСТАН": "145vsetv",
 "ТВ-Центр-Международное": "435",
@@ -625,6 +695,7 @@ dx={
 "ТВ Центр": "649",
 "Телеканал 100": "887vsetv",
 "ТНТ": "353",
+"ТНТ (+2)": "556vsetv",
 "ТНТ Bravo Молдова": "737vsetv",
 "тнт+4": "557vsetv",
 "Тонус ТВ": "637",
@@ -639,6 +710,7 @@ dx={
 "ТРО Союза": "730",
 "ТРО": "730",
 "Успех": "547",
+"Улыбка ребенка": "531vsetv",
 "Усадьба": "779",
 "Унiан": "740vsetv",
 "УТР": "689vsetv",
@@ -648,13 +720,18 @@ dx={
 "Футбол+ (украина)": "753",
 "Футбол 1 Украина": "666",
 "Футбол 2 Украина": "753",
+"Футбол 1 (Украина)": "666",
+"Футбол 2 (Украина)": "753",
 "Хокей": "702",
 "ЧП-Инфо": "315",
+"Черноморская телекомпания": "751vsetv",
+"Центральный канал": "317vsetv",
 "Шансон ТВ": "662",
 "Ю": "898",
 "Юмор ТВ": "412",
 "Юмор тв": "412",
 "Юмор BOX": "412",
+"Юмор Box": "412",
 "Эко-ТВ": "685vsetv",
 "Эгоист ТВ": "431",
 "1+1 (резерв)": "620",
@@ -717,6 +794,7 @@ dx={
 "Eurosport (резерв)": "737",
 "Eurosport Int. (Eng) (резерв)": "737",
 "Eurosport 2 (резерв)": "850",
+"EuroSport 2 (резерв)": "850",
 "Eurosport 2 Int. (Eng) (резерв)": "850",
 "Eurosport 2 HD (резерв)": "850",
 "Eurosport HD (резерв)": "560",
@@ -801,6 +879,7 @@ dx={
 "Rusong TV (резерв)": "591",
 "Russian Travel Guide (резерв)": "648",
 "Russia Today Documentary (резерв)": "788vsetv",
+"Russia Today Documentary HD (резерв)": "788vsetv",
 "SHOPping-TV (Ukraine) (резерв)": "810vsetv",
 "SET (резерв)": "311",
 "SET HD (резерв)": "311",
@@ -1166,6 +1245,7 @@ dx={
 "Eurosport(резерв)": "737",
 "Eurosport Int. (Eng)(резерв)": "737",
 "Eurosport 2(резерв)": "850",
+"EuroSport 2(резерв)": "850",
 "Eurosport 2 Int. (Eng)(резерв)": "850",
 "Eurosport 2 HD(резерв)": "850",
 "Eurosport HD(резерв)": "560",
@@ -1250,6 +1330,7 @@ dx={
 "Rusong TV(резерв)": "591",
 "Russian Travel Guide(резерв)": "648",
 "Russia Today Documentary(резерв)": "788vsetv",
+"Russia Today Documentary HD(резерв)": "788vsetv",
 "SHOPping-TV (Ukraine)(резерв)": "810vsetv",
 "SET(резерв)": "311",
 "SET HD(резерв)": "311",
@@ -2542,13 +2623,13 @@ def GetChannelsDB (params):
                 li = xbmcgui.ListItem(title, title, img, img)
         startTime = time.localtime()#float(item['start'])
         endTime = time.localtime()#item['end']
+        li.setProperty('IsPlayable', 'true')
         li.setInfo(type = "Video", infoLabels = {"Title": ch['name'], 'year': endTime.tm_year, 'genre': genre, 'plot': prog})
  ###################################           
         uri = construct_request({
             'func': 'play_ch_db',
             'img': img.encode('utf-8'),
             'title': title1,
-            #'studio': prog1,
             'file': ch['urlstream'],
             'id': ch['id']
         })
@@ -2576,6 +2657,7 @@ def GetChannelsDB (params):
         li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
+    #xbmc.executebuiltin('Container.SetViewMode(%s)' % view_mode)
     del db
     
 def DelChannel(params):
@@ -2689,6 +2771,7 @@ def GetChannelsWeb(params):
 
         startTime = time.localtime()#float(item['start'])
         endTime = time.localtime()#item['end']
+        li.setProperty('IsPlayable', 'true')
         li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': endTime.tm_year, 'genre': genre, 'plot': prog} )
  ###################################           
 
@@ -2703,6 +2786,512 @@ def GetChannelsWeb(params):
         li.addContextMenuItems(commands)
         xbmcplugin.addDirectoryItem(hos, uri, li)
     xbmcplugin.endOfDirectory(hos)
+    #xbmc.executebuiltin('Container.SetViewMode(%s)' % view_mode)
+
+def GetFilms(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    li = xbmcgui.ListItem('Новинки')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?new',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Сериалы')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?serials',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Последние фильмы')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?last_added',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('HD-фильмы')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=hd',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Фильмы HD 1080')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=1080',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Фильмы HD 4k')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=4k',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Фильмы в 3D')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=3d',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Русские')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=rus',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Зарубежные')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=foreign',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Популярное за неделю')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?specific=weektop',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Каталог фильмов')
+    uri = construct_request({
+        'func': 'getABC',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('Категории')
+    uri = construct_request({
+        'func': 'getCat',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('[COLOR FFFF6347]<< ПОИСК ФИЛЬМОВ >>[/COLOR]')
+    uri = construct_request({
+        'func': 'get_querry',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+
+def get_querry(params):
+    skbd = xbmc.Keyboard()
+    skbd.setHeading('Поиск:')
+    skbd.doModal()
+    if skbd.isConfirmed():
+        SearchStr = skbd.getText()
+        if SearchStr:
+            getPages({'file':'/film_selector.php?search='+SearchStr,
+                        'page': '1',
+                      })
+        else: return
+
+def getCat(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    http = GET('http://torrent-tv.ru/films.php')
+    if http == None:
+        http = GET('http://1ttv.org/films.php')
+        if http == None:
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
+    beautifulSoup = BeautifulSoup(http)
+    next=beautifulSoup.findAll('a', attrs={'class': 'genre_cat_link'})
+    title = ''
+    file = ''
+    for n in next:
+        title = n.string.encode('utf-8').strip()
+        file = n['href']
+        li = xbmcgui.ListItem(title)
+        uri = construct_request({
+            'func': 'getPages',
+            'file': file,
+            'page': '1',
+        })
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+    
+def getABC(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    abc = ['A','B','C','D','E','F','G','H','I','J','K','L','M','O','P','Q','R','S','T','U','V','W','X','Y','Z','А','Б','В','Г','Д','Е','Ж','З','И','К','Л','М','Н','О','П','Р','С','Т','У','Ф','Х','Ц','Ч','Ш','Щ','Ы','Э','Ю','Я']
+    li = xbmcgui.ListItem('0-9')
+    uri = construct_request({
+        'func': 'getPages',
+        'file': '/film_selector.php?letter=0',
+        'page': '1',
+    })
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    for a in abc:
+        li = xbmcgui.ListItem(a)
+        uri = construct_request({
+            'func': 'getPages',
+            'file': '/film_selector.php?letter='+a,
+            'page': '1',
+        })
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+
+
+def getPages(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    http = GET('http://torrent-tv.ru' + params['file']+'&page=1')
+    if http == None:
+        http = GET('http://1ttv.org' + params['file']+'&page=1')
+        if http == None:
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
+    beautifulSoup = BeautifulSoup(http)
+    next=beautifulSoup.findAll('div', attrs={'class': 'best-channels'})[1].findAll('a')
+    count_ch = 0
+    if next:
+        count_ch = 1
+    for n in next:
+        res = re.compile('&page=.*')
+        res.findall(str(n['href']))
+        se_res = res.findall(str(n['href']))
+        if se_res:
+            if count_ch < int(se_res[0][6:]):
+                count_ch = int(se_res[0][6:])
+    if count_ch == 1:
+        getFilms({'file': params['file'],
+                    'file': params['file'],
+                    'page': str(count_ch),
+                })
+    else:
+        for i in range(1,count_ch+1):
+            li = xbmcgui.ListItem('[COLOR FF6495ED]Страница '+str(i)+'[/COLOR]')
+            uri = construct_request({
+                'func': 'getFilms',
+                'file': params['file'],
+                'page': str(i),
+            })
+            xbmcplugin.addDirectoryItem(hos, uri, li, True, totalItems=count_ch)
+        xbmcplugin.endOfDirectory(hos)
+
+def getFilms(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    page = '&page='+params['page']
+    http = GET('http://torrent-tv.ru' + params['file']+page)
+    if http == None:
+        http = GET('http://1ttv.org' + params['file']+page)
+        if http == None:
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
+    beautifulSoup = BeautifulSoup(http)
+    channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
+    des = beautifulSoup.find(text=re.compile('var descrs = {.*'))
+    for ch in channels:
+        link =ch.find('a')['href']
+        if link.find('person')>-1: continue
+        title= ch.find('strong').string.encode('utf-8').replace('\n', '').replace('&nbsp;', '-').replace('&laquo;', '<<').replace('&raquo;', '>>').strip()
+        img=ch.find('img')['src']
+        res = re.compile("[0-9].*")
+        num=res.search(str(link))
+        if num:
+            numb = num.group()
+        else:
+            print "Not find"
+        numst = '%s_%s:.*' % ('new',str(numb))
+        res = re.compile(numst)
+        descr = ''
+        if des:
+            num=res.search(str(des))
+            if num:
+                descr = num.group().replace('new_'+str(numb)+": '",'').replace("',",'')
+            else:
+                try:
+                    descr= beautifulSoup.findAll('div', attrs={'id': 'descr_new_'+numb})[0].getText().encode('utf-8')
+                except: pass
+        gen=ch.findAll('a', attrs={'href': re.compile('/film_selector\.php\?genre.*')})
+        genre = ''
+        if len(gen)>1:
+            for g in gen:
+                if genre:
+                    genre = genre+', '+g.string.encode('utf-8')
+                else:
+                    genre = g.string.encode('utf-8')
+        elif len(gen)==1:
+            genre = gen[0].string.encode('utf-8')
+        yr = ch.find('p')
+        y=str(yr)
+        mm=re.compile(': [0-9][0-9][0-9][0-9]')
+        m = mm.search(y)
+        if m:
+            year=m.group(0).split('"')[0].replace(': ','')
+        else:year = ''
+        if ch_b == "true":
+            if ch_i == "true": title = "[I][B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B][/I]"
+            else: title = "[B][COLOR FF"+ch_color+"]" + title + "[/COLOR][/B]"
+        else:
+            if ch_i == "true": title = "[I][COLOR FF"+ch_color+"]" + title + "[/COLOR][/I]"
+            else: title = "[COLOR FF"+ch_color+"]" + title + "[/COLOR]"
+        #if __addon__.getSetting('fanart') == 'false':
+        li = xbmcgui.ListItem(title, title, img, img)
+        li.setProperty('fanart_image', img)
+        #else:
+            #li = xbmcgui.ListItem(title, title, img, img)
+        #li = xbmcgui.ListItem(title, title, img, img)
+        #print 'descr: ' +str(descr)
+        li.setInfo(type = "Video", infoLabels = {"Title": title, "year": year, 'plot': descr, 'genre': genre})
+        uri = construct_request({
+                'func': 'GetFilmsWeb',
+                'img':img,
+                'title':title,
+                'file':link,
+                'descr':descr,
+                'year':year,
+                'genre':genre,
+        })
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+    xbmc.executebuiltin('Container.SetViewMode(%s)' % view_mode)
+
+def GetFilmsWeb(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    http = GET('http://torrent-tv.ru/' + params['file'])
+    if http == None:
+        http = GET('http://1ttv.org/' + params['file'])
+        if http == None:
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
+    beautifulSoup = BeautifulSoup(http)
+    try:
+        if not params.has_key("descr") or params["descr"].find('...')>-1:
+            descr = beautifulSoup.findAll('div', attrs={'class': 'channel-description'})[0].string.encode('utf-8')
+            #print 'descr : '+str(descr)
+        else: descr = params['descr']
+    except: descr = ' '
+    try:
+        if not params.has_key('img'):
+            img=beautifulSoup.findAll('div', attrs={'id': 'ctp'})[0].find('img')['src']
+            #print 'img :'+str(img)
+        else: img = params['img']
+    except: img = ' '
+    try:
+        if not params.has_key('year'):
+            year=beautifulSoup.findAll('a', attrs={'href': re.compile('/film_selector\.php\?year.*')})[0].string.encode('utf-8')
+            #print 'year :'+str(year)
+        else: year = params['year']
+    except: year = ' '
+    try:
+        if not params.has_key('genre'):
+            genre=beautifulSoup.findAll('a', attrs={'href': re.compile('/film_selector\.php\?genre.*')})[0].string.encode('utf-8')
+            #print 'genre :'+str(genre)
+        else: genre = params['genre']
+    except: genre = ' '
+    rating=''
+    #try:
+    rat = beautifulSoup.find('div', attrs={'id': 'ratings'})
+    if rat:
+        rat = rat.getText().encode('utf-8')
+        mm=re.compile('IMDb.*')
+        m = mm.search(rat)
+        if m:
+            rating=m.group(0).replace('IMDb&nbsp;','')[:3]
+            if rating.find(str(0.00))>-1:
+                mm=re.compile('КП.*')
+                m = mm.search(rat)
+                if m:
+                    rating=m.group(0).replace('КП&nbsp;','')[:3]
+                    if rating.find(str(0.00))>-1:
+                        rating=beautifulSoup.findAll('span', attrs={'id': re.compile('ttv_rating.*')})[0].string.encode('utf-8')[:3]
+                else:
+                    rating=beautifulSoup.findAll('span', attrs={'id': re.compile('ttv_rating.*')})[0].string.encode('utf-8')[:3]
+        else:
+            rating=beautifulSoup.findAll('span', attrs={'id': re.compile('ttv_rating.*')})[0].string.encode('utf-8')[:3]
+    else: rating=' '
+        #print 'rating :'+rating
+    #except: pass
+    #print 'rating :'+str(rating)
+    director=''
+    writer=''
+    direct=beautifulSoup.find(text=("режиссер").decode('utf-8')).findNext('div')
+    #print 'direct :'+str(direct)
+    if direct:
+        try:
+            director = direct.getText().encode('utf-8')
+            #print 'director :'+str(director)
+        except:
+            l = direct('a')
+            if len(l)>1:
+                for g in l:
+                    if director and g:
+                        director = director+', '+g.string.encode('utf-8')
+                    elif g:
+                        director = g.string.encode('utf-8')
+            elif len(l)==1 and l:
+                director= l[0].string.encode('utf-8')
+    else: director = ' '
+    writ=beautifulSoup.find(text=("сценарий").decode('utf-8')).findNext('div')
+    if writ:
+        try:
+           writer = writ.getText().encode('utf-8')
+        except:
+            l = writ('a')
+            if len(l)>1:
+                for g in l:
+                    if writer and g:
+                        writer = writer+', '+g.string.encode('utf-8')
+                    elif g:
+                        writer = g.string.encode('utf-8')
+            elif len(l)==1 and l:
+                writer= l[0].string.encode('utf-8')
+    else: writer = ' '
+    films = beautifulSoup.findAll('tr')
+    for film in films:
+        gb = ''
+        tt = ''
+        leaches = ''
+        seeds = ''
+        stat = ''
+        ftype = ''
+        hdtype = ''
+        ddd = ''
+        p1 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_1')})
+        if p1:
+            if len(films)>2:
+                link = p1[0].find('img')['onclick']
+                res = re.compile("'.*'")
+                res.findall(str(link))
+                link = res.findall(str(link))[0].replace("'", '')
+                p4 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_4')})
+                tt = p4[0].find('span').string.encode('utf-8').strip().replace('&nbsp;', '').replace('&ndash;', '').replace('&nbsp;', '').replace('amp;', '').replace('gt;', '>').replace('&laquo;', '«').replace('&raquo;', '»')
+            #print tt
+            else:
+                tget= beautifulSoup.find('div', attrs={'class':'tv-player'})
+                m=re.search('http:(.+)"', str(tget))
+                if m:
+                    link= m.group(0).split('"')[0]
+                else:
+                    m = re.search('load.*', str(tget))
+                    link = m.group(0).split('"')[1]
+                p4 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_4')})
+                tt = p4[0].string.encode('utf-8').strip().replace('&nbsp;', '').replace('&ndash;', '').replace('&nbsp;', '').replace('amp;', '').replace('gt;', '>').replace('&laquo;', '«').replace('&raquo;', '»')
+            try:
+                p2 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_2')})
+                ftype = p2[0].findAll('span')
+                for f in ftype:
+                    hdtype = "[COLOR FFff7f24]"+hdtype +'('+f.getText().encode('utf-8').replace('&nbsp;&nbsp;','')+')'+"[/COLOR]"
+                #print hdtype
+            except:pass
+            try:
+                d=film.findAll('img', attrs={'title': str('Фильм в 3D').decode('utf-8')})
+                if d:
+                    ddd = "[COLOR FFff7f24](3D)[/COLOR]"
+                    #print ddd
+            except: pass
+            try:
+                p3 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_3')})
+                gb = "[COLOR FF6495ED]["+p3[0].find('strong').string.encode('utf-8')+"][/COLOR]"
+                #print gb
+            except: pass
+            try:
+                p5 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_5')})
+                seeds = p5[0].find('strong').string.encode('utf-8')
+                #print seeds
+            except: pass
+            try:
+                p6 = film.findAll('td', attrs={'id':re.compile('trnt_cntnr_.*_6')})
+                leaches = p6[0].find('strong').string.encode('utf-8')
+                #print leaches
+            except: pass
+        else: continue
+        if seeds and leaches:
+            stat= "[COLOR FF00ff7f]("+seeds+ ",[/COLOR][COLOR FFFF0000]"+leaches+")[/COLOR]"
+        elif seeds:
+            stat = "[COLOR FF00ff7f]("+seeds+ ")[/COLOR]"
+        elif leaches:
+            stat = "[COLOR COLOR FFFF0000]("+leaches+ ")[/COLOR]"
+        title = (gb+hdtype+ddd+stat+tt).replace('&nbsp;', '').replace('&ndash;', '').replace('&nbsp;', '').replace('amp;', '').replace('gt;', '>').replace('&laquo;', '«').replace('&raquo;', '»')
+        li = xbmcgui.ListItem(title, title, img, img)
+        li.setProperty('fanart_image', img)
+        #li.setProperty('IsPlayable', 'true')
+        li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': year, 'genre': genre, 'plot': descr, 'director': director, 'writer': writer, 'rating': rating} )
+        uri = construct_request({
+                'func': 'start_torr',
+                'img':img.encode('utf-8'),
+                'title':title,
+                'title1':tt,
+                'file':link,
+                'year':year,
+                'genre':genre,
+                'descr':descr,
+                'director':director,
+                'writer':writer,
+                'rating':rating
+        })
+        commands = []
+        li.addContextMenuItems(commands)
+        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    xbmcplugin.endOfDirectory(hos)
+    xbmc.executebuiltin('Container.SetViewMode(%s)' % view_mode)
+
+def start_torr(params):
+    xbmcplugin.setContent(int(sys.argv[1]), 'movies')
+    TSplayer=TSengine()
+    out=TSplayer.load_torrent(params['file'],'TORRENT')
+    if out=='Ok':
+        for k,v in TSplayer.files.iteritems():
+            if TSplayer.files.__len__() == 1:
+               p=urllib.unquote_plus(params['title1'])
+            else: p=urllib.unquote_plus(k)
+            li = xbmcgui.ListItem(urllib.unquote(k), urllib.unquote(k), params['img'], params['img'])
+            #if __addon__.getSetting('fanart') == 'false':
+            li.setProperty('fanart_image', params['img'])
+            li.setInfo(type = "Video", infoLabels = {'year': params['year'], 'genre': params['genre'], 'plot': params['descr'], 'director': params['director'], 'writer': params['writer'], 'rating': params['rating']})
+            #li = xbmcgui.ListItem(urllib.unquote(k))
+            li.setProperty('IsPlayable', 'true')
+            #li.addContextMenuItems([('Добавить в плейлист', 'XBMC.RunPlugin(%s)' % uri),])
+            uri = construct_request({
+                'torr_url': urllib.quote(params['file']),
+                'title': k,
+                'title1': p,
+                'ind':v,
+                'img':params['img'],
+                'func': 'play_url2'
+            })
+            #li.addContextMenuItems([('Добавить в плейлист', 'XBMC.RunPlugin(%s?func=addplist&torr_url=%s&title=%s&ind=%s&img=%s&func=play_url2)' % (sys.argv[0],urllib.quote(torr_link),k,v,img  )),])
+            xbmcplugin.addDirectoryItem(hos, uri, li)
+    xbmcplugin.addSortMethod(hos, xbmcplugin.SORT_METHOD_LABEL)
+    xbmcplugin.endOfDirectory(hos)
+    xbmc.executebuiltin('Container.SetViewMode(%s)' % view_mode)
+    TSplayer.end()
+
+def play_url2(params):
+    torr_link=urllib.unquote(params["torr_url"])
+    img=urllib.unquote_plus(params["img"])
+    title=urllib.unquote_plus(params["title"])
+    TSplayer=TSengine()
+    out=TSplayer.load_torrent(torr_link,'TORRENT')
+    if out=='Ok':
+        lnk=TSplayer.get_link(int(params['ind']),title, img, img)
+        if lnk:
+            item = xbmcgui.ListItem(path=lnk)
+            item.setInfo(type="Video",infoLabels={"Title": params['title1']})
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
+            while not xbmc.Player().isPlaying:
+                xbmc.sleep(300)
+            while TSplayer.player.active and not TSplayer.local: 
+                TSplayer.loop()
+                xbmc.sleep(300)
+                if xbmc.abortRequested:
+                    TSplayer.log.out("XBMC is shutting down")
+                    break
+            if TSplayer.local and xbmc.Player().isPlaying: 
+                try: time1=TSplayer.player.getTime()
+                except: time1=0
+                i = xbmcgui.ListItem("***%s"%title)
+                i.setProperty('StartOffset', str(time1))
+                xbmc.Player().play(TSplayer.filename.decode('utf-8'),i)
+
+        else:
+            item = xbmcgui.ListItem(path='')
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, item) 
+    TSplayer.end()
+    xbmc.Player().stop
+    xbmc.executebuiltin('Container.Refresh')
 
 def GetArchive(params):
     #date = datetime.datetime.now().timetuple()
@@ -2742,7 +3331,7 @@ def GetArchive(params):
         })
         xbmcplugin.addDirectoryItem(hos, uri, li, True)
     xbmcplugin.endOfDirectory(hos)
-
+    
 def getArchiveCalendar(params):
     res = re.compile('&data=.*')
     res.findall(params['file'])
@@ -2793,6 +3382,7 @@ def getArchiveDate(params):
         li = xbmcgui.ListItem(title, title, img, img)
         startTime = time.localtime()
         endTime = time.localtime()
+        li.setProperty('IsPlayable', 'true')
         li.setInfo(type = "Video", infoLabels = {"Title": title, 'year': endTime.tm_year})
         uri = construct_request({
                 'func': 'play_ch_web',
@@ -2800,11 +3390,12 @@ def getArchiveDate(params):
                 'title':title,
                 'file':link
         })
-        xbmcplugin.addDirectoryItem(hos, uri, li, True)
+        xbmcplugin.addDirectoryItem(hos, uri, li, False)
     xbmcplugin.endOfDirectory(hos)
 
     
 def play_ch_db(params):
+    showMessage(message = 'Запуск...', heading='Torrent TV', times = 2000)
     xbmc.executebuiltin('Action(Stop)')
     try:
         page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + str(params['id']), data)
@@ -2838,47 +3429,38 @@ def play_ch_db(params):
             return
     else:
         url = params['file']
-    if url != '':
-        TSPlayer = tsengine()
-        out = None
-        if url.find('http://') == -1:
-            out = TSPlayer.load_torrent(url,'PID',port=aceport)
+    TSplayer=TSengine()
+    out = None
+    if url.find('http://') == -1:
+        out = TSplayer.load_torrent(url,'PID',port=aceport)
+    else:
+        out = TSplayer.load_torrent(url,'TORRENT',port=aceport)
+    if out == 'Ok':
+        lnk=TSplayer.get_link()
+        if lnk:
+            item = xbmcgui.ListItem(path=lnk)
+            item.setInfo(type="Video",infoLabels={"Title": params['title']})
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)  
+            while not xbmc.Player().isPlaying:
+                xbmc.sleep(300)
+            while TSplayer.player.active and not TSplayer.local: 
+                TSplayer.loop()
+                xbmc.sleep(300)
+                if xbmc.abortRequested:
+                    TSplayer.log.out("XBMC is shutting down")
+                    break
+
         else:
-            out = TSPlayer.load_torrent(url,'TORRENT',port=aceport)
-        if out == 'Ok':
-            TSPlayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-            db = DataBase(db_name, cookie='')
-            db.IncChannel(params['id'])
-            del db
-            TSPlayer.end()
-            xbmc.executebuiltin('Container.Refresh')
-            return
-        else:
-            db = DataBase(db_name, cookie)
-            showMessage('Torrent', 'Обновление торрент-ссылки')
-            url = db.UpdateUrlsStream([params['id']])
-            xbmc.executebuiltin('Container.Refresh')
-            return
-            url = url[0]['urlstream']
-            if url != '':
-                out = None
-                if url.find('http://') == -1:
-                    print 'TS PID---'+str(url)
-                    out = TSPlayer.load_torrent(url,'PID',port=aceport)
-                    print 'OUT PID---'+str(out)
-                else:
-                    print 'TS TORRENT'
-                    out = TSPlayer.load_torrent(url,'TORRENT',port=aceport)
-                if out == 'Ok':
-                    print 'TS OK'
-                    TSPlayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-                    db = DataBase(db_name, cookie)
-                    db.IncChannel(params['id'])
-                    del db
-                    TSPlayer.end()
-                    return
-  
+            item = xbmcgui.ListItem(path='')
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, item)
+    TSplayer.end()
+    xbmc.Player().stop
+    xbmc.sleep(1)
+    xbmc.executebuiltin('Container.Refresh')
+
+
 def play_ch_web(params):
+    showMessage(message = 'Запуск...', heading='Torrent TV', times = 2000)
     xbmc.executebuiltin('Action(Stop)') 
     http = GET('http://torrent-tv.ru/' + params['file'])
     if http == None:
@@ -2888,30 +3470,42 @@ def play_ch_web(params):
             return
     beautifulSoup = BeautifulSoup(http)
     tget= beautifulSoup.find('div', attrs={'class':'tv-player'})
-    
+    mode = ''
+    url = ''
     m=re.search('http:(.+)"', str(tget))
     if m:
-        torr_link= m.group(0).split('"')[0]
-        m=re.search('http://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+', torr_link)
-        TSplayer=tsengine()
-        out=TSplayer.load_torrent(torr_link,'TORRENT',port=aceport)
-        if out=='Ok':
-            TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-        TSplayer.end()
-        #showMessage(message = 'Stop')
+        mode = 'TORRENT'
+        url = m.group(0).split('"')[0]
+        m=re.search('http://[0-9]+.[0-9]+.[0-9]+.[0-9]+:[0-9]+', url)
     else:
+        mode = 'PID'
         m = re.search('load.*', str(tget))
-        ID = m.group(0).split('"')[1]
-        try:
-            TSplayer=tsengine()
-            out=TSplayer.load_torrent(ID,'PID',port=aceport)
-            if out=='Ok':
-                TSplayer.play_url_ind(0,params['title'],addon_icon,params['img'])
-            TSplayer.end()
-        except Exception, e:
-            showMessage(message = e)
-        xbmc.executebuiltin('Container.Refresh')
-        #showMessage(message = 'Stop')
+        url = m.group(0).split('"')[1]
+    TSplayer=TSengine()
+    out = None
+    out = TSplayer.load_torrent(url,mode,port=aceport)
+    if out == 'Ok':
+        lnk=TSplayer.get_link(0,params['title'], params['img'], params['img'])
+        if lnk:
+            item = xbmcgui.ListItem(path=lnk)
+            item.setInfo(type="Video",infoLabels={"Title": params['title']})
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)  
+            while not xbmc.Player().isPlaying:
+                xbmc.sleep(300)
+            while TSplayer.player.active and not TSplayer.local: 
+                TSplayer.loop()
+                xbmc.sleep(300)
+                if xbmc.abortRequested:
+                    TSplayer.log.out("XBMC is shutting down")
+                    break
+
+        else:
+            item = xbmcgui.ListItem(path='')
+            xbmcplugin.setResolvedUrl(int(sys.argv[1]), False, item)
+    TSplayer.end()
+    xbmc.Player().stop
+    xbmc.sleep(1)
+    xbmc.executebuiltin('Container.Refresh')
 
 def GetParts():
     db = DataBase(db_name, cookie)
@@ -3018,8 +3612,16 @@ def mainScreen(params):
     })
     li.addContextMenuItems(commands)
     xbmcplugin.addDirectoryItem(hos, uri, li, True)
+    li = xbmcgui.ListItem('[COLOR FFFFff7f24]Фильмы Online[/COLOR]')
+    li.addContextMenuItems(commands)
+    uri = construct_request({
+        'func': 'GetFilms',
+    })
+    li.addContextMenuItems(commands)
+    xbmcplugin.addDirectoryItem(hos, uri, li, True)
     GetParts()
     xbmcplugin.endOfDirectory(hos)
+    #xbmc.executebuiltin('Container.SetViewMode(%s)' % view_mode)
         
 from urllib import unquote, quote, quote_plus
 
@@ -3049,7 +3651,6 @@ def addon_main():
         func = params['func']
         del params['func']
     except:
-        
         db = DataBase(db_name, cookie='')        
         dbver = db.GetDBVer()
         if db.GetDBVer() <> 6:
@@ -3060,11 +3661,7 @@ def addon_main():
         lupd = db.GetLastUpdate()
         if lupd == None:
             showMessage('Torrent TV', 'Производится обновление плейлиста')
-            #UpdCookie()
-            #if os.path.exists(cookiefile):
-                #fgetcook = open(cookiefile, 'r')
             cookie = UpdCookie()
-            #del fgetcook
             db = DataBase(db_name, cookie)
             db.UpdateDB()
             showMessage('Torrent TV', 'Обновление плейлиста выполнено')
@@ -3073,11 +3670,7 @@ def addon_main():
 
             if nupd < datetime.datetime.now():
                 showMessage('Torrent TV', 'Производится обновление плейлиста')
-                #UpdCookie()
-                #if os.path.exists(cookiefile):
-                    #fgetcook = open(cookiefile, 'r')
                 cookie = UpdCookie()
-                #del fgetcook
                 db = DataBase(db_name, cookie)
                 db.UpdateDB()
                 showMessage('Torrent TV', 'Обновление плейлиста выполнено')

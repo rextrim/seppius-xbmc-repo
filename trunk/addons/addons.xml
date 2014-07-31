@@ -1788,12 +1788,12 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.torrent.tv"
        name="Torrent-TV.RU"
-       version="2.1.0"
+       version="2.1.2"
        provider-name="Const86, -=St.Anger=-">
     <requires>
 		<import addon="script.module.torrent.ts"/>
 		<import addon="script.module.beautifulsoup"/>
-		<import addon="xbmc.python" version="2.0" />
+		<import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
         <provides>video</provides>
@@ -2241,10 +2241,10 @@ provider-name="Roman_V_M">
 
 <addon id="script.module.YaTv"
        name="YaTv"
-       version="2.1.2"
+       version="2.1.4"
        provider-name="TDW, -=St.Anger=-">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension point="xbmc.addon.metadata">
     <summary>YaTv</summary>
