@@ -598,8 +598,12 @@ class TSServ(threading.Thread):
         if comm=='HELLOTS':
             try: self.version=params[0].split('=')[1]
             except: self.version='1.0.6'
-            try: self.key=params[1].split('=')[1]
-            except: self.key=None
+            try: 
+                if params[2].split('=')[0]=='key': self.key=params[2].split('=')[1]
+            except: 
+                try: self.key=params[1].split('=')[1]
+                except: self.key=None
+            
         elif comm=='LOADRESP':
             fil = line
             ll= fil[fil.find('{'):len(fil)]
