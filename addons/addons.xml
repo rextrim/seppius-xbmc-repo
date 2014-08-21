@@ -2255,7 +2255,7 @@ provider-name="Roman_V_M">
   <extension point='xbmc.python.module' library='lib' />
 </addon>
 
-<addon id='script.module.torrent.ts' version='0.6.0.25' name='AceStream Client Alpha' provider-name='NuisMons'>
+<addon id='script.module.torrent.ts' version='0.6.0.28' name='AceStream Client' provider-name='NuisMons'>
   <requires>
     <import addon='xbmc.python' version='2.1.0'/>
   </requires>
