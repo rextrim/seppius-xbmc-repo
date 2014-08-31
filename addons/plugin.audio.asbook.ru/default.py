@@ -101,10 +101,10 @@ def get_URL(url):
     request = urllib2.Request(url, post)
 
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
-    request.add_header('Host',	'asbook.ru')
+    request.add_header('Host',	'asbook.net')
     request.add_header('Accept', '*/*')
     request.add_header('Accept-Language', 'ru-RU')
-    request.add_header('Referer',	'http://asbook.ru')
+    request.add_header('Referer',	'http://asbook.net')
 
     try:
         f = urllib2.urlopen(request)
@@ -370,7 +370,7 @@ def Genre_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://asbook.ru/'
+    url = 'http://asbook.net/'
 
     html = get_URL(url)
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -391,7 +391,7 @@ def Genre_List(params):
             name = '  [COLOR FF00FF00]'+rec.find('a').text +'[/COLOR]' # [COLOR FF00FFF0]'+rec.find('span').text+'[/COLOR]'
             mode = 'BOOK_LIST'
 
-        url = 'http://asbook.ru/'+rec.find('a')['href']
+        url = 'http://asbook.net/'+rec.find('a')['href']
         genre  = rec.find('a').text.encode('utf-8')
         bcount = 0 #rec.find('span').text.replace('(','').replace(')','')
 
@@ -421,7 +421,7 @@ def PLAY(params):
     track = int(urllib.unquote_plus(params['track']))
 
     header = {  'Host'                  :urlparse(url).hostname,
-                'Referer'               :'http://asbook.ru/player/uppod.swf',
+                'Referer'               :'http://asbook.net/player/uppod.swf',
                 'User-Agent'            :'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C; .NET4.0E)'
              }
 
