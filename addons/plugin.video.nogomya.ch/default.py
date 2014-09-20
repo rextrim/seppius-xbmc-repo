@@ -45,13 +45,16 @@ fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'cookies
 try:
     sys.path.append(os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
     from BeautifulSoup  import BeautifulSoup
+    import xppod
 except:
     try:
         sys.path.insert(0, os.path.join(Addon.getAddonInfo('path'), r'resources', r'lib'))
         from BeautifulSoup  import BeautifulSoup
+        import xppod
     except:
         sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
         from BeautifulSoup  import BeautifulSoup
+        import xppod
         icon = xbmc.translatePath(os.path.join(os.getcwd().replace(';', ''),'icon.png'))
 
 import HTMLParser
@@ -316,14 +319,24 @@ def PLAY(params):
     # -- check if video available
     html = get_HTML(url)
 
+    soup = BeautifulSoup(html)
+    for rec in soup.findAll("script"):
+        if 'id:"mediaplayer"' in rec.text:
+            html = rec.text
+
     # -- parsing web page ----------------------------------------------------------
     try:
         str = re.compile('<embed (.+?)><\/embed>', re.MULTILINE|re.DOTALL).findall(html)[0]
         str = re.compile('flashvars="(.+?)"', re.MULTILINE|re.DOTALL).findall(str)[0]
         str = urllib.unquote(str).replace('src=','')
     except:
-        str = re.compile('"file":"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)[0]
+        try:
+            str = re.compile('"file":"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)[0]
+        except:
+            print '###'
 
+    if str.find('http:') == -1:
+            str = xppod.Decode(str)
 
     p_r = "rtmp://stream.nogomya.ch:1935/live"
     p_a = "live?"+str.split('&')[0].split('?')[1]
@@ -332,7 +345,7 @@ def PLAY(params):
     p_p = "http://nogomya.ch/stream/"+str.split('?')[0].split('/')[-1].split('.')[0]
     p_y = str.split('&')[0].split('/')[-1]
 
-    video = '%s app=%s swfUrl=%s pageUrl=%s playpath=%s swfVfy=1 live=1'%(p_r, p_a, p_W, p_p, p_y, )
+    video = str #'%s app=%s swfUrl=%s pageUrl=%s playpath=%s swfVfy=1 live=1'%(p_r, p_a, p_W, p_p, p_y, )
 
     i = xbmcgui.ListItem(name, path = urllib.unquote(video), thumbnailImage=img)
     xbmc.Player().play(video, i)
