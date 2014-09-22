@@ -144,7 +144,7 @@ class shura:
 	
 	def getLast(self):
 		if self.last_list and 'ttl' in self.last_list:
-			if self.last_list['ttl'] <> now.strftime('%Y-%m-%d'):
+			if self.last_list['ttl'] <> now.strftime('%Y-%m-%d') or 'ott' not in self.last_list or self.last_list['ott']<>self.OTT or 'server' not in self.last_list or self.last_list['server']<>self.ServerName or 'streamType' not in self.last_list or self.last_list['streamType']<>self.StreamType:
 				xbmc.log('[SHURA.TV] Last list expired')
 				self.last_list = None
 		if not self.last_list:
@@ -159,14 +159,10 @@ class shura:
 			else:
 				self.getChannelsList()
 			if self.last_list and 'ttl' in self.last_list:
-				if self.last_list['ttl'] <> now.strftime('%Y-%m-%d'):
+				if self.last_list['ttl'] <> now.strftime('%Y-%m-%d') or 'ott' not in self.last_list or self.last_list['ott']<>self.OTT or 'server' not in self.last_list or self.last_list['server']<>self.ServerName or 'streamType' not in self.last_list or self.last_list['streamType']<>self.StreamType:
 					xbmc.log('[SHURA.TV] Last list expired')
 					self.getChannelsList()
-			
 		return self.last_list['channels']
-	
-	
-	
 	def getChannelsList(self):
 		
 		url = 'http://pl.tvshka.net/?uid='+self.OTT +'&srv='+str(self.ServerName)+'&type=xml'
@@ -212,7 +208,7 @@ class shura:
 			#response = JSONDECODE(response)
 		#except:
 			#xbmc.log('[SHURA.TV] Error.. :(')
-		self.last_list = {'channels': res, 'ttl': now.strftime('%Y-%m-%d')}
+		self.last_list = {'channels': res, 'ttl': now.strftime('%Y-%m-%d'), 'ott':self.OTT, 'server':self.ServerName, 'StreamType':self.StreamType}
 		f = open(LASTLISTFILE, 'wb')
 		try:
 			jsave = JSONENCODE(self.last_list, encoding='utf8')
