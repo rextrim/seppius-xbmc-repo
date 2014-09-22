@@ -54,7 +54,7 @@ __status__ = "Production"
 
 __language__ = __settings__.getLocalizedString
 
-siteUrl = 'brb.to'
+siteUrl = __settings__.getSetting('Site URL')
 proxyScriptUrl = __settings__.getSetting('Proxy URL')
 httpSiteUrl = 'http://' + siteUrl
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
