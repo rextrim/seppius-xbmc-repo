@@ -736,6 +736,7 @@ def readdir(params):
 
 def is_hidden_allowed():
     show_hidden = __settings__.getSetting('Show hidden materials') == 'true'
+    return show_hidden
 
 
 def read_directory_unuthorized(params):
@@ -766,7 +767,7 @@ def read_directory_unuthorized(params):
                 uri = construct_request({
                     'href': folderUrl,
                     'referer': httpSiteUrl,
-                    'mode': 'readdir',
+                    'mode': 'read_materials',
                     'cover': cover,
                     'folder': "0",
                     'isMusic': params['isMusic']
