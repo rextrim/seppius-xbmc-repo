@@ -1,3 +1,13 @@
+[B]2.6.0[/B]
+Bug fix
+[B]2.6.0[/B]
+Shortcuts to live and archive
+[B]2.5.4[/B]
+Plot got extra info
+[B]2.5.3[/B]
+Better iconf for favorites
+[B]2.5.2[/B]
+New TV channel icons
 [B]2.5.1[/B]
 Fixed DE stream server code
 [B]2.5.0[/B]
