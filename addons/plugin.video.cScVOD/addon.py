@@ -19,7 +19,6 @@ from urllib import unquote_plus
 from GoshaParser import gosha_parsers
 from ArshavirParser import arshavir_parsers
 from SGParser import sg_parsers
-from cScParser import cSc_parsers
 from demjson3 import loads
 hos = int(sys.argv[1])
 addon_id = Addon.getAddonInfo('id')
@@ -376,7 +375,6 @@ def Play(params):
 	global GOSHA_PARSER
 	global CSC_PARSER
 	SG_PARSER = sg_parsers()
-	CSC_PARSER = cSc_parsers()
 	GOSHA_PARSER = gosha_parsers()
 	ARSHAVIR_PARSER = arshavir_parsers()
 	url = urllib.unquote(params['stream'])
