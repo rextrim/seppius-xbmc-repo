@@ -92,7 +92,7 @@ def Categories(params):
 				xml = mn.parseString(xml)
 		n = 0
 		if searchon == None:
-			try: search = xml.getElementsByTagName('search_on')[0].firstChild.data
+			try: search = xml.getElementsByTagName('xbmc_search')[0].firstChild.data
 			except: search = None
 		if search != None:
 			kbd = xbmc.Keyboard()
