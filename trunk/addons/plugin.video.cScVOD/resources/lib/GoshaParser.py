@@ -27,10 +27,9 @@ class gosha_parsers:
                 try:
                     page = urllib2.urlopen(request).read()
                     page = page.replace('\n', '')
-                    hash_list = re.findall(';file=(.*?)&amp', page)
+                    hash_list = re.findall(';file=(.*?)\\&', page)
                     if len(hash_list) > 0:
-                        hash = hash_list[0]
-                        url = hash + '.flv'
+                        url = hash_list[0]
                 except Exception as ex:
                     print ex
 
@@ -466,15 +465,15 @@ class gosha_parsers:
                 hash = hash[0]
                 url = url.replace('md5hash', hash)
                 print ex
-            if url.find('.kinoxa-x.ru') > -1  or url.find('50.7.172.194/kino.php') > -1:
+            if url.find('.kinoxa-x.ru') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
                 try:
                     page = urllib2.urlopen(request).read()
-                    code = re.findall('<video.*src="(.*)" controls', page)
+                    code = re.findall('"http://srv(.*?)"', page)
                     code = code[0]
                     if len(code) > 0:
-                        url = code
+                        url = 'http://srv' + code
                 except Exception as ex:
                     print ex
 
@@ -748,6 +747,21 @@ class gosha_parsers:
                 except Exception as ex:
                     print ex
 
+            if url.find('tree.tv') > -1:
+                request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+                 'Connection': 'Close'})
+                try:
+                    page = urllib2.urlopen(request).read()
+                    q = re.findall('dd=(.*?)\\&\\&', url)
+                    q = q[0]
+                    str = page.find(q)
+                    str2 = page.find('http://', str)
+                    url = page[page.find('http://', str2):page.find('"', str2)]
+                    print 'filmix'
+                    print url
+                except Exception as ex:
+                    print ex
+
             if url.find('.datalock.ru/') > -1:
                 url1 = 'http://newseriya.ru/serial-3151-Kak_ya_vstretil_vashu_mamu-7-season.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -776,9 +790,9 @@ class gosha_parsers:
                     code_list = re.findall('"st=(.*?)"', page)
                     if len(code_list) > 0:
                         link1 = code_list[0]
-                        tmp = link1.replace('http://online.stepashka.com/player/32265/', '')
-                        md5 = re.findall('\\/(.*?)\\/', tmp)
-                        md5 = md5[0]
+                        tmp = link1.replace('http://online.stepashka.com/player/', '')
+                        myarr = tmp.split('/')
+                        md5 = myarr[2]
                         url = url.replace('md5hash', md5)
                         print 'stepashka'
                         print url

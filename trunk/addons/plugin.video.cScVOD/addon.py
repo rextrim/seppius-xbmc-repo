@@ -19,6 +19,7 @@ from urllib import unquote_plus
 from GoshaParser import gosha_parsers
 from ArshavirParser import arshavir_parsers
 from SGParser import sg_parsers
+from cScParser import cSc_parsers
 from demjson3 import loads
 hos = int(sys.argv[1])
 addon_id = Addon.getAddonInfo('id')
@@ -33,8 +34,10 @@ std_headers = {
 def construct_request(params):
 	return '%s?%s' % (sys.argv[0], urllib.urlencode(params))
 		
-def _downloadUrl(url):
-		u = urllib2.urlopen(url)
+def _downloadUrl(target, post=None):
+		req = urllib2.Request(url = target, data = post)
+		req.add_header('User-Agent', 'XBMC 1.4')
+		u = urllib2.urlopen(req)
 		content = u.read()
 		u.close()
 
@@ -60,10 +63,6 @@ def Categories(params):
 		box_mac = Addon.getSetting('mac')
 	else:
 		box_mac = None
-	if Addon.getSetting('start') != None:
-		start = Addon.getSetting('start')
-	else:
-		start = None
 	try: searchon = params['search']
 	except: searchon = None
 	try: 
@@ -76,9 +75,13 @@ def Categories(params):
 		else:
 			url = url
 	except:
-		url = start
+		url = 'http://185.25.119.98/vod/start.xml'
+	if url.find('treetv.php?page') > -1:
+		url = url + '&xbmc=1'
 	if url.find('nStreamModul@http://brb.to') > -1:
 		brb(url)
+	elif url.find('http://tree.tv/film') > -1:
+		tree(url)
 	elif url.find('http://fileplaneta.com/?op=playlist&type=uppod&fld_id=') > -1:
 		fileplaneta(url)
 	else:
@@ -102,7 +105,9 @@ def Categories(params):
 				sign = '?'
 				if url.find('?') > -1:	
 					sign = '&'
+				sts = sts.replace(' ','%20')
 				url2 = url + sign + 'search=' + sts
+				print url2
 				xml = _downloadUrl(url2)
 			else:
 				xml = _downloadUrl(url)
@@ -275,12 +280,54 @@ def brb(url):
 		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
 		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 		
-	play = re.findall('<span class="b-file-new__.*material-filename-text".*>(.*)</span>', html)
-	pl = re.findall('<a id="dl_.*" href="(.*)" class=', html)
+	play = re.findall('<span class="b-file-new__link-material-filename-text".*>(.*)</span>.*\\s.*\\s.*\\s.*<a id="dl_.*" href="(.*)" class="b-file-new__link-material-download" rel="nofollow">', html)
 	for names in play:
-		title = names
-		url2 = pl[0]
+		title = names[0]
+		url2 = names[1]
 		stream = "http://brb.to" + url2
+		mysetInfo={}
+		mysetInfo['plot'] = plot
+		mysetInfo['plotoutline'] = plot
+		uri = construct_request({
+			'func': 'Play',
+			'title':title,
+			'stream':stream 
+			})
+		listitem=xbmcgui.ListItem(title, '', '')
+		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
+	
+def tree(url):
+	url = url
+	video_list_temp = []
+	chan_counter = 0
+	plot = "No description"
+	site = url
+	request = urllib2.Request(site, None, {'User-agent': 'QuickTime/7.6.2 (qtver=7.6.2;os=Windows NT 5.1 Service Pack 3)'})
+	html = urllib2.urlopen(request).read()
+		
+	play2 = re.findall('trailer.*?\\s?.*?rel="(.*)"', html)
+	for names2 in play2:
+		title = 'Trailer'
+		url2 = names2
+		stream = url2
+		mysetInfo={}
+		mysetInfo['plot'] = plot
+		mysetInfo['plotoutline'] = plot
+		uri = construct_request({
+			'func': 'Play',
+			'title':title,
+			'stream':stream 
+			})
+		listitem=xbmcgui.ListItem(title, '', '')
+		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, False)	
+		
+	play = re.findall('class="accordion_content_item.*?data-quality="(.*?)".*?data-index=".*?\\s\\s.*?file_title watch_link">.*?\\s?.*?([360|480|720].*?)</a>.*?\\s.*?class="date_file.*?\\s.*?</div>.*?\\s.*?watch_mini.*?href="(.*?)"', html)
+	for names in play:
+		title = names[0] + '|' + names[1]
+		url2 = names[2]
+		stream = url2
 		mysetInfo={}
 		mysetInfo['plot'] = plot
 		mysetInfo['plotoutline'] = plot
@@ -327,7 +374,9 @@ def Play(params):
 	global ARSHAVIR_PARSER
 	global SG_PARSER
 	global GOSHA_PARSER
+	global CSC_PARSER
 	SG_PARSER = sg_parsers()
+	CSC_PARSER = cSc_parsers()
 	GOSHA_PARSER = gosha_parsers()
 	ARSHAVIR_PARSER = arshavir_parsers()
 	url = urllib.unquote(params['stream'])

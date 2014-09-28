@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <addon id="plugin.video.cScVOD"
        name="[COLOR FF00FF00]cScVOD[/COLOR]"
-       version="1.3.1"
+       version="1.4.0"
        provider-name="CSC">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -12,7 +12,7 @@
   <extension point="xbmc.addon.metadata">
     <summary>cScVOD</summary>
     <description>
-Плагин сделаный командой CSC для плейлистов типа nStreamVOD.Все стоящие русскоязычные сайты с фильмами/мультиками/сериалами и т.д. В ОДНОМ АДДОНЕ. С вопросами пишите на SashaGamliy@gmail.com
+БОЛЕЕ 70 САЙТОВ В ОДНОМ ПЛАГИНЕ!Плагин сделаный командой CSC для плейлистов типа nStreamVOD.Все стоящие русскоязычные сайты с фильмами/мультиками/сериалами и т.д. В ОДНОМ АДДОНЕ. С вопросами пишите на SashaGamliy@gmail.com
     </description>
     <platform>all</platform>
   </extension>
