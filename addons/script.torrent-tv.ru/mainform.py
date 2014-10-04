@@ -43,6 +43,7 @@ class WMainForm(xbmcgui.WindowXML):
     BTN_VOD_ID = 113
     BTN_CLOSE = 101
     BTN_FULLSCREEN = 208
+    IMG_SCREEN = 210
     CONTROL_LIST = 50
     PANEL_ADS = 105
     PROGRESS_BAR = 110
@@ -161,9 +162,25 @@ class WMainForm(xbmcgui.WindowXML):
        else:
            self.epg[param] = jdata['data']
            selitem = self.list.getSelectedItem()
+           
            if selitem.getProperty('epg_cdn_id') == param:
                self.showSimpleEpg(param)
+           
        self.hideStatus()
+
+    def showScreen(self, cdn):
+        if cdn < 1:
+            return
+        data = defines.GET('http://api.torrent-tv.ru/v2_translation_screen.php?session=%s&channel_id=%s&typeresult=json' % (self.session, cdn), cookie = self.session)
+        jdata = json.loads(data)
+        img = self.getControl(WMainForm.IMG_SCREEN)
+        img.setImage("")
+        if jdata['success'] == 0:
+            LogToXBMC('showScreen: скрин не найден')
+            return
+        else:
+            LogToXBMC('showScreen: %s' % jdata['screens'][0]['filename'])
+            img.setImage(jdata['screens'][0]['filename'])
 
     def onInit(self):
         try:
@@ -201,6 +218,9 @@ class WMainForm(xbmcgui.WindowXML):
                 LogToXBMC('Selected %s' % self.selitem_id)
                 epg_id = selItem.getProperty('epg_cdn_id')
                 #LogToXBMC('Icon list item = %s' % selItem.getIconImage())
+                img = self.getControl(WMainForm.IMG_SCREEN)
+                img.setImage("")
+                
                 if epg_id == '0':
                     self.showSimpleEpg()
                 elif self.epg.has_key(epg_id):
@@ -209,6 +229,10 @@ class WMainForm(xbmcgui.WindowXML):
                     self.showStatus('Загрузка программы')
                     thr = defines.MyThread(self.getEpg, epg_id)
                     thr.start()
+                
+                
+                thr = defines.MyThread(self.showScreen, epg_id)
+                thr.start()
                 img = self.getControl(1111)
                 img.setImage(selItem.getProperty('icon'))
     
