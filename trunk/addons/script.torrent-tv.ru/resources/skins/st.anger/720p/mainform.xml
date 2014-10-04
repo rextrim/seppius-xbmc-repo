@@ -38,7 +38,7 @@
           <posx>5</posx>
           <posy>5</posy>
           <width>1270</width>
-          <height>560</height>
+          <height>520</height>
           <texture border="40">window.png</texture>
         </control>
         <control type="group" id="101">
@@ -118,7 +118,7 @@
             <posx>15</posx>
             <posy>35</posy>
             <width>1251</width>
-            <height>520</height>
+            <height>480</height>
             <texture border="40">border.png</texture>
           </control>
           <control type="panel" id="50">
@@ -126,7 +126,7 @@
             <posx>23</posx>
             <posy>43</posy>
             <width>1240</width>
-            <height>510</height>
+            <height>480</height>
             <visible>true</visible>
             <onup>101</onup>
             <ondown>209</ondown>
@@ -212,21 +212,21 @@
         <description>InfoPanel</description>
         <control type="image">
           <posx>5</posx>
-          <posy>580</posy>
+          <posy>530</posy>
           <width>1270</width>
           <height>200</height>
           <texture border="40">window.png</texture>
         </control>
         <control type="image">
           <posx>5</posx>
-          <posy>580</posy>
+          <posy>530</posy>
           <width>1270</width>
           <height>200</height>
           <texture border="40">window.png</texture>
         </control>
         <control type="togglebutton" id="204">
           <posx>20</posx>
-          <posy>590</posy>
+          <posy>540</posy>
           <width>26</width>
           <height>26</height>
           <label>-</label>
@@ -243,7 +243,7 @@
         </control>
         <control type="button" id="200">
           <posx>50</posx>
-          <posy>590</posy>
+          <posy>540</posy>
           <width>26</width>
           <height>26</height>
           <onleft>204</onleft>
@@ -257,7 +257,7 @@
         <control type="button" id="208">
           <description>FULL SCREEN</description>
           <posx>80</posx>
-          <posy>590</posy>
+          <posy>540</posy>
           <width>26</width>
           <height>26</height>
           <onleft>200</onleft>
@@ -270,30 +270,30 @@
         <control type="button" id="209">
           <description>Show Window Information</description>
           <posx>110</posx>
-          <posy>590</posy>
+          <posy>540</posy>
           <width>26</width>
           <height>26</height>
           <onleft>208</onleft>
           <onright>204</onright>
-			 <onup>50</onup>
+			    <onup>50</onup>
           <visible>true</visible>
           <texturefocus>infofocus.png</texturefocus>
           <texturenofocus>infonofocus.png</texturenofocus>
         </control>
         <description>Info</description>
-        <control type="image" id="1111">
-          <posx>22</posx>
-          <posy>615</posy>
-          <width>110</width>
-          <height>100</height>
+        <control type="image" id="210">
+          <posx>10</posx>
+          <posy>570</posy>
+          <width>200</width>
+          <height>150</height>
           <visible>true</visible>
           <texture>unkchannel.jpg</texture>
           <aspectratio>keep</aspectratio>
         </control>
         <control type="label" id = "300">
           <description>Current EPG</description>
-          <posx>145</posx>
-          <posy>590</posy>
+          <posx>220</posx>
+          <posy>540</posy>
 	        <width>1000</width>
           <label>Нет программы</label>
           <font>font10</font>
@@ -303,51 +303,96 @@
         </control>
         <control type="label" id ="301">
           <description>Next EPG1</description>
-          <posx>145</posx>
-          <posy>627</posy>
+          <posx>220</posx>
+          <posy>575</posy>
           <align>left</align>
           <aligny>top</aligny>
-          <width>1000</width>
+          <width>900</width>
           <scroll>true</scroll>
           <height>200</height>
           <font>font10</font>
         </control>
         <control type="label" id ="302">
           <description>Next EPG2</description>
-          <posx>145</posx>
-          <posy>647</posy>
+          <posx>220</posx>
+          <posy>595</posy>
           <align>left</align>
           <aligny>top</aligny>
-          <width>703</width>
+          <width>900</width>
           <scroll>true</scroll>
           <height>200</height>
           <font>font10</font>
         </control>
         <control type="label" id ="303">
           <description>Next EPG3</description>
-          <posx>145</posx>
-          <posy>667</posy>
+          <posx>220</posx>
+          <posy>615</posy>
           <align>left</align>
           <aligny>top</aligny>
-          <width>703</width>
+          <width>900</width>
           <scroll>true</scroll>
           <height>200</height>
           <font>font10</font>
         </control>
+		  <control type="label" id ="304">
+          <description>Next EPG4</description>
+          <posx>220</posx>
+          <posy>635</posy>
+          <align>left</align>
+          <aligny>top</aligny>
+          <width>900</width>
+          <scroll>true</scroll>
+          <height>200</height>
+          <font>font10</font>
+        </control>
+		  <control type="label" id ="305">
+          <description>Next EPG5</description>
+          <posx>220</posx>
+          <posy>655</posy>
+          <align>left</align>
+          <aligny>top</aligny>
+          <width>900</width>
+          <scroll>true</scroll>
+          <height>200</height>
+          <font>font10</font>
+        </control>
+		  <control type="label" id ="306">
+          <description>Next EPG6</description>
+          <posx>220</posx>
+          <posy>675</posy>
+          <align>left</align>
+          <aligny>top</aligny>
+          <width>900</width>
+          <scroll>true</scroll>
+          <height>200</height>
+          <font>font10</font>
+        </control>
+		  <control type="label" id ="307">
+          <description>Next EPG3</description>
+          <posx>220</posx>
+          <posy>695</posy>
+          <align>left</align>
+          <aligny>top</aligny>
+          <width>900</width>
+          <scroll>true</scroll>
+          <height>200</height>
+          <font>font10</font>
+        </control>
+
         <control type="progress" id ="110">
           <description>Progress EGP</description>
-          <posx>140</posx>
-          <posy>615</posy>
+          <posx>215</posx>
+          <posy>565</posy>
           <visible>true</visible>
           <colordiffuse>88FFFFFF</colordiffuse>
-          <width>1010</width>
+          <width>900</width>
           <height>7</height>
           <info>ListItem.Progress</info>
         </control>
         <control type="label" id="107">
           <description>My First label</description>
           <posx>1240</posx>
-          <posy>590</posy>
+          <posy>540</posy>
           <width>320</width>
           <height>autho</height>
           <visible>true</visible>
@@ -360,12 +405,21 @@
         <control type="image" id="108">
           <description>Busy animation</description>
           <posx>1250</posx>
-          <posy>590</posy>
+          <posy>540</posy>
           <width>16</width>
           <height>16</height>
           <texture>busy.png</texture>
           <aspectratio>keep</aspectratio>
           <animation effect="rotate" start="0" end="360" center="auto" time="1200" loop="true" condition="true">conditional</animation>
+        </control>
+        <control type="image" id="1111">
+            <posx>1145</posx>
+            <posy>590</posy>
+            <width>120</width>
+            <height>110</height>
+            <visible>true</visible>
+            <texture>unkchannel.jpg</texture>
+            <aspectratio>keep</aspectratio>
         </control>
       </control>
     </control>
