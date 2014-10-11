@@ -187,7 +187,7 @@ class WMainForm(xbmcgui.WindowXML):
 
     def onInit(self):
         try:
-            data = defines.GET('http://api.torrent-tv.ru/v3/version.php?application=xbmc&version=1.5.1')
+            data = defines.GET('http://api.torrent-tv.ru/v3/version.php?application=xbmc&version=1.5.3')
             jdata = json.loads(data)
             if jdata['support'] == 0:
                from okdialog import OkDialog
