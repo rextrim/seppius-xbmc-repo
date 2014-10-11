@@ -7,6 +7,7 @@
     <setting id="skin" label="Обложка" type="labelenum" values="st.anger" />
     <setting default="true" id="winmode" label="Оконный режим плеера" type="bool" />
     <setting default="8621" id="outport" label="Внеший порт AceStream" type="number" />
+    <setting default="" id="uuid" type="text" visible="false" />
 		
 	</category>
 </settings>

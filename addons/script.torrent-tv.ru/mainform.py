@@ -18,7 +18,7 @@ from menu import MenuForm
 from infoform import InfoForm
 from dateform import DateForm
 
-from uuid import getnode as get_mac
+import uuid
 import os
 import socket
 
@@ -187,14 +187,25 @@ class WMainForm(xbmcgui.WindowXML):
 
     def onInit(self):
         try:
-            data = defines.GET('http://api.torrent-tv.ru/v3/version.php?application=xbmc&version=1.5.0')
+            data = defines.GET('http://api.torrent-tv.ru/v3/version.php?application=xbmc&version=1.5.1')
+            jdata = json.loads(data)
+            if jdata['support'] == 0:
+               from okdialog import OkDialog
+               dialog = OkDialog("okdialog.xml", defines.SKIN_PATH, defines.ADDON.getSetting('skin'))
+               dialog.setText("Текущая версия приложения (1.5.1) не поддерживается. Последняя версия %s " % jdata['last_version'].encode('utf-8'))
+               #dialog.setText('Hello World')
+               dialog.doModal()
+               self.close()
             self.img_progress = self.getControl(108)
             self.txt_progress = self.getControl(107)
             self.progress = self.getControl(WMainForm.PROGRESS_BAR)
             self.showStatus("Авторизация")
-            
-            guid = '%s%s%s' % (get_mac(),os.name,socket.gethostname())
+            guid = defines.ADDON.getSetting("uuid")
+            if guid == '':
+              guid = str(uuid.uuid1())
+              defines.ADDON.setSetting("uuid", guid)
             guid = guid.replace('-', '')
+            print guid
             data = defines.GET('http://api.torrent-tv.ru/v3/auth.php?username=%s&password=%s&typeresult=json&application=xbmc&guid=%s' % (defines.ADDON.getSetting('login'), defines.ADDON.getSetting('password'), guid))
             jdata = json.loads(data)
             if jdata['success'] == 0:
