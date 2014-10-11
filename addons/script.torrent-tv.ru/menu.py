@@ -20,10 +20,10 @@ def LogToXBMC(text, type = 1):
     del log
 
 class MenuForm(xbmcgui.WindowXMLDialog):
-    CMD_ADD_FAVOURITE = 'v2_favourite_add'
-    CMD_DEL_FAVOURITE = 'v2_favourite_delete'
-    CMD_UP_FAVOURITE = 'v2_favourite_up'
-    CMD_DOWN_FAVOURITE = 'v2_favourite_down'
+    CMD_ADD_FAVOURITE = 'favourite_add'
+    CMD_DEL_FAVOURITE = 'favourite_delete'
+    CMD_UP_FAVOURITE = 'favourite_up'
+    CMD_DOWN_FAVOURITE = 'favourite_down.php'
     CMD_CLOSE_TS = 'close_ts'
     CONTROL_CMD_LIST = 301
     def __ini__(self, *args, **kwargs):
@@ -77,25 +77,25 @@ class MenuForm(xbmcgui.WindowXMLDialog):
 
     def _sendCmd(self, cmd):
         channel_id = self.li.getLabel2()
-        res = self.get_method('http://api.torrent-tv.ru/%s?session=%s&channel_id=%s&typeresult=json' % (cmd, self.session, channel_id), cookie = self.session)
+        res = self.get_method('http://api.torrent-tv.ru/v3/%s?session=%s&channel_id=%s&typeresult=json' % (cmd, self.session, channel_id), cookie = self.session)
         LogToXBMC(res)
-        LogToXBMC('http://api.torrent-tv.ru/%s?session=%s&channel_id=%s&typeresult=json' % (cmd, self.session, channel_id))
+        LogToXBMC('http://api.torrent-tv.ru/v3/%s?session=%s&channel_id=%s&typeresult=json' % (cmd, self.session, channel_id))
         jdata = json.loads(res)
         if jdata['success'] == '0':
             self.result = jdata['error']
         else:
             self.result = 'OK'
     def DelFromFavourite(self):
-        self._sendCmd('v2_favourite_delete.php')
+        self._sendCmd('favourite_delete.php')
 
     def AddToFavourite(self):
-        self._sendCmd('v2_favourite_add.php')
+        self._sendCmd('favourite_add.php')
 
     def UpFavourite(self):
-        self._sendCmd('v2_favourite_up.php')
+        self._sendCmd('favourite_up.php')
 
     def DownFavourite(self):
-        self._sendCmd('v2_favourite_down.php')
+        self._sendCmd('favourite_down.php')
 
     def CloseTS(self):
         LogToXBMC('Closet TS')
