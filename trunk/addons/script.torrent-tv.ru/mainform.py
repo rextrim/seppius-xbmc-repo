@@ -98,8 +98,8 @@ class WMainForm(xbmcgui.WindowXML):
             return
 
         for cat in jdata["categories"]:
-            if not self.category.has_key(cat["id"]):
-                self.category[cat["id"]] = { "name": cat["name"], "channels": [] }
+            if not self.category.has_key('%s' % cat["id"]):
+                self.category['%s' % cat["id"]] = { "name": cat["name"], "channels": [] }
 
         for ch in jdata['channels']:
             if not ch["name"]:
@@ -123,7 +123,7 @@ class WMainForm(xbmcgui.WindowXML):
             
             if param == 'channel':
                 li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
-                self.category[ch['group']]["channels"].append(li)
+                self.category['%s' % ch['group']]["channels"].append(li)
             elif param == 'moderation':
                 li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
                 self.category[WMainForm.CHN_TYPE_MODERATION]["channels"].append(li)
@@ -591,7 +591,7 @@ class WMainForm(xbmcgui.WindowXML):
         for gr in self.category:
             li = xbmcgui.ListItem(self.category[gr]["name"])
             li.setProperty('type', 'category')
-            li.setProperty('id', '%' % gr)
+            li.setProperty('id', '%s' % gr)
             self.list.addItem(li)
 
     def fillRecords(self, li, date = time.localtime()):
