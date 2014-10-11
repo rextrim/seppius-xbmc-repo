@@ -163,32 +163,20 @@ def Get_Parameters(params):
     return p
 
 # ----- search on site --------------------------------------------------------
-def get_Search_HTML(search_str):
+def get_Search_HTML(search_str, page):
     url = 'http://nowfilms.ru/index.php?do=search'
     str = search_str.decode('utf-8').encode('windows-1251')
 
     values = {
-            'beforeafter'	    : 'after',
-            'catlist[]'         : 0,
-            'do'	            : 'search',
-            'full_search'	    : 1,
-            'replyless'	        : 0,
-            'replylimit'	    : 0,
-            'resorder'	        : 'asc',
-            'result_from'	    : 1,
-            'result_num'	    : 1000,
-            'search_start'	    : 1,
-            'searchdate'	    : 0,
-            'searchuser'        : '',
-            'showposts'	        : 0,
-            'sortby'	        : 'title',
-            'story'	            : str,
-            'subaction'	        : 'search',
-            'titleonly'	        : 3
-        }
+                 'do'            : 'search'
+                ,'subaction'     : 'search'
+                ,'story'         : str
+                ,'search_start'  : page
+                ,'full_search'   : 0
+                ,'result_from'   : (page-1)*30+1
+            }
 
     post = urllib.urlencode(values)
-
     html = get_HTML(url, post)
 
     return html
@@ -198,7 +186,6 @@ def Get_URL(par):
     url = par.url+'page/'+par.page+'/'
 
     return url
-
 #----------- get page count & number of movies ---------------------------------
 def Get_Page_and_Movies_Count(par):
     url = par.url
@@ -312,40 +299,9 @@ def Movie_List(params):
                 par.search = SearchStr[0]
             else:
                 return False
+
             #-- get and parce result
-            html = get_Search_HTML(par.search)
-            soup = BeautifulSoup(html, fromEncoding="windows-1251")
-
-            for rec in soup.findAll('div', {'class':'full'}):
-                if rec.find('div', {'class':'full2'}).find('a'):
-                    mi.url = rec.find('div', {'class':'full2'}).find('a')['href']
-                    if '/music/' in mi.url or '/play/' in mi.url or '/soft/' in mi.url:
-                        continue
-
-                    mi.title = rec.find('div', {'class':'full2'}).find('a').text.encode('utf-8')
-                    mi.img = rec.find('div', {'class':'full5 full6'}).find('img')['src']
-                    if mi.img[:4] <> 'http':
-                        mi.img = 'http://nowfilms.ru'+mi.img
-                    #-- paint title ---
-                    try:
-                        m = min(mi.title.index('/'), mi.title.index('('))
-                    except:
-                        try:
-                            m = mi.title.index('/')
-                        except:
-                            try:
-                                m = mi.title.index('(')
-                            except:
-                                m = len(mi.title)
-
-                    title = '[COLOR FF00FFFF]'+mi.title[0:m]+'[/COLOR]'+mi.title[m:]
-                    i = xbmcgui.ListItem(title, iconImage=mi.img, thumbnailImage=mi.img)
-                    u = sys.argv[0] + '?mode=SOURCE'
-                    u += '&shortname=%s'%urllib.quote_plus(mi.title[0:m])
-                    u += '&name=%s'%urllib.quote_plus(mi.title)
-                    u += '&url=%s'%urllib.quote_plus(mi.url)
-                    u += '&img=%s'%urllib.quote_plus(mi.img)
-                    xbmcplugin.addDirectoryItem(h, u, i, True)
+            Search_List(par)
 
         else:
             # -- get total number of movies and pages if not provided
@@ -470,7 +426,55 @@ def Movie_List(params):
 
         xbmcplugin.endOfDirectory(h)
 
-#---------- source list ---------------------------------------------------------
+#---------- search list --------------------------------------------------------
+def Search_List(par):
+    #-- get and parce result
+    html = get_Search_HTML(par.search, 1) #-- get first page
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+    #-- get mumber of find movies
+    try:
+        count = int(re.compile(u'найдено (.+?) ответ', re.MULTILINE|re.DOTALL).findall(soup.find('div', {'class':"info1"}).text)[0])
+    except:
+        count = 30
+
+    if count > 30:  #-- limit to 30 returned records
+        count = 30
+
+    #-- show header
+    info   = 'Поиск: '+ '[COLOR FF00FF00]'+ par.search +'[/COLOR]'
+    info  += '  |  Найдено: ' + '[COLOR FFFFFF00]' + str(count) + '[/COLOR]'
+    #-- info line
+    name    = info
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=EMPTY'
+    u += '&name=%s'%urllib.quote_plus(name)
+    #-- filter parameters
+    u += '&page=%s'%urllib.quote_plus(par.page)
+    u += '&genre=%s'%urllib.quote_plus(par.genre)
+    u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+    u += '&count=%s'%urllib.quote_plus(str(par.count))
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    #-- get number of find records and show header
+    for rec in soup.findAll('div', {'class':"short_news"}):
+        mi.url      = rec.find('a')['href']
+        mi.title    = rec.find('span', {'class':"short_news4"}).find('img')['alt'].encode('utf-8')
+        mi.img      = 'http://nowfilms.ru'+rec.find('span', {'class':"short_news4"}).find('img')['src']
+        mi.text     = rec.find('span', {'class':"short_news2"}).find('span').text.encode('utf-8')
+
+        title = '[COLOR FF00FFFF]'+mi.title+'[/COLOR]'
+        i = xbmcgui.ListItem(title, iconImage=mi.img, thumbnailImage=mi.img)
+        u = sys.argv[0] + '?mode=SOURCE'
+        u += '&shortname=%s'%urllib.quote_plus(mi.title)
+        u += '&name=%s'%urllib.quote_plus(mi.title)
+        u += '&url=%s'%urllib.quote_plus(mi.url)
+        u += '&img=%s'%urllib.quote_plus(mi.img)
+        i.setInfo(type='video', infoLabels={ 'title':       mi.title,
+                                             'plot':        mi.text})
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+#---------- source list --------------------------------------------------------
 def Source_List(params):
     url  = urllib.unquote_plus(params['url'])
     img  = urllib.unquote_plus(params['img'])
@@ -621,12 +625,12 @@ def Type_List(params):
     html = get_HTML(url)
 
     # -- search ----------------------------------------------------------------
-##    name    = '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]'
-##    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-##    u = sys.argv[0] + '?mode=MOVIE'
-##    #-- filter parameters
-##    u += '&search=%s'%urllib.quote_plus('Y')
-##    xbmcplugin.addDirectoryItem(h, u, i, True)
+    name    = '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]'
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=MOVIE'
+    #-- filter parameters
+    u += '&search=%s'%urllib.quote_plus('Y')
+    xbmcplugin.addDirectoryItem(h, u, i, True)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -792,10 +796,33 @@ def Initialize():
     post = urllib.urlencode(values)
     html = get_HTML(url, post)
 
+    Set_Order(1)
+
+def Set_Order(ignor):
     #--------- set sort order ---------------------------
+    val = Addon.getSetting('sortval')
+
+    xbmc.log('---- Set order ---------')
+    xbmc.log(str(Addon.getSetting('last_sortval')))
+
+    if val == Addon.getSetting('last_sortval') and ignor == 0:
+        return
+
+    xbmc.log('set order:'+ str(val))
+    Addon.setSetting(id='last_sortval', value=val)
+    if (val == 0):      #-- алфавит
+        _dir = 'asc'
+        _sort= 'title'
+    elif (val == 1):    #-- дата
+        _dir = 'desc'
+        _sort= 'date'
+    else:               #-- КиноПоиск
+        _dir = 'desc'
+        _sort= 'kp_rating'
+
     url = 'http://nowfilms.ru/serial/boeviki/'
-    values = {  'dlenewssortby'       :'title',
-                'dledirection'        :'asc',
+    values = {  'dlenewssortby'       : _sort,
+                'dledirection'        : _dir,
                 'set_new_sort'        :'dle_sort_cat',
                 'set_direction_sort'  :'dle_direction_cat'
              }
@@ -824,13 +851,11 @@ mi = Info()
 mode = None
 
 try:
-	mode = urllib.unquote_plus(params['mode'])
+    mode = urllib.unquote_plus(params['mode'])
+    Set_Order(0)
 except:
 	Initialize()
 	Type_List(params)
-
-xbmc.log('--- MODE ---')
-print mode
 
 if mode == 'MOVIE':
 	Movie_List(params)
