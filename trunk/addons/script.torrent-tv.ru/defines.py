@@ -64,3 +64,9 @@ def checkPort(params):
             return False
         else:
             return True
+
+def tryStringToInt(str_val):
+    try:
+        return int(str_val)
+    except:
+        return 0

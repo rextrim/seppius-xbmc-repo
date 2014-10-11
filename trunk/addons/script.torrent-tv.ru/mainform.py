@@ -9,6 +9,7 @@ import xbmcaddon
 import json
 import urllib2
 import time
+import datetime
 
 from ts import TSengine as tsengine
 from player import MyPlayer
@@ -16,8 +17,10 @@ from adswnd import AdsForm
 from menu import MenuForm
 from infoform import InfoForm
 from dateform import DateForm
-from datetime import datetime
 
+from uuid import getnode as get_mac
+import os
+import socket
 
 import defines
 
@@ -88,13 +91,12 @@ class WMainForm(xbmcgui.WindowXML):
         self.translation = []
 
     def getChannels(self, param):
-        data = defines.GET('http://api.torrent-tv.ru/v2_alltranslation.php?session=%s&type=%s&typeresult=json' % (self.session, param), cookie = self.session)
+        data = defines.GET('http://api.torrent-tv.ru/v3/translation_list.php?session=%s&type=%s&typeresult=json' % (self.session, param), cookie = self.session)
         jdata = json.loads(data)
         if jdata['success'] == 0:
             self.showStatus(jdata['error'])
             return
-        
-        
+
         for cat in jdata["categories"]:
             if not self.category.has_key(cat["id"]):
                 self.category[cat["id"]] = { "name": cat["name"], "channels": [] }
@@ -108,16 +110,16 @@ class WMainForm(xbmcgui.WindowXML):
                 ch['logo'] = 'http://torrent-tv.ru/uploads/' + ch['logo']
             
             chname = ch["name"]
-            if ch["access_user"] == "no":
+            if ch["access_user"] == 0:
                 chname = "[COLOR FF646464]%s[/COLOR]" % chname
             
-            li = xbmcgui.ListItem(chname, ch['id'], ch['logo'], ch['logo'])
+            li = xbmcgui.ListItem(chname, '%s' % ch['id'], ch['logo'], ch['logo'])
             li.setProperty('epg_cdn_id', '%s' % ch['epg_id'])
             li.setProperty('icon', ch['logo'])
             li.setProperty("type", "channel")
-            li.setProperty("id", ch["id"])
+            li.setProperty("id", '%s' % ch["id"])
             li.setProperty("access_translation", ch["access_translation"])
-            li.setProperty("access_user", ch["access_user"])
+            li.setProperty("access_user", '%s' % ch["access_user"])
             
             if param == 'channel':
                 li.setProperty('commands', "%s,%s" % (MenuForm.CMD_ADD_FAVOURITE, MenuForm.CMD_CLOSE_TS))
@@ -133,7 +135,7 @@ class WMainForm(xbmcgui.WindowXML):
                 self.category[WMainForm.CHN_TYPE_FAVOURITE]["channels"].append(li)
 
     def getArcChannels(self, param):
-        data = defines.GET('http://api.torrent-tv.ru/v2_arc_getchannels.php?session=%s&typeresult=json' % self.session, cookie = self.session)
+        data = defines.GET('http://api.torrent-tv.ru/v3/arc_list.php?session=%s&typeresult=json' % self.session, cookie = self.session)
         jdata = json.loads(data)
         self.archive = []
         if jdata['success'] == 0:
@@ -147,14 +149,14 @@ class WMainForm(xbmcgui.WindowXML):
                 ch["logo"] = ""
             else:
                 ch["logo"] = "http://torrent-tv.ru/uploads/" + ch["logo"]
-            li = xbmcgui.ListItem(ch["name"], ch["id"], ch["logo"], ch["logo"])
-            li.setProperty("epg_cdn_id", ch["channel_id"])
+            li = xbmcgui.ListItem(ch["name"], '%s' % ch["id"], ch["logo"], ch["logo"])
+            li.setProperty("epg_cdn_id", '%s' % ch["epg_id"])
             li.setProperty("icon", ch["logo"])
             li.setProperty("type", "archive")
             self.archive.append(li)
 
     def getEpg(self, param):
-       data = defines.GET('http://api.torrent-tv.ru/v2_get_epg.php?session=%s&channel_id=%s&typeresult=json' % (self.session, param), cookie = self.session)
+       data = defines.GET('http://api.torrent-tv.ru/v3/translation_epg.php?session=%s&epg_id=%s&typeresult=json' % (self.session, param), cookie = self.session)
        jdata = json.loads(data)
        if jdata['success'] == 0:
           self.epg[param] = []
@@ -169,9 +171,10 @@ class WMainForm(xbmcgui.WindowXML):
        self.hideStatus()
 
     def showScreen(self, cdn):
-        if cdn < 1:
+        if defines.tryStringToInt(cdn) < 1:
             return
-        data = defines.GET('http://api.torrent-tv.ru/v2_translation_screen.php?session=%s&channel_id=%s&typeresult=json' % (self.session, cdn), cookie = self.session)
+
+        data = defines.GET('http://api.torrent-tv.ru/v3/translation_screen.php?session=%s&channel_id=%s&typeresult=json&count=1' % (self.session, cdn), cookie = self.session)
         jdata = json.loads(data)
         img = self.getControl(WMainForm.IMG_SCREEN)
         img.setImage("")
@@ -184,19 +187,21 @@ class WMainForm(xbmcgui.WindowXML):
 
     def onInit(self):
         try:
-            LogToXBMC('OnInit')
-            
+            data = defines.GET('http://api.torrent-tv.ru/v3/version.php?application=xbmc&version=1.5.0')
             self.img_progress = self.getControl(108)
             self.txt_progress = self.getControl(107)
             self.progress = self.getControl(WMainForm.PROGRESS_BAR)
             self.showStatus("Авторизация")
-            data = defines.GET('http://api.torrent-tv.ru/v2_auth.php?username=%s&password=%s&typeresult=json&application=xbmc' % (defines.ADDON.getSetting('login'), defines.ADDON.getSetting('password')))
+            
+            guid = '%s%s%s' % (get_mac(),os.name,socket.gethostname())
+            guid = guid.replace('-', '')
+            data = defines.GET('http://api.torrent-tv.ru/v3/auth.php?username=%s&password=%s&typeresult=json&application=xbmc&guid=%s' % (defines.ADDON.getSetting('login'), defines.ADDON.getSetting('password'), guid))
             jdata = json.loads(data)
             if jdata['success'] == 0:
                 self.showStatus(jdata['error'])
                 return
 
-            self.user = {"login" : defines.ADDON.getSetting('login'), "ballance" : jdata["ballance"]}
+            self.user = {"login" : defines.ADDON.getSetting('login'), "balance" : jdata["balance"]}
             
             self.session = jdata['session']
             self.updateList()
@@ -231,7 +236,7 @@ class WMainForm(xbmcgui.WindowXML):
                     thr.start()
                 
                 
-                thr = defines.MyThread(self.showScreen, epg_id)
+                thr = defines.MyThread(self.showScreen, selItem.getLabel2())
                 thr.start()
                 img = self.getControl(1111)
                 img.setImage(selItem.getProperty('icon'))
@@ -312,7 +317,10 @@ class WMainForm(xbmcgui.WindowXML):
                 if datefrm == None:
                     print "From not created"
 
-                datefrm.date =datetime.fromtimestamp(time.mktime(time.strptime(selItem.getProperty("date"), "%Y-%m-%d")))
+                stime = time.strptime(selItem.getProperty("date"), "%Y-%m-%d")
+                datefrm.date = datetime.date(stime.tm_year, stime.tm_mon, stime.tm_mday)
+                #datefrm.date =datetime.fromtimestamp(time.mktime(time.strptime(selItem.getProperty("date"), "%Y-%m-%d")))
+                #datefrm.date = datetime.strptime(selItem.getProperty("date"), "%Y-%m-%d")
                 datefrm.doModal()
                 find = False
                 for li in self.archive:
@@ -324,7 +332,7 @@ class WMainForm(xbmcgui.WindowXML):
                     self.fillRecords(self.archive[0], datefrm.date)
                     return
             
-            if selItem.getProperty("access_user") == "no":
+            if selItem.getProperty("access_user") == 0:
                 access = selItem.getProperty("access_translation")
                 if access == "registred":
                    defines.showMessage("Трансляция доступна для зарегестрированных пользователей")
@@ -340,7 +348,7 @@ class WMainForm(xbmcgui.WindowXML):
             buf.setProperty("type", selItem.getProperty("type"))
             buf.setProperty("id", selItem.getProperty("id"))
             if selItem.getProperty("type") == "archive":
-                self.fillRecords(buf, datetime.today());
+                self.fillRecords(buf, datetime.datetime.today());
                 return
             print selItem.getProperty("type")
             self.playditem = self.selitem_id
@@ -396,7 +404,10 @@ class WMainForm(xbmcgui.WindowXML):
         controlEpg = self.getControl(WMainForm.LBL_FIRST_EPG)
         if epg_id and self.epg[epg_id].__len__() > 0:
             ctime = time.time()
-            curepg = filter(lambda x: (float(x['etime']) > ctime), self.epg[epg_id])
+            try:
+                curepg = filter(lambda x: (float(x['etime']) > ctime), self.epg[epg_id])
+            except:
+                return
             bt = float(float(curepg[0]['btime']))
             et = float(float(curepg[0]['etime']))
             sbt = time.localtime(bt)
@@ -569,16 +580,12 @@ class WMainForm(xbmcgui.WindowXML):
         for gr in self.category:
             li = xbmcgui.ListItem(self.category[gr]["name"])
             li.setProperty('type', 'category')
-            li.setProperty('id', gr)
+            li.setProperty('id', '%' % gr)
             self.list.addItem(li)
 
     def fillRecords(self, li, date = time.localtime()):
         self.showStatus("Загрузка архива")
-        data = defines.GET("http://api.torrent-tv.ru/v2_arc_getrecords.php?session=%s&date=%d-%d-%s&channel_id=%s&typeresult=json" % (self.session, date.day, date.month, date.year, li.getProperty("epg_cdn_id")), cookie = self.session)
-        jdata = json.loads(data)
-        if jdata["success"] == 0:
-            self.showStatus(jdata["error"])
-            return
+        LogToXBMC("Show records")
         self.list.reset()
         const_li = xbmcgui.ListItem("..")
         self.list.addItem(const_li)
@@ -586,15 +593,21 @@ class WMainForm(xbmcgui.WindowXML):
         const_li.setProperty("type", "rec_date")
         const_li.setProperty("epg_cdn_id", li.getProperty("epg_cdn_id"))
         const_li.setProperty("date", "%s-%s-%s" % (date.year, date.month, date.day))
-
         self.list.addItem(const_li)
+        data = defines.GET("http://api.torrent-tv.ru/v3/arc_records.php?session=%s&date=%d-%d-%s&epg_id=%s&typeresult=json" % (self.session, date.day, date.month, date.year, li.getProperty("epg_cdn_id")), cookie = self.session)
+        jdata = json.loads(data)
+        if jdata["success"] == 0:
+            self.showStatus(jdata["error"])
+            return
+        
+        
 
         for rec in jdata["records"]:
             rec_date = time.localtime(float(rec["time"]))
             rec_li = xbmcgui.ListItem("[COLOR FFC0C0C0]%.2d:%.2d[/COLOR] %s" % (rec_date.tm_hour, rec_date.tm_min, rec["name"]), rec["name"], li.getProperty("icon"), li.getProperty("icon"))
             rec_li.setProperty("type", "record")
-            rec_li.setProperty("id", rec["record_id"])
-            rec_li.setProperty("epg_cdn_id", rec["channel_id"])
+            rec_li.setProperty("id", '%s' % rec["record_id"])
+            rec_li.setProperty("epg_cdn_id", '%s' % rec["epg_id"])
             rec_li.setProperty("icon", li.getProperty("icon"))
             self.list.addItem(rec_li)
 
