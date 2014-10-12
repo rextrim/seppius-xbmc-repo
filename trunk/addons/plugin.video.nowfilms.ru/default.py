@@ -456,6 +456,51 @@ def Search_List(par):
     u += '&count=%s'%urllib.quote_plus(str(par.count))
     xbmcplugin.addDirectoryItem(h, u, i, True)
 
+    if soup.find("div", {"class":"new_movie15"}):
+    # -- get movie info
+        for rec in soup.findAll('div', {'class':'new_movie15'}):
+            mi.url      = rec.find('span', {'class':"new_movie8"}).find('a')['href']
+            mi.title    = rec.find('span', {'class':"new_movinfo1"}).text.encode('utf-8')
+            mi.genre    = rec.find('span', {'class':"new_movinfo2"}).text.encode('utf-8')
+            mi.img      = 'http://nowfilms.ru'+rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
+
+            #-- paint title ---
+            try:
+                m = min(mi.title.index('/'), mi.title.index('('))
+            except:
+                try:
+                    m = mi.title.index('/')
+                except:
+                    try:
+                        m = mi.title.index('(')
+                    except:
+                        m = len(mi.title)
+
+            title = '[COLOR FF00FFFF]'+mi.title[0:m]+'[/COLOR]'+mi.title[m:]
+
+            try:
+                mi.text = rec.find('span', {'class':"new_movinfo3"}).text
+            except:
+                mi.text =''
+
+            try:
+                mi.text = mi.text+' '+rec.find('span', {'class':"serials_season"}).text
+            except:
+                pass
+            mi.text = mi.text.encode('utf-8')
+
+            i = xbmcgui.ListItem(title, iconImage=mi.img, thumbnailImage=mi.img)
+            u = sys.argv[0] + '?mode=SOURCE'
+            u += '&shortname=%s'%urllib.quote_plus(mi.title[0:m])
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&url=%s'%urllib.quote_plus(mi.url)
+            u += '&img=%s'%urllib.quote_plus(mi.img)
+            i.setInfo(type='video', infoLabels={ 'title':       mi.title,
+                        						 'genre':       mi.genre,
+                                                 'plot':        mi.text})
+            #i.setProperty('fanart_image', mi.img)
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
     #-- get number of find records and show header
     for rec in soup.findAll('div', {'class':"short_news"}):
         mi.url      = rec.find('a')['href']
