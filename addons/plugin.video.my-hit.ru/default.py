@@ -26,7 +26,7 @@ import urlparse
 #-----------------------------------------------
 import BaseHTTPServer, cgi
 import subprocess, socket, threading
-import random, sys
+import random, sys, json
 from time import gmtime, strftime
 from datetime import datetime
 import ConfigParser
@@ -135,6 +135,8 @@ def Get_Parameters(params):
 
 #---------- get web page -------------------------------------------------------
 def get_HTML(url, post = None, ref = None):
+    #xbmc.log(url)
+
     request = urllib2.Request(url, post)
 
     host = urlparse.urlsplit(url).hostname
@@ -581,44 +583,52 @@ def Play_Mode(params):
     #-- get play list
     html = get_HTML(url)
     pl = re.compile(u'var flashvars \= \{(.+?)\}', re.MULTILINE|re.DOTALL).findall(html)[0].replace("'",'')
+    #xbmc.log(pl)
     for rec in pl.split(','):
-        if rec.strip().split(':')[0] == 'pl':
-            url = 'https://my-hit.org'+ rec.split(':')[1].strip()
+        if rec.strip().split(':', 1)[0] == 'pl':
+            url = 'https://my-hit.org'+ rec.split(':', 1)[1].strip()
+            url_type = 'PL'
+        if rec.strip().split(':')[0] == 'file':
+            url = rec.split(':', 1)[1].strip()
+            url_type = 'FILE'
 
-    html = get_HTML(url)
+    list = []
+    #xbmc.log(url_type)
     try:
-        mov = re.compile(u'\[\{"file":"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)[0]
+        if url_type == 'PL':
+            html = get_HTML(url)
 
-        mov =  mov.replace('\\','').replace('[','#').replace(']','#')
-        mov_u = mov.split('#')
+            for rec in json.loads(html)['playlist']:
+                #xbmc.log('.....')
+                #xbmc.log(rec['file'])
+                _url = rec['file']
+                _img = rec['poster']
+                list.append({'url': _url, 'img': _img, 'type': 'AHDS'})
+            '''
+            mov = re.compile(u'\[\{"file":"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)[0]
 
-        mov_q_def = {'9':'1080p', '8':' 720p', '7':' 480p', '6':' 360p', '5':' 320p', '4':' 240p'}
+            mov =  mov.replace('\\','').replace('[','#').replace(']','#')
+            mov_u = mov.split('#')
+
+            xbmc.log(mov)
+            '''
+            mov_q_def = {'9':'1080p', '8':' 720p', '7':' 480p', '6':' 360p', '5':' 320p', '4':' 240p'}
+        else:
+            list.append({'url': url, 'img': img, 'type': 'AHDS'})
 
         #-- old movie format
-        if len(mov_u) == 1:
-            name_ = ' [COLOR FFC3FDB8]'+name+'[/COLOR]'
-
+        for mov in list:
+            #xbmc.log('---')
+            #xbmc.log(mov['url'])
+            name_ = '[COLOR FFC3FDB8]'+name+'[/COLOR]'
             i = xbmcgui.ListItem(name_, iconImage=img, thumbnailImage=img)
             u = sys.argv[0] + '?mode=PLAY'
             u += '&name=%s'%urllib.quote_plus('[COLOR FFC3FDB8]'+name+'[/COLOR]')
-            u += '&url=%s'%urllib.quote_plus(mov)
+            u += '&url=%s'%urllib.quote_plus(mov['url'])
             u += '&img=%s'%urllib.quote_plus(img)
-            u += '&type=%s'%urllib.quote_plus('FLV')
+            u += '&type=%s'%urllib.quote_plus(mov['type'])
             i.setProperty('fanart_image', img)
             xbmcplugin.addDirectoryItem(h, u, i, False)
-        else:
-            for mov_q in re.compile(u'#(.+?)#', re.MULTILINE|re.DOTALL).findall(mov)[0].split(','):
-                if mov_q != '':
-                    name_ = mov_q_def[mov_q]+' [COLOR FFC3FDB8]'+name+'[/COLOR]'
-
-                    i = xbmcgui.ListItem(name_, iconImage=img, thumbnailImage=img)
-                    u = sys.argv[0] + '?mode=PLAY'
-                    u += '&name=%s'%urllib.quote_plus('[COLOR FFC3FDB8]'+name+'[/COLOR] ('+mov_q_def[mov_q]+')')
-                    u += '&url=%s'%urllib.quote_plus(mov_u[0]+mov_q+mov_u[2])
-                    u += '&img=%s'%urllib.quote_plus(img)
-                    u += '&type=%s'%urllib.quote_plus('AHDS')
-                    i.setProperty('fanart_image', img)
-                    xbmcplugin.addDirectoryItem(h, u, i, False)
     except:
         pass
 
@@ -636,8 +646,8 @@ def PLAY(params):
     name        = urllib.unquote_plus(params['name'])
     type_       = urllib.unquote_plus(params['type'])
 
-    print '-------------'
-    print type_
+    #xbmc.log('-------------')
+    #xbmc.log(type_)
 
     if type_ == 'FLV':
         i = xbmcgui.ListItem(name, path = urllib.unquote(movie_url), thumbnailImage=img)
@@ -656,7 +666,7 @@ def PLAY(params):
         t.start()
 
         #-- wait and play video ------
-        time.sleep(2)
+        #time.sleep(5)
         player = AdobeHDS_Player()
         player.Init(movie_url, name, img)
         player.play_start()
@@ -762,7 +772,7 @@ def workerRun():
             QueueUrlDone.put((item.fragNum, item))
             #print fragUrl
         except HTTPError, e:
-            print e
+            xbmc.log(str(e))
             if item.errCount > 3:
                 M6Item.status = 'STOPPED'
                 # raise
@@ -882,6 +892,7 @@ class M6(object):
 
         for i in range(self.nbFragments):
             fragUrl = self.urlbootstrap + 'Seg1-Frag'+str(i + 1)
+            #xbmc.log(fragUrl)
             QueueUrl.put((i + 1, GetUrl(fragUrl, i + 1)))
 
         #print '[Queue len]:   '+ str(QueueUrl.qsize())
@@ -924,27 +935,29 @@ class M6(object):
         infos['drmId']         = self.drmAdditionalHeaderId
         return infos
 
-    if hasUrllib3:
-        def getFile(self, url):
-            headers = urllib3.make_headers(
-                keep_alive=True,
-                user_agent='Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:17.0) Gecko/20100101 Firefox/17.0',
-                accept_encoding=True)
-            r = self.pm.request('GET', url, headers=headers)
-            if r.status != 200:
-                print 'Error downloading', r.status, url
-                # sys.exit(1)
-            return r.data
-    else:
-        def getFile(self, url):
-            txheaders = {'User-Agent':
-                             'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:17.0) Gecko/20100101 Firefox/17.0',
-                         'Keep-Alive' : '600',
-                         'Connection' : 'keep-alive'
-                         }
-            request = urllib2.Request(url, None, txheaders)
-            response = urllib2.urlopen(request)
-            return response.read()
+##    if hasUrllib3:
+##        def getFile(self, url):
+##            headers = urllib3.make_headers(
+##                keep_alive=True,
+##                user_agent='Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:17.0) Gecko/20100101 Firefox/17.0',
+##                X-DevTools-Emulate-Network-Conditions-Client-Id = '22D8BD39-46AD-4AE2-8BCA-4FDDCD99E9B2',
+##                accept_encoding=True)
+##            r = self.pm.request('GET', url, headers=headers)
+##            if r.status != 200:
+##                print 'Error downloading', r.status, url
+##                # sys.exit(1)
+##            return r.data
+##    else:
+    def getFile(self, url):
+        txheaders = {'User-Agent':
+                     'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:17.0) Gecko/20100101 Firefox/17.0',
+                     'X-DevTools-Emulate-Network-Conditions-Client-Id' : '22D8BD39-46AD-4AE2-8BCA-4FDDCD99E9B2',
+                     'Keep-Alive' : '600',
+                     'Connection' : 'keep-alive'
+                     }
+        request = urllib2.Request(url, None, txheaders)
+        response = urllib2.urlopen(request)
+        return response.read()
 
     def getManifest(self, url):
         self.status = 'GETTING MANIFEST'
@@ -956,7 +969,7 @@ class M6(object):
             root = self.manifest
             # Duration
             self.duration = float(root.find("{http://ns.adobe.com/f4m/1.0}duration").text)
-            # nombre de fragment
+            # nombre de fragment"
             self.nbFragments = int(math.ceil(self.duration/3))
             # streamid
             self.streamid = root.findall("{http://ns.adobe.com/f4m/1.0}media")[-1]
