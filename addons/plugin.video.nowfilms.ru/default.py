@@ -295,7 +295,6 @@ def Movie_List(params):
             skbd.doModal()
             if skbd.isConfirmed():
                 SearchStr = skbd.getText().split(':')
-                url = 'http://allserials.tv/search/node/'+urllib.quote(SearchStr[0])
                 par.search = SearchStr[0]
             else:
                 return False
@@ -436,7 +435,7 @@ def Search_List(par):
     try:
         count = int(re.compile(u'найдено (.+?) ответ', re.MULTILINE|re.DOTALL).findall(soup.find('div', {'class':"info1"}).text)[0])
     except:
-        count = 30
+        count = 0
 
     if count > 30:  #-- limit to 30 returned records
         count = 30
@@ -586,11 +585,12 @@ def Get_PlayList(url, name):
 			else:
 				list.append({'name': name, 'url': video})
 
-    if len(list) == 0:
-        if soup.find('param', {'name':"flashvars"}):
-            res = soup.find('param', {'name':"flashvars"})['value']
-        else:
-            res = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html)[0]
+    #if len(list) == 0:
+    for res in re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html):
+##        if soup.find('param', {'name':"flashvars"}):
+##            res = soup.find('param', {'name':"flashvars"})['value']
+##        else:
+##            res = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html)[0]
 
         video = ''
 
