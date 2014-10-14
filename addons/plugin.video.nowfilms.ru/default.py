@@ -591,12 +591,12 @@ def Get_PlayList(url, name):
 ##            res = soup.find('param', {'name':"flashvars"})['value']
 ##        else:
 ##            res = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html)[0]
-
         video = ''
 
-        res = res.replace('"', '')
+        #res = res.replace('"', '')
 
-        for rec in res.split(','):
+        for rec in res.split('",'):
+            rec = rec.replace('"', '')
             #-- movie
             if rec.split(':', 1)[0] == 'file':
                 video = rec.split(':', 1)[1]
@@ -846,9 +846,6 @@ def Initialize():
 def Set_Order(ignor):
     #--------- set sort order ---------------------------
     val = Addon.getSetting('sortval')
-
-    xbmc.log('---- Set order ---------')
-    xbmc.log(str(Addon.getSetting('last_sortval')))
 
     if val == Addon.getSetting('last_sortval') and ignor == 0:
         return
