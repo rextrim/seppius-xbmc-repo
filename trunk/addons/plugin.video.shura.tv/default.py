@@ -608,7 +608,7 @@ xbmc.log('[SHURA.TV] [%s] mode: %s' % (PLUGIN_NAME, mode))
 
 resetAlarms(PLUGIN_CORE, mode)
 
-if mode == 'archive':
+if mode == 'archive' or mode == 'Archive':
 	Archive(PLUGIN_CORE, channel, host)
 
 elif mode == 'OpenPage':
@@ -626,7 +626,7 @@ elif mode in ('TV', 'FAV'):
 elif mode == 'Favourite':
 	Favourite(PLUGIN_CORE, channel)
 
-elif mode == 'Settings':
+elif mode == 'Settings' or mode == 'settings':
 	ProcessSettings(PLUGIN_CORE, params)
 
 elif mode == 'openSettings':
