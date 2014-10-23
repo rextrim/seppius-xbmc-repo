@@ -88,3 +88,5 @@ Updated keymaps. Now possible to seekInTime by pressing right/left-keys (+1/-1mi
 -Fix: Server choice is not correctly interpreted. Always used GER server
 [B]1.1.1[/B]
 -Now the channel list is updated if expired, ott changed, StreamType changed or server changed in settings. Important: After changing setting you have to reopen shura.tv addon.
+[B]1.1.2[/B]
+-Fix archive mode on Android Kodi versions.
