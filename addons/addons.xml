@@ -1673,7 +1673,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.stepashka.com"
        name="stepashka.com"
-       version="0.3.1"
+       version="0.3.2"
        provider-name="akgdrg,nuismons">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
