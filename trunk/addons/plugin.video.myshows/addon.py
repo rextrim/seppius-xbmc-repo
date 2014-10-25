@@ -977,7 +977,9 @@ class SyncXBMC():
         if self.match and 'showtitle' in self.match:
             showId=self.showtitle2showId()
         if self.match and 'date' in self.match and not 'episode' in self.match:
-            id, self.match['season'],self.match['episode']=date2SE(showId, self.match['date'])
+            d2s=date2SE(showId, self.match['date'])
+            if d2s:
+                id, self.match['season'],self.match['episode']=d2s
         if showId:
             if 'season' in self.match and 'episode' in self.match:
                 Debug('[doaction] Getting the id of S%sE%s' % (str(self.match['season']),str(self.match['episode'])))
@@ -1526,11 +1528,11 @@ elif mode == 70:
         if action=='check':
             FakeRate(title)
 elif mode == 71:
-    try:
+    if 1==1:#try:
         get_data= get_url(cookie_auth, 'http://api.myshows.ru/profile/news/')
         if get_data: WatchedDB().onaccess()
         else:showMessage(__language__(30520),__language__(30532))
-    except:
+    else:#except:
         showMessage(__language__(30520),__language__(30532))
 elif mode in (2571,5171,302071,3071):
     MoveToXBMC()
