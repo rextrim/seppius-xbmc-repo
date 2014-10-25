@@ -342,9 +342,13 @@ def get_HTML(url, post = None, ref = None, get_redirect = False):
 
 #-------------------------------------------------------------------------------
 # get cookies from last session
+import antizapret
 cj = cookielib.FileCookieJar(fcookies)
 hr  = urllib2.HTTPCookieProcessor(cj)
-opener = urllib2.build_opener(hr)
+if __settings__.getSetting("immunicity") == "true": 
+	opener = urllib2.build_opener(antizapret.AntizapretProxyHandler(), hr)
+else: 
+	opener = urllib2.build_opener(hr)
 urllib2.install_opener(opener)
 
 #----------- LOGIN to lostfilm.tv ----------------------------------------------
@@ -581,7 +585,7 @@ def format_s(s):
 
 def LF():
 	categoryUrl = xt('http://www.lostfilm.tv/serials.php')
-	http = GET(categoryUrl, httpSiteUrl, None)
+	http =  get_HTML(categoryUrl)
 	if http == None:
 		showMessage('lostfilm:', 'Сервер не отвечает', 1000)
 		return None
@@ -593,7 +597,7 @@ def LF():
 
 def GET_C(c):
 	categoryUrl = xt('http://www.lostfilm.tv/browse.php?cat='+c)
-	http = GET(categoryUrl, httpSiteUrl, None)
+	http =  get_HTML(categoryUrl)
 	if http == None:
 		showMessage('lostfilm:', 'Сервер не отвечает', 1000)
 		return None
@@ -644,7 +648,11 @@ def Alln2(h):
 		
 		s='howAllReleases'
 		e='"></a><br clear=both>'
-		n6=mfindal(i,s,e)[0][len(s):]
+		try:
+			n6=mfindal(i,s,e)[0][len(s):]
+		except:
+			e='"></a></div><br clear=both>'
+			n6=mfindal(i,s,e)[0][len(s):]
 		#print n6
 		LL.append([n1,n2,n3,n4,n5,n6])
 	return LL
@@ -652,7 +660,7 @@ def Alln2(h):
 	
 def GET_N():
 	categoryUrl = xt('http://www.lostfilm.tv/browse.php')
-	http = GET(categoryUrl, httpSiteUrl, None)
+	http =  get_HTML(categoryUrl)
 	if http == None:
 		showMessage('lostfilm:', 'Сервер не отвечает', 1000)
 		return None
@@ -781,6 +789,7 @@ def Allrelis(L):
 				+ '&text=' + urllib.quote_plus('0')
 			xbmcplugin.addDirectoryItem(handle, purl, listitem, True)
     else:
+        #print "myshows in Allrelis"
         myshows_items,myshows_files=[],[]
         for i in L:
             Title = format_s(i[0])
@@ -902,7 +911,7 @@ def get_minfo(ntor):
 			except: #dbi = None
 				#debug (eval(get_inf_db(ntor)[0][0]))
 			#if dbi == None:
-				hp = GET('http://www.lostfilm.tv/browse.php?cat='+ntor, httpSiteUrl, None)
+				hp =  get_HTML('http://www.lostfilm.tv/browse.php?cat='+ntor)
 				hp=clearinfo(hp)
 				LI=hp.splitlines()
 				dict={}
@@ -1199,7 +1208,25 @@ elif mode == 'OpenRel':
 	xbmcplugin.endOfDirectory(handle)
 
 elif mode == 'myshows':
-	GET_R(url)
+    t,s,e=urllib.unquote_plus(url).split(',')
+    LFshowId=None
+    if "lostlink" in params:
+        try:
+            lostlink_html=get_HTML(urllib.unquote_plus(params["lostlink"])).decode('cp1251').encode('utf-8')
+            LFshowId=re.findall("ShowAllReleases\('(\d*?)',.*?\)", lostlink_html, re.IGNORECASE)[0]
+        except: print ('[LF]: LFshowId not on lostlink_html')
+
+    if not LFshowId:
+        print ('[LF]: getting serials.php')
+        lostlink_html=get_HTML('http://www.lostfilm.tv/serials.php').decode('cp1251').encode('utf-8')
+        #print lostlink_html
+        try:LFshowId=re.findall('<a href="/browse\.php\?cat=(\d*?)" .*?<span>\('+t+'\)</span></a>', lostlink_html, re.IGNORECASE)[0]
+        except: print ('[LF]: t ('+t+') not found on serials.php')
+
+    if LFshowId:
+        url='("'+str(LFshowId)+'","'+s.strip()+'","'+e.strip()+'")'
+        print ('[LF]: All ok ('+url+')')
+        GET_R(url)
 
 elif mode == 'play_url2':
 		play_url2(params)

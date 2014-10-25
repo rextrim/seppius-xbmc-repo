@@ -828,18 +828,42 @@ def uTorrentBrowser():
         h.item(link, title=unicode(i['title']), popup=popup, popup_replace=True, folder=folder)
 
 def torrent_dir():
-    KB = xbmc.Keyboard()
-    KB.setHeading(__language__(30153))
-    KB.setDefault(__settings__.getSetting("torrent_dir"))
-    KB.doModal()
-    if (KB.isConfirmed()):
-        __settings__.setSetting("torrent_dir", KB.getText())
+    from net import Download
+    socket.setdefaulttimeout(3)
+    list=Download().list()
+    ret=0
+    if list and len(list)>0:
+        dirs=["Keyboard"]
+        for dl in list:
+            if dl['dir'] not in dirs:
+                dirs.append(dl['dir'])
+            basename=os.path.dirname(dl['dir'])
+            if basename not in dirs:
+                dirs.append(basename)
+            else:
+                dirs.remove(basename)
+                dirs.insert(1,basename)
+
+        dialog = xbmcgui.Dialog()
+        ret = dialog.select(__language__(30153), dirs)
+    else:
+        ret=0
+
+    if ret==0:
+        KB = xbmc.Keyboard()
+        KB.setHeading(__language__(30153))
+        KB.setDefault(__settings__.getSetting("torrent_dir"))
+        KB.doModal()
+        if (KB.isConfirmed()):
+            __settings__.setSetting("torrent_dir", KB.getText())
+    elif ret>0:
+        __settings__.setSetting("torrent_dir", dirs[ret])
 
 class PluginStatus():
     def __init__(self):
         self.patchfiles=[('myshows','script.myshows','script.myshows',['notification_service.py','utilities.py','service.py','scrobbler.py']),
                 ('vkstatus','xbmc-vk.svoka.com','patch_for_xbmc-vk.svoka.com_ver_1.1.0',['xbmcvkui.py','xvvideo.py']),
-                ('lostfilm','plugin.video.LostFilm','patch_for_lostfilm_ver_0.4.2',['default.py','Downloader.py']),
+                ('lostfilm','plugin.video.LostFilm','patch_for_lostfilm_ver_0.4.3',['default.py','Downloader.py']),
                 ('torrenterstatus','plugin.video.torrenter','patch_for_plugin.video.torrenter_ver_1.2.7',['Core.py','Downloader.py','resources/searchers/RuTrackerOrg.py','resources/searchers/ThePirateBaySe.py',
                  'resources/searchers/NNMClubRu.py'])]
         self.status={}
@@ -1395,9 +1419,17 @@ class WatchedDB:
                 showMessage(__language__(30520),__language__(30524) % (str(rating)))
         else:
             if db_rating==None and rating>=0:
-                ok1=self.dialog.yesno(__language__(30520),__language__(30525) % (str(rating)), str(title))
+                if title:
+                    title=title.encode('utf-8','ignore')
+                    ok1=self.dialog.yesno(__language__(30520),__language__(30525) % (str(rating)), title)
+                else:
+                    ok1=True
             elif db_rating and rating!=db_rating:
-                ok3=self.dialog.yesno(__language__(30520),__language__(30526) % (str(db_rating), str(rating)),str(title))
+                if title:
+                    title=title.encode('utf-8','ignore')
+                    ok3=self.dialog.yesno(__language__(30520),__language__(30526) % (str(db_rating), str(rating)), title)
+                else:
+                    ok3=True
             elif db_rating==0 and rating!=db_rating:
                 ok3=True
             elif db_rating!=None and rating==db_rating:
