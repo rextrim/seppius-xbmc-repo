@@ -909,11 +909,20 @@ class PluginStatus():
         except: action=None
         if action:
             if action=='vkstatus':
-                text=self.vkstatus
+                if not self.use(action):
+                    text=self.vkstatus
+                else:
+                    text='PATCHED'
             elif action=='lostfilm':
-                text=self.lostfilm
+                if not self.use(action):
+                    text=self.lostfilm
+                else:
+                    text='PATCHED'
             elif action=='torrenterstatus':
-                text=self.torrenterstatus
+                if not self.use(action):
+                    text=self.torrenterstatus
+                else:
+                    text='PATCHED'
                 text2='Python-LibTorrent and Torrenter at http://xbmc.ru/'
             elif action=='libmode':
                 text=libmode

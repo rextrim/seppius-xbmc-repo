@@ -85,8 +85,8 @@ class Torrent:
         del libtorrent
         self.torrentFilesDirectory = torrentFilesDirectory
         self.storageDirectory = storageDirectory
-        if not xbmcvfs.exists(self.storageDirectory + os.sep + self.torrentFilesDirectory):
-            self._makedirs(self.storageDirectory + os.sep + self.torrentFilesDirectory)
+        if not xbmcvfs.exists(self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep):
+            self._makedirs(self.storageDirectory + os.sep + self.torrentFilesDirectory + os.sep)
         if xbmcvfs.exists(torrentFile):
             self.torrentFile = torrentFile
             self.torrentFileInfo = self.lt.torrent_info(self.torrentFile)
