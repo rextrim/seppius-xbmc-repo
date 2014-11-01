@@ -157,8 +157,11 @@ def get_params():
 def get_apps(paramstring=None):
     if not paramstring: paramstring=sys.argv[2]
     if len(paramstring)>=2:
-        cleanapps=str(paramstring).replace('?','', 1)
-        apps=json.loads(urllib.unquote_plus(cleanapps))
+        try:
+            apps=json.loads(urllib.unquote_plus(paramstring))
+        except:
+            cleanapps=str(paramstring).replace('?','', 1)
+            apps=json.loads(urllib.unquote_plus(cleanapps))
         return apps
 
 def int_xx(intxx):

@@ -10,6 +10,7 @@ except:
 
 from functions import *
 from net import *
+from cxzto import *
 
 try:
     from TSCore import TSengine as tsengine
@@ -289,8 +290,8 @@ class Source:
                     stype=jdumps['stype']
                     return stype
                 except:
-                    self.stypes=[r'json', r'vk-file',r'lostfilm', r'url-file', r'btchat', r'rutracker',r'tpb',r'nnm',r'kz', 'smb', 'torrenter']
-                    self.fnames=['{.*?}', 'http://.*?vk\.(com|me).*?','http://tracktor\.in.*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
+                    self.stypes=[r'json', r'cxzto', r'vk-file',r'lostfilm', r'url-file', r'btchat', r'rutracker',r'tpb',r'nnm',r'kz', 'smb', 'torrenter']
+                    self.fnames=['{.*?}', 'http://cxz.to.*?','http://.*?vk\.(com|me).*?','http://tracktor\.in.*?','http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$', 'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+', 'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
                     self.i=-1
                     for fn in self.fnames:
                         self.i+=1
@@ -301,7 +302,7 @@ class Source:
                     if stype=='json':
                         if json.loads(self.filename)['stype'] not in ('btchat', 'torrent', 'rutracker', 'tpb', 'nnm', 'kz', 'torrenter', 'lostfilm'):
                             stype=json.loads(self.filename)['stype']
-                    elif stype not in ['vk-file', 'url-file', 'btchat', 'rutracker', 'tpb', 'nnm', 'kz', 'torrenter', 'lostfilm']:
+                    elif stype not in ['vk-file', 'cxzto', 'url-file', 'btchat', 'rutracker', 'tpb', 'nnm', 'kz', 'torrenter', 'lostfilm']:
                         if len(xbmcvfs.listdir(self.filename)[1])>0:
                             stype='dir'
                         elif self.filename.rfind('.torrent', len(self.filename)-8)==-1:
@@ -653,7 +654,7 @@ def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None, auto_only=Fa
         socket.setdefaulttimeout(TimeOut().timeout())
         return
     for data in dat:
-        Debug('[chooseHASH]: '+str((data['id'], data['dir'].encode('utf-8'))))
+        #Debug('[chooseHASH]: '+str((data['id'], data['dir'].encode('utf-8'))))
         dialog_files.append((data['id'], data['dir'].encode('utf-8')))
         dialog_items.append('['+str(data['progress'])+'%] '+data['name'])
         dialog_items_clean.append(data['name'])
@@ -804,6 +805,8 @@ class AddSource(Source):
             VKSearch(self.showId, self.id)
         elif stype=='lostfilm':
             LFSearch(self.showId, self.id)
+        elif stype=='cxzto':
+            CXZTOSearch(self.showId, self.id)
         elif stype in ['btchat','tpb','rutracker','nnm','kz','torrenterall']:
             TorrenterSearch(stype, self.showId, self.seasonId, self.id, self.episodeId)
         elif stype=='serialu':
@@ -819,23 +822,23 @@ class AddSource(Source):
             Debug('[AddSource][menu]: Using flexmenu')
             myshows_titles, myshows_items=[],[]
 
-            menu={ # name: 'setting_name',lang,mode (0 - all, 1 - ep only, 2 - season/show only
-                'torrenterall':['torrenterall',30291,0],
-                'multifile':['multifile',30245,2],
-                'dir':['dir',30244,2],
-                'rutracker':['rutracker',30268,2],
-                'nnm':['nnm',30288,2],
-                'multitorrent':['multitorrent',30246,2],
-                'file':['file',30239,1],
-                'vk-file':['vk-file',30240,1],
-                'lostfilm':['lostfilm',30241,1],
-                'tpb':['tpb',30273,1],
-                'torrent':['torrent_menu',30242,0],
-                'utorrent':['utorrent',30274,0],
-            }
+            menu=[ # name: 'setting_name',lang,mode (0 - all, 1 - ep only, 2 - season/show only
+                ['torrenterall',30291,0,'torrenterall'],
+                ['multifile',30245,2,'multifile'],
+                ['dir',30244,2,'dir'],
+                ['rutracker',30268,2,'rutracker'],
+                ['nnm',30288,2,'nnm'],
+                ['multitorrent',30246,2,'multitorrent'],
+                ['cxzto',30550,1,'cxzto'],
+                ['file',30239,1,'file'],
+                ['vk-file',30240,1,'vk-file'],
+                ['lostfilm',30241,1,'lostfilm'],
+                ['tpb',30273,1,'tpb'],
+                ['torrent_menu',30242,0,'torrent'],
+                ['utorrent',30274,0,'utorrent'],
+            ]
 
-            for key in menu.keys():
-                item=menu[key]
+            for item in menu:
                 if self.id and item[2] in (0,1) or not self.id and item[2] in (0,2):
                     if getSettingAsBool(item[0]):
                         if item[0]=='lostfilm':
@@ -850,13 +853,13 @@ class AddSource(Source):
                             myshows_titles.append(__language__(item[1]))
                         else:
                             myshows_titles.append(item[1])
-                        myshows_items.append(key)
+                        myshows_items.append(item[3])
             myshows_titles.append(__language__(30243))
             myshows_items.append(None)
         else:
             if self.id:
-                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242), __language__(30273), __language__(30274), __language__(30243)]
-                myshows_items=['torrenterall','file', 'vk-file', 'lostfilm', 'torrent', 'tpb', 'utorrent', None]
+                myshows_titles=[__language__(30291),__language__(30239), __language__(30240), __language__(30241), __language__(30242), __language__(30273), __language__(30274),__language__(30550), __language__(30243)]
+                myshows_items=['torrenterall','file', 'vk-file', 'lostfilm', 'torrent', 'tpb', 'utorrent', 'cxzto', None]
                 socket.setdefaulttimeout(1)
                 try:
                     if 'lostfilm' in get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/'+str(self.id)+'/'):
@@ -1097,8 +1100,13 @@ class PlayFile(Source):
             self.filename=xbmcEpisode(self.showId, self.seasonId, self.episodeId)['file']
         if self.stype=='file' or self.stype=='vk-file':
             self.playfile()
+        if self.stype=='cxzto':
+            self.filename=PlayCXZTO(self.filename)
+            self.playfile()
         elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
             if self.stype in ['tpb', 'torrenter']: showMessage(__language__(30211), __language__(30212))
+            print urllib.quote_plus(self.filename)
+            print self.filename
             xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),self.stringdata))
         elif self.stype in ['torrent','multitorrent','url-torrent','json']:
             self.play_torrent()
@@ -1264,6 +1272,41 @@ def LFSearch(showId, id):
     url=('%s, %s, %s') %(t, s, int_xx(e))
     xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.LostFilm/?url='+url+'&mode=myshows'+sdata+'")')
     return None
+
+def CXZTOSearch(showId, id):
+
+    data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    jdata = json.loads(data)
+
+    id=str(id)
+    t=jdata['title']
+    r=jdata['ruTitle']
+
+    #Debug('[CXZTOSearch] t is '+t)
+
+    e=int(jdata['episodes'][id]['episodeNumber'])
+    s=int(jdata['episodes'][id]['seasonNumber'])
+    y=jdata['year']
+
+    eplist=cxzEpisodeList(t,r,y,s,e)
+    #print str(eplist)
+    if len(eplist)>0:
+        myshows_files=[]
+        myshows_items=[]
+        for ep in eplist:
+            myshows_files.append(ep['href'])
+            myshows_items.append(ep['title'])
+        myshows_files.append(unicode(__language__(30205)))
+        myshows_items.append(unicode(__language__(30205)))
+        if len(myshows_files)>2:
+            dialog = xbmcgui.Dialog()
+            i = dialog.select(__language__(30235), myshows_items)
+        else: i=0
+        if i!=None and i not in (-1, len(myshows_files)-1):
+            stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s, "id":int(id), "episodeId":e})
+            Source(stringdata).addsource()
+            AskPlay(stringdata)
+    return
 
 class TorrenterSearch():
     def __init__(self, stype, showId, seasonId, id=None, episodeId=None, stop=None, silent=None):
@@ -1612,8 +1655,8 @@ def prefix(showId=None, seasonId=None, id=None, stype=None, episodeNumber=None):
             #if xbmcEpisode(showId, seasonId, episodeNumber):
             #    stype='xbmc'
             return ''
-    stypes=['json', 'vk-file', 'url-file', 'btchat', 'dir', 'file', 'torrent', 'multifile', 'multitorrent','serialu-file','serialu','rutracker','tpb','nnm','kz', 'torrenter','xbmc','lostfilm']
-    prefixes=['JS', 'VK', 'UF', 'BT', 'D', 'F', 'T', 'MF', 'MT','SF','SU','RU','PB','NN','KZ','TR','XBMC','LF']
+    stypes=['json', 'vk-file', 'url-file', 'btchat', 'dir', 'file', 'torrent', 'multifile', 'multitorrent','serialu-file','serialu','rutracker','tpb','nnm','kz', 'torrenter','xbmc','lostfilm','cxzto']
+    prefixes=['JS', 'VK', 'UF', 'BT', 'D', 'F', 'T', 'MF', 'MT','SF','SU','RU','PB','NN','KZ','TR','XBMC','LF','CZ']
     prefix=None
     if stype:
         prefix=('[B][%s][/B] ' %(prefixes[stypes.index(stype)]))

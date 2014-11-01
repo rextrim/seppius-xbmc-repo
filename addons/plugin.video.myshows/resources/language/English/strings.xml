@@ -291,8 +291,7 @@
         <string id="30547">RuTor.Org Distribution (need patch plugin.video.torrenter)</string>
         <string id="30548">Full caching</string>
         <string id="30549">Downloaded %d out of %d pages</string>
-
-        <string id="30550">Can't play: %s</string>
+        <string id="30550">Add from CZX.TO</string>
 
 ///Context menus
         <string id="30300">Mark as Watching</string>

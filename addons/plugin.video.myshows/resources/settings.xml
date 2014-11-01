@@ -76,5 +76,6 @@
 
         <setting id="torrent_menu" type="bool" label="30242" visible="eq(-11,true)" default="false" />
         <setting id="multitorrent" type="bool" label="30246" visible="eq(-12,true)" default="false" />
+        <setting id="cxzto" type="bool" label="30550" visible="eq(-13,true)" default="true" />
     </category>
 </settings>

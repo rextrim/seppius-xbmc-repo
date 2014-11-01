@@ -279,6 +279,7 @@
         <string id="30547">Раздача RuTor.Org (требует патч plugin.video.torrenter)</string>
         <string id="30548">Полное кэширование</string>
         <string id="30549">Загружено %d из %d страниц</string>
+        <string id="30550">Добавить c CZX.TO</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
