@@ -156,7 +156,7 @@ def Shows():
         stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Full_Season():
@@ -220,7 +220,7 @@ def Full_Season():
             stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
             refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
             sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str(showId) + '&mode=20'
-            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Seasons(showId):
@@ -471,7 +471,7 @@ def TopShows(action):
         stringdata={"showId":int(jdata['id']), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str(jdata['id']) + '&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Recommendations(action):
@@ -525,7 +525,7 @@ def Recommendations(action):
             stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
             refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
             sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + showId + '&mode=20'
-            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def EpisodeList(action):
@@ -614,7 +614,7 @@ def ShowList(action):
         stringdata={"showId":int(str_showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus(str(show_data.url))
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str_showId + '&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def FriendsNews():
@@ -895,16 +895,19 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
     myshows_dict=[]
     #Debug('[ContextMenuItems] '+unicode(sys.argv))
     if mode >= 10 and mode <=19 or mode==100 or sort and mode in (27,28) or mode==41 and sort and action:
+        #show
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30300)+'|:|'+sys_url+'0&action=watching'+refresh_url,
               __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
               __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
               __language__(30315)+'|:|'+sys_url+'5',
               __language__(30322)+'|:|'+sys_url+'7',
+              #__language__(30323)+'|:|'+sys_url+'8',
               __language__(30303)+'|:|'+sys_url+'1&id=0',
               __language__(30304)+'|:|'+sys_url+'0&action=remove'+refresh_url,
               __language__(30319)+'|:|'+sys_url+'6',]
     elif mode==20:
+        #season
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30311)+'|:|'+sys_url+'9',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
@@ -916,11 +919,13 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30228)+'|:|'+sys_url+'7',
               __language__(30314)+'|:|'+sys_url+'8',]
     elif mode==40:
+        #show short
         menu=[__language__(30300)+'|:|'+sys_url+'0&action=watching'+refresh_url,
               __language__(30301)+'|:|'+sys_url+'0&action=later'+refresh_url,
               __language__(30302)+'|:|'+sys_url+'0&action=cancelled'+refresh_url,
               __language__(30319)+'|:|'+sys_url+'6']
     elif mode==25 or not sort and mode in (27,28):
+        #episode
         menu=[__language__(30227)+'|:|'+sys_url+'4',
               __language__(30305)+'|:|'+sys_url+'0&action=check'+refresh_url,
               __language__(30306)+'|:|'+sys_url+'0&action=uncheck'+refresh_url,
@@ -931,14 +936,17 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
               __language__(30310)+'|:|'+sys_url+'201',
               __language__(30228)+'|:|'+sys_url+'200',]
     elif mode in (50,) and not sort:
+        #sources
         menu=[__language__(30227)+'|:|'+sys_url,
               __language__(30310)+'|:|'+sys_url+'1',
               __language__(30311)+'|:|'+sys_url+'2',
               __language__(30318)+'|:|'+sys_url+'71',
               __language__(30228)+'|:|'+sys_url+'0']
     elif mode==50 and sort:
+        #sources delete
         menu=[__language__(30314)+'|:|'+sys_url+'0']
     elif mode in (51,):
+        #scanlist
         menu=[]
         if ifstat==True: menu.append(__language__(30312)+'|:|'+sys_url+'02')
         elif ifstat==False: menu.append(__language__(30313)+'|:|'+sys_url+'01')
@@ -948,6 +956,7 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
                     __language__(30228)+'|:|'+sys_url+'0'])
 
     for s in menu: myshows_dict.append([s.split('|:|')[0],'XBMC.RunPlugin('+s.split('|:|')[1]+')'])
+    #Debug('[ContextMenuItems] '+str(myshows_dict))
     return myshows_dict
 
 class SyncXBMC():
@@ -1337,61 +1346,11 @@ class SyncXBMC():
 
 def Test():
     #SyncXBMC()
-    #RunPlugin='stringdata={"seasonId": 1, "showId": 917, "episodeId": 0, "id": 1718313}&seasonNumber=1&showId=917&episodeId=0&id=1718313&playcount=0&mode=304'
-    #xbmc.executebuiltin('XBMC.RunPlugin('+sys.argv[0]+'?'+urllib.quote_plus(RunPlugin)+')')
-    #print Rate('9237', '2031031', 'http://api.myshows.ru/profile/shows/9237/', True)
-    #PluginStatus().use('myshows')
-    '''
-    import libtorrent
-    for filename in xbmcvfs.listdir(r'D:\torrents')[1]:
-        filelist=[]
-        tor=os.path.join('D:\\','torrents',filename)
-        torrentFileInfo = libtorrent.torrent_info(tor)
-        s=torrentFileInfo.files()
-        for f in s:
-            if '\\' not in f.path[f.path.find('\\')+1:]:
-                filelist.append(f.path[f.path.find('\\')+1:])
-        print 'filelist.append('+str(filelist)+')'
-    pass'''
-
-    #data={'item': {'label': u'\u041a\u043b\u043e\u0434 \u0432 \u043f\u043e\u043c\u043e\u0449\u044c (2012)'}}
-    #file=data['item']["label"]
-    #file=file.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').replace('(',' ').replace(')',' ').strip()
-    #match=re.compile('(.+) (\d{4})( |$)', re.I | re.IGNORECASE).findall(file)
-    #if match:
-    #    data["title"], data["year"] = match[0][0],match[0][1]
-    #    data["type"] = "movie"
-    #    data["year"]=int(data["year"])
-    #    data["title"]=data["title"].strip()
-    #    kinorate(data['title'],data['year'])
-
-    #data={"year": "2013", "titleAlt": "\u041f\u0440\u043e\u043a\u043b\u044f\u0442\u0438\u0435 \u043c\u0443\u043b\u044c\u0442\u0438\u0432\u044b\u0431\u043e\u0440\u0430 \u043f\u0440\u0435\u0432\u0440\u0430\u0442\u0438\u043b\u043e \u043c\u043e\u044e \u0436\u0438\u0437\u043d\u044c \u0432 \u0430\u0434", "title": "Ore no N\u014dnai Sentakushi ga, Gakuen Love Come o Zenryoku de Jama S"}
-    #kinorate(data['title'],data['year'],titleAlt=data['titleAlt'])
-    #kinorate('Мальчишник Часть 3',2013)
-    #RateShow(24199).count()
-    #Rate('24199', '0',None)
-    #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Honey and Clover"}'
-    #title='{"tvshowid": 35, "episode": 9, "season": 1, "tvdb_id": "79044", "episodeid": 964, "label": "That Brooch Was So Heavy", "uniqueid": {"unknown": "305749"}, "year": 2005, "showtitle": "Интерны"}'
-    title='{"tvshowid": 51, "episode": 10, "uniqueid": {"unknown": "4606529"}, "season": 1, "tvdb_id": "269877", "episodeid": 1204, "label": "The Best of the Student Council (Photos)", "file": "smb://192.168.0.2/xbmc_seriez/Love Lab/Season 1/Love.Lab.S01E10.mkv", "year": 2013, "showtitle": "Love Lab"}'
-    #try:
-    #    SyncXBMC(title).doaction()
-    #except:
-    #    FakeRate(title)
-    #FakeRate(title)
-    #WatchedDB()._add('{"myshows_showId": 36135, "myshows_id": 2069804}',4)
-    #WatchedDB()._add('{"myshows_showId": 36135, "myshows_id": 2147115}',4)
-    #print str(WatchedDB().count())
-    #WatchedDB().onaccess()
-    #changeDBTitle(27514)
-    dialog = xbmcgui.Dialog()
-    #x=xbmcvfs.rename('D:\1.txt','smb://192.168.0.2/xbmc/xbmc_seriez/1.txt')
-    #dialog.ok(unicode(__language__(30146)), str(x))
-    #import shutil
-    #shutil.move('D:\\1.txt','\\\\192.168.0.2\\xbmc\\xbmc_seriez\\1.txt')
-    #askDeleteFile('36135', '2147115')
-    #Rate('36135', '2069804', '')
-    #Rate('36135', '2147115', '')
-    #Change_Status_Episode('36135', '2147115', 'check', '0', '', selftitle=None)
+    pass
+    name='TEST1'
+    cmd='XBMC.RunPlugin(plugin://plugin.video.myshows/?stringdata=%7B%22seasonId%22%3A+null%2C+%22showId%22%3A+3114%2C+%22episodeId%22%3A+null%2C+%22id%22%3A+null%7D&refresh_url=http%3A%2F%2Fapi.myshows.ru%2Fprofile%2Fshows%2F&showId=3114&mode=206)'
+    thumb='http://'
+    result = json.loads(xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Favourites.AddFavourite", "params": {"title":"%s", "type":"script", "path":"%s", "thumbnail":"%s"}, "id": 1}' % (name, cmd, thumb)))
 
 params = get_params()
 try: apps=get_apps()
