@@ -28,7 +28,7 @@ except:
 
 #Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.9.9"
+__version__ = "1.9.10"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -626,12 +626,8 @@ class DownloadSource(Source):
                         DeleteSource()
                         if self.title:
                             try:
-                                filename_if=self.title[:len(self.title)-len(self.title.split('.')[-1])-1]
-                                filename_if=os.path.split(filename_if)[-1]
                                 for listfiles in Download().listfiles(id[0]):
-                                    filename_if2=listfiles[0][:len(filename_if)]
-                                    if listfiles[0].lower().split('.')[-1] in allowed_ext and\
-                                        filename_if.lower()==filename_if2.lower():
+                                    if isSubtitle(self.title,listfiles[0]):
                                         Download().setprio_simple(id[0], '3', listfiles[2])
                             except: pass
                     Download().setprio(id[0], self.ind)
@@ -806,7 +802,7 @@ class AddSource(Source):
         elif stype=='lostfilm':
             LFSearch(self.showId, self.id)
         elif stype=='cxzto':
-            CXZTOSearch(self.showId, self.id)
+            CXZTOSearch(self.showId, self.seasonId, self.id)
         elif stype in ['btchat','tpb','rutracker','nnm','kz','torrenterall']:
             TorrenterSearch(stype, self.showId, self.seasonId, self.id, self.episodeId)
         elif stype=='serialu':
@@ -823,13 +819,13 @@ class AddSource(Source):
             myshows_titles, myshows_items=[],[]
 
             menu=[ # name: 'setting_name',lang,mode (0 - all, 1 - ep only, 2 - season/show only
+                ['cxzto',30550,0,'cxzto'],
                 ['torrenterall',30291,0,'torrenterall'],
                 ['multifile',30245,2,'multifile'],
                 ['dir',30244,2,'dir'],
                 ['rutracker',30268,2,'rutracker'],
                 ['nnm',30288,2,'nnm'],
                 ['multitorrent',30246,2,'multitorrent'],
-                ['cxzto',30550,1,'cxzto'],
                 ['file',30239,1,'file'],
                 ['vk-file',30240,1,'vk-file'],
                 ['lostfilm',30241,1,'lostfilm'],
@@ -1037,6 +1033,8 @@ class ScanSource(Source):
                 a=Serialu(self.filename)
                 a.get()
                 i=a.add()
+            elif self.stype=='cxzto':
+                i=self.scancxzto()
         if not silent:
             xbmc.sleep(1000)
             xbmc.executebuiltin('Container.Refresh')
@@ -1047,6 +1045,38 @@ class ScanSource(Source):
         ScanDB().add(self.filename)
         showMessage(__language__(30208), __language__(30230) % (self.filename))
         xbmc.executebuiltin('Container.Refresh')
+
+    def scancxzto(self):
+        cxzdata=json.loads(self.filename)
+        episode_list=cxzEpisodeListByRel(cxzdata['href'],cxzdata['rel'],cxzdata['season'])
+
+        i=0
+        data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId))
+        jdata = json.loads(data.get())
+
+
+
+        for episode in episode_list:
+            self.episodeId=episode['episode']
+            self.filename=episode['href']
+            for id in jdata['episodes']:
+                if jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==episode['episode']:
+                    self.id=int(id)
+                    doit=True
+                    break
+            #Debug('[scancxzto]: filename - '+self.filename)
+            if not TorrentDB().getbyfilename(self.filename) and doit:
+                try:
+                    TorrentDB().add(self.filename, 'cxzto', self.showId, self.seasonId, self.id, self.episodeId)
+                    i+=1
+                except:
+                    pass
+
+        if i>1:
+            showMessage(__language__(30208), __language__(30249) % (str(i)))
+        elif i==1:
+            showMessage(__language__(30208), __language__(30230) % (urllib.unquote_plus(self.filename)))
+        return i
 
     def delete(self):
         ScanDB().delete(self.filename)
@@ -1101,12 +1131,15 @@ class PlayFile(Source):
         if self.stype=='file' or self.stype=='vk-file':
             self.playfile()
         if self.stype=='cxzto':
-            self.filename=PlayCXZTO(self.filename)
-            self.playfile()
+            if self.id not in ['0',0,None,'None']:
+                self.filename=PlayCXZTO(self.filename)
+                self.playfile()
+            else:
+                self.playcxzto()
         elif self.stype in ['rutracker', 'tpb','btchat','nnm','kz', 'torrenter']:
             if self.stype in ['tpb', 'torrenter']: showMessage(__language__(30211), __language__(30212))
-            print urllib.quote_plus(self.filename)
-            print self.filename
+            #print urllib.quote_plus(self.filename)
+            #print self.filename
             xbmc.executebuiltin('XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&external=%s&url=%s&sdata=%s)' % (self.filename.split('::')[0],urllib.quote_plus(self.filename),self.stringdata))
         elif self.stype in ['torrent','multitorrent','url-torrent','json']:
             self.play_torrent()
@@ -1166,6 +1199,19 @@ class PlayFile(Source):
             Debug('[PlayFile]: not self.showId and self.id')
             xbmc.executebuiltin('xbmc.PlayMedia("'+self.filename.encode('utf-8')+'")')
 
+    def playcxzto(self):
+        cxzdata=json.loads(self.filename)
+        episode_list=cxzEpisodeListByRel(cxzdata['href'],cxzdata['rel'],cxzdata['season'])
+        myshows_files=[]
+        myshows_items=[]
+        for episode in episode_list:
+            myshows_files.append(episode['href'])
+            myshows_items.append(episode['string'])
+        myshows_files.append(unicode(__language__(30205)))
+        myshows_items.append(unicode(__language__(30205)))
+        dialog = xbmcgui.Dialog()
+        i = dialog.select(__language__(30235), myshows_items)
+        if i!=None and i not in (-1, len(myshows_files)-1): xbmc.executebuiltin('xbmc.PlayMedia("'+PlayCXZTO(myshows_files[i])+'")')
 class ShowAllSources(Source):
     def handle(self):
         if self.stype=='xbmc':
@@ -1273,9 +1319,9 @@ def LFSearch(showId, id):
     xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.LostFilm/?url='+url+'&mode=myshows'+sdata+'")')
     return None
 
-def CXZTOSearch(showId, id):
+def CXZTOSearch(showId, seasonId=None, id=None):
 
-    data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get()
+    data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     jdata = json.loads(data)
 
     id=str(id)
@@ -1283,16 +1329,21 @@ def CXZTOSearch(showId, id):
     r=jdata['ruTitle']
 
     #Debug('[CXZTOSearch] t is '+t)
+    if id not in ['0','None']:
+        e=int(jdata['episodes'][id]['episodeNumber'])
+        s=int(jdata['episodes'][id]['seasonNumber'])
+    else:
+        e=None
+        s=int(seasonId)
 
-    e=int(jdata['episodes'][id]['episodeNumber'])
-    s=int(jdata['episodes'][id]['seasonNumber'])
     y=jdata['year']
 
-    eplist=cxzEpisodeList(t,r,y,s,e)
+    eplist, slist=cxzEpisodeList(t,r,y,s,e)
     #print str(eplist)
+    #print str(slist)
+    #episode
     if len(eplist)>0:
-        myshows_files=[]
-        myshows_items=[]
+        myshows_files,myshows_items=[],[]
         for ep in eplist:
             myshows_files.append(ep['href'])
             myshows_items.append(ep['title'])
@@ -1306,6 +1357,25 @@ def CXZTOSearch(showId, id):
             stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s, "id":int(id), "episodeId":e})
             Source(stringdata).addsource()
             AskPlay(stringdata)
+    #season/show
+    elif len(slist)>0:
+        myshows_files,myshows_items=[],[]
+        for season in slist:
+            season["stype"]="cxzto"
+            myshows_files.append(json.dumps(season))
+            myshows_items.append(season['title'])
+        myshows_files.append(unicode(__language__(30205)))
+        myshows_items.append(unicode(__language__(30205)))
+        if len(myshows_files)>2:
+            dialog = xbmcgui.Dialog()
+            i = dialog.select(__language__(30235), myshows_items)
+        else: i=0
+        if i!=None and i not in (-1, len(myshows_files)-1):
+            stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s})
+            Source(stringdata).addsource()
+            ScanSource(stringdata).scanone()
+    else:
+        showMessage("CXZ.TO",__language__(30403))
     return
 
 class TorrenterSearch():
@@ -1394,7 +1464,7 @@ class MoveToXBMC(Source):
                 self.stype=self.gettype()
         self.stopped=None
         if getSettingAsBool('alwayschoosemovemode'):
-            ret = dialog.select(__language__(30297), [__language__(30027),__language__(30028),__language__(30029),__language__(30030), "SUBS COPY", __language__(30205)])
+            ret = dialog.select(__language__(30297), [__language__(30027),__language__(30028),__language__(30029),__language__(30030), __language__(30551), __language__(30205)])
             if ret>=0 and ret<4: self.movemode=ret+1
             elif ret==4: self.movemode=10 #sub_copy
             else: self.movemode=None
@@ -1403,8 +1473,9 @@ class MoveToXBMC(Source):
         if not xbmc.getCondVisibility("system.platform.windows") and self.movemode: self.movemode=self.movemode+4
         Debug('[MoveToXBMC]: Mode is '+str(self.movemode))
 
-        if self.movemode in (10,14) and self.stype in ['dir',' multifile']:
-            self.subs_copy()
+        if self.movemode in (10,14):
+            if self.stype in ['dir',' multifile', 'file']:
+                self.subs_copy()
             return
 
         xbmclib=__settings__.getSetting("xbmclib")
@@ -1430,7 +1501,7 @@ class MoveToXBMC(Source):
         self.orig_xbmclib=xbmclib
         if xbmclib.startswith('smb://'):xbmclib=smbtopath(xbmclib)
 
-        if xbmclib!='' and xbmcvfs.exists(folder):
+        if xbmclib!='' and xbmcvfs.exists(folder+os.sep):
             self.xbmclib=xbmclib
             self.title=id2title(self.showId,None,True)[0]
             success=self.move(folder)
@@ -1595,7 +1666,10 @@ class MoveToXBMC(Source):
                         return id
 
     def subs_copy(self):
-        folder=self.filename
+        if self.stype=='file':#один файл
+            folder=os.path.dirname(self.filename)
+        else:
+            folder=self.filename
         subtitledirs=xbmcvfs.listdir(folder)[0]
         for d in subtitledirs:
             for x in xbmcvfs.listdir(folder.encode('utf-8','ignore')+os.sep+d)[0]:
@@ -1603,19 +1677,35 @@ class MoveToXBMC(Source):
         if len(subtitledirs)>0:
             subtitledirs.insert(0,__language__(30505))
             subtitledirs_titles=[__language__(30505)]
-            for i in range(1,len(subtitledirs)):
-                subtitledirs_titles.append(subtitledirs[i]+' (%d)' % self.count_subs(folder.encode('utf-8','ignore')+os.sep+subtitledirs[i]))
+            if self.stype=='file':#один файл
+                for i in range(1,len(subtitledirs)):
+                    filelist=xbmcvfs.listdir(folder.encode('utf-8','ignore')+os.sep+subtitledirs[i])[1]
+                    for x in range(0, len(filelist)):
+                        if isSubtitle(self.filename,filelist[x]):
+                            subtitledirs_titles.append(subtitledirs[i])
+                            break
+            else:
+                for i in range(1,len(subtitledirs)):
+                    subtitledirs_titles.append(subtitledirs[i]+' (%d)' % self.count_subs(folder.encode('utf-8','ignore')+os.sep+subtitledirs[i]))
             ret = xbmcgui.Dialog().select(__language__(30506), subtitledirs_titles)
-            if ret:
+            if ret!=-1:
                 i=0
                 #import shutil
                 #if folder.startswith('smb://'):folder=smbtopath(folder)
-                newfolder=os.path.join(folder, subtitledirs[ret].decode('utf-8','ignore'))
+                if self.stype=='file':
+                    newfolder=os.path.join(folder, subtitledirs_titles[ret].decode('utf-8','ignore'))
+                else:
+                    newfolder=os.path.join(folder, subtitledirs[ret].decode('utf-8','ignore'))
                 Debug("[subs_copy]: newfolder %s" %(newfolder))
                 for file in xbmcvfs.listdir(newfolder)[1]:
-                    i=i+1
-                    xbmcvfs.copy(os.path.join(newfolder, file), os.path.join(folder, file))
-                showMessage("COPIED","%d files" %(i))
+                    if self.stype=='file':
+                        if isSubtitle(self.filename,file):
+                            i=i+1
+                            xbmcvfs.copy(os.path.join(newfolder, file), os.path.join(folder, file))
+                    else:
+                        i=i+1
+                        xbmcvfs.copy(os.path.join(newfolder, file), os.path.join(folder, file))
+                showMessage(__language__(30552), __language__(30553) %(i))
 
 def chooseDir(urls, path=None):
     paths=[unicode(__language__(30254))]
@@ -1683,3 +1773,13 @@ def xbmcEpisode(showId, seasonId, episodeNumber):
                 for episode in episodes:
                     if episode['episode']==episodeNumber:
                         return episode
+
+def isSubtitle(filename,filename2):
+    filename_if=filename[:len(filename)-len(filename.split('.')[-1])-1]
+    filename_if=filename_if.split('/')[-1].split('\\')[-1]
+    filename_if2=filename2.split('/')[-1].split('\\')[-1][:len(filename_if)]
+    #print 'Compare '+filename_if.lower()+' and '+filename_if2.lower()+' and '+filename2.lower().split('.')[-1]
+    if filename2.lower().split('.')[-1] in subs_ext and\
+        filename_if.lower()==filename_if2.lower():
+        return True
+    return False

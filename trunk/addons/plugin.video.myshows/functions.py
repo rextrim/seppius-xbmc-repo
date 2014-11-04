@@ -596,7 +596,7 @@ def cutFileNames(l):
     return l
 
 def cutStr(s):
-    return str(s).replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').lower().strip()
+    return s.replace('.',' ').replace('_',' ').replace('[',' ').replace(']',' ').lower().strip()
 
 def sortext(filelist):
     result={}

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 __author__ = 'DiMartino'
 import urllib, urllib2, re, sys, os, json, difflib, cookielib
-import xbmc, xbmcgui, xbmcplugin
+import xbmc
 import cPickle
 from BeautifulSoup import BeautifulSoup
-from functions import Debug
+from functions import Debug,cutFileNames
 
 site_url='http://cxz.to'
 User_Agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0'
@@ -75,8 +75,11 @@ def Get_url(url, headers={}, Post = None, GETparams={}, JSON=False, Proxy=None, 
 
 def Content(params,isFolders=False):
     ctitle=''
+    cutfilename=None
     if 'title' in params:
         ctitle=urllib.unquote(params['title'])
+    if 'cutfilename' in params:
+        cutfilename=urllib.unquote(params['cutfilename'])
     href=urllib.unquote(params['href'])
 
     url=site_url+href+'?ajax'
@@ -126,17 +129,16 @@ def Content(params,isFolders=False):
                 lang=''
 
             rel = re.compile('\d+').findall(a['rel'])[0]
-            #size = l.findAll('span','material-size')
-            #sz=''
-            #for size_ in size:
-            #    sz+=' '+size_.string
-            #sz = sz.encode('UTF-8').replace('&nbsp;', ' ')
+            size = l.findAll('span','material-size')
+            sz = size[-1].string.replace('&nbsp;', ' ')
 
             title = lang+title#+chr(10)
-            rlist.append({'rel':rel, 'href':href, 'season':season, 'title':title, 'episode':0})
+            rlist.append({'rel':rel, 'href':href, 'season':season, 'title':title, 'size':sz})
 
     else:
         li = Soup.findAll('li', 'b-file-new')
+        li2=[]
+        filelist=[]
         for l in li:
             try:
                 title = l.find('span', 'b-file-new__material-filename-text')
@@ -148,26 +150,43 @@ def Content(params,isFolders=False):
                 a= l.find('a', 'b-file-new__link-material-download')
                 href_dl = a['href']
                 size = a.span.string
+                li2.append({'href':href,'title':ctitle+' '+size, 'href_dl':href_dl, 'string':title})
+                filelist.append(title)
             except:
                 continue
 
-            info={'type':'Video','title':ctitle,'season':0,'episode':0}
+        if len(li2)>0:
+            li3=[]
+            cutfilelist=[]
+            i=-1
+            if len(filelist)>2:
+                try:
+                    cutfilelist=cutFileNames(filelist)
+                except:
+                    pass
+            #print str(cutfilelist)
+            for la in li2:
+                i=i+1
+                if cutfilelist:
+                    la['cutfilename']=cutfilelist[i]
+                else: la['cutfilename']=None
+                li3.append(la)
 
 
-            if True:
-                results=filename2match(title)
+            for lu in li3:
+                lu['episode']=0
+                lu['season']=0
+                results=filename2match(lu['string'])
+                if not results and cutfilename:
+                    results=filename2match(cutfilename)
                 if results:
-                    info['tvshowtitle']=ctitle
-                    info['title']=title
-                    info['season']=0
                     if season in ['0',0,None]:
-                        info['season']=results['season']
+                        lu['season']=results['season']
                     else:
-                        info['season']=season
-                    info['episode']=results['episode']
+                        lu['season']=season
+                    lu['episode']=results['episode']
 
-            rlist.append({'href':href,'title':ctitle+' '+size, 'href_dl':href_dl, 'string':title,'season':info['season'],'episode':info['episode']})
-
+                rlist.append(lu)
     return rlist
 
 def filename2match(filename):
@@ -306,7 +325,7 @@ def scoreMediaTitleMatch(mediaName, mediaAltTitle, mediaYear, title, year, itemI
 #  Log.Debug('***** title scored %d' % score)
   return score
 
-def cxzEpisodeList(title,ruTitle,year,seasonId,episodeId):
+def cxzEpisodeList(title,ruTitle,year,seasonId,episodeId=None):
 
     showdata=Search(title,ruTitle,year)
 
@@ -317,7 +336,7 @@ def cxzEpisodeList(title,ruTitle,year,seasonId,episodeId):
         'rel':'0'
     }
 
-    episode_list=[]
+    episode_list,season_list=[],[]
     show=Content(params)
     #Debug('[cxzEpisodeList][show]:'+str(show))
     for seasons in show:
@@ -328,11 +347,34 @@ def cxzEpisodeList(title,ruTitle,year,seasonId,episodeId):
             for filelist in variants:
                 episodes=Content(filelist, True)
                 #Debug('[cxzEpisodeList][episodes]:'+str(episodes))
+                if episodeId==None and episodes:
+                    filelist['title']='%s %s (%d)' % (filelist['title'], filelist['size'], len(episodes))
+                    season_list.append(filelist)
+                    continue
 
                 for episode in episodes:
-                    if int(episode['episode'])==episodeId:
+                    if episodeId and int(episode['episode'])==episodeId:
                         episode['href']=site_url+episode['href']
                         episode_list.append(episode)
+
+
+    return episode_list, season_list
+
+def cxzEpisodeListByRel(href,rel,season):
+
+    params={
+        'href':href,
+        'rel':rel,
+        'season':season,
+    }
+
+    episode_list=[]
+    episodes=Content(params, True)
+    #Debug('[cxzEpisodeListByRel][episodes]:'+str(episodes))
+
+    for episode in episodes:
+        episode['href']=site_url+episode['href']
+        episode_list.append(episode)
 
     return episode_list
 
