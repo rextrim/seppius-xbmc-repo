@@ -193,11 +193,11 @@ class ScanDB(TorrentDB):
 
     def get_all(self):
         self._connect()
-        stypelist=['multifile', 'multitorrent','rutracker','nnm','kz']
-        self.where=' where stype="unrealstuff"'
+        stypelist=['multifile', 'multitorrent','rutracker','nnm','kz','cxzto']
+        self.where=' where (stype="unrealstuff"'
         for stype in stypelist:
             self.where+=' OR stype="'+str(stype)+'"'
-        self.cur.execute('select filename, stype, showId, seasonId, id, episodeId from sources'+self.where+' order by addtime desc')
+        self.cur.execute('select filename, stype, showId, seasonId, id, episodeId from sources'+self.where+') and id is Null order by addtime desc')
         res = [{'filename': x[0], 'stype': x[1], 'showId': x[2], 'seasonId': x[3], 'id': x[4], 'episodeId': x[5]} for x in self.cur.fetchall()]
         self._close()
         return res
@@ -1212,6 +1212,7 @@ class PlayFile(Source):
         dialog = xbmcgui.Dialog()
         i = dialog.select(__language__(30235), myshows_items)
         if i!=None and i not in (-1, len(myshows_files)-1): xbmc.executebuiltin('xbmc.PlayMedia("'+PlayCXZTO(myshows_files[i])+'")')
+
 class ShowAllSources(Source):
     def handle(self):
         if self.stype=='xbmc':
