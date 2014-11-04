@@ -7,7 +7,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.9.9"
+__version__ = "1.9.10"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')

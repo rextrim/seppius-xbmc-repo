@@ -280,6 +280,9 @@
         <string id="30548">Полное кэширование</string>
         <string id="30549">Загружено %d из %d страниц</string>
         <string id="30550">Добавить c CZX.TO</string>
+        <string id="30551">Скопировать субтитры</string>
+        <string id="30552">Скопированно</string>
+        <string id="30553">%d файлов</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
