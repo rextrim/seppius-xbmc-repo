@@ -678,7 +678,7 @@ def FileNamesPrepare(filename):
 
 def filename2match(filename,no_date=False):
     results={'label':filename}
-    urls=['(.+)s(\d+)e(\d+)','(.+)s(\d+)\.e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)'] #same in service
+    urls=['(.?)s(\d+)e(\d+)','(.?)s(\d+)\.e(\d+)', '(.?) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.?) (\d+)[x|-](\d+)'] #same in service
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
         #print str(results)
