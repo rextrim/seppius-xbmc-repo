@@ -308,6 +308,7 @@
         <string id="30320">Пуск Всем Файлам</string>
         <string id="30321">Стоп Всем Файлам</string>
         <string id="30322">Изменить название в XBMC</string>
+        <string id="30323">Добавить в "Избранное"</string>
 
 ///Other plugins
         <string id="30400">Назад</string>

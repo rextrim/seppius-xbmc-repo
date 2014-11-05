@@ -228,18 +228,8 @@ def Seasons(showId):
     try: syncshows=SyncXBMC()
     except: syncshows=False
     saveCheckPoint()
-    seasons, epdict=[], {}
     jdata = json.loads(data.get())
-    for id in jdata['episodes']:
-        seasonNumber=jdata['episodes'][id]['seasonNumber']
-        if seasonNumber not in seasons:
-            seasons.append(seasonNumber)
-        if jdata['episodes'][id]['episodeNumber']:
-            if str(jdata['episodes'][id]['seasonNumber']) not in epdict:
-                epdict[str(jdata['episodes'][id]['seasonNumber'])]=str(jdata['episodes'][id]['id'])
-            else:
-                epdict[str(jdata['episodes'][id]['seasonNumber'])]=epdict[str(jdata['episodes'][id]['seasonNumber'])]+','+str(jdata['episodes'][id]['id'])
-    seasons.sort()
+    seasons, epdict=countSeasons(jdata)
     watched_data= Data(cookie_auth, 'http://api.myshows.ru/profile/shows/'+showId+'/')
     try:watched_jdata = json.loads(watched_data.get())
     except: watched_jdata=None
@@ -271,7 +261,7 @@ def Seasons(showId):
         else: item.setInfo( type='Video', infoLabels=info )
 
         refresh_url='&refresh_url='+urllib.quote_plus(str(watched_data.url))
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Episodes(showId, seasonNumber):
@@ -471,7 +461,7 @@ def TopShows(action):
         stringdata={"showId":int(jdata['id']), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + str(jdata['id']) + '&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def Recommendations(action):
@@ -525,7 +515,7 @@ def Recommendations(action):
             stringdata={"showId":int(showId), "seasonId":None, "episodeId":None, "id":None}
             refresh_url='&refresh_url='+urllib.quote_plus('http://api.myshows.ru/profile/shows/')
             sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+'&showId=' + showId + '&mode=20'
-            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def EpisodeList(action):
@@ -614,7 +604,7 @@ def ShowList(action):
         stringdata={"showId":int(str_showId), "seasonId":None, "episodeId":None, "id":None}
         refresh_url='&refresh_url='+urllib.quote_plus(str(show_data.url))
         sys_url = sys.argv[0] + '?stringdata='+makeapp(stringdata)+refresh_url+'&showId=' + str_showId + '&mode=20'
-        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), False )
+        item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True )
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
 
 def FriendsNews():

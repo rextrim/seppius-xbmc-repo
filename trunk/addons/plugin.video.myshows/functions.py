@@ -676,7 +676,7 @@ def FileNamesPrepare(filename):
             Debug('[FileNamesPrepare] '+str([my_season, my_episode, filename]))
             return [my_season, my_episode, filename]
 
-def filename2match(filename):
+def filename2match(filename,no_date=False):
     results={'label':filename}
     urls=['(.+)s(\d+)e(\d+)','(.+)s(\d+)\.e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)'] #same in service
     for file in urls:
@@ -685,8 +685,10 @@ def filename2match(filename):
         if match:
             results['showtitle'], results['season'], results['episode']=match[0]
             results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip().replace('The Daily Show','The Daily Show With Jon Stewart')
-            Debug('[filename2match] '+str(results))
+            results['season'], results['episode']=int(results['season']), int(results['episode'])
+            #Debug('[filename2match] '+str(results))
             return results
+    if no_date:return
     urls=['(.+)(\d{4})\.(\d{2,4})\.(\d{2,4})','(.+)(\d{4}) (\d{2}) (\d{2})'] #same in service
     for file in urls:
         match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
@@ -1518,5 +1520,19 @@ class WatchedDB:
     def _close(self):
         self.cur.close()
         self.db.close()
+
+def countSeasons(jdata):
+    seasons, epdict=[], {}
+    for id in jdata['episodes']:
+        seasonNumber=jdata['episodes'][id]['seasonNumber']
+        if seasonNumber not in seasons:
+            seasons.append(seasonNumber)
+        if jdata['episodes'][id]['episodeNumber']:
+            if str(jdata['episodes'][id]['seasonNumber']) not in epdict:
+                epdict[str(jdata['episodes'][id]['seasonNumber'])]=str(jdata['episodes'][id]['id'])
+            else:
+                epdict[str(jdata['episodes'][id]['seasonNumber'])]=epdict[str(jdata['episodes'][id]['seasonNumber'])]+','+str(jdata['episodes'][id]['id'])
+    seasons.sort()
+    return seasons, epdict
 
 socket.setdefaulttimeout(TimeOut().timeout())
