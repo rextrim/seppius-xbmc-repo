@@ -1059,7 +1059,9 @@ class ScanSource(Source):
             self.episodeId=episode['episode']
             self.filename=episode['href']
             for id in jdata['episodes']:
-                if jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==episode['episode']:
+                #Debug('[scancxzto]: seasonId - '+str(jdata['episodes'][id]['seasonNumber'])+'; episodeId - '+str(jdata['episodes'][id]['seasonNumber']))
+                if jdata['episodes'][id]['seasonNumber']==self.seasonId and jdata['episodes'][id]['episodeNumber']==self.episodeId:
+                    #Debug('[scancxzto]: FOUND!')
                     self.id=int(id)
                     doit=True
                     break
@@ -1336,6 +1338,7 @@ def CXZTOSearch(showId, seasonId=None, id=None):
         seasons=[]
         eplist=cxzEpisodeList(t,r,y,s,e)[0]
         if len(eplist)>0:
+            #print str(eplist)
             myshows_files,myshows_items=[],[]
             for ep in eplist:
                 myshows_files.append(ep['href'])
@@ -1361,13 +1364,12 @@ def CXZTOSearch(showId, seasonId=None, id=None):
         e=None
         s=None
         seasons=countSeasons(jdata)[0]
-        print str(seasons)
+        #print str(seasons)
 
-    #print str(eplist)
-    #print str(slist)
     #season/show
     for s in seasons:
         slist=cxzEpisodeList(t,r,y,s,e)[1]
+        #print str(slist)
         if len(slist)>0:
             myshows_files,myshows_items=[],[]
             for season in slist:

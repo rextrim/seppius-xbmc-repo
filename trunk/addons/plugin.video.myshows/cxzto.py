@@ -357,7 +357,7 @@ def cxzEpisodeListByRel(href,rel,season):
 
     episode_list=[]
     episodes=Content(params, True)
-    #Debug('[cxzEpisodeListByRel][episodes]:'+str(episodes))
+    Debug('[cxzEpisodeListByRel][episodes]:'+str(episodes))
 
     for episode in episodes:
         episode['href']=site_url+episode['href']
