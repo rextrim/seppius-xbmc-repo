@@ -655,10 +655,10 @@ def chooseHASH(showId=None, id=None, seasonId=None, episodeId=None, auto_only=Fa
         dialog_items.append('['+str(data['progress'])+'%] '+data['name'])
         dialog_items_clean.append(data['name'])
     if showId: title=id2title(showId, None, True)[0]
-    if title:
+    if title and dialog_items_clean:
         items, files, match, count=[],[],0,0
-        for d_item in dialog_items_clean:
-            d_fileindex=dialog_items_clean.index(d_item)
+        for d_fileindex in range(0,len(dialog_items_clean)):
+            d_item=dialog_items_clean[d_fileindex]
             f2m=filename2match(d_item)
             if f2m and (re.search(title,f2m['showtitle']) or re.search(PrepareFilename(title).replace('The Daily Show With Jon Stewart','The Daily Show'),f2m['showtitle'])):
                 items.append(dialog_items[d_fileindex])
@@ -1054,9 +1054,8 @@ class ScanSource(Source):
         data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(self.showId))
         jdata = json.loads(data.get())
 
-
-
         for episode in episode_list:
+            doit=False
             self.episodeId=episode['episode']
             self.filename=episode['href']
             for id in jdata['episodes']:
@@ -1321,62 +1320,72 @@ def LFSearch(showId, id):
     return None
 
 def CXZTOSearch(showId, seasonId=None, id=None):
-
     data= Data(cookie_auth, 'http://api.myshows.ru/shows/'+str(showId)).get(force_cache=True)
     jdata = json.loads(data)
 
     id=str(id)
     t=jdata['title']
     r=jdata['ruTitle']
+    y=jdata['year']
 
     #Debug('[CXZTOSearch] t is '+t)
+    #episode
     if id not in ['0','None']:
         e=int(jdata['episodes'][id]['episodeNumber'])
         s=int(jdata['episodes'][id]['seasonNumber'])
-    else:
+        seasons=[]
+        eplist=cxzEpisodeList(t,r,y,s,e)[0]
+        if len(eplist)>0:
+            myshows_files,myshows_items=[],[]
+            for ep in eplist:
+                myshows_files.append(ep['href'])
+                myshows_items.append(ep['title'])
+            myshows_files.append(unicode(__language__(30205)))
+            myshows_items.append(unicode(__language__(30205)))
+            if len(myshows_files)>2:
+                dialog = xbmcgui.Dialog()
+                i = dialog.select(__language__(30235), myshows_items)
+            else: i=0
+            if i!=None and i not in (-1, len(myshows_files)-1):
+                stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s, "id":int(id), "episodeId":e})
+                Source(stringdata).addsource()
+                AskPlay(stringdata)
+        else:
+            showMessage("CXZ.TO",__language__(30403))
+            return
+    elif seasonId:
         e=None
         s=int(seasonId)
+        seasons=[s]
+    else:
+        e=None
+        s=None
+        seasons=countSeasons(jdata)[0]
+        print str(seasons)
 
-    y=jdata['year']
-
-    eplist, slist=cxzEpisodeList(t,r,y,s,e)
     #print str(eplist)
     #print str(slist)
-    #episode
-    if len(eplist)>0:
-        myshows_files,myshows_items=[],[]
-        for ep in eplist:
-            myshows_files.append(ep['href'])
-            myshows_items.append(ep['title'])
-        myshows_files.append(unicode(__language__(30205)))
-        myshows_items.append(unicode(__language__(30205)))
-        if len(myshows_files)>2:
-            dialog = xbmcgui.Dialog()
-            i = dialog.select(__language__(30235), myshows_items)
-        else: i=0
-        if i!=None and i not in (-1, len(myshows_files)-1):
-            stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s, "id":int(id), "episodeId":e})
-            Source(stringdata).addsource()
-            AskPlay(stringdata)
     #season/show
-    elif len(slist)>0:
-        myshows_files,myshows_items=[],[]
-        for season in slist:
-            season["stype"]="cxzto"
-            myshows_files.append(json.dumps(season))
-            myshows_items.append(season['title'])
-        myshows_files.append(unicode(__language__(30205)))
-        myshows_items.append(unicode(__language__(30205)))
-        if len(myshows_files)>2:
-            dialog = xbmcgui.Dialog()
-            i = dialog.select(__language__(30235), myshows_items)
-        else: i=0
-        if i!=None and i not in (-1, len(myshows_files)-1):
-            stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s})
-            Source(stringdata).addsource()
-            ScanSource(stringdata).scanone()
-    else:
-        showMessage("CXZ.TO",__language__(30403))
+    for s in seasons:
+        slist=cxzEpisodeList(t,r,y,s,e)[1]
+        if len(slist)>0:
+            myshows_files,myshows_items=[],[]
+            for season in slist:
+                season["stype"]="cxzto"
+                myshows_files.append(json.dumps(season))
+                myshows_items.append(season['title'])
+            myshows_files.append(unicode(__language__(30205)))
+            myshows_items.append(unicode(__language__(30205)))
+            if len(myshows_files)>2:
+                dialog = xbmcgui.Dialog()
+                i = dialog.select('%s %d' % (__language__(30138), s), myshows_items)
+            else: i=0
+            if i!=None and i not in (-1, len(myshows_files)-1):
+                stringdata=makeapp({"filename":myshows_files[i], "stype":"cxzto", "showId":int(showId), "seasonId":s})
+                Source(stringdata).addsource()
+                ScanSource(stringdata).scanone()
+        else:
+            showMessage('%s %d %s' % (__language__(30138),s,"CXZ.TO"),__language__(30403))
     return
 
 class TorrenterSearch():
@@ -1682,7 +1691,7 @@ class MoveToXBMC(Source):
                 for i in range(1,len(subtitledirs)):
                     filelist=xbmcvfs.listdir(folder.encode('utf-8','ignore')+os.sep+subtitledirs[i])[1]
                     for x in range(0, len(filelist)):
-                        if isSubtitle(self.filename,filelist[x]):
+                        if isSubtitle(self.filename,filelist[x], only_subs=True):
                             subtitledirs_titles.append(subtitledirs[i])
                             break
             else:
@@ -1700,7 +1709,7 @@ class MoveToXBMC(Source):
                 Debug("[subs_copy]: newfolder %s" %(newfolder))
                 for file in xbmcvfs.listdir(newfolder)[1]:
                     if self.stype=='file':
-                        if isSubtitle(self.filename,file):
+                        if isSubtitle(self.filename,file, only_subs=True):
                             i=i+1
                             xbmcvfs.copy(os.path.join(newfolder, file), os.path.join(folder, file))
                     else:
@@ -1775,12 +1784,14 @@ def xbmcEpisode(showId, seasonId, episodeNumber):
                     if episode['episode']==episodeNumber:
                         return episode
 
-def isSubtitle(filename,filename2):
+def isSubtitle(filename,filename2,only_subs=False):
     filename_if=filename[:len(filename)-len(filename.split('.')[-1])-1]
     filename_if=filename_if.split('/')[-1].split('\\')[-1]
     filename_if2=filename2.split('/')[-1].split('\\')[-1][:len(filename_if)]
     #print 'Compare '+filename_if.lower()+' and '+filename_if2.lower()+' and '+filename2.lower().split('.')[-1]
-    if filename2.lower().split('.')[-1] in subs_ext and\
+    if only_subs:ext=subs_ext
+    else:ext=allowed_ext
+    if filename2.lower().split('.')[-1] in ext and\
         filename_if.lower()==filename_if2.lower():
         return True
     return False

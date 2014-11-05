@@ -4,7 +4,7 @@ import urllib, urllib2, re, sys, os, json, difflib, cookielib
 import xbmc
 import cPickle
 from BeautifulSoup import BeautifulSoup
-from functions import Debug,cutFileNames
+from functions import Debug,cutFileNames,filename2match
 
 site_url='http://cxz.to'
 User_Agent = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0'
@@ -176,9 +176,9 @@ def Content(params,isFolders=False):
             for lu in li3:
                 lu['episode']=0
                 lu['season']=0
-                results=filename2match(lu['string'])
+                results=filename2match(lu['string'],no_date=True)
                 if not results and cutfilename:
-                    results=filename2match(cutfilename)
+                    results=filename2match(cutfilename,no_date=True)
                 if results:
                     if season in ['0',0,None]:
                         lu['season']=results['season']
@@ -188,19 +188,6 @@ def Content(params,isFolders=False):
 
                 rlist.append(lu)
     return rlist
-
-def filename2match(filename):
-    results={'label':filename}
-    urls=['(.+)s(\d+)e(\d+)','(.+)s(\d+)\.e(\d+)', '(.+) [\[|\(](\d+)[x|-](\d+)[\]|\)]', '(.+) (\d+)[x|-](\d+)'] #same in service
-    for file in urls:
-        match=re.compile(file, re.I | re.IGNORECASE).findall(filename)
-        #print str(results)
-        if match:
-            results['showtitle'], results['season'], results['episode']=match[0]
-            results['showtitle']=results['showtitle'].replace('.',' ').replace('_',' ').strip().replace('The Daily Show','The Daily Show With Jon Stewart')
-            results['season'], results['episode']=int(results['season']), int(results['episode'])
-            #print('[filename2match] '+str(results))
-            return results
 
 def isAsciiString(mediaName):
   """ Returns True if all characters of the string are ASCII.
