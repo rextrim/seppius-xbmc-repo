@@ -549,12 +549,21 @@ def get_info(params):
         if fc == 1:
             li.setProperty('IsPlayable', 'true')
 
+    menulist = []
     if bookmark:
         addbookmarkuri = construct_request({
             'func': 'http_request',
             'url': "http://kinozal.tv/" + bookmark
         })
-        li.addContextMenuItems([('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в Закладки[/COLOR]', 'XBMC.RunPlugin(%s)' % (addbookmarkuri),)])
+        menulist.append(('[COLOR FF669933]Добавить[/COLOR][COLOR FFB77D00] в Закладки[/COLOR]', 'XBMC.RunPlugin(%s)' % (addbookmarkuri)))
+    
+    downloaduri = construct_request({
+        'func': 'download',
+        'url' : link,
+        'filename' : '[kinozal.tv]id%s.torrent' % id
+    })
+    menulist.append(('[COLOR FF669933]Скачать[/COLOR]', 'XBMC.RunPlugin(%s)' % downloaduri))
+    li.addContextMenuItems(menulist)
 
     xbmcplugin.addDirectoryItem(hos, uri, li, fc > 1)
     
@@ -790,6 +799,21 @@ def get_bookmarks(params):
             li.addContextMenuItems([('[COLOR FF669933]Удалить[/COLOR][COLOR FFB77D00] из Закладок[/COLOR]', 'XBMC.RunPlugin(%s)' % (delbookmarkuri),)])
             xbmcplugin.addDirectoryItem(hos, uri, li, True)
     xbmcplugin.endOfDirectory(hos)
+
+def download(params):
+    cookiejar = login();
+    torr_link = params['url']
+    urlOpener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookiejar))
+    request = urllib2.Request(torr_link)
+    url = urlOpener.open(request)
+    red = url.read()
+    if '<!DOCTYPE HTML>' in red:
+      showMessage('Ошибка', 'Проблема при скачивании ')
+    filename=xbmc.translatePath(ktv_folder + params['filename'])
+    f = open(filename, 'wb')
+    f.write(red)
+    f.close()
+    showMessage('Kinozal.TV', 'Торрент-файл скачан') 
 
 def play(params):
     print 'palyyy'
