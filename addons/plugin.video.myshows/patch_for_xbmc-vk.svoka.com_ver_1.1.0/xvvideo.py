@@ -215,7 +215,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
 
 
     def Do_SERIES(self):
-        series = json.load(urllib.urlopen("http://api.myshows.ru/shows/top/all/"))
+        series = json.load(urllib.urlopen("http://api.myshows.me/shows/top/all/"))
         for s in series:
             thumb = s.get('image') or ""
             names = (PrepareString(s.get('title') or ""), PrepareString(s.get('ruTitle') or ""))
@@ -227,7 +227,7 @@ class XVKVideo(XBMCVkUI_VKSearch_Base):
 
 
     def Do_SEASON_SERIES(self):
-        show = json.load(urllib.urlopen("http://api.myshows.ru/shows/" + self.params["id"]))
+        show = json.load(urllib.urlopen("http://api.myshows.me/shows/" + self.params["id"]))
         film = PrepareString(show.get('ruTitle') or "") or PrepareString(show.get('title') or "")
         episodes = show['episodes']
         thumb = show.get('image')

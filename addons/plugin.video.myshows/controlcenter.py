@@ -6,14 +6,14 @@ from functions import TimeOut, WatchedDB
 
 from resources.pyxbmct.addonwindow import *
 
-__version__ = "1.9.8"
+__version__ = "1.9.11"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
 
-class MyAddon(AddonDialogWindow):
 
+class MyAddon(AddonDialogWindow):
     def __init__(self, title=''):
         super(MyAddon, self).__init__(title)
         self.setGeometry(700, 450, 9, 4)
@@ -83,7 +83,8 @@ class MyAddon(AddonDialogWindow):
         self.list.addItems(items)
         # Connect the list to a function to display which list item is selected.
         self.connect(self.list, lambda: xbmc.executebuiltin('Notification(Note!,%s selected.)' %
-                                            self.list.getListItem(self.list.getSelectedPosition()).getLabel()))
+                                                            self.list.getListItem(
+                                                                self.list.getSelectedPosition()).getLabel()))
         # Connect key and mouse events for list navigation feedback.
         self.connectEventList(
             [ACTION_MOVE_DOWN, ACTION_MOVE_UP, ACTION_MOUSE_WHEEL_DOWN, ACTION_MOUSE_WHEEL_UP, ACTION_MOUSE_MOVE],
@@ -153,10 +154,10 @@ class MyAddon(AddonDialogWindow):
     def setAnimation(self, control):
         # Set fade animation for all add-on window controls
         control.setAnimations([('WindowOpen', 'effect=fade start=0 end=100 time=500',),
-                                ('WindowClose', 'effect=fade start=100 end=0 time=500',)])
+                               ('WindowClose', 'effect=fade start=100 end=0 time=500',)])
+
 
 class ControlCenter(AddonDialogWindow):
-
     def __init__(self, title=''):
         super(ControlCenter, self).__init__(title)
         self.setGeometry(700, 450, 9, 3)
@@ -185,7 +186,7 @@ class ControlCenter(AddonDialogWindow):
         self.radiobutton = RadioButton(__language__(30411))
 
         self.placeControl(self.radiobutton, 1, 2)
-        self.radiobutton.setSelected(TimeOut().timeout()!=TimeOut().online)
+        self.radiobutton.setSelected(TimeOut().timeout() != TimeOut().online)
         self.connect(self.radiobutton, self.radio_update)
 
         # Button
@@ -220,7 +221,7 @@ class ControlCenter(AddonDialogWindow):
 
         self.button_sendoff.controlUp(self.radiobutton)
         self.button_sendoff.controlDown(self.button_close)
-        #self.button_sendoff.controlLeft(self.button_openset)
+        # self.button_sendoff.controlLeft(self.button_openset)
         #self.button_sendoff.controlRight(self.button_openset)
 
         self.button_openset.controlUp(self.button_sendoff)
@@ -260,7 +261,7 @@ class ControlCenter(AddonDialogWindow):
 
     def radio_update(self):
         # Update radiobutton caption on toggle
-        if self.radiobutton.isSelected() or (TimeOut().timeout()==TimeOut().online):
+        if self.radiobutton.isSelected() or (TimeOut().timeout() == TimeOut().online):
             TimeOut().go_offline(manual=True)
         else:
             TimeOut().go_online()
@@ -279,11 +280,13 @@ class ControlCenter(AddonDialogWindow):
     def setAnimation(self, control):
         # Set fade animation for all add-on window controls
         control.setAnimations([('WindowOpen', 'effect=fade start=0 end=100 time=500',),
-                                ('WindowClose', 'effect=fade start=100 end=0 time=500',)])
+                               ('WindowClose', 'effect=fade start=100 end=0 time=500',)])
+
 
 def main():
     window = ControlCenter('MyShows.ru Control Center')
     window.doModal()
+
 
 if __name__ == '__main__':
     try:
@@ -291,5 +294,6 @@ if __name__ == '__main__':
     except Exception, e:
         import xbmc
         import traceback
+
         map(xbmc.log, traceback.format_exc().split("\n"))
         raise
