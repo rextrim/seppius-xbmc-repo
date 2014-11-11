@@ -886,7 +886,7 @@ Audio sources are
 
 <addon id="plugin.video.hdkinoklub.ru"
        name="[COLOR FF00FF00]Кино портал HD ([/COLOR][COLOR FFFFF000]hdkinoklub.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.6"
+       version="1.0.7"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

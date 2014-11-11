@@ -22,6 +22,9 @@
 import re, os, urllib, urllib2, cookielib, time
 from time import gmtime, strftime
 import urlparse, json
+import subprocess
+
+from subprocess import Popen, PIPE, STDOUT
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
@@ -75,6 +78,8 @@ class Info:
 #---------- get web page -------------------------------------------------------
 def get_HTML(url, post = None, ref = None, l = None):
     request = urllib2.Request(url, post)
+
+    xbmc.log(url)
 
     host = urlparse.urlsplit(url).hostname
     if ref==None:
@@ -225,7 +230,7 @@ def Get_Page_and_Movies_Count(par):
     soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
     max_page = 0
 
-    for rec in soup.find('div',{'class':'catPages1'}).findAll('a'):
+    for rec in soup.find('div',{'class':'navigation'}).findAll('a'):
         try:
             if max_page < int(rec.text):
                 max_page = int(rec.text)
@@ -237,7 +242,7 @@ def Get_Page_and_Movies_Count(par):
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
-    count = 10*(max_page-1)+len(soup.find('div',{'id':'dle-content'}).findAll('td', {'class':'eTitle'}))
+    count = 10*(max_page-1)+len(soup.find('div',{'id':'dle-content'}).findAll('div',{'class':'short'}))
 
     return max_page, count
 
@@ -351,7 +356,7 @@ def Movie_List(params):
 
             par.max_page = 1
             try:
-                txt = soup.find('div', {'class':'dpad radial infoblock'}).text
+                txt = soup.find('div', {'class':'info'}).text
                 par.count = int(re.compile(u'Вашему запросу найдено (.+?) ответов', re.MULTILINE|re.DOTALL).findall(txt)[0])
             except:
                 return False
@@ -374,27 +379,25 @@ def Movie_List(params):
         Get_Header(par)
 
         # -- get movie info
-        for rec in soup.find('div',{'id':'dle-content'}).findAll('table'):
+        for rec in soup.find('div',{'id':'dle-content'}).findAll('div',{'class':'short'}):
             try:
                 #--
-                r = rec.find('div',{'class':'eTitle'})
+                r = rec.find('div',{'class':'short2'}).find('h2')
                 try:
                     mi.url      = r.find('a')['href']
                 except:
                     continue
                 mi.title    = r.find('a').text.encode('utf-8')
                 #--
-                mi.img      = rec.find('div',{'class':'eMessage'}).find('img')['src']
+                mi.img      = rec.find('div',{'class':'short1'}).find('img')['src']
                 if mi.img[0] == '/':
                     mi.img =  'http://hdkinoklub.ru'+mi.img
 
-                mi.text     = rec.find('div',{'class':'eMessage'}).text.encode('utf-8')
+                mi.text  = rec.find('div',{'class':'short3'}).find('span').text.encode('utf-8')
                 #--
-                for r in rec.find('div',{'class':'full_history'}).text.split('|'):
-                    if r.split(':', 1)[0] == u'Год выхода':
-                        mi.year     = int(r.split(':',1)[1])
-                    elif r.split(':')[0] == u'Жанр':
-                        mi.genre    = r.split(':')[1].encode('utf-8')
+                mi.year  = int(rec.find('div',{'class':'short4'}).find('span',{'class':'short155'}).text)
+                mi.genre = rec.find('div',{'class':'short2'}).find('span').text
+
                 #--
                 i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
                 u = sys.argv[0] + '?mode=SOURCE'
@@ -452,81 +455,69 @@ def Source_List(params):
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
     # -- get movie info
-    source_number = 1
 
-    #-- VK.ME -----------------------------------------------------------------
-    for rec in soup.findAll('iframe', {'src' :  re.compile("http://kodik.biz")}):
-        if soup.find('option'):
-            for m in soup.findAll('option'):
-                s_url  = m['value']
-                s_name = m.text.encode('utf-8')
-                q, s_url = Kodik_Biz(s_url)
+    name_list = []
+    for rec in soup.find('div', {'class' : "section"}).find('ul', {'class':'tabs'}).findAll('li'):
+        name_list.append(rec.text.encode('utf-8'))
 
-                s_title = s_name+' [COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте ('+str(q)+')[/COLOR][COLOR FF00FF00])[/COLOR]'
+    #-- get video --------------------------------------------------------------
+    idx = 0
+    for rec in soup.findAll('iframe'):
+        if "http://kodik.biz" in rec['src'] and Addon.getSetting('Kodik.Biz') == 'true':
+            s_url   = rec['src']
+            for r in Kodik_Biz(s_url):   ## q, s_url =
+                s_title = '[COLOR FF00FF00]'+name_list[idx]
+                if len(r['name']) > 0:
+                    s_title = s_title + ' '+ r['name']
+                s_title = s_title +' ([/COLOR][COLOR FF00FFFF]Kodik.biz ('+str(r['quality'])+')[/COLOR][COLOR FF00FF00])[/COLOR]'
                 #--
                 i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
                 u = sys.argv[0] + '?mode=PLAY'
                 u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-                u += '&url=%s'%urllib.quote_plus(s_url)
+                u += '&url=%s'%urllib.quote_plus(r['url'])
                 u += '&img=%s'%urllib.quote_plus(img)
                 u += '&vtype=%s'%urllib.quote_plus('VM')
                 #i.setProperty('fanart_image', img)
                 xbmcplugin.addDirectoryItem(h, u, i, False)
-        else:
-            s_url   = rec['src']
-            q, s_url = Kodik_Biz(s_url)
 
-            s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте ('+str(q)+')[/COLOR][COLOR FF00FF00])[/COLOR]'
+        elif 'video_ext.php' in rec['src']:
+            s_url   = rec['src']
+
+            #-- check url
+            if 'vk.com/video_ext.php?' not in s_url:
+                html = get_HTML(s_url)
+                soup = BeautifulSoup(html, fromEncoding="windows-1251")
+                for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php\?')}): #\?
+                    s_url   = rec['src']
+
+            s_title = '[COLOR FF00FF00]'+name_list[idx]+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
             #--
             i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
             u = sys.argv[0] + '?mode=PLAY'
             u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
             u += '&url=%s'%urllib.quote_plus(s_url)
             u += '&img=%s'%urllib.quote_plus(img)
-            u += '&vtype=%s'%urllib.quote_plus('VM')
+            u += '&vtype=%s'%urllib.quote_plus('VK')
             #i.setProperty('fanart_image', img)
             xbmcplugin.addDirectoryItem(h, u, i, False)
-        source_number = source_number + 1
 
-    #-- VK.COM -----------------------------------------------------------------
-    for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php')}): #\?
-        s_url   = rec['src']
-
-        #-- check url
-        if 'vk.com/video_ext.php?' not in s_url:
-            html = get_HTML(s_url)
-            soup = BeautifulSoup(html, fromEncoding="windows-1251")
-            for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php\?')}): #\?
-                s_url   = rec['src']
-
-        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
-        source_number = source_number + 1
-        #--
-        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-        u += '&url=%s'%urllib.quote_plus(s_url)
-        u += '&img=%s'%urllib.quote_plus(img)
-        u += '&vtype=%s'%urllib.quote_plus('VK')
-        #i.setProperty('fanart_image', img)
-        xbmcplugin.addDirectoryItem(h, u, i, False)
-
-    #-- RuVideo ----------------------------------------------------------------
-    for rec in soup.findAll('param', {'name':'flashvars'}):
-        for s in rec['value'].split('&'):
-            if s.split('=',1)[0] == 'file':
-                s_url = s.split('=',1)[1]
-        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
-        source_number = source_number + 1
-        #--
-        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-        u += '&url=%s'%urllib.quote_plus(s_url)
-        u += '&img=%s'%urllib.quote_plus(img)
-        u += '&vtype=%s'%urllib.quote_plus('RV')
-        #i.setProperty('fanart_image', img)
-        xbmcplugin.addDirectoryItem(h, u, i, False)
+        idx = idx+1
+##    #-- RuVideo ----------------------------------------------------------------
+##    for rec in soup.findAll('param', {'name':'flashvars'}):
+##        for s in rec['value'].split('&'):
+##            if s.split('=',1)[0] == 'file':
+##                s_url = s.split('=',1)[1]
+##        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
+##        source_number = source_number + 1
+##        #--
+##        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+##        u = sys.argv[0] + '?mode=PLAY'
+##        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+##        u += '&url=%s'%urllib.quote_plus(s_url)
+##        u += '&img=%s'%urllib.quote_plus(img)
+##        u += '&vtype=%s'%urllib.quote_plus('RV')
+##        #i.setProperty('fanart_image', img)
+##        xbmcplugin.addDirectoryItem(h, u, i, False)
 
     xbmcplugin.endOfDirectory(h)
 
@@ -542,19 +533,20 @@ def Genre_List(params):
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for rec in soup.find('div', {'class':'cat_menu'}).findAll('a'):
-        if rec['href'] <> '/vip':
-            name     = unescape(rec.text).encode('utf-8')
-            genre_id = rec['href']
+    for rec in soup.find('div', {'class':'top_menu'}).find('ul', {'class':'reset'}).findAll('li'):
+        if rec.find('a').text == u'Жанры':
+            for r in rec.find('ul', {'class':'reset'}).findAll('li'):
+                name     = unescape(r.find('a').text).encode('utf-8')
+                genre_id = r.find('a')['href']
 
-            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-            u = sys.argv[0] + '?mode=MOVIE'
-            u += '&name=%s'%urllib.quote_plus(name)
-            #-- filter parameters
-            u += '&page=%s'%urllib.quote_plus(par.page)
-            u += '&genre=%s'%urllib.quote_plus(genre_id)
-            u += '&genre_name=%s'%urllib.quote_plus(name)
-            xbmcplugin.addDirectoryItem(h, u, i, True)
+                i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+                u = sys.argv[0] + '?mode=MOVIE'
+                u += '&name=%s'%urllib.quote_plus(name)
+                #-- filter parameters
+                u += '&page=%s'%urllib.quote_plus(par.page)
+                u += '&genre=%s'%urllib.quote_plus(genre_id)
+                u += '&genre_name=%s'%urllib.quote_plus(name)
+                xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- add serials
     name     = 'Сериалы'
@@ -645,26 +637,61 @@ def PLAY(params):
 
 #-- conver video urk from kodik.biz --------------------------------------------
 def Kodik_Biz(vurl):
-    p = vurl.split('/')
+    list = []
+    #--
+    html = get_HTML(vurl)
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    url = 'http://api.vk.com/method/video.getEmbed?oid='+p[4]+'&video_id='+p[5]+'&embed_hash='+p[6]+'&callback=responseWork'
-    html = get_HTML(url)
+    if soup.find('div', {'class':'serial-series-box'}):
+        for rec in soup.find('div', {'class':'serial-series-box'}).findAll('option'):
+            for r in Kodik_Biz(rec['value']):
+                list.append({'name':rec.text.encode('utf-8'), 'quality':r['quality'], 'url':r['url']})
+    else:
+        try:
+            for rec in soup.findAll('script', {'type':'text/javascript'}):
+                if 'eval(' in rec.text:
+                    code = rec.text
+                    break
 
-    str = html.replace('responseWork(','')[:-2]
-    j = json.loads(str)
-    quality = 0
+            url = Run_Java(code)
+            html = get_HTML(url)
 
-    for key, value in  j['response'].items():
-        if key.find('url') != -1 and len(key) < 8:
-            if int(key.replace('url', '')) > quality:
-                quality = int(key.replace('url', ''))
-                url     = value
+            str = html.replace('responseWork(','')[:-2]
+            j = json.loads(str)
+            quality = 0
 
-    if quality == 0:
-        quality = 720
-        url = j['response']['host']+'u'+j['response']['uid']+'/videos/'+j['response']['vtag']+'.720.mp4'
+            for key, value in  j['response'].items():
+                if key.find('url') != -1 and len(key) < 8:
+                    if int(key.replace('url', '')) > quality:
+                        quality = int(key.replace('url', ''))
+                        url     = value
 
-    return quality, url
+            if quality == 0:
+                quality = 720
+                url = j['response']['host']+'u'+j['response']['uid']+'/videos/'+j['response']['vtag']+'.720.mp4'
+
+            list.append({'name':'', 'quality':quality, 'url':url})
+        except:
+            pass
+
+    return list
+
+def Run_Java(code):
+    js_code = code + ';"http://api.vk.com/method/video.getEmbed?oid=" + s1 + "&video_id=" + s2 +"&embed_hash=" + s3 +"&callback=responseWork";'
+
+    node_js = Addon.getSetting('Node.JS_Path')
+
+    startupinfo = None
+    if os.name == 'nt':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= 1
+
+    p = subprocess.Popen([node_js, '-p'], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE,shell= False, startupinfo=startupinfo)
+    rez = p.communicate(input = js_code)[0]
+
+    return rez
+
+
 #-------------------------------------------------------------------------------
 
 def unescape(text):
