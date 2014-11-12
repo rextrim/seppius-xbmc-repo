@@ -643,8 +643,8 @@ def Genre_List(params):
         if rec.text == u'Фильмы онлайн':
             break
         url      = rec['href']
-        if url[0]=='/':
-            url = 'http://nowfilms.ru'+url
+
+        url = 'http://nowfilms.ru/'+url
 
         name     = rec.text.encode('utf-8')
 
@@ -687,7 +687,7 @@ def Type_List(params):
                 for t in rec.find('span').findAll('a'):
                     name = (txt+t.text.split('(')[0]).encode('utf-8')
                     lname = '[COLOR FF66FF66]'+txt.encode('utf-8')+'[/COLOR][COLOR FFFFCC33]'+t.text.split('(')[0].encode('utf-8')+'[/COLOR]'
-                    url = 'http://nowfilms.ru'+t['href']
+                    url = 'http://nowfilms.ru/'+t['href']
 
                     i = xbmcgui.ListItem(lname, iconImage=icon, thumbnailImage=icon)
                     u = sys.argv[0] + '?mode=MOVIE'
@@ -700,7 +700,7 @@ def Type_List(params):
             else:
                 name = rec.find('a').text.encode('utf-8')
                 lname = '[COLOR FF66FF66]'+name+'[/COLOR]'
-                url  = 'http://nowfilms.ru'+rec.find('a')['href']
+                url  = 'http://nowfilms.ru/'+rec.find('a')['href']
 
                 i = xbmcgui.ListItem(lname, iconImage=icon, thumbnailImage=icon)
                 u = sys.argv[0] + '?mode=MOVIE'
