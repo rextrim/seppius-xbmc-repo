@@ -90,7 +90,7 @@ def Shows():
         syncshows = False
     saveCheckPoint()
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
-    #lockView('info')
+    # lockView('info')
     if mode == 19:
         KB = xbmc.Keyboard()
         if action: KB.setDefault(unicode(action))
@@ -169,7 +169,7 @@ def Shows():
                 'year': '', }  #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
         try:
             info['plot'] = __language__(30265) % (
-            str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes'])) + '\r\n' + __language__(
+                str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes'])) + '\r\n' + __language__(
                 30266) + ' ' + str(rating) + '\r\n'
         except:
             info['plot'] = ''
@@ -210,7 +210,7 @@ def Full_Season():
     def sort_one():
         sort_next = sort_episodes('next')
         sort_unwatched = sort_episodes('unwatched')
-        #print str(sort_unwatched)
+        # print str(sort_unwatched)
         sort_one = []
 
         for showId in sort_unwatched:
@@ -242,10 +242,10 @@ def Full_Season():
                                     thumbnailImage=str(jdata[showId]['image']))
             info = {'title': title, 'label': title, 'tvshowtitle': jdata[showId]['title'], 'rating': rating * 2,
                     'votes': 1,
-                    'year': '', }  #'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
+                    'year': '', }  # 'playcount':jdata[showId]['watchedEpisodes'], 'episode':jdata[showId]['totalEpisodes'] НЕ ХОЧУ ГАЛКИ
             try:
                 info['plot'] = __language__(30265) % (
-                str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes'])) + '\r\n' + __language__(
+                    str(jdata[showId]['watchedEpisodes']), str(jdata[showId]['totalEpisodes'])) + '\r\n' + __language__(
                     30266) + ' ' + str(rating) + '\r\n'
             except:
                 info['plot'] = ''
@@ -315,7 +315,7 @@ def Seasons(showId):
 
 
 def Episodes(showId, seasonNumber):
-    #lockView('info')
+    # lockView('info')
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     data = Data(cookie_auth, __baseurl__ + '/shows/' + showId)
     watched_data = Data(cookie_auth, __baseurl__ + '/profile/shows/' + showId + '/')
@@ -465,7 +465,8 @@ def MyTorrents():
                 xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
             except:
                 Debug('[MyTorrents] Something went wrong with %s' % (
-                str({"showId": x['showId'], "episodeId": x['episodeId'], "id": x['id'], "seasonId": x['seasonId']})),
+                    str({"showId": x['showId'], "episodeId": x['episodeId'], "id": x['id'],
+                         "seasonId": x['seasonId']})),
                       True)
 
 
@@ -560,6 +561,8 @@ def TopShows(action):
 
 
 def Recommendations(action):
+    from BeautifulSoup import BeautifulSoup
+
     try:
         syncshows = SyncXBMC()
     except:
@@ -572,21 +575,23 @@ def Recommendations(action):
         action = 'friends'
         login = 'xbmchub'
     if action == 'recomm':
-        orig_before = u'                        <p class="description">'
-        orig_after = u'</p>                    </th>'
-        orig_false = u'                                            </th>'
-        subject = Data(cookie_auth, 'http://myshows.ru/profile/recommendations/').get()
+        subject = Data(cookie_auth, 'http://myshows.me/profile/recommendations/').get()
         if subject:
-            subject = subject.decode('utf-8')
-            reobj = re.compile(
-                u'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^' + orig_before + '.+?' + orig_after + '|' + orig_false + ').+?<div style="width: (\d+)%"></div>.+?<td>(\d+)%</td>',
-                re.DOTALL | re.MULTILINE)
-            result = reobj.findall(subject)
+            # print subject
+            #subject = subject.decode('utf-8')
+            Soup = BeautifulSoup(subject)
+            try:
+                result = Soup.findAll('div', 'mediaBlock _withSideInfo')
+                result2 = Soup.findAll('table', 'catalogTable')[1].findAll('tr')[1:]
+                #print str(result)
+            except:
+                result = result2 = []
+                Debug('[Recommendations]: Ничего не найдено')
     elif action == 'friends':
         orig_before = u'							<p class="description">'
         orig_after = u'</p>						</th>'
         orig_false = u'                            </th>'
-        subject = Data(cookie_auth, 'http://myshows.ru/' + login + '/friends/rating').get()
+        subject = Data(cookie_auth, 'http://myshows.me/' + login + '/friends/rating').get()
         if subject:
             subject = subject.decode('utf-8')
             reobj = re.compile(
@@ -595,20 +600,64 @@ def Recommendations(action):
             result = reobj.findall(subject)
     j = 0
     if result:
-        for i in result:
+        for block in result:
             j += 1
+            showId = title = origtitle = ''
+            rating = friends = recomm = '0'
             if action == 'recomm':
-                showId, title, origtitle, rating, recomm = i[0], i[1], i[2], i[3], i[4]
-                listtitle = str(j) + '. [' + recomm + '%] ' + title
+                print str(block)
+                showId = block.find('a', '_body')['href'].replace('http://myshows.me/view/', '').rstrip('/')
+                recomm = block.find('div', '_onImg').string.replace('%', '')
+                title = block.find('a', '_sideName').string
+                origtitle_soup = block.find('span', 'catalogTableSubHeader')
+                if origtitle_soup: origtitle = origtitle_soup.string
+                rating = re.compile(u'<span class="stars _(\d)">', re.M).findall(str(block))[-1]
+                friends_re = re.compile(u'<p>(\d+) .+</p>', re.M).findall(str(block))
+                if friends_re: friends = friends_re[-1]
+                listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
             elif action == 'friends':
                 showId, title, origtitle, rating, friends, recomm = i[0], i[1], i[2], i[3], i[4], i[5]
                 listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
-            if origtitle == orig_false:
-                origtitle = title.encode('utf-8')
-            else:
-                origtitle = origtitle.replace(orig_before, '').replace(orig_after, '')
             title = title.encode('utf-8')
-            if ruName != 'true': title = origtitle
+            if ruName != 'true' and origtitle != '': title = origtitle
+
+            rating = float(rating) / 10
+            item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png', )
+            info = {'title': title, 'label': title, 'tvshowtitle': origtitle, 'rating': rating, 'year': ''}
+            if syncshows:
+                item = syncshows.shows(title, item, info)
+            else:
+                item.setInfo(type='Video', infoLabels=info)
+            stringdata = {"showId": int(showId), "seasonId": None, "episodeId": None, "id": None}
+            refresh_url = '&refresh_url=' + urllib.quote_plus(__baseurl__ + '/profile/shows/')
+            sys_url = sys.argv[0] + '?stringdata=' + makeapp(stringdata) + '&showId=' + showId + '&mode=20'
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True)
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=True)
+
+    if result2:
+        for tr in result2:
+            j += 1
+            showId = title = origtitle = ''
+            rating = friends = recomm = '0'
+            if action == 'recomm':
+                td = tr.findAll('td')
+                # print str(td)
+                showId = title = origtitle = ' '
+                rating = friends = recomm = '0'
+                showId = td[0].find('a')['href'].replace('http://myshows.me/view/', '').rstrip('/')
+                recomm = td[2].string.replace('%', '')
+                title = td[0].a.string
+                origtitle_soup = td[0].find('span', 'catalogTableSubHeader')
+                if origtitle_soup: origtitle = origtitle_soup.string
+                rating = re.compile(u'<span class="stars _(\d)">', re.M).findall(str(td[1]))[-1]
+                friends_re = re.compile(u'<td>(\d+)</td>').findall(str(td[3]))
+                if friends_re: friends = friends_re[-1]
+                listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
+            elif action == 'friends':
+                showId, title, origtitle, rating, friends, recomm = i[0], i[1], i[2], i[3], i[4], i[5]
+                listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
+            title = title.encode('utf-8')
+            if ruName != 'true' and origtitle != '': title = origtitle
 
             rating = float(rating) / 10
             item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png', )
@@ -655,8 +704,8 @@ def EpisodeList(action):
             pre = prefix(id=int(id))
             left = dates_diff(str(jdata[id]["airDate"]), 'today')
             title = pre + (__language__(30113) % (
-            int_xx(str(jdata[id]['seasonNumber'])), int_xx(str(jdata[id]['episodeNumber'])), left, show_title,
-            jdata[id]['title']))
+                int_xx(str(jdata[id]['seasonNumber'])), int_xx(str(jdata[id]['episodeNumber'])), left, show_title,
+                jdata[id]['title']))
             item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png',
                                     thumbnailImage=show_jdata[str_showId]['image'])
             item.setInfo(type='Video', infoLabels={'title': title,
@@ -718,10 +767,10 @@ def ShowList(action):
     for str_showId in num_eps:
         if num_eps[str_showId] == 1:
             title = __language__(30115).encode('utf-8') % (
-            last_date[str_showId], shows[str_showId], num_eps[str_showId])
+                last_date[str_showId], shows[str_showId], num_eps[str_showId])
         else:
             title = __language__(30116).encode('utf-8') % (
-            last_date[str_showId], first_date[str_showId], shows[str_showId], num_eps[str_showId])
+                last_date[str_showId], first_date[str_showId], shows[str_showId], num_eps[str_showId])
 
         item = xbmcgui.ListItem(title, iconImage='DefaultFolder.png', thumbnailImage=str(images[str_showId]))
         item.setInfo(type='Video', infoLabels={'Title': shows[str_showId], 'date': str(last_date[str_showId])})
@@ -829,7 +878,7 @@ def Profile(action, sort='profile'):
                     origtitle = title.encode('utf-8')
                 else:
                     origtitle = origtitle.replace(orig_before, '').replace(orig_after, '')
-                    #Debug(origtitle)
+                    # Debug(origtitle)
                 if ruName != 'true': title = origtitle
                 title = title.encode('utf-8')
                 rating = float(rating) / 10
@@ -906,7 +955,7 @@ def Change_Status_Episode(showId, id, action, playcount, refresh_url, selftitle=
         if ok2:
             showMessage(__language__(30208) + ' 1', status_url.strip(__baseurl__ + '/profile/episodes/'))
             ok2 = Data(DuoCookie().cookie(2), status_url, refresh_url).get()
-    #Debug('[TEST][Change_Status_Episode]:ok2 '+str(ok2))
+    # Debug('[TEST][Change_Status_Episode]:ok2 '+str(ok2))
     if ok2:
         showMessage(__language__(30208), status_url.strip(__baseurl__ + '/profile/episodes/'), 70)
         WatchedDB().onaccess()
@@ -938,7 +987,7 @@ def Change_Status_Show(showId, action, refresh_url):
 
 
 def Change_Status_Season(showId, seasonNumber, action, refresh_url):
-    #showMessage(__language__(30211), __language__(30212))
+    # showMessage(__language__(30211), __language__(30212))
     data = get_url(cookie_auth, __baseurl__ + '/shows/' + showId)
     eps_string = ''
     jdata = json.loads(data)
@@ -980,7 +1029,7 @@ def Rate(showId, id, refresh_url, selftitle=None):
             if ok:
                 showMessage(__language__(30208) + ' 1', rate_url.strip(__baseurl__ + '/profile/'))
                 ok = Data(DuoCookie().cookie(2), rate_url, refresh_url).get()
-        #Debug('[TEST][Rate]:ok '+str(ok))
+        # Debug('[TEST][Rate]:ok '+str(ok))
         if ok:
             showMessage(__language__(30208), rate_url.strip(__baseurl__ + '/profile/'))
             WatchedDB().onaccess()
@@ -1045,7 +1094,7 @@ def Favorite(id, refresh_url):
 
 def ContextMenuItems(sys_url, refresh_url, ifstat=None):
     myshows_dict = []
-    #Debug('[ContextMenuItems] '+unicode(sys.argv))
+    # Debug('[ContextMenuItems] '+unicode(sys.argv))
     if mode >= 10 and mode <= 19 or mode == 100 or sort and mode in (27, 28) or mode == 41 and sort and action:
         #show
         menu = [__language__(30227) + '|:|' + sys_url + '4',
@@ -1160,7 +1209,7 @@ class SyncXBMC():
         if self.action == 'check':
             if 'myshows_id' in self.match:
                 showId, id = self.match['myshows_showId'], self.match['myshows_id']
-            #elif 'label' in self.match and len(re.compile(r"\[myshows_showId\|(\d+?)\|myshows_id\|(\d+?)\]").findall(self.match['label']))>0:
+            # elif 'label' in self.match and len(re.compile(r"\[myshows_showId\|(\d+?)\|myshows_id\|(\d+?)\]").findall(self.match['label']))>0:
             #    showId, id=re.compile(r"\[myshows_showId\|(\d+?)\|myshows_id\|(\d+?)\]").findall(self.match['label'])
             else:
                 showId, id = self.doaction_simple()
@@ -1187,11 +1236,11 @@ class SyncXBMC():
                                 idlist.append(x)
                             if len(idlist) == 1:
                                 id = idlist[0]
-                                #Debug('[doaction] [filename2match] '+unicode(self.match))
+                                # Debug('[doaction] [filename2match] '+unicode(self.match))
             if showId or id:
                 if not id and 'season' in self.match and 'episode' in self.match:
                     Debug('[doaction2] Getting the id of S%sE%s' % (
-                    str(self.match['season']), str(self.match['episode'])))
+                        str(self.match['season']), str(self.match['episode'])))
                     id = self.getid(showId, self.match['season'], self.match['episode'], self.match['label'])
                 if id:
                     if self.rating or self.rating == 0:
@@ -1206,9 +1255,9 @@ class SyncXBMC():
                             if d:
                                 d = Data(DuoCookie().cookie(2), rate_url,
                                          __baseurl__ + '/profile/shows/' + str(showId) + '/').get()
-                                #Debug('[TEST][self.rating]: Rate answer %s' % (str(d)))
+                                # Debug('[TEST][self.rating]: Rate answer %s' % (str(d)))
                     if self.rating or self.rating == 0:
-                        #xbmc.sleep(500)
+                        # xbmc.sleep(500)
                         status_url = __baseurl__ + '/profile/episodes/check/' + str(id)
                         if cookie_auth != 'BOTH':
                             c = Data(cookie_auth, status_url, __baseurl__ + '/profile/shows/' + str(showId) + '/').get()
@@ -1226,7 +1275,7 @@ class SyncXBMC():
                     rateOK, scrobrate, rateandcheck = False, __settings__.getSetting(
                         "scrobrate"), __settings__.getSetting("rateandcheck")
                     if scrobrate == 'true':
-                        #Debug('[TEST][doaction]: Start rateOK')
+                        # Debug('[TEST][doaction]: Start rateOK')
                         rateOK = Rate(str(showId), str(id), __baseurl__ + '/profile/shows/' + str(showId) + '/',
                                       self.title)
                         #Debug('[TEST][doaction]: rateOK '+str(rateOK))
@@ -1235,10 +1284,10 @@ class SyncXBMC():
                     if rateOK or rateandcheck == 'false':
                         if str(showId) not in self.jdatashows or self.jdatashows[str(showId)][
                             'watchStatus'] != 'watching':
-                            #Debug('[doaction]: New show! Marking as watching')
+                            # Debug('[doaction]: New show! Marking as watching')
                             Change_Status_Show(str(showId), 'watching', __baseurl__ + '/profile/shows/')
                             xbmc.sleep(500)
-                        #Debug('[TEST][doaction]: Start Change_Status_Episode')
+                        # Debug('[TEST][doaction]: Start Change_Status_Episode')
                         #xbmc.sleep(500)
                         Change_Status_Episode(showId, id, action, '0',
                                               __baseurl__ + '/profile/shows/' + str(showId) + '/', self.title)
@@ -1345,7 +1394,7 @@ class SyncXBMC():
             return item
 
         if self.useTVDB:
-            #Debug('[shows][useTVDB]:'+info['tvshowtitle'])
+            # Debug('[shows][useTVDB]:'+info['tvshowtitle'])
             #Debug('[shows][useTVDB]:'+info['title'])
             try:
                 info['title'] = info['title'].decode('utf-8', 'ignore')
@@ -1434,7 +1483,7 @@ class SyncXBMC():
         if self.useTVDB and meta:
             item = self.itemTVDB(item, meta)
             try:
-                #if 1==1:
+                # if 1==1:
                 #print str(meta)
                 meta['info']['title'] = info['title']
                 meta['info']['rating'] = info['rating']
@@ -1451,7 +1500,7 @@ class SyncXBMC():
         self.menu = self.get_menu()
         for i in range(len(self.menu)):
             if title in self.menu[i]['title']:
-                #Debug('episodes:'+title+' '+str(self.menu[i]['title']))
+                # Debug('episodes:'+title+' '+str(self.menu[i]['title']))
                 item.setProperty('fanart_image', self.menu[i]['fanart'])
                 break
         item.setInfo(type='Video', infoLabels=info)
@@ -1495,9 +1544,10 @@ class SyncXBMC():
         Debug('[Episodes Sync] Getting episodes from XBMC')
 
         shows = xbmcJsonRequest({'jsonrpc': '2.0', 'method': 'VideoLibrary.GetTVShows', 'params': {
-        'properties': ['title', 'originaltitle', 'genre', 'year', 'rating', 'plot', 'studio', 'mpaa', 'cast',
-                       'imdbnumber', 'premiered', 'votes', 'fanart', 'thumbnail', 'episodeguide', 'playcount', 'season',
-                       'episode', 'tag']}, 'id': 0})
+            'properties': ['title', 'originaltitle', 'genre', 'year', 'rating', 'plot', 'studio', 'mpaa', 'cast',
+                           'imdbnumber', 'premiered', 'votes', 'fanart', 'thumbnail', 'episodeguide', 'playcount',
+                           'season',
+                           'episode', 'tag']}, 'id': 0})
 
         # sanity check, test for empty result
         if not shows:
@@ -1507,7 +1557,7 @@ class SyncXBMC():
         # test to see if tvshows key exists in xbmc json request
         if 'tvshows' in shows:
             shows = shows['tvshows']
-            #Debug("[Episodes Sync] XBMC JSON Result: '%s'" % str(shows))
+            # Debug("[Episodes Sync] XBMC JSON Result: '%s'" % str(shows))
         else:
             Debug("[Episodes Sync] Key 'tvshows' not found")
             return
@@ -1528,7 +1578,7 @@ class SyncXBMC():
         return shows
 
     def itemTVDB(self, item, kwarg, avatar=False):
-        #Debug('[itemTVDB]:meta '+str(kwarg))
+        # Debug('[itemTVDB]:meta '+str(kwarg))
         if 'title' in kwarg and kwarg['title']:
             item.setLabel(kwarg['title'])
 
@@ -1549,14 +1599,9 @@ class SyncXBMC():
 
 
 def Test():
-    #SyncXBMC()
+    # SyncXBMC()
     pass
-    name = 'TEST1'
-    cmd = 'XBMC.RunPlugin(plugin://plugin.video.myshows/?stringdata=%7B%22seasonId%22%3A+null%2C+%22showId%22%3A+3114%2C+%22episodeId%22%3A+null%2C+%22id%22%3A+null%7D&refresh_url=http%3A%2F%2Fapi.myshows.ru%2Fprofile%2Fshows%2F&showId=3114&mode=206)'
-    thumb = 'http://'
-    result = json.loads(xbmc.executeJSONRPC(
-        '{"jsonrpc": "2.0", "method": "Favourites.AddFavourite", "params": {"title":"%s", "type":"script", "path":"%s", "thumbnail":"%s"}, "id": 1}' % (
-        name, cmd, thumb)))
+    friend_xbmc()
 
 
 params = get_params()
@@ -1732,7 +1777,7 @@ elif mode == 62:
 elif mode == 63:
     DownloadCache()
 elif mode == 70:
-    #if 1==0:
+    # if 1==0:
     try:
         SyncXBMC(title).doaction()
         Debug('[mode 70]: SyncXBMC(title).doaction() success')
@@ -1741,13 +1786,13 @@ elif mode == 70:
         if action == 'check':
             FakeRate(title)
 elif mode == 71:
-    if 1 == 1:  #try:
+    if 1 == 1:  # try:
         get_data = get_url(cookie_auth, __baseurl__ + '/profile/news/')
         if get_data:
             WatchedDB().onaccess()
         else:
             showMessage(__language__(30520), __language__(30532))
-    else:  #except:
+    else:  # except:
         showMessage(__language__(30520), __language__(30532))
 elif mode in (2571, 5171, 302071, 3071):
     MoveToXBMC()
@@ -1773,7 +1818,7 @@ elif mode == 3000 or mode == 2500:
 elif mode == 3010:
     Source().addsource()
     jdata = get_apps(stringdata)
-    #Debug('[Input]'+str((jdata,action,sort)))
+    # Debug('[Input]'+str((jdata,action,sort)))
     if not sort:
         AskPlay()
     elif sort == 'activate':

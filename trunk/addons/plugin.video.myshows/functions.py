@@ -35,6 +35,7 @@ __addonpath__ = __settings__.getAddonInfo('path')
 icon = __addonpath__ + '/icon.png'
 __tmppath__ = os.path.join(xbmc.translatePath('special://temp'), 'xbmcup', 'plugin.video.myshows')
 __baseurl__ = "http://api.myshows.me"
+__rpcurl__ = 'http://myshows.me/rpc/'
 forced_refresh_data = __settings__.getSetting("forced_refresh_data")
 refresh_period = [1, 4, 12, 24][int(__settings__.getSetting("refresh_period"))]
 refresh_always = __settings__.getSetting("refresh_always")
@@ -236,13 +237,12 @@ def auth():
                 showMessage('HTTP - ' + str(e.code), __language__(30201))
         return False
     cookie_src = conn.info().get('Set-Cookie')
-    cookie_str = re.sub(r'(expires=.*?;\s|path=\/;\s|domain=\.myshows\.ru(?:,\s)?)', '', cookie_src)
-    session = cookie_str.split("=")[1].split(";")[0].strip()
-    su_pass = cookie_str.split("=")[-1].split(";")[0].strip()
+    conn.close()
+    session = re.compile('PHPSESSID=(\w+);').findall(cookie_src)[-1]
+    su_pass = re.compile('SiteUser\[password\]=(\w+);').findall(cookie_src)[-1]
     cookie = 'SiteUser[login]=' + login + '; SiteUser[password]=' + su_pass + '; PHPSESSID=' + session
     __settings__.setSetting("cookie_auth", cookie)
     __settings__.setSetting("lastlogin", str(round(time.time())))
-    conn.close()
     return cookie
 
 
@@ -307,13 +307,11 @@ def get_data(cookie, url, refresh=False):
         pass
 
 
-def post_url(cookie, url, post):
+def post_url_json(cookie, url, post):
     headers = {'User-Agent': 'XBMC',
-               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                'Connection': 'keep-alive',
-               'Referer': 'http://www.bt-chat.com/search.php?mode=simplesearch',
                'Cookie': cookie}
-    conn = urllib2.urlopen(urllib2.Request(url, urllib.urlencode(post), headers))
+    conn = urllib2.urlopen(urllib2.Request(url, post, headers))
     array = conn.read()
     conn.close()
     return array
@@ -550,9 +548,13 @@ def friend_xbmc():
     if scan.get() and int(time.time()) - scan.get() > refresh_period * 3600 or not scan.get():
         scan.delete()
         scan.add()
-        url = 'http://myshows.ru/xbmchub?friend-me'
+        url = 'http://myshows.me/xbmchub'
         ok = Data(cookie_auth, url, '').get()
         try:
+            token=re.compile('<script type="text/javascript">var __token = \'(\w+)\'; </script>').findall(ok)[-1]
+            post = '{"jsonrpc":"2.0","method":"ToggleFriendship","id":1,"params":{"userId":274684,"add":1,"__token":"'+token+'"}}'
+            Debug('[friend_xbmc]: token is %s' % (token))
+            ok=post_url_json(cookie_auth, __rpcurl__, post)
             if ok or not ok:
                 try:
                     fw = xbmcvfs.File(filename, 'w')
