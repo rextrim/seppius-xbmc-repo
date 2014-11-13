@@ -95,8 +95,6 @@ class Info:
 def get_HTML(url, post = None, ref = None):
     request = urllib2.Request(url, post)
 
-    xbmc.log(url)
-
     try:
         host = urlparse.urlsplit(url).hostname
         if host==None:
@@ -321,9 +319,13 @@ def Movie_List(params):
             # -- get movie info
                 for rec in soup.findAll('div', {'class':'new_movie15'}):
                     mi.url      = rec.find('span', {'class':"new_movie8"}).find('a')['href']
+                    if mi.url[0] == '/':
+                        mi.url = 'http://nowfilms.ru'+ mi.url
                     mi.title    = rec.find('span', {'class':"new_movinfo1"}).text.encode('utf-8')
                     mi.genre    = rec.find('span', {'class':"new_movinfo2"}).text.encode('utf-8')
-                    mi.img      = 'http://nowfilms.ru'+rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
+                    mi.img      = rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
+                    if mi.img[0] == '/':
+                        mi.img = 'http://nowfilms.ru'+ mi.img
 
                     #-- paint title ---
                     try:
@@ -367,8 +369,14 @@ def Movie_List(params):
                     for u in rec.findAll('a'):
                         if u['href'][-4:] == 'html':
                             mi.url = u['href']
+
+                    if mi.url[0] == '/':
+                        mi.url = 'http://nowfilms.ru'+ mi.url
+
                     mi.title    = rec.find('span', {'class':"short_music2"}).text.encode('utf-8')
-                    mi.img      = 'http://nowfilms.ru'+rec.find('span', {'class':"short_music1"}).find('img')['src']
+                    mi.img      = rec.find('span', {'class':"short_music1"}).find('img')['src']
+                    if mi.img[0] == '/':
+                        mi.img = 'http://nowfilms.ru'+ mi.img
 
                     #-- paint title ---
                     try:
@@ -459,10 +467,13 @@ def Search_List(par):
     # -- get movie info
         for rec in soup.findAll('div', {'class':'new_movie15'}):
             mi.url      = rec.find('span', {'class':"new_movie8"}).find('a')['href']
+            if 'http://' not in mi.url:
+                mi.url = 'http://nowfilms.ru'+ mi.url
             mi.title    = rec.find('span', {'class':"new_movinfo1"}).text.encode('utf-8')
             mi.genre    = rec.find('span', {'class':"new_movinfo2"}).text.encode('utf-8')
-            mi.img      = 'http://nowfilms.ru'+rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
-
+            mi.img      = rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
+            if mi.img[0] == '/':
+                mi.img = 'http://nowfilms.ru'+ mi.img
             #-- paint title ---
             try:
                 m = min(mi.title.index('/'), mi.title.index('('))
@@ -503,8 +514,12 @@ def Search_List(par):
     #-- get number of find records and show header
     for rec in soup.findAll('div', {'class':"short_news"}):
         mi.url      = rec.find('a')['href']
+        if 'http://' not in mi.url:
+            mi.url = 'http://nowfilms.ru'+ mi.url
         mi.title    = rec.find('span', {'class':"short_news4"}).find('img')['alt'].encode('utf-8')
-        mi.img      = 'http://nowfilms.ru'+rec.find('span', {'class':"short_news4"}).find('img')['src']
+        mi.img      = rec.find('span', {'class':"short_news4"}).find('img')['src']
+        if mi.img[0] == '/':
+            mi.img = 'http://nowfilms.ru'+ mi.img
         mi.text     = rec.find('span', {'class':"short_news2"}).find('span').text.encode('utf-8')
 
         title = '[COLOR FF00FFFF]'+mi.title+'[/COLOR]'
@@ -531,7 +546,8 @@ def Source_List(params):
         url = '*'
 
     for rec in list:
-        i = xbmcgui.ListItem(rec['name'], iconImage=img, thumbnailImage=img)
+        lname = rec['name'].replace('<b>',' ').replace('</b>',' ')
+        i = xbmcgui.ListItem(lname, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(name)
         u += '&url=%s'%urllib.quote_plus(rec['url'])
@@ -539,9 +555,9 @@ def Source_List(params):
         u += '&pl=%s'%urllib.quote_plus(url)
         if url <> '*':
             try:
-                u += '&sel=%s'%urllib.quote_plus(rec['name'].encode('utf-8'))
+                u += '&sel=%s'%urllib.quote_plus(lname.encode('utf-8'))
             except:
-                u += '&sel=%s'%urllib.quote_plus(rec['name'])
+                u += '&sel=%s'%urllib.quote_plus(lname)
         if 'shortname' in params:
             u += '&shortname=%s'%params['shortname']
         #i.setProperty('fanart_image', img)
@@ -558,41 +574,39 @@ def Get_PlayList(url, name):
     allResults = soup.findAll('param', attrs={'name': 'flashvars'})
 	#xbmc.log('[NOWFILMS.RU] found links =%s' %allResults)
     for res in allResults:
-		video = ''
-		#xbmc.log('[NOWFILMS.RU] processing result=%s' %res)
-		for rec in res['value'].split('&'):
-			#xbmc.log('[NOWFILMS.RU] processing rec=%s' %rec)
-			if rec.split('=',2)[0] == 'pl':
-				video = rec.split('=',1)[1]
-			if rec.split('=',2)[0] == 'file':
-				video = rec.split('=',1)[1]
-			#if rec.split('=',1)[0] == 'st':
-				#video = rec.split('=',1)[1]
-		if video <> '':
-			if video[-3:] == 'txt':
-				html = get_HTML(video)
-				html = html.replace('\n', '')
-				if html[0] <> '[' and html[-1] == ']':
-					html = html[:-1]
-				pl = json.loads(html.decode('utf-8'))
+        video = ''
+        #xbmc.log('[NOWFILMS.RU] processing result=%s' %res)
+        for rec in res['value'].split('&'):
+            #xbmc.log('[NOWFILMS.RU] processing rec=%s' %rec)
+            if rec.split('=',2)[0] == 'pl':
+                video = rec.split('=',1)[1]
+            if rec.split('=',2)[0] == 'file':
+                video = rec.split('=',1)[1]
+            #if rec.split('=',1)[0] == 'st':
+                #video = rec.split('=',1)[1]
+        if video <> '':
+            if video[-3:] == 'txt':
+                html = get_HTML(video)
+                html = html.replace('\n', '')
+                if html[0] <> '[' and html[-1] == ']':
+                    html = html[:-1]
+                pl = json.loads(html.decode('utf-8'))
 
-				for rec in pl['playlist']:
-					try:
-						for rec1 in rec['playlist']:
-							list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
-					except:
-						list.append({'name': rec['comment'].replace('<br>',' '), 'url': rec['file']})
-			else:
-				list.append({'name': name, 'url': video})
+                for rec in pl['playlist']:
+                    try:
+                        for rec1 in rec['playlist']:
+                            lname = (rec['comment']+' - '+rec1['comment']).replace('<b>','').replace('</b>','')
+                            list.append({'name': lname, 'url': rec1['file']})
+                    except:
+                        lname = rec['comment'].replace('<b>','').replace('</b>','')
+                        list.append({'name': lname, 'url': rec['file']})
+            else:
+				list.append({'name': name.replace('<b>','').replace('</b>',''), 'url': video})
 
     #if len(list) == 0:
-    for res in re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html):
-##        if soup.find('param', {'name':"flashvars"}):
-##            res = soup.find('param', {'name':"flashvars"})['value']
-##        else:
-##            res = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(html)[0]
-        video = ''
 
+    for res in re.compile('varflashvars={(.+?)}', re.MULTILINE|re.DOTALL).findall(soup.find('div', {'id':"dengger"}).text.replace(' ','')):
+        video = ''
         #res = res.replace('"', '')
 
         for rec in res.split('",'):
@@ -618,12 +632,12 @@ def Get_PlayList(url, name):
                 for rec in pl['playlist']:
                 	try:
                 		for rec1 in rec['playlist']:
-                			list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'], 'url': rec1['file']})
+                			list.append({'name': rec['comment'].replace('<b>','').replace('</b>','')+' - '+rec1['comment'].replace('<b>','').replace('</b>',''), 'url': rec1['file']})
                 	except:
-                		list.append({'name': rec['comment'].replace('<br>',' '), 'url': rec['file']})
+                		list.append({'name': rec['comment'].replace('<b>','').replace('</b>',''), 'url': rec['file']})
             else:
                 for v in video.split(','):
-                    list.append({'name': name +' ('+ v.split('.')[-2]+')', 'url': v})
+                    list.append({'name': name.replace('<b>','').replace('</b>','') +' ('+ v.split('.')[-2]+')', 'url': v})
 
     return list
 
@@ -642,9 +656,7 @@ def Genre_List(params):
     for rec in soup.find("div", {"class":"header_submenu"}).findAll('a'):
         if rec.text == u'Фильмы онлайн':
             break
-        url      = rec['href']
-
-        url = 'http://nowfilms.ru/'+url
+        url      = 'http://nowfilms.ru/'+rec['href']
 
         name     = rec.text.encode('utf-8')
 
@@ -687,7 +699,7 @@ def Type_List(params):
                 for t in rec.find('span').findAll('a'):
                     name = (txt+t.text.split('(')[0]).encode('utf-8')
                     lname = '[COLOR FF66FF66]'+txt.encode('utf-8')+'[/COLOR][COLOR FFFFCC33]'+t.text.split('(')[0].encode('utf-8')+'[/COLOR]'
-                    url = 'http://nowfilms.ru/'+t['href']
+                    url = 'http://nowfilms.ru/'+ t['href']
 
                     i = xbmcgui.ListItem(lname, iconImage=icon, thumbnailImage=icon)
                     u = sys.argv[0] + '?mode=MOVIE'
@@ -700,7 +712,9 @@ def Type_List(params):
             else:
                 name = rec.find('a').text.encode('utf-8')
                 lname = '[COLOR FF66FF66]'+name+'[/COLOR]'
-                url  = 'http://nowfilms.ru/'+rec.find('a')['href']
+                url  = rec.find('a')['href']
+                if url[0] == '/':
+                    url = 'http://nowfilms.ru'+ url
 
                 i = xbmcgui.ListItem(lname, iconImage=icon, thumbnailImage=icon)
                 u = sys.argv[0] + '?mode=MOVIE'
@@ -850,12 +864,11 @@ def Set_Order(ignor):
     if val == Addon.getSetting('last_sortval') and ignor == 0:
         return
 
-    xbmc.log('set order:'+ str(val))
     Addon.setSetting(id='last_sortval', value=val)
-    if (val == 0):      #-- алфавит
+    if (val == str(0)):      #-- алфавит
         _dir = 'asc'
         _sort= 'title'
-    elif (val == 1):    #-- дата
+    elif (val == str(1)):    #-- дата
         _dir = 'desc'
         _sort= 'date'
     else:               #-- КиноПоиск
