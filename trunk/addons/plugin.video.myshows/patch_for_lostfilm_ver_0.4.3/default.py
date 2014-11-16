@@ -801,9 +801,12 @@ def Allrelis(L):
         elif len(myshows_items)==0: return
         else: ret = dialog.select('Add Lostfilm files:', myshows_items)
         if ret>-1:
+            silent=''
+            if 'silent' in params:
+                silent='&sort=activate&action=download'
             s=urllib.unquote_plus(params["sdata"]).split(',')
             sys_url=urllib.quote_plus('{"filename":"%s", "stype":"%s", "showId":%s, "seasonId":%s, "id":%s, "episodeId":%s}' % (urllib.quote_plus(myshows_files[ret]), 'lostfilm', s[0].strip(), s[1].strip(), s[2].strip(), s[3].strip()))
-            sys_url='plugin://plugin.video.myshows/?mode=3010&stringdata='+sys_url
+            sys_url='plugin://plugin.video.myshows/?mode=3010&stringdata='+sys_url+silent
             xbmc.executebuiltin('xbmc.RunPlugin("'+sys_url+'")')
 
 

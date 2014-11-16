@@ -129,8 +129,8 @@
         <string id="30158">Friend's News</string>
         <string id="30159">Full Season</string>
         <string id="30160">Full caching (for offline browsing)</string>
+        <string id="30161">New Files</string>
 
-        <string id="30161">You can install it via context menu</string>
         <string id="30162">Status:</string>
         <string id="30163">Scanning:</string>
         <string id="30164">Show status:</string>
@@ -279,8 +279,8 @@
         <string id="30535">%s to %s</string>
         <string id="30536">New title: %s</string>
         <string id="30537">Error: No Shows Found!</string>
-        <string id="30538">Using "Search MyShows.ru" mark as "Watching" some shows,</string>
-        <string id="30539">or do it on http://myshows.ru and Clear Cache in Plugin Status</string>
+        <string id="30538">Use "Search MyShows.ru" and Mark as "Watching" some shows,</string>
+        <string id="30539">or do it on http://myshows.me, then Clear Cache in Plugin Status</string>
         <string id="30540">%s: [Main]</string>
         <string id="30541">%s: [Stay Second]</string>
         <string id="30542">%s: [Make it Main]</string>
@@ -295,6 +295,7 @@
         <string id="30551">Copy subtitles</string>
         <string id="30552">Copied</string>
         <string id="30553">%d files</string>
+        <string id="30554">Wait</string>
 
 ///Context menus
         <string id="30300">Mark as Watching</string>

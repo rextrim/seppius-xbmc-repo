@@ -4,7 +4,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.9.11"
+__version__ = "1.9.12"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -55,7 +55,8 @@ class Main(Handler):
                               {"title": __language__(30136), "mode": "50"},
                               {"title": __language__(30101), "mode": "19"},
                               {"title": __language__(30146), "mode": "61"},
-                              {"title": __language__(30287), "mode": "52"}, ])
+                              {"title": __language__(30287), "mode": "52"},
+                              {"title": __language__(30161), "mode": "64"},])
         if __settings__.getSetting("debug") == 'true':
             self.menu.append({"title": "TEST", "mode": "999"})
         self.handle()
@@ -79,6 +80,7 @@ class ExtraFunction(Main):
                           {"title": __language__(30137), "mode": "60"},
                           {"title": __language__(30146), "mode": "61"},
                           {"title": __language__(30141), "mode": "510"},
+                          {"title": __language__(30161), "mode": "64"},
         ])
         self.handle()
 
@@ -388,6 +390,11 @@ def EpisodeMenu(id, playcount, refresh_url):
 
 
 def MyTorrents():
+    try:
+        syncshows = SyncXBMC()
+    except:
+        syncshows = False
+
     myt = TorrentDB()
     if sort != 'shows' and showId == None:
         menu = [{"title": TextBB(__language__(30114), 'b'), "mode": "50", "argv": {'sort': 'shows'}},
@@ -410,17 +417,23 @@ def MyTorrents():
                 str_showId = str(x['showId'])
                 try:
                     if ruName == 'true' and jdata[str_showId]['ruTitle']:
-                        show_title = jdata[str_showId]['ruTitle']
+                        title = jdata[str_showId]['ruTitle']
+                        orig_title= jdata[str_showId]['title']
                     else:
-                        show_title = jdata[str_showId]['title']
+                        title = jdata[str_showId]['title']
+                        orig_title=title
                 except KeyError:
-                    show_title = json.loads(Data(cookie_auth, __baseurl__ + '/shows/' + str_showId).get())['title']
-                title = show_title
+                    title = json.loads(Data(cookie_auth, __baseurl__ + '/shows/' + str_showId).get())['title']
+                    orig_title=title
                 if str_showId not in showlist:
                     showlist.append(str_showId)
                     item = xbmcgui.ListItem(title + ' (%s)' % (str(myt.countshowId(str_showId))),
                                             iconImage='DefaultFolder.png', thumbnailImage='')
-                    item.setInfo(type='Video', infoLabels={'Title': title})
+                    info = {'title': title, 'label': title, 'tvshowtitle': orig_title, 'year':''}
+                    if syncshows:
+                        item = syncshows.shows(orig_title, item, info)
+                    else:
+                        item.setInfo(type='Video', infoLabels=info)
                     stringdata = {"showId": x['showId'], "seasonId": None, "episodeId": None, "id": None}
                     sys_url = sys.argv[0] + '?stringdata=' + makeapp(
                         stringdata) + '&sort=&showId=' + str_showId + '&mode=50'
@@ -937,6 +950,84 @@ def Profile(action, sort='profile'):
             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url='', listitem=item, isFolder=False)
 
 
+def NewFiles():
+    # lockView('info')
+    xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
+    data = Data(cookie_auth, 'http://myshows.me/').get()
+    url=re.compile('<link href="http://api.myshows.ru/rss/(\d+)/episodes/files/"').findall(data)
+
+    if url:
+        url=url[-1]
+        Debug('[NewFiles]: url - '+str(url))
+    else:
+        data = Data(auth(), 'http://myshows.me/').get()
+        url=re.compile('<link href="(.+)" rel="alternate" type="application/rss+xml"').findall(data)
+        if url:
+            url=url[-1]
+            Debug('[NewFiles]: url - '+str(url))
+
+    if not url:
+        return
+
+    try:
+        syncshows = SyncXBMC()
+    except:
+        syncshows = False
+    saveCheckPoint()
+
+    rss_data=Data(cookie_auth, 'http://api.myshows.ru/rss/'+url+'/episodes/files/').get()
+    files=[]
+
+    import xml.etree.ElementTree as ET
+
+    rss = ET.fromstring(rss_data)
+    for item in rss.findall('channel')[0].findall('item'):
+
+        title = item.find('title').text
+        link = item.find('link').text
+        description=item.find('description').text.replace('lostfilm.tv &mdash; ','[B][LF][/B] ')\
+            .replace('newstudio.tv &mdash; ','[B][NS][/B] ')
+
+        stype=None
+        if '[B][NS][/B]' in description:
+            stype='newstudio'
+            pre='[B][NS][/B] '
+        elif '[B][LF][/B] ' in description:
+            stype='lostfilm'
+            pre='[B][LF][/B] '
+
+        if not stype:
+            continue
+        if stype+title not in files:
+            files.append(stype+title)
+            showId=re.compile('http://myshows.ru/view/(\d+)/').findall(item.find('category').attrib['domain'])[-1]
+            id=re.compile('http://myshows.ru/view/episode/(\d+)/').findall(link)[-1]
+            results=filename2match(title)
+
+            fanart = None
+            if syncshows:
+                info = {'label': results['showtitle'], 'year': ''}
+                fanart = syncshows.episode_fanart(info)
+
+            item = xbmcgui.ListItem(pre+title,
+                                    iconImage='',
+                                    thumbnailImage='')
+            item.setInfo(type='Video', infoLabels={'title': title,
+                                                   'episode': results['episode'],
+                                                   'season': results['season'],
+                                                   'tvshowtitle': results['showtitle'],})
+            stringdata = {"showId": int(showId), "episodeId": results['episode'], "id": int(id),
+                          "seasonId": results['season'], "stype":stype}
+            if fanart: item.setProperty('fanart_image', fanart)
+            sys_url = sys.argv[0] + '?stringdata=' + makeapp(
+                stringdata) + '&seasonNumber=' + str(results['season']) + '&showId=' + str(showId) + '&episodeId=' + str(
+                results['episode']) + '&id=' + str(id) + '&mode=30'
+            refresh_url=''
+            item.addContextMenuItems(ContextMenuItems(sys_url, refresh_url), True)
+            sys_url = sys_url + refresh_url
+            xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=sys_url, listitem=item, isFolder=False)
+
+
 def Change_Status_Episode(showId, id, action, playcount, refresh_url, selftitle=None):
     Debug('[Change_Status_Episode]:' + str((showId, id, action, playcount, refresh_url, selftitle)))
     if action == None:
@@ -1157,6 +1248,11 @@ def ContextMenuItems(sys_url, refresh_url, ifstat=None):
                      __language__(30311) + '|:|' + sys_url + '2',
                      __language__(30318) + '|:|' + sys_url + '71',
                      __language__(30228) + '|:|' + sys_url + '0'])
+    elif mode == 64:
+        #new files
+        menu = [__language__(30227) + '|:|' + sys_url + '4',
+                __language__(30310) + '|:|' + sys_url + '201',
+                __language__(30228) + '|:|' + sys_url + '200',]
 
     for s in menu: myshows_dict.append([s.split('|:|')[0], 'XBMC.RunPlugin(' + s.split('|:|')[1] + ')'])
     #Debug('[ContextMenuItems] '+str(myshows_dict))
@@ -1776,6 +1872,8 @@ elif mode == 62:
     ExtraFunction()
 elif mode == 63:
     DownloadCache()
+elif mode == 64:
+    NewFiles()
 elif mode == 70:
     # if 1==0:
     try:
