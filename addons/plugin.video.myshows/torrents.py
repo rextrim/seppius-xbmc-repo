@@ -28,7 +28,7 @@ except:
 
 # Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.9.11"
+__version__ = "1.9.12"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -344,9 +344,10 @@ class Source:
                     stype = jdumps['stype']
                     return stype
                 except:
-                    self.stypes = [r'json', r'cxzto', r'vk-file', r'lostfilm', r'url-file', r'btchat', r'rutracker',
+                    self.stypes = [r'json', r'cxzto', r'vk-file', r'lostfilm', r'newstudio', r'url-file', r'btchat', r'rutracker',
                                    r'tpb', r'nnm', r'kz', 'smb', 'torrenter']
                     self.fnames = ['{.*?}', 'http://cxz.to.*?', 'http://.*?vk\.(com|me).*?', 'http://tracktor\.in.*?',
+                                   'http://myshows.me/int/controls/dht/.*?',
                                    'http://.*?\.avi|mp4|mkv|flv|mov|vob|wmv|ogm|asx|mpg|mpeg|avc|vp3|fli|flc|m4v$',
                                    'BTchatCom::.+', 'RuTrackerOrg::.+', 'ThePirateBaySe::.+', 'NNMClubRu::.+',
                                    'Kino_ZalTv::.+', '^smb://.+?', '\w+::.+']
@@ -645,9 +646,21 @@ class Source:
 
 class DownloadSource(Source):
     def handle(self):
-        if self.stype in ['json', 'btchat', 'torrent', 'multitorrent', 'rutracker', 'tpb', 'nnm', 'kz', 'torrenter',
-                          'lostfilm']:
+        if self.stype in ['json', 'btchat', 'torrent', 'multitorrent', 'rutracker', 'tpb', 'nnm', 'kz', 'torrenter',]:
             self.download()
+        elif self.stype=='newstudio':
+            if not self.getfilename():
+                if NSSearch(self.showId, self.id, silent=True):
+                    self.filename=self.getfilename()
+                    self.download()
+            else:
+                self.download()
+        elif self.stype=='lostfilm':
+            if not self.getfilename():
+                LFSearch(self.showId, self.id, silent=True)
+                showMessage(__language__(30241),__language__(30554),times=50000)
+            else:
+                self.download()
         elif self.stype:
             #xbmcgui.Dialog().ok('LOL', 'Not good stype')
             pass
@@ -668,7 +681,7 @@ class DownloadSource(Source):
         nomagnet = False
         Debug('[DownloadSource][download]: stype is ' + str(self.stype))
         if self.stype in ['json', 'btchat', 'torrent', 'multitorrent', 'rutracker', 'tpb', 'nnm', 'kz', 'torrenter',
-                          'lostfilm']:
+                          'lostfilm', 'newstudio']:
             items, clean = Download().listdirs()
             if __settings__.getSetting("torrent_save") == '0':
                 if __settings__.getSetting("torrent") == '0':
@@ -707,8 +720,8 @@ class DownloadSource(Source):
                 torrent = f.read()
                 f.close
                 success = Download().add(torrent, dirname)
-            elif self.stype in ['tpb', 'btchat', 'torrenter', 'lostfilm'] and not nomagnet:
-                if self.stype != 'lostfilm': self.filename = self.filename.split('::')[1]
+            elif self.stype in ['tpb', 'btchat', 'torrenter', 'lostfilm', 'newstudio'] and not nomagnet:
+                if self.stype not in ['lostfilm','newstudio']: self.filename = self.filename.split('::')[1]
                 success = Download().add_url(self.filename, dirname)
                 showMessage(__language__(30211), __language__(30212))
                 xbmc.sleep(1500)
@@ -921,6 +934,8 @@ class AddSource(Source):
             VKSearch(self.showId, self.id)
         elif stype == 'lostfilm':
             LFSearch(self.showId, self.id)
+        elif stype == 'newstudio':
+            NSSearch(self.showId, self.id)
         elif stype == 'cxzto':
             CXZTOSearch(self.showId, self.seasonId, self.id)
         elif stype in ['btchat', 'tpb', 'rutracker', 'nnm', 'kz', 'torrenterall']:
@@ -1298,14 +1313,15 @@ class PlayFile(Source):
                 self.playfile()
             else:
                 self.playcxzto()
-        elif self.stype in ['rutracker', 'tpb', 'btchat', 'nnm', 'kz', 'torrenter']:
+        elif self.stype in ['rutracker', 'tpb', 'btchat', 'nnm', 'kz', 'torrenter','newstudio']:
             if self.stype in ['tpb', 'torrenter']: showMessage(__language__(30211), __language__(30212))
             #print urllib.quote_plus(self.filename)
             #print self.filename
+            if self.stype=='newstudio': self.filename='ThePirateBaySe::'+self.filename
             xbmc.executebuiltin(
                 'XBMC.RunPlugin(plugin://plugin.video.torrenter/?action=openTorrent&external=%s&url=%s&sdata=%s)' % (
                 self.filename.split('::')[0], urllib.quote_plus(self.filename), self.stringdata))
-        elif self.stype in ['torrent', 'multitorrent', 'url-torrent', 'json']:
+        elif self.stype in ['torrent', 'multitorrent', 'url-torrent', 'json', ]:
             self.play_torrent()
         elif self.stype == 'lostfilm':
             xbmc.executebuiltin(
@@ -1466,7 +1482,7 @@ def VKSearch(showId, id):
     return None
 
 
-def LFSearch(showId, id):
+def LFSearch(showId, id, silent=False):
     PluginStatus().use('lostfilm')
     data = Data(cookie_auth, __baseurl__ + '/shows/' + str(showId)).get()
     jdata = json.loads(data)
@@ -1483,7 +1499,7 @@ def LFSearch(showId, id):
 
     lostlink = None
     #LFshowId=None
-    int_html = get_url(cookie_auth, 'http://myshows.ru/int/controls/view/episode/' + id + '/')
+    int_html = get_url(cookie_auth, 'http://myshows.me/view/episode/' + id + '/')
     #Debug('[LFSearch] int_html: '+str(int_html))
     if int_html and 'lostfilm' in int_html:
         try:
@@ -1500,13 +1516,56 @@ def LFSearch(showId, id):
     #if LFshowId:
     sdata = '&sdata=' + str('%s, %s, %s, %s') % (str(showId), s, id, e)
     if lostlink:
-        sdata = sdata + '&lostlink=' + urllib.quote_plus(
-            lostlink.replace('http://lostfilm.tv', 'http://www.lostfilm.tv'))
-        Debug('[LFSearch]: lostlink: ' + lostlink.replace('http://lostfilm.tv', 'http://www.lostfilm.tv'))
+        lostlink=lostlink.replace('http://lostfilm.tv', 'http://www.lostfilm.tv')
+        sdata = sdata + '&lostlink=' + urllib.quote_plus(lostlink)
+        Debug('[LFSearch]: lostlink: ' + lostlink)
+        if silent: sdata=sdata + '&silent=1'
         #url=urllib.quote('("'+str(LFshowId)+'","'+s+'","'+int_xx(e)+'")')
     url = ('%s, %s, %s') % (t, s, int_xx(e))
     xbmc.executebuiltin('xbmc.RunPlugin("plugin://plugin.video.LostFilm/?url=' + url + '&mode=myshows' + sdata + '")')
     return None
+
+
+def NSSearch(showId, id, silent=False):
+    data = Data(cookie_auth, __baseurl__ + '/shows/' + str(showId)).get()
+    jdata = json.loads(data)
+
+    id = str(id)
+    t = jdata['title']
+
+    Debug('[NSSearch] t is ' + t)
+
+    e = str(jdata['episodes'][id]['episodeNumber'])
+    s = str(jdata['episodes'][id]['seasonNumber'])
+
+    int_html = get_url(cookie_auth, 'http://myshows.me/view/episode/' + id + '/').decode('utf-8')
+    #Debug('[NSSearch] int_html: '+int_html)
+    myshows_files, myshows_items = [], []
+    Soup=BeautifulSoup(int_html)
+    ul=Soup.findAll('div','widerCont')[-1]
+    lis=ul.findAll('li')
+    for li in lis:
+        links=li.findAll('a')
+        title=links[0].text.split(' ')[0]
+        file=links[1].attrs[1][1]
+        myshows_files.append(file)
+        myshows_items.append(title)
+    myshows_files.append(unicode(__language__(30205)))
+    myshows_items.append(unicode(__language__(30205)))
+
+    if len(myshows_files) > 2:
+        dialog = xbmcgui.Dialog()
+        i = dialog.select(__language__(30235), myshows_items)
+    else:
+        i = 0
+    if i != None and i not in (-1, len(myshows_files) - 1):
+        stringdata = makeapp(
+            {"filename": myshows_files[i], "stype": "newstudio", "showId": int(showId), "seasonId": s,
+             "id": int(id), "episodeId": e})
+        Source(stringdata).addsource()
+        if not silent:AskPlay(stringdata)
+        return True
+    return False
 
 
 def CXZTOSearch(showId, seasonId=None, id=None):
@@ -2022,7 +2081,7 @@ def isSubtitle(filename, filename2, only_subs=False):
     filename_if = filename[:len(filename) - len(filename.split('.')[-1]) - 1]
     filename_if = filename_if.split('/')[-1].split('\\')[-1]
     filename_if2 = filename2.split('/')[-1].split('\\')[-1][:len(filename_if)]
-    #print 'Compare '+filename_if.lower()+' and '+filename_if2.lower()+' and '+filename2.lower().split('.')[-1]
+    Debug('Compare '+filename_if.lower()+' and '+filename_if2.lower()+' and '+filename2.lower().split('.')[-1])
     if only_subs:
         ext = subs_ext
     else:

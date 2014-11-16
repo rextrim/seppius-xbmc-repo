@@ -17,7 +17,7 @@
     </category>
     <category label="30037">
         <setting id="tvdb" type="bool" label="30039" default="true" />
-        <setting id="torplayer"  type="enum" label="30008" default="0" lvalues="30017|30018"/>
+        <setting id="torplayer"  type="enum" label="30008" default="1" lvalues="30017|30018"/>
         <setting id="torrenter_keyboard" type="bool" label="30024" default="false" />
         <setting id="askxbmclib" type="bool" label="30035" default="false" />
         <setting id="xbmclib" type="folder" label="30034" />

@@ -127,6 +127,7 @@
         <string id="30158">Новости Друзей</string>
         <string id="30159">Полный сезон</string>
         <string id="30160">Полное кэширование (для офлайн просмотра)</string>
+        <string id="30161">Новые Файлы</string>
 
 ///Dialogs, Notifications
         <string id="30200">Ошибка авторизации</string>
@@ -283,6 +284,7 @@
         <string id="30551">Скопировать субтитры</string>
         <string id="30552">Скопированно</string>
         <string id="30553">%d файлов</string>
+        <string id="30554">Подождите</string>
 
 ///Context menus
         <string id="30300">Пометить "Смотрю"</string>
