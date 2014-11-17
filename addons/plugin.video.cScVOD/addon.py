@@ -35,7 +35,7 @@ def construct_request(params):
 		
 def _downloadUrl(target, post=None):
 		req = urllib2.Request(url = target, data = post)
-		req.add_header('User-Agent', 'XBMC 1.4')
+		req.add_header('User-Agent', 'XBMC 1.5')
 		u = urllib2.urlopen(req)
 		content = u.read()
 		u.close()
@@ -58,6 +58,7 @@ def GET(target, post=None):
         showMessage('HTTP ERROR', e, 5000)		
 				
 def Categories(params):
+	start = 'http://185.25.119.98/php/alls.php?url=http://185.25.119.98/hmo/index.php?source=allserials'
 	if Addon.getSetting('mac') != None:
 		box_mac = Addon.getSetting('mac')
 	else:
@@ -74,13 +75,9 @@ def Categories(params):
 		else:
 			url = url
 	except:
-		url = 'http://185.25.119.98/vod/start.xml'
-	if url.find('treetv.php?page') > -1:
-		url = url + '&xbmc=1'
+		url = start
 	if url.find('nStreamModul@http://brb.to') > -1:
 		brb(url)
-	elif url.find('http://tree.tv/film') > -1:
-		tree(url)
 	elif url.find('http://fileplaneta.com/?op=playlist&type=uppod&fld_id=') > -1:
 		fileplaneta(url)
 	else:
@@ -119,7 +116,7 @@ def Categories(params):
 			else:
 				playlist(xml)
 		
-	if Addon.getSetting('start') == url:
+	if start == url:
 		uri = construct_request({
 			'func': 'settings'
 			})
@@ -296,49 +293,6 @@ def brb(url):
 		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
 		xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
 	
-def tree(url):
-	url = url
-	video_list_temp = []
-	chan_counter = 0
-	plot = "No description"
-	site = url
-	request = urllib2.Request(site, None, {'User-agent': 'QuickTime/7.6.2 (qtver=7.6.2;os=Windows NT 5.1 Service Pack 3)'})
-	html = urllib2.urlopen(request).read()
-		
-	play2 = re.findall('trailer.*?\\s?.*?rel="(.*)"', html)
-	for names2 in play2:
-		title = 'Trailer'
-		url2 = names2
-		stream = url2
-		mysetInfo={}
-		mysetInfo['plot'] = plot
-		mysetInfo['plotoutline'] = plot
-		uri = construct_request({
-			'func': 'Play',
-			'title':title,
-			'stream':stream 
-			})
-		listitem=xbmcgui.ListItem(title, '', '')
-		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, False)	
-		
-	play = re.findall('class="accordion_content_item.*?data-quality="(.*?)".*?data-index=".*?\\s\\s.*?file_title watch_link">.*?\\s?.*?([360|480|720].*?)</a>.*?\\s.*?class="date_file.*?\\s.*?</div>.*?\\s.*?watch_mini.*?href="(.*?)"', html)
-	for names in play:
-		title = names[0] + '|' + names[1]
-		url2 = names[2]
-		stream = url2
-		mysetInfo={}
-		mysetInfo['plot'] = plot
-		mysetInfo['plotoutline'] = plot
-		uri = construct_request({
-			'func': 'Play',
-			'title':title,
-			'stream':stream 
-			})
-		listitem=xbmcgui.ListItem(title, '', '')
-		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
-	
 def fileplaneta(url):
 	video_list_temp = []
 	chan_counter = 0
@@ -382,8 +336,8 @@ def Play(params):
 	except: img = 'DefaultVideo.png'
 	title = params['title']
 	try:
-		url = GOSHA_PARSER.get_parsed_link(url)
 		url = SG_PARSER.get_parsed_link(url)
+		url = GOSHA_PARSER.get_parsed_link(url)
 		url = ARSHAVIR_PARSER.get_parsed_link(url)
 		if url.find('vk.com') > -1 or url.find('/vkontakte.php?video') > 0 or url.find('vkontakte.ru/video_ext.php') > 0 or url.find('/vkontakte/vk_kinohranilishe.php?id=') > 0:
 			http=GET(params['stream'])

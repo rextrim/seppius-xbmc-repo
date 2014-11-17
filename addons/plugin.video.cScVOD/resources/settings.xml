@@ -1,5 +1,4 @@
 <settings>
-	<setting id="mac" type="text" default="" />
-	<setting id="vk" type="enum" values="On|Off" default="1" /> 
-	<setting id="start" type="text" default="http://185.25.119.98/vod/start.xml" />
+	<setting id="mac" label="MAC адресс "type="text" default="" />
+	<setting id="vk" label="Выбор качества ВКонтакте" type="enum" values="On|Off" default="1" /> 
 </settings>
