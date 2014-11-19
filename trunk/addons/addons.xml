@@ -529,7 +529,7 @@ Audio sources are
 
 <addon id="plugin.video.cScVOD"
        name="[COLOR FF00FF00]cScVOD[/COLOR]"
-       version="1.4.0"
+       version="1.5.0"
        provider-name="CSC">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1180,7 +1180,7 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="[COLOR FFFFFFFF][/COLOR][COLOR FF00AAFF]MyShows.ru[/COLOR]"
-       version="1.9.12"
+       version="1.9.12a"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

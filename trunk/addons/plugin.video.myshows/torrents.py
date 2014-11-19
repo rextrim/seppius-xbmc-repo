@@ -28,7 +28,7 @@ except:
 
 # Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 
-__version__ = "1.9.12"
+__version__ = "1.9.13"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -964,6 +964,7 @@ class AddSource(Source):
                       ['file', 30239, 1, 'file'],
                       ['vk-file', 30240, 1, 'vk-file'],
                       ['lostfilm', 30241, 1, 'lostfilm'],
+                      ['newstudio', 30556, 1, 'newstudio'],
                       ['tpb', 30273, 1, 'tpb'],
                       ['torrent_menu', 30242, 0, 'torrent'],
                       ['utorrent', 30274, 0, 'utorrent'],
@@ -972,16 +973,16 @@ class AddSource(Source):
             for item in menu:
                 if self.id and item[2] in (0, 1) or not self.id and item[2] in (0, 2):
                     if getSettingAsBool(item[0]):
-                        if item[0] == 'lostfilm':
-                            socket.setdefaulttimeout(1)
+                        if item[0] in ['lostfilm','newstudio']:
                             try:
-                                if 'lostfilm' in get_url(cookie_auth,
-                                                         'http://myshows.ru/int/controls/view/episode/' + str(
-                                                                 self.id) + '/'):
-                                    item[1] = 30514
+                                socket.setdefaulttimeout(1)
+                                html=get_url(cookie_auth,'http://myshows.me/view/episode/' + str(self.id) + '/')
+                                for addstype in [('lostfilm',30514),('newstudio',30555)]:
+                                    if item[0]==addstype[0] and addstype[0] in html:
+                                        item[1] = addstype[1]
                             except:
                                 pass
-                            socket.setdefaulttimeout(TimeOut().timeout())
+                        socket.setdefaulttimeout(TimeOut().timeout())
 
                         if isinstance(item[1], int):
                             myshows_titles.append(__language__(item[1]))
@@ -992,16 +993,17 @@ class AddSource(Source):
             myshows_items.append(None)
         else:
             if self.id:
-                myshows_titles = [__language__(30291), __language__(30239), __language__(30240), __language__(30241),
+                myshows_titles = [__language__(30291), __language__(30239), __language__(30240), __language__(30241), __language__(30556),
                                   __language__(30242), __language__(30273), __language__(30274), __language__(30550),
                                   __language__(30243)]
-                myshows_items = ['torrenterall', 'file', 'vk-file', 'lostfilm', 'torrent', 'tpb', 'utorrent', 'cxzto',
+                myshows_items = ['torrenterall', 'file', 'vk-file', 'lostfilm', 'newstudio', 'torrent', 'tpb', 'utorrent', 'cxzto',
                                  None]
-                socket.setdefaulttimeout(1)
                 try:
-                    if 'lostfilm' in get_url(cookie_auth,
-                                             'http://myshows.ru/int/controls/view/episode/' + str(self.id) + '/'):
-                        myshows_titles[3] = __language__(30514)
+                    socket.setdefaulttimeout(1)
+                    html=get_url(cookie_auth,'http://myshows.me/view/episode/' + str(self.id) + '/')
+                    for item in [('lostfilm',30514,3),('newstudio',30555,4)]:
+                        if item[0] in html:
+                            myshows_titles[item[2]] = __language__(item[1])
                 except:
                     pass
                 socket.setdefaulttimeout(TimeOut().timeout())
@@ -1962,7 +1964,8 @@ class MoveToXBMC(Source):
         subtitledirs = xbmcvfs.listdir(folder)[0]
         for d in subtitledirs:
             for x in xbmcvfs.listdir(folder.encode('utf-8', 'ignore') + os.sep + d)[0]:
-                subtitledirs.append(d + os.sep + x)
+                subfolder=d.decode('utf-8', 'ignore') + os.sep + x.decode('utf-8', 'ignore')
+                subtitledirs.append(subfolder)
         if len(subtitledirs) > 0:
             subtitledirs.insert(0, __language__(30505))
             subtitledirs_titles = [__language__(30505)]
@@ -1971,7 +1974,11 @@ class MoveToXBMC(Source):
                     filelist = xbmcvfs.listdir(folder.encode('utf-8', 'ignore') + os.sep + subtitledirs[i])[1]
                     for x in range(0, len(filelist)):
                         if isSubtitle(self.filename, filelist[x], only_subs=True):
-                            subtitledirs_titles.append(subtitledirs[i])
+                            try:
+                                subfolder=subtitledirs[i].decode()
+                            except:
+                                subfolder=subtitledirs[i]
+                            subtitledirs_titles.append(subfolder)
                             break
             else:
                 for i in range(1, len(subtitledirs)):
@@ -1983,18 +1990,18 @@ class MoveToXBMC(Source):
                 #import shutil
                 #if folder.startswith('smb://'):folder=smbtopath(folder)
                 if self.stype == 'file':
-                    newfolder = os.path.join(folder, subtitledirs_titles[ret].decode('utf-8', 'ignore'))
+                    newfolder = os.path.join(folder, subtitledirs_titles[ret])
                 else:
-                    newfolder = os.path.join(folder, subtitledirs[ret].decode('utf-8', 'ignore'))
+                    newfolder = os.path.join(folder, subtitledirs[ret])
                 Debug("[subs_copy]: newfolder %s" % (newfolder))
                 for file in xbmcvfs.listdir(newfolder)[1]:
-                    if self.stype == 'file':
-                        if isSubtitle(self.filename, file, only_subs=True):
-                            i = i + 1
-                            xbmcvfs.copy(os.path.join(newfolder, file), os.path.join(folder, file))
-                    else:
+                    file=file.decode('utf-8', 'ignore')
+                    if self.stype != 'file' or isSubtitle(self.filename.encode(errors='ignore'), file, only_subs=True):
                         i = i + 1
-                        xbmcvfs.copy(os.path.join(newfolder, file), os.path.join(folder, file))
+                        n=os.path.join(newfolder, file)
+                        f=os.path.join(folder, file)
+                        xbmcvfs.copy(n, f)
+                        Debug('%s to %s' % (n, f))
                 showMessage(__language__(30552), __language__(30553) % (i))
 
 
