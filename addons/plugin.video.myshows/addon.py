@@ -4,7 +4,7 @@ from torrents import *
 from app import Handler, Link
 from rating import *
 
-__version__ = "1.9.12"
+__version__ = "1.9.13"
 __plugin__ = "MyShows.ru " + __version__
 __author__ = "DiMartino"
 __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
@@ -582,35 +582,30 @@ def Recommendations(action):
         syncshows = False
     xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
     saveCheckPoint()
-    result = []
+    result, subject = [], None
     login = __settings__.getSetting("username")
     if action == 'xbmcfriends':
         action = 'friends'
         login = 'xbmchub'
     if action == 'recomm':
         subject = Data(cookie_auth, 'http://myshows.me/profile/recommendations/').get()
-        if subject:
-            # print subject
-            #subject = subject.decode('utf-8')
-            Soup = BeautifulSoup(subject)
-            try:
-                result = Soup.findAll('div', 'mediaBlock _withSideInfo')
-                result2 = Soup.findAll('table', 'catalogTable')[1].findAll('tr')[1:]
-                #print str(result)
-            except:
-                result = result2 = []
-                Debug('[Recommendations]: Ничего не найдено')
     elif action == 'friends':
-        orig_before = u'							<p class="description">'
-        orig_after = u'</p>						</th>'
-        orig_false = u'                            </th>'
         subject = Data(cookie_auth, 'http://myshows.me/' + login + '/friends/rating').get()
-        if subject:
-            subject = subject.decode('utf-8')
-            reobj = re.compile(
-                u'<span class="status .+?"><a href=.+?/view/(\d+?)/">(.+?)</a></span>.+?(^' + orig_before + '.+?' + orig_after + '|' + orig_false + ').+?<div style="width: (\d+)%"></div>.+?<td width="\d+?%">(\d+)</td>.+?<td width="\d+?%">([0-9.]+)%</td>',
-                re.DOTALL | re.MULTILINE)
-            result = reobj.findall(subject)
+
+    #print str((action,login))
+
+    if subject:
+        #print subject
+        #subject = subject.decode('utf-8')
+        Soup = BeautifulSoup(subject)
+        try:
+            result = Soup.findAll('div', 'mediaBlock _withSideInfo')
+            result2 = Soup.findAll('table', 'catalogTable')[1].findAll('tr')[1:]
+            #print str(result)
+            #print str(result2)
+        except:
+            result = result2 = []
+            Debug('[Recommendations]: Ничего не найдено')
     j = 0
     if result:
         for block in result:
@@ -618,7 +613,7 @@ def Recommendations(action):
             showId = title = origtitle = ''
             rating = friends = recomm = '0'
             if action == 'recomm':
-                print str(block)
+                #print str(block)
                 showId = block.find('a', '_body')['href'].replace('http://myshows.me/view/', '').rstrip('/')
                 recomm = block.find('div', '_onImg').string.replace('%', '')
                 title = block.find('a', '_sideName').string
@@ -627,9 +622,6 @@ def Recommendations(action):
                 rating = re.compile(u'<span class="stars _(\d)">', re.M).findall(str(block))[-1]
                 friends_re = re.compile(u'<p>(\d+) .+</p>', re.M).findall(str(block))
                 if friends_re: friends = friends_re[-1]
-                listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
-            elif action == 'friends':
-                showId, title, origtitle, rating, friends, recomm = i[0], i[1], i[2], i[3], i[4], i[5]
                 listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
             title = title.encode('utf-8')
             if ruName != 'true' and origtitle != '': title = origtitle
@@ -652,11 +644,8 @@ def Recommendations(action):
             j += 1
             showId = title = origtitle = ''
             rating = friends = recomm = '0'
+            td = tr.findAll('td')
             if action == 'recomm':
-                td = tr.findAll('td')
-                # print str(td)
-                showId = title = origtitle = ' '
-                rating = friends = recomm = '0'
                 showId = td[0].find('a')['href'].replace('http://myshows.me/view/', '').rstrip('/')
                 recomm = td[2].string.replace('%', '')
                 title = td[0].a.string
@@ -667,7 +656,13 @@ def Recommendations(action):
                 if friends_re: friends = friends_re[-1]
                 listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
             elif action == 'friends':
-                showId, title, origtitle, rating, friends, recomm = i[0], i[1], i[2], i[3], i[4], i[5]
+                showId = td[1].find('a')['href'].replace('http://myshows.me/view/', '').rstrip('/')
+                recomm = td[4].string.replace('%', '')
+                title = td[1].a.string
+                origtitle_soup = td[1].find('span', 'catalogTableSubHeader')
+                if origtitle_soup: origtitle = origtitle_soup.string
+                rating = re.compile(u'<span class="stars _(\d)">', re.M).findall(str(td[2]))[-1]
+                friends = td[3].string
                 listtitle = str(j) + '. [' + friends + '][' + recomm + '%] ' + title
             title = title.encode('utf-8')
             if ruName != 'true' and origtitle != '': title = origtitle
@@ -875,35 +870,44 @@ def Profile(action, sort='profile'):
                 syncshows = SyncXBMC()
             except:
                 syncshows = False
-            orig_before = u'                <p class="description">'
-            orig_after = u'</p>            </th>'
-            orig_false = u'                            </th>'
+            result=[]
+            from BeautifulSoup import BeautifulSoup
             subject = Data(cookie_auth, 'http://myshows.ru/' + action + '/wasted').get().decode('utf-8')
-            reobj = re.compile(
-                r'<span class="status .+?"><a href="http://myshows.ru/view/(\d+)/">(.+?)</a></span>.+?(^' + orig_before + '.+?' + orig_after + '|' + orig_false + ').+?.+?<div style="width: (\d+)%"></div>.+?<td>\d+</td>.+?<td>(\d+)</td>.+?<td>(.+?)</td>',
-                re.DOTALL | re.MULTILINE)
-            result = reobj.findall(subject)
+            Soup=BeautifulSoup(subject)
+            tables = Soup.findAll('table', 'catalogTable _freeAlt')[:-1]
+            for table in tables:
+                result2=table.findAll('tr')[1:]
+                for tr in result2:
+                    showId = title = origtitle = ''
+                    rating = epwatched = epunwatched = '0'
+                    td = tr.findAll('td')
+                    showId = td[0].find('a')['href'].replace('http://myshows.me/view/', '').rstrip('/')
+                    #if showId=='83': print str(td)
+                    title = td[0].a.string
+                    origtitle_soup = td[0].find('span', 'catalogTableSubHeader')
+                    if origtitle_soup: origtitle = origtitle_soup.string
+                    try: rating = re.compile(u'<span class="stars _(\d)">', re.M).findall(str(td[1]))[-1]
+                    except:
+                        rating_re = re.compile('elementRate _noZero _rate(\d) displayInlineBlock marginRightBase').findall(td[1].contents[1].attrs[0][1])
+                        if rating_re: rating=rating_re[-1]
+                    epwatched=td[3].string
+                    epunwatched=td[4].string
+                    #print str((showId, title, origtitle, rating, epwatched, epunwatched))
+                    result.append((showId, title, origtitle, rating, epwatched, epunwatched))
+
             result = sorted(result, key=lambda x: x[1])
             result = sorted(result, key=lambda x: int(x[3]), reverse=True)
             for i in result:
-                showId, title, origtitle, rating, totalep, epunwatched = i[0], i[1], i[2], i[3], i[4], i[5]
-                if origtitle == orig_false:
-                    origtitle = title.encode('utf-8')
-                else:
-                    origtitle = origtitle.replace(orig_before, '').replace(orig_after, '')
-                    # Debug(origtitle)
-                if ruName != 'true': title = origtitle
-                title = title.encode('utf-8')
-                rating = float(rating) / 10
-                epunwatched = epunwatched.replace('<span class="useless">', '').replace('</span>', '')
+                showId, title, origtitle, rating, epwatched, epunwatched = i[0], i[1], i[2], i[3], i[4], i[5]
                 if int(epunwatched) == 0:
                     playcount = 1
                 else:
                     playcount = 0
-                listtitle = '[%d] %s' % (int(rating) / 2, title)
+                if ruName != 'true' and origtitle != '': title = origtitle
+                listtitle = '[%d] %s' % (int(rating), title)
                 item = xbmcgui.ListItem(listtitle, iconImage='DefaultFolder.png', )
-                info = {'title': title, 'label': title, 'tvshowtitle': origtitle, 'rating': rating, 'year': '',
-                        'playcount': playcount, 'episode': int(totalep)}
+                info = {'title': title, 'label': title, 'tvshowtitle': origtitle, 'rating': int(rating)*2, 'year': '',
+                        'playcount': playcount, 'episode': int(epwatched)+int(epunwatched)}
                 if syncshows:
                     item = syncshows.shows(title, item, info)
                 else:
