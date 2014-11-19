@@ -1547,11 +1547,14 @@ def NSSearch(showId, id, silent=False):
     ul=Soup.findAll('div','widerCont')[-1]
     lis=ul.findAll('li')
     for li in lis:
-        links=li.findAll('a')
-        title=links[0].text.split(' ')[0]
-        file=links[1].attrs[1][1]
-        myshows_files.append(file)
-        myshows_items.append(title)
+        try:
+            links=li.findAll('a')
+            title=links[0].text.split(' ')[0]
+            file=links[1].attrs[1][1]
+            myshows_files.append(file)
+            myshows_items.append(title)
+        except:
+            pass
     myshows_files.append(unicode(__language__(30205)))
     myshows_items.append(unicode(__language__(30205)))
 
