@@ -7,7 +7,7 @@ import xbmc
 Addon = xbmcaddon.Addon( id = 'plugin.video.cScVOD' )
 _ADDON_PATH =   xbmc.translatePath(Addon.getAddonInfo('path'))
 sys.path.append( os.path.join( _ADDON_PATH, 'resources', 'lib') )
-from YoutubeParser import get_yt
+from YoutubeParser import youtube_url
 from m3u8parser import parse_megogo, best_m3u8
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
 from strings import *
@@ -58,7 +58,7 @@ def GET(target, post=None):
         showMessage('HTTP ERROR', e, 5000)		
 				
 def Categories(params):
-	start = 'http://185.25.119.98/php/alls.php?url=http://185.25.119.98/hmo/index.php?source=allserials'
+	start = 'http://185.25.119.98/vod/start.xml'
 	if Addon.getSetting('mac') != None:
 		box_mac = Addon.getSetting('mac')
 	else:
@@ -394,7 +394,7 @@ def Play(params):
 		
 		if url.find('youtube.com') > -1:
 			try:
-				video = get_yt().get_youtube_link2(url)
+				video = youtube_url().get_youtube_link2(url)
 				url = video
 				print url
 			except:
