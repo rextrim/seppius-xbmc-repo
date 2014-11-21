@@ -15,6 +15,7 @@ def debug(obj, text = ''):
     print datetime.fromtimestamp(time()).strftime('[%H:%M:%S]')
     print '%s' % text + ' %s\n' % obj
 
+
 def mod_request(url, param = None):
     try:
         debug(url, 'MODUL REQUEST URL')
@@ -25,6 +26,7 @@ def mod_request(url, param = None):
         print 'REQUEST Exception'
 
     return html
+
 
 def hdrezka_film(url):
     parts = url.split('@')
@@ -62,7 +64,9 @@ def hdrezka_film(url):
         print url
     except Exception as ex:
         print ex
+
     return url
+
 
 def hdrezka_serial(url):
     parts = url.split('@')
@@ -104,7 +108,9 @@ def hdrezka_serial(url):
         print url
     except Exception as ex:
         print ex
+
     return url
+
 
 def hdrezka_gid(url):
     parts = url.split('@')
@@ -126,20 +132,20 @@ def hdrezka_gid(url):
         print 'gggggg' + url
     except Exception as ex:
         print ex
+
     return url
-	
+
+
 class sg_parsers:
 
     def __init__(self):
         self.quality = ''
 
-
-
     def get_parsed_link(self, url):
         try:
             if url.find('vidics.ch') > -1:
                 req = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
-                'Connection': 'Close'})
+                 'Connection': 'Close'})
                 res = urllib2.urlopen(req)
                 url = res.geturl()
             if url.find('movie25.cm') > -1:
@@ -153,6 +159,7 @@ class sg_parsers:
                         url = md5hash
                 except Exception as ex:
                     print ex
+
             url = europe_parsers().get_parsed_link(url)
             if url.find('.lovekino.tv/video/md5hash') > -1:
                 url1 = 'http://s2.lovekino.tv/player/play.php?name=films/klyatva.na.krovi.2010.xvid.iptvrip.filesx.flv'
@@ -166,6 +173,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('.kinoylei.ru') > -1:
                 url1 = 'http://server1.kinoylei.ru/get2/3074'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -178,6 +186,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('.kinoluvr.ru') > -1:
                 url1 = 'http://server1.kinoluvr.ru/get2/5291'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -190,6 +199,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('stepashka.com/video/') > -1:
                 url1 = 'http://online.stepashka.com/filmy/trillery/26171-oblivion-oblivion-2013.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 (Windows NT 6.0; rv:12.0) Gecko/20100101 Firefox/12.0',
@@ -204,6 +214,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('kaban.tv/') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -226,8 +237,10 @@ class sg_parsers:
                                 url = hash
                         except Exception as ex:
                             print ex
+
                 except Exception as ex:
                     print ex
+
             if url.find('poiuytrew.pw/') > -1:
                 url1 = 'http://filmix.net/dramy/82725-vnutri-lyuina-devisa-inside-llewyn-davis-2013.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -254,6 +267,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('pirateplayer.com/') > -1:
                 url1 = 'http://online.stepashka.com/filmy/detektiv/29140-falshivaya-kukla-hamis-a-baba-1991.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -268,6 +282,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('.videokub.com/embed/') > -1 or url.find('.videokub.me/embed/') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -280,6 +295,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('hotcloud.org/') > -1:
                 url1 = 'https://my-hit.org/film/558/playlist.txt'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -292,6 +308,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('moviestape.com/') > -1:
                 url1 = 'http://fs0.moviestape.com/show.php?name=films/Captain.Phillips.mp4'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -304,6 +321,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('aburmu4.tv') > -1:
                 url1 = 'http://s1.aburmu4.tv/player/play.php?s=1&name=vsfw/antboy_2013.flv'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -317,6 +335,7 @@ class sg_parsers:
                         url = url.replace('aburmu4.tv@', '')
                 except Exception as ex:
                     print ex
+
             if url.find('serverfilm.net') > -1:
                 url1 = 'http://srv10.serverfilm.net/php/video.php?name=film/gorod.grehov.2.flv'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -330,6 +349,7 @@ class sg_parsers:
                         url = url.replace('aburmu4.tv@', '')
                 except Exception as ex:
                     print ex
+
             if url.find('serialo.ru/video') > -1:
                 url5 = 'http://latino-serialo.ru/italianskie_seriali_online/2638-polny-ocharovaniya-cheias-de-charme-seriya-10.html'
                 request = urllib2.Request(url5, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -359,6 +379,7 @@ class sg_parsers:
                         print 'PLAY URL' + url
                 except Exception as ex:
                     print ex
+
             if url.find('divan.tv/') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -369,6 +390,7 @@ class sg_parsers:
                         url = code[0]
                 except Exception as ex:
                     print ex
+
             if url.find('baskino.com/films') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -381,6 +403,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('hdrezka.tv/films') > -1:
                 url = hdrezka_film(url)
                 url = url
@@ -388,7 +411,7 @@ class sg_parsers:
                 url = hdrezka_serial(url)
                 url = url
             if url.find('hdcdn.nl') > -1:
-                url = url.replace('hdcdn.nl','moonwalk.cc')
+                url = url.replace('hdcdn.nl', 'moonwalk.cc')
             if url.find('gidtv.cc') > -1:
                 url = hdrezka_gid(url)
                 url = url
@@ -404,6 +427,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('serials.tv/') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -416,6 +440,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('.jampo.tv/play') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -428,6 +453,7 @@ class sg_parsers:
                         print url
                 except Exception as ex:
                     print ex
+
             if url.find('lidertvvv') > -1:
                 url = url.replace('lidertvvv', '')
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -439,6 +465,7 @@ class sg_parsers:
                         url = code[0]
                 except Exception as ex:
                     print ex
+
             if url.find('moonwalk.cc/serial') > -1:
                 url1 = url
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -450,6 +477,7 @@ class sg_parsers:
                         url = 'http://moonwalk.cc/video/' + code[0] + '/iframe'
                 except Exception as ex:
                     print ex
+
             if url.find('moonwalk.cc/video') > -1:
                 url1 = 'http://185.25.119.98/tes/tes.php?url=' + url
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -459,6 +487,7 @@ class sg_parsers:
                     url = page
                 except Exception as ex:
                     print ex
+
             if url.find('serialon.com/') > -1:
                 url1 = 'http://www.serialon.com/serial/10601-agent-osobogo-naznacheniya-4-15-seriya.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -471,6 +500,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('serialsonline.net/clip') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -481,6 +511,7 @@ class sg_parsers:
                         url = code[0]
                 except Exception as ex:
                     print ex
+
             if url.find('watch-online-hd.ru/') > -1 or url.find('hdgo.cc') > -1:
                 print 'hhhhhdddddddggggggooooooo'
                 url1 = 'http://watch-online-hd.ru/embed/54/'
@@ -494,6 +525,7 @@ class sg_parsers:
                         url = url.replace('md5hash', md5hash)
                 except Exception as ex:
                     print ex
+
             if url.find('onlyclips.net/artist') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -504,6 +536,7 @@ class sg_parsers:
                         url = 'http://www.youtube.com/watch?v=' + code[0]
                 except Exception as ex:
                     print ex
+
             if url.find('vk.com') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -516,6 +549,7 @@ class sg_parsers:
                         url = 'http:' + url
                 except Exception as ex:
                     print ex
+
             if url.find('rutube.ru') > -1:
                 url2 = 'http://185.25.119.98/rutube.php?url=' + url
                 request = urllib2.Request(url2, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -526,6 +560,7 @@ class sg_parsers:
                     url = code
                 except Exception as ex:
                     print ex
+
             if url.find('videoapi.my.mail.ru') > -1:
                 url = url.replace('embed/', '')
                 url = url.replace('html', 'json')
@@ -537,20 +572,17 @@ class sg_parsers:
                     hd = re.findall('"key":"720p","url":"(.*?)"', page)
                     sd = re.findall('"key":"480p","url":"(.*?)"', page)
                     ld = re.findall('"key":"360p","url":"(.*?)"', page)
-                    code = code[0]
-                    hd = hd[0]
-                    sd = sd[0]
-                    ld = ld[0]
-                    if len(code) > 0:
-                        url = code
-                    elif len(hd) > 0:
-                        url = hd	
+                    if len(hd) > 0:
+                        url = hd[0]
                     elif len(sd) > 0:
-                        url = sd
+                        url = sd[0]
                     elif len(ld) > 0:
-                        url = ld
+                        url = ld[0]
+                    elif len(code) > 0:
+                        url = code[0]
                 except Exception as ex:
                     print ex
+
             if url.find('online-cinema.biz') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
@@ -562,6 +594,7 @@ class sg_parsers:
                         url = code
                 except Exception as ex:
                     print ex
+
             if url.find('50.7.168.250/s/md5') > -1 or url.find('video-fokus.org/s/md5') > -1 or url.find('50.7.132.82/s/md5') > -1 or url.find('37.48.85.202/s/md5') > -1:
                 url1 = 'http://kino-live.org/hq/715505-slova.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -575,6 +608,7 @@ class sg_parsers:
                         url = url.replace('md5hash', hash)
                 except Exception as ex:
                     print ex
+
             if url.find('188.227.185.66/s/md5') > -1 or url.find('176.58.40.180/s/md5') > -1:
                 url1 = 'http://kino-live.org/hq/715505-slova.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -588,11 +622,9 @@ class sg_parsers:
                         url = url.replace('md5hash', hash)
                 except Exception as ex:
                     print ex
+
         except Exception as ex:
             print ex
             print 'sgparsed_link'
+
         return url
-
-
-
-
