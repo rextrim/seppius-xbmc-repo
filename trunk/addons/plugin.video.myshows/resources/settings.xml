@@ -12,7 +12,7 @@
         <setting id="ruName"   type="bool" label="30003" default="true"/>
         <setting id="refresh_period"  type="enum" label="30005" default="1" values="1|4|12|24"/>
         <setting id="refresh_always"   type="bool" label="30006" default="false"/>
-        <setting id="menu_style"  type="enum" label="30016" default="0" lvalues="30014|30015"/>
+        <setting id="menu_style"  type="enum" label="30016" default="0" lvalues="30014|30015|30052"/>
         <setting type="action" label="30042" action="RunPlugin(plugin://plugin.video.myshows/?mode=1)" />
     </category>
     <category label="30037">
