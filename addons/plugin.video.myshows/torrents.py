@@ -16,15 +16,35 @@ try:
 except:
     torrmode = False
 
+libmode = False
+import warnings
+warnings.filterwarnings('ignore', category=RuntimeWarning)
+
 try:
-    import warnings
-
-    warnings.filterwarnings('ignore', category=RuntimeWarning)
     import libtorrent
-
     libmode = True
 except:
-    libmode = False
+    pass
+try:
+    from python_libtorrent.linux_x86_64 import libtorrent
+    libmode = True
+except:
+    pass
+try:
+    from python_libtorrent.linux_x86 import libtorrent
+    libmode = True
+except:
+    pass
+try:
+    from python_libtorrent.windows import libtorrent
+    libmode = True
+except:
+    pass
+try:
+    from python_libtorrent.windows_27 import libtorrent
+    libmode = True
+except:
+    pass
 
 # Debug('LibTorrent is '+str(libmode)+'; AceStream is '+str(torrmode))
 

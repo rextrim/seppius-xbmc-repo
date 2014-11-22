@@ -11,6 +11,7 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.myshows')
 __language__ = __settings__.getLocalizedString
 login = __settings__.getSetting("username")
 ruName = __settings__.getSetting("ruName")
+menu_style = __settings__.getSetting("menu_style")
 change_onclick = __settings__.getSetting("change_onclick")
 cookie_auth = __settings__.getSetting("cookie_auth")
 useTVDB = getSettingAsBool('tvdb')
@@ -28,7 +29,6 @@ if not check_login:
 class Main(Handler):
     def __init__(self):
         self.menu = []
-        menu_style = __settings__.getSetting("menu_style")
         top = ontop()
         if top: self.menu.append(top)
         if menu_style == '1':
@@ -1701,8 +1701,6 @@ class SyncXBMC():
 def Test():
     # SyncXBMC()
     pass
-    friend_xbmc()
-
 
 params = get_params()
 try:
@@ -1815,6 +1813,9 @@ try:
     stringdata = urllib.unquote_plus(apps['argv']['stringdata'])
 except:
     pass
+
+if __settings__.getSetting("menu_style") == '2':
+    mode=13
 
 if mode == None:
     Main()

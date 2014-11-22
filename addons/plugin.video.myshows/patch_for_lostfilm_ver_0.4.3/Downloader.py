@@ -19,23 +19,26 @@
 '''
 
 #http://www.rasterbar.com/products/libtorrent/manual.html
-#import libtorrent
 try:
-	from python_libtorrent.linux_x86_64 import libtorrent
+    from python_libtorrent.linux_x86_64 import libtorrent
 except:
-	pass
+    pass
 try:
-	from python_libtorrent.linux_x86 import libtorrent
+    from python_libtorrent.linux_x86 import libtorrent
 except:
-	pass
+    pass
 try:
-	from python_libtorrent.windows import libtorrent
+    from python_libtorrent.windows import libtorrent
 except:
-	pass
+    pass
 try:
-	import libtorrent
+    from python_libtorrent.windows_27 import libtorrent
 except:
-	pass
+    pass
+try:
+    import libtorrent
+except:
+    pass
 
 import time
 import thread
