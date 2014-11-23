@@ -161,15 +161,15 @@ class Core:
 
     def calculateIterator(self, current, full):
         if (100 * 1024 * 1024) > full:#<100Mb
-            return current * (100 / 25 * 100) / full# 25% of file size = 100% of progress 
+            return current * (100 / 35 * 100) / full# 35% of file size = 100% of progress
         elif (500 * 1024 * 1024) > full:#<500Mb
-            return current * (100 / 7 * 100) / full# 7% of file size = 100% of progress 
+            return current * (100 / 15 * 100) / full# 15% of file size = 100% of progress
         elif (2000 * 1024 * 1024) > full:#<2000Mb
-            return current * (100 / 3 * 100) / full# 3% of file size = 100% of progress 
+            return current * (100 / 10 * 100) / full# 10% of file size = 100% of progress
         elif (4000 * 1024 * 1024) > full:#<4000Mb
-            return current * (100 / 1 * 100) / full# 1% of file size = 100% of progress 
+            return current * (100 / 5 * 100) / full# 5% of file size = 100% of progress
         else:#>4000Mb
-            return current * 100 / (50 * 1024 * 1024)# 50Mb file size = 100% of progress 
+            return current * 100 / (150 * 1024 * 1024)# 150Mb file size = 100% of progress
 
     def playTorrent(self, params = {}):
         torrentUrl = self.__settings__.getSetting("lastTorrent")

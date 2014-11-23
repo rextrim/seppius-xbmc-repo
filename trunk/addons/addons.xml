@@ -1180,20 +1180,16 @@ Audio sources are
 
 <addon id="plugin.video.myshows"
        name="[COLOR FFFFFFFF][/COLOR][COLOR FF00AAFF]MyShows.ru[/COLOR]"
-       version="1.9.12b"
+       version="1.9.12d"
        provider-name="DiMartino">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.libtorrent" version="0.6.10"/>
+    <import addon="repository.myshows.me"/>
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="addon.py">
     <provides>video</provides>
   </extension>
-  <extension point="xbmc.addon.repository" name="MyShows.me Kodi Repo">
-     <info compressed="false">https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/addons.xml</info>
-     <checksum>https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/addons.xml.md5</checksum>
-     <datadir zip="true">https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/</datadir>
-   </extension>
   <extension point="xbmc.addon.metadata">
     <summary>MyShows.ru</summary>
     <description>
@@ -2209,6 +2205,20 @@ Raadpleeg de lokale wetgeving voordat u deze plugin installeert.</disclaimer>
     <description>Приветствуем вас на сайте Zoomby.ru - одном из крупнейших развлекательных порталов российского интернета. Здесь вы можете онлайн, легально и бесплатно смотреть любимые фильмы, сериалы, новости, музыкальные клипы, шоу и другие телевизионные передачи.</description>
     <platform>all</platform>
   </extension>
+</addon>
+
+<addon id="repository.myshows.me" name="MyShows.me Kodi Repo" version="1.0.0" provider-name="DiMartino">
+  <extension point="xbmc.addon.repository" name="MyShows.me Kodi Repo">
+     <info compressed="false">https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/addons.xml</info>
+     <checksum>https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/addons.xml.md5</checksum>
+     <datadir zip="true">https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/</datadir>
+   </extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Устанавливайте дополнения из репозитория MyShows.me</summary>
+		<description>Дополнения для Kodi</description>
+		<disclaimer>DiMartino, bigbax, MyShows.me Team</disclaimer>
+		<platform>all</platform>
+	</extension>
 </addon>
 
 <addon id="repository.seppius" name="Seppius XBMC Add-ons" version="1.0.0" provider-name="seppius">
