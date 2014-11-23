@@ -1023,15 +1023,36 @@ class PluginStatus():
         except:
             TSstatus = unicode(__language__(30259))
 
+        libmode = unicode(__language__(30259))
+        import warnings
+        warnings.filterwarnings('ignore', category=RuntimeWarning)
+
         try:
-            import warnings
-
-            warnings.filterwarnings('ignore', category=RuntimeWarning)
             import libtorrent
-
             libmode = unicode(__language__(30267))
         except:
-            libmode = unicode(__language__(30259))
+            pass
+        try:
+            from python_libtorrent.linux_x86_64 import libtorrent
+            libmode = unicode(__language__(30267))
+        except:
+            pass
+        try:
+            from python_libtorrent.linux_x86 import libtorrent
+            libmode = unicode(__language__(30267))
+        except:
+            pass
+        try:
+            from python_libtorrent.windows import libtorrent
+            libmode = unicode(__language__(30267))
+        except:
+            pass
+        try:
+            from python_libtorrent.windows_27 import libtorrent
+            libmode = unicode(__language__(30267))
+        except:
+            pass
+
 
         from torrents import TorrentDB
         from net import Download
@@ -1251,10 +1272,13 @@ def smbtopath(path):
 
 
 def PrepareFilename(filename):
-    badsymb = [':', '"', '\\', '/', '\'', '!', '&', '*', '?', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ',
+    badsymb = [':', '"', '\\', '/', '\'', '!', ['&','and'], '*', '?', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ', '  ',
                '  ', '  ']
     for b in badsymb:
-        filename = filename.replace(b, ' ')
+        if not isinstance(b, list):
+            filename = filename.replace(b, ' ')
+        else:
+            filename = filename.replace(b[0], b[1])
     return filename.rstrip('. ')
 
 

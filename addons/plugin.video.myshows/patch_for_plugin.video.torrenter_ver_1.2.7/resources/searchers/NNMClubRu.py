@@ -58,7 +58,7 @@ class NNMClubRu(SearcherABC.SearcherABC):
         str(link),# Link to the torrent/magnet
         str(image),# Path/URL to image shown at the list
     ))
-    '''
+
     def search(self, keyword):
         filesList = []
         url = "http://playble.ru/data/4.php?q=%s&section=video" % (urllib.quote_plus(keyword))
@@ -79,6 +79,62 @@ class NNMClubRu(SearcherABC.SearcherABC):
                     self.__class__.__name__ + '::' + link,
                     image,
                 ))
+        return filesList'''
+
+    def search(self, keyword):
+        filesList = []
+        url = "http://nnm-club.me/forum/tracker.php"
+
+        try: keyword=keyword.decode('utf8').encode('cp1251')
+        except:pass
+
+        data = {
+                'prev_sd':'0',
+                'prev_a':'0',
+                'prev_my':'0',
+                'prev_n':'0',
+                'prev_shc':'0',
+                'prev_shf':'1',
+                'prev_sha':'1',
+                'prev_shs':'0',
+                'prev_shr':'0',
+                'prev_sht':'0',
+                'o':'10',
+                's':'2',
+                'tm':'-1',
+                'sd':'1',
+                'shc':'1',
+                'shs':'1',
+                'ta':'-1',
+                'sns':'-1',
+                'sds':'-1',
+                'nm':keyword,
+                'submit':'%CF%EE%E8%F1%EA'}
+
+        headers={('Origin','http://nnm-club.me'),
+                 ('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 YaBrowser/14.10.2062.12061 Safari/537.36'),
+                 ('Referer','http://nnm-club.me/forum/tracker.php?def=1')}
+
+        response = self.makeRequest(url,  data=data, headers=headers)
+        #print response
+        if None != response and 0 < len(response):
+            response = response.decode('cp1251').encode('utf8')
+            #print response
+            forums = [24,27,23,14,26,15]
+            regex='<a class="gen" href="tracker\.php\?c=(\d+)&nm=.+?href="viewtopic\.php\?t=(\d+)"><b>(.+?)</b>.+?<td align="center" nowrap="nowrap">(?=#</td>|<a href="download\.php\?id=(\d+)".+?</td>).+?<td .+?><u>\d+?</u> (.+?)</td>.+?<td.+?title="Seeders".+?<b>(\d+)</b>.+?<td .+?title="Leechers".+?<b>(\d+)</b>.+?</tr>'
+            for (forum, topic, title, link, size, seeds, leechers) in re.compile(regex, re.DOTALL).findall(response):
+                if int(forum) in forums and link not in ['', None]:
+                    torrentTitle = "(%s) %s [S\L: %s\%s]" % (size, title, seeds, leechers)
+                    image = sys.modules[ "__main__"].__root__ + self.searchIcon
+                    link='http://nnm-club.me/forum/download.php?id='+link+'&'+topic
+                    #print forum, int(seeds), self.unescape(self.stripHtml(torrentTitle)), link, image
+                    filesList.append((
+                        int(int(self.sourceWeight) * int(seeds)),
+                        int(seeds),
+                        self.unescape(self.stripHtml(torrentTitle)),
+                        self.__class__.__name__ + '::' + link,
+                        image,
+                    ))
         return filesList
 
     def getTorrentFile(self, url):

@@ -1802,11 +1802,11 @@ class MoveToXBMC(Source):
         Debug('[MoveToXBMC]: xbmclib is ' + xbmclib)
 
         folder = self.filename
-        if self.stype == 'file': folder = os.path.dirname(self.filename)
+        if self.stype == 'file': folder = os.path.dirname(self.filename)+os.sep
         self.orig_xbmclib = xbmclib
         if xbmclib.startswith('smb://'): xbmclib = smbtopath(xbmclib)
 
-        if xbmclib != '' and xbmcvfs.exists(folder + os.sep):
+        if xbmclib != '' and xbmcvfs.exists(folder):
             self.xbmclib = xbmclib
             self.title = id2title(self.showId, None, True)[0]
             success = self.move(folder)
@@ -1917,6 +1917,7 @@ class MoveToXBMC(Source):
         for file, episodeId, seasonId in movelist:
             if not seasonId: seasonId = self.seasonId
             if episodeId:
+                print str(PrepareFilename(self.title))
                 newfilename = "%s.S%sE%s" % (PrepareFilename(self.title).replace(' ', '.'),
                                              int_xx(seasonId), int_xx(episodeId)) + '.' + file.split('.')[-1]
             else:
