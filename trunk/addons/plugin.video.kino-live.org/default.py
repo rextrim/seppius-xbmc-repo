@@ -310,7 +310,7 @@ def getFiles(params):
     if len(playlist) > 0:
         commentRegexp = re.compile('"comment":"\s*([^"]+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
         fileRegexp = re.compile('"file":"\s*([^"]+)', re.IGNORECASE + re.DOTALL + re.MULTILINE)
-        playlistJson = GET(playlist[0], folderUrl)
+        playlistJson = GET(httpSiteUrl + playlist[0], folderUrl)
         comments = commentRegexp.findall(playlistJson)
         files = fileRegexp.findall(playlistJson)
         i = 0
