@@ -565,7 +565,7 @@ def load_first_page_sections(href, params):
                 'mode': 'getGenreList',
                 'section': params['section'],
                 'filter': params['filter'],
-                'href': httpSiteUrl + yearLink['href'],
+                'href': yearLink['href'],
                 'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
                 'css': 'main'
             })
@@ -578,7 +578,7 @@ def load_first_page_sections(href, params):
                 'mode': 'getGenreList',
                 'section': params['section'],
                 'filter': params['filter'],
-                'href': httpSiteUrl + genreLink['href'],
+                'href': genreLink['href'],
                 'cleanUrl': urllib.unquote_plus(params['cleanUrl']),
                 'css': 'b-list-subcategories'
             })
@@ -961,50 +961,42 @@ def render_search_results(params):
         return False
 
     beautifulSoup = BeautifulSoup(http)
-    items = beautifulSoup.find('div', 'l-content').find('table').findAll('tr')
+    results = beautifulSoup.find('div', 'b-search-page__results')
 
-    if len(items) == 0:
+    if results is None:
         show_message('ОШИБКА', 'Ничего не найдено', 3000)
         return False
     else:
+        items = results.findAll('a','b-search-page__results-item')
+        if len(items) == 0:
+            show_message('ОШИБКА', 'Ничего не найдено', 3000)
+            return False
+
         for item in items:
-            link = item.find('a')
+            title = str(item.find('span', 'b-search-page__results-item-title').text.encode('utf-8'))
+            href = httpSiteUrl + item['href']
+            cover = item.find('span', 'b-search-page__results-item-image').find('img')['src']
+            section = item.find('span', 'b-search-page__results-item-subsection').text
 
-            if link is not None:
-                title = str(link['title'].encode('utf-8'))
-                href = httpSiteUrl + link['href']
-                cover = item.find('img')['src']
+            if title is not None:
+                li = xbmcgui.ListItem('[%s] %s' % (htmlEntitiesDecode(section), htmlEntitiesDecode(title)), iconImage=getThumbnailImage(cover),
+                                      thumbnailImage=getPosterImage(cover))
+                li.setProperty('IsPlayable', 'false')
 
-                if title is not None:
-                    li = xbmcgui.ListItem(htmlEntitiesDecode(title), iconImage=getThumbnailImage(cover),
-                                          thumbnailImage=getPosterImage(cover))
-                    li.setProperty('IsPlayable', 'false')
+                isMusic = 'no'
+                if params['section'] == 'audio':
+                    isMusic = 'yes'
 
-                    isMusic = 'no'
-                    if params['section'] == 'audio':
-                        isMusic = 'yes'
+                uri = construct_request({
+                    'href': href,
+                    'referer': searchUrl,
+                    'mode': 'readdir',
+                    'cover': cover,
+                    'folder': 0,
+                    'isMusic': isMusic
+                })
 
-                    uri = construct_request({
-                        'href': href,
-                        'referer': searchUrl,
-                        'mode': 'readdir',
-                        'cover': cover,
-                        'folder': 0,
-                        'isMusic': isMusic
-                    })
-
-                    xbmcplugin.addDirectoryItem(h, uri, li, True)
-
-        nextPageLink = beautifulSoup.find('a', 'next-link')
-        if nextPageLink is not None:
-            li = xbmcgui.ListItem('[NEXT PAGE >]')
-            li.setProperty('IsPlayable', 'false')
-            uri = construct_request({
-                'href': httpSiteUrl + str(nextPageLink['href'].encode('utf-8')),
-                'mode': 'render_search_results',
-                'section': params['section']
-            })
-            xbmcplugin.addDirectoryItem(h, uri, li, True)
+                xbmcplugin.addDirectoryItem(h, uri, li, True)
 
     xbmcplugin.endOfDirectory(h)
 
