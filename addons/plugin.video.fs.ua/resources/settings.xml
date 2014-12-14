@@ -3,7 +3,7 @@
         <setting id="Site URL" type="text" label="Site URL" default="fs.to"/>
         <setting id="Proxy URL" type="text" label="Proxy URL"/>
         <setting id="Download Path" type="folder" label="Download Path"/>
-        <setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year"/>
+        <setting id="Sort by" type="enum" label="30001" default="2" values="Latest activity|Rating|Year|Popularity|Trending"/>
         <setting id="Show hidden materials" type="bool" label="Show hidden materials" default="false"/>
         <setting id="Autoplay next" type="bool" label="30004" default="false"/>
         <setting id="Load main page items" type="bool" label="Load main page items" default="true"/>

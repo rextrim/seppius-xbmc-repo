@@ -157,7 +157,7 @@ def check_login():
 
 def get_url_with_sort_by(url, section, start, view_mode):
     sortBy = __settings__.getSetting("Sort by")
-    sortByMap = {'0': 'new', '1': 'rating', '2': 'year'}
+    sortByMap = {'0': 'new', '1': 'rating', '2': 'year', '3': 'popularity', '4': 'trend'}
 
     separator = '?'
     if separator in url:
