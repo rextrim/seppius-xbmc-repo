@@ -1178,30 +1178,6 @@ Audio sources are
   </extension>
 </addon>
 
-<addon id="plugin.video.myshows"
-       name="[COLOR FFFFFFFF][/COLOR][COLOR FF00AAFF]MyShows.ru[/COLOR]"
-       version="1.9.12d"
-       provider-name="DiMartino">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.libtorrent" version="0.6.10"/>
-    <import addon="repository.myshows.me"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource" provides="video" library="addon.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>MyShows.ru</summary>
-    <description>
-Плагин для сайта MyShows.ru позволяет управлять вашим профилем.
-Смотреть сериалы онлайн (CXZ.TO, AceStream, libtorrent, ВКонтакте), скачивать в µTorrent или Transmission.
-Переносить сериалы в библиотеку XBMC.
-Подробнее на xbmc.ru
-    </description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
 <addon id="plugin.video.myvi.ru" name="МУВИ" version="1.0.1" provider-name="Myvi">
   <requires><import addon="xbmc.python" version="2.1.0"/></requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py"><provides>video</provides></extension>
@@ -2207,23 +2183,6 @@ Raadpleeg de lokale wetgeving voordat u deze plugin installeert.</disclaimer>
   </extension>
 </addon>
 
-<addon id="repository.myshows.me" name="MyShows.me Kodi Repo" version="1.0.1" provider-name="DiMartino">
-  <requires>
-    <import addon="xbmc.addon" version="12.0.0"/>
-  </requires>
-  <extension point="xbmc.addon.repository" name="MyShows.me Kodi Repo">
-     <info compressed="false">https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/addons.xml</info>
-     <checksum>https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/addons.xml.md5</checksum>
-     <datadir zip="true">https://api.bitbucket.org/1.0/repositories/DiMartino/myshows.me-kodi-repo/raw/default/</datadir>
-   </extension>
-	<extension point="xbmc.addon.metadata">
-		<summary>Устанавливайте дополнения из репозитория MyShows.me</summary>
-		<description>Дополнения для Kodi</description>
-		<disclaimer>DiMartino, bigbax, MyShows.me Team</disclaimer>
-		<platform>all</platform>
-	</extension>
-</addon>
-
 <addon id="repository.seppius" name="Seppius XBMC Add-ons" version="1.0.0" provider-name="seppius">
 	<extension point="xbmc.addon.repository" name="Seppius XBMC Add-ons">
 		<info compressed="false">http://seppius-xbmc-repo.googlecode.com/svn/trunk/addons/addons.xml</info>
@@ -2302,23 +2261,6 @@ provider-name="Roman_V_M">
   </extension>
   <extension library="default.py" point="xbmc.service" />
   <extension point='xbmc.python.module'/>
-</addon>
-
-<addon id="script.myshows" name="[COLOR FF00AAFF]MyShows.ru (Service)[/COLOR]" version="0.1.3g" provider-name="DiMartino">
-	<requires>
-		<import addon="xbmc.python" version="2.1.0"/>
-		<import addon="script.module.simplejson" version="2.0.10"/>
-        <import addon="plugin.video.myshows" version="1.5.8"/>
-	</requires>
-	<extension point="xbmc.service" name="myshows.service" library="service.py" start="login" />
-	<extension point="xbmc.python.script" library="sync_exec.py">
-		<provides>executable</provides>
-	</extension>
-	<extension point="xbmc.addon.metadata" name="myshows.metadata">
-		<summary lang="en">MyShows.ru (Service)</summary>
-		<description lang="en">Дополнительная служба к плагину MyShows.ru, которая автоматически отмечает эпизоды просмотренные в разделе "Сериалы" XBMC, а также фильмы на KinoPoisk.ru.</description>
-		<platform>all</platform>
-	</extension>
 </addon>
 
 <addon id="script.service.rodina.tv"
