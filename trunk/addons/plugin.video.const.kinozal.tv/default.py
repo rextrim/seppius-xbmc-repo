@@ -502,8 +502,13 @@ def get_info(params):
             bookmark = link['href']
 
     star = menu.find('div', attrs={'class' : 'starbar'}).findAll('a')
-
-    title = "[COLOR=FF008BEE][%s][%s]%s[/COLOR]" % (star.__len__(),sp.encode('utf-8'),all.contents[0].h1.a.getText().encode('utf-8'))
+    tag_title = None
+    for tag in all.contents:
+        if (tag.name == "div"):
+            tag_title = tag
+            break;
+    
+    title = "[COLOR=FF008BEE][%s][%s]%s[/COLOR]" % (star.__len__(),sp.encode('utf-8'),tag_title.h1.a.getText().encode('utf-8'))
     id = params['url'].split('=')[1]
     link = 'http://kinozal.tv/download.php/%s/[kinozal.tv]id%s.torrent' % (id, id)
     xinfo = all.find('div', attrs={'class':'mn1_content'}).findAll('div', attrs={'class' : 'bx1 justify'})
