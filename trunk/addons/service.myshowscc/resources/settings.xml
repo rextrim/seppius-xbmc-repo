@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-	<setting id="username" type="text" label="30001" default=""  />
-	<setting id="password" type="text" label="30002" default=""   option="hidden" />
-	<setting id="cookie_auth" type="hidden" default="" />
-    	<setting id="ruName"   type="bool" label="30003" default="false"/>
-	<setting id="change_onclick"   type="bool" label="30004" default="false"/>
-</settings>
