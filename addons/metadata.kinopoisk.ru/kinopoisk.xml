@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="WINDOWS-1251"?>
-<scraper date="2014-05-05" framework="1.1">
+<scraper date="2014-12-28" framework="1.1">
 	<NfoUrl dest="3">
 		<RegExp input="$$1" output="&lt;url&gt;\1|User-Agent=Mozilla/5.0%20%28compatible%3B%20MSIE%209.0%3B%20Windows%20NT%206.1%3B%20Trident/5.0%29&amp;Accept-Language=ru-RU&lt;/url&gt;" dest="3">
 			<expression noclean="1">(http://www\.kinopoisk\.ru/level/1/film/[0-9]*/)</expression>
@@ -481,7 +481,10 @@
 				<RegExp input="none" output="$$15:::$$18:::$$19" dest="20">
 					<expression/>
 				</RegExp>
+				<!--
 				<RegExp input="$$20" output="&lt;url function=&quot;GetIMDBIDSecondTry&quot;&gt;http://www.imdb.com/search/title?num_votes=\1,&amp;release_date=\2,\2&amp;title=\3&lt;/url&gt;" dest="6">
+				-->
+				<RegExp input="$$20" output="&lt;url function=&quot;GetIMDBIDSecondTry&quot;&gt;http://www.imdb.com/search/title?release_date=\2&title=\3&title_type=feature,short&lt;/url&gt;" dest="6">
 					<expression encode="3">(\d+):::(\d+):::(.+)</expression>
 				</RegExp>
 				<expression>^$</expression>
@@ -540,10 +543,10 @@
 			<expression/>
 		</RegExp>
 		<RegExp input="$$20" output="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; standalone=&quot;yes&quot;?&gt;&lt;details&gt;&lt;url function=&quot;GetIMDBIDFromGoogle&quot;&gt;http://ajax.googleapis.com/ajax/services/search/web?v=1.0&amp;q=\3+(\2)+site%3Aimdb.com&lt;/url&gt;&lt;/details&gt;" dest="4">
-			<RegExp conditional="use_world_premier" input="none" output="$$13" dest="18">
+			<RegExp conditional="!use_world_premier" input="none" output="$$13" dest="18">
 				<expression/>
 			</RegExp>
-			<RegExp conditional="!use_world_premier" input="none" output="$$14" dest="18">
+			<RegExp conditional="use_world_premier" input="none" output="$$14" dest="18">
 				<expression/>
 			</RegExp>
 			<RegExp input="none" output="$$15:::$$18:::$$19" dest="20">
@@ -570,10 +573,10 @@
 		<RegExp input="none" output="" dest="4">
 			<expression/>
 		</RegExp>
-		<RegExp conditional="use_world_premier" input="none" output="$$13" dest="18">
+		<RegExp conditional="!use_world_premier" input="none" output="$$13" dest="18">
 			<expression/>
 		</RegExp>
-		<RegExp conditional="!use_world_premier" input="none" output="$$14" dest="18">
+		<RegExp conditional="use_world_premier" input="none" output="$$14" dest="18">
 			<expression/>
 		</RegExp>
 		<RegExp input="$$15" output="0" dest="15">
@@ -592,7 +595,10 @@
 			<expression/>
 		</RegExp>
 		<RegExp input="$$8" output="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; standalone=&quot;yes&quot;?&gt;&lt;details&gt;\1&lt;/details&gt;" dest="4">
+			<!--
 			<RegExp conditional="!google_search" input="$$20" output="&lt;url function=&quot;GetIMDBIDFirstTry&quot;&gt;http://www.imdb.com/search/title?num_votes=\1,&amp;release_date=\2,\2&amp;title=\3&lt;/url&gt;" dest="6">
+			-->
+			<RegExp conditional="!google_search" input="$$20" output="&lt;url function=&quot;GetIMDBIDFirstTry&quot;&gt;http://www.imdb.com/search/title?release_date=\2&title=\3&title_type=feature,short&lt;/url&gt;" dest="6">
 				<expression noclean="1" encode="3">(\d+):::(\d+):::(.+)</expression>
 			</RegExp>
 			<RegExp conditional="google_search" input="$$20" output="&lt;chain function=&quot;GetIMDBIDGoogleFallback&quot;&gt;XBMC need some data&lt;/chain&gt;" dest="6">
