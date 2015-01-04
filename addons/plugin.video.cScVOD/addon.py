@@ -139,15 +139,6 @@ def playlist(xml):
 			})	
 		listitem=xbmcgui.ListItem(prev_title, 'DefaultVideo.png', 'DefaultVideo.png')
 		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	for next_page_url in xml.getElementsByTagName('next_page_url'):
-		next_url = xml.getElementsByTagName('next_page_url')[0].firstChild.data
-		next_title =  "[COLOR FFFFFF00]->" + next_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
-		uri = construct_request({
-			'func': 'Categories',
-			'link':next_url 
-			})	
-		listitem=xbmcgui.ListItem(next_title, 'DefaultVideo.png', 'DefaultVideo.png')
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 	for channel in xml.getElementsByTagName('channel'):
 		try: title = channel.getElementsByTagName('title')[0].firstChild.data.encode('utf-8')
 		except: title = 'No title or error'
@@ -214,6 +205,15 @@ def playlist(xml):
 			listitem.setInfo(type = 'video', infoLabels = mysetInfo)
 			xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
 		except: stream = None	
+	for next_page_url in xml.getElementsByTagName('next_page_url'):
+		next_url = xml.getElementsByTagName('next_page_url')[0].firstChild.data
+		next_title =  "[COLOR FFFFFF00]->" + next_page_url.getAttribute('text').encode('utf-8') +'[/COLOR]'
+		uri = construct_request({
+			'func': 'Categories',
+			'link':next_url 
+			})	
+		listitem=xbmcgui.ListItem(next_title, 'DefaultVideo.png', 'DefaultVideo.png')
+		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
 	
 def m3u(xml):
 	m3u = xml

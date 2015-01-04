@@ -159,6 +159,18 @@ class sg_parsers:
                         url = md5hash
                 except Exception as ex:
                     print ex
+			
+            if url.find('solarmovie.is') > -1:
+                request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+                 'Connection': 'Close'})
+                try:
+                    page = urllib2.urlopen(request).read()
+                    code = re.findall('src="(.*?)"', page)
+                    if len(code) > 0:
+                        md5hash = code[0]
+                        url = md5hash
+                except Exception as ex:
+                    print ex
 
             url = europe_parsers().get_parsed_link(url)
             if url.find('.lovekino.tv/video/md5hash') > -1:
@@ -350,6 +362,34 @@ class sg_parsers:
                 except Exception as ex:
                     print ex
 
+            if url.find('dolgoe.net') > -1:
+                url1 = 'http://srv10.dolgoe.net/php/video.php?name=film/tammy.2014.flv'
+                request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+                 'Connection': 'Close'})
+                try:
+                    page = urllib2.urlopen(request).read()
+                    code = re.findall("file.*:.*'http:\\/\\/.*\\/video\\/(.*)\\/.*\\/.*flv'};", page)
+                    if len(code) > 0:
+                        md5hash = code[0]
+                        url = url.replace('md5hash', md5hash)
+                        url = url.replace('aburmu4.tv@', '')
+                except Exception as ex:
+                    print ex	
+					
+            if url.find('korolek.tv') > -1:
+                url1 = 'http://s1.korolek.tv/player/play.php?name=vsfw/golodni.igry.2014.camrip.flv'
+                request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
+                 'Connection': 'Close'})
+                try:
+                    page = urllib2.urlopen(request).read()
+                    code = re.findall("file.*:.*'http:\\/\\/.*\\/v\\/(.*)\\/.*\\/.*flv'};", page)
+                    if len(code) > 0:
+                        md5hash = code[0]
+                        url = url.replace('md5hash', md5hash)
+                        url = url.replace('aburmu4.tv@', '')
+                except Exception as ex:
+                    print ex			
+					
             if url.find('serialo.ru/video') > -1:
                 url5 = 'http://latino-serialo.ru/italianskie_seriali_online/2638-polny-ocharovaniya-cheias-de-charme-seriya-10.html'
                 request = urllib2.Request(url5, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
@@ -412,15 +452,15 @@ class sg_parsers:
                 url = url
             if url.find('hdcdn.nl') > -1:
                 url = url.replace('hdcdn.nl', 'moonwalk.cc')
-            if url.find('gidtv.cc') > -1:
+            if url.find('gidtv.cc/s') > -1:
                 url = hdrezka_gid(url)
                 url = url
-            if url.find('kinobar.net/player') > -1:
+            if url.find('kinobar.net/player') > -1 or url.find('kinomig.tv') > -1:
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
                 try:
                     page = urllib2.urlopen(request).read()
-                    code_list = re.findall('<source src="(.*)" type=', page)
+                    code_list = re.findall('src="(.*)" type=', page)
                     if len(code_list) > 0:
                         url = code_list[0]
                         print 'kinobar'
@@ -622,7 +662,27 @@ class sg_parsers:
                         url = url.replace('md5hash', hash)
                 except Exception as ex:
                     print ex
-
+	    if url.find('911.to/get_cv/md5/') > -1:
+                end = url.split('md5')[1]
+                request = urllib2.Request('http://911.to/ajax/get_player/482', None, {"Host": "911.to", 
+                 "User-Agent":"Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.2.13) Gecko/20101203 Firefox/3.6.13",
+                 "Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                 "Accept-Language":"ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3",
+                 "Accept-Charset":"windows-1251,utf-8;q=0.7,*;q=0.7",
+                 "Keep-Alive":"115",
+                 "Connection":"keep-alive",
+                 "Cache-Control":"max-age=0",
+                 "Referer": "http%3A%2F%2F911.to%2Fajax%2Fget_player%2F482"})
+                try:
+                    page = urllib2.urlopen(request).read()
+                    if len(page) > 0:
+                        md5 = re.findall('http://911.to/get_cv/(.*?)/482', page)[0]
+                        url = url.replace('md5', md5)
+                        #print '911'
+                        #print url
+                except Exception as ex:
+                    print ex
+			
         except Exception as ex:
             print ex
             print 'sgparsed_link'
