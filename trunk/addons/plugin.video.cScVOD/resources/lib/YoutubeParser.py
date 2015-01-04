@@ -2,6 +2,8 @@ import sys
 from urllib import unquote_plus
 from urllib2 import Request, URLError, urlopen as urlopen2
 from urlparse import parse_qs
+
+
 VIDEO_FMT_PRIORITY_MAP = {'121': 1,
  '37': 2,
  '102': 3,
@@ -20,7 +22,7 @@ VIDEO_FMT_PRIORITY_MAP = {'121': 1,
 VIDEO_FMT_NAME = [('36', 'mp4 180p'),
  ('18', 'mp4 360p'),
  ('22', 'mp4 720p'),
- ('37', 'mp4 1080p'),
+ ('37', 'mp4 1080p'),                 
  ('59', 'rtmpe 480'),
  ('78', 'rtmpe 400'),
  ('82', 'h264 360p'),
@@ -52,20 +54,19 @@ class youtube_url:
             links = {}
             try:
                 for el in ['&el=embedded',
-                 '&el=detailpage',
-                 '&el=vevo',
-                 '']:
-                    watch_url = 'http://www.youtube.com/get_video_info?&video_id=%s%s&sts=16387' % (video_id, el)
-                    watchrequest = Request(watch_url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
-                     'Connection': 'Close'})
-                    try:
-                        infopage = urlopen2(watchrequest).read()
-                        videoinfo = parse_qs(infopage)
-                        if 'url_encoded_fmt_stream_map' in videoinfo:
-                            found = True
-                            break
-                    except Exception as ex:
-                        print 'YT ERROR ' + ex
+                     '&el=detailpage',
+                     '&el=vevo',
+                     '']:
+                        watch_url = 'http://www.youtube.com/get_video_info?&video_id=%s%s&sts=16387' % (video_id, el)
+                        watchrequest = Request(watch_url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1', 'Connection': 'Close'})
+                        try:
+                            infopage = urlopen2(watchrequest).read()
+                            videoinfo = parse_qs(infopage)
+                            if ('url_encoded_fmt_stream_map') in videoinfo:
+                                found = True
+                                break
+                        except Exception as ex:
+                            print 'YT ERROR ' + ex
 
                 if found:
                     video_tulpe = []
@@ -74,26 +75,34 @@ class youtube_url:
                     for string in tmp:
                         string = parse_qs(string)
                         fmturl = fmtid = fmtsig = ''
-                        if 'itag' in string:
+                        if ('itag') in string:
                             fmtid = string['itag'][0]
-                        if 'url' in string:
+                        if ('url') in string:
                             fmturl = unquote_plus(string['url'][0])
-                        if 's' in string:
+                        if ('s') in string:
                             fmtsig = string['s'][0]
-                            s = fmtsig[:-2]
-                            fmtsig = s[3] + s[1:3] + s[0] + s[4:69] + s[80] + s[70:80] + s[69]
+                            s =  fmtsig[:-2]
+                            fmtsig =  s[3]+s[1:3]+s[0]+s[4:69]+s[80]+s[70:80]+s[69]
                         else:
                             fmtsig = ''
+
                         if fmtid != '' and fmturl != '' and VIDEO_FMT_PRIORITY_MAP.has_key(fmtid):
+                            
                             if fmtsig != '':
                                 video_url = fmturl.replace('https', 'http') + '&signature=' + fmtsig
                             else:
                                 video_url = fmturl
                         break
-
+                                
             except Exception as ex:
                 return 'No Youtube video'
-
+            #print video_url
             return video_url
-        else:
-            return
+
+#url = 'http://www.youtube.com/watch?v=j5-yKhDd64s'
+#url = 'http://www.youtube.com/watch?v=3ibciGmxeLw'
+#youtube_url().get_youtube_link2(url)
+
+
+
+
