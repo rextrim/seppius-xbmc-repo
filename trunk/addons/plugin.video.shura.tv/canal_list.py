@@ -158,5 +158,19 @@ dc={
 "футбол 1" : "futbol",
 "футбол 2" : "futbol_plus",
 "armenia tv" : "d0025",
-"lider tv" : "lider_tv"
+"lider tv" : "lider_tv",
+"bbc world" : "bbcworld",
+"cnn international" : "cnninternational",
+"docubox hd" : "docubox_hd",
+"fightbox hd" : "fightbox_hd",
+"filmbox hd" : "filmbox_hd",
+"fun and fastbox hd" : "funandfastbox_hd",
+"киноклуб" : "kinoklub",
+"sony turbo" : "sonyturbo",
+"tnt film" : "tnt_film",
+"tv 1000 comedy hd" : "tv1000_comedy_hd",
+"tv 1000 megahit hd" : "tv1000_megahit_hd",
+"tv 1000 premium hd" : "tv1000_premium_hd",
+"iconcerts":"iconcerts",
+"tv 3+" : "tv3plus"
 } 
