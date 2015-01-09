@@ -1060,7 +1060,7 @@ Audio sources are
     </extension>
 </addon>
 
-<addon id="plugin.video.kinoxa-x.ru" name="[COLOR FFcFFF48]Kinoxa-X.ru[/COLOR]" version="0.4.1" provider-name="Silhouette">
+<addon id="plugin.video.kinoxa-x.ru" name="[COLOR FFcFFF48]Kinoxa-X.ru[/COLOR]" version="0.5.0" provider-name="Silhouette">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.beautifulsoup" version="3.0.8"/>
@@ -1308,7 +1308,7 @@ I hope you like this!
     </extension>
 </addon>
 
-<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.6.1" provider-name="Rodina TV">
+<addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.7.1" provider-name="Rodina TV">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.service.rodina.tv" version="1.0.1"/>
@@ -2265,7 +2265,7 @@ provider-name="Roman_V_M">
 
 <addon id="script.service.rodina.tv"
        name="RodinaTV Service Script"
-       version="1.2.1"
+       version="1.2.3"
        provider-name="Rodina TV">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

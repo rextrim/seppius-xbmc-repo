@@ -1,12 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Writer (c) 2013, otaranda@hotmail.com
-# Rev. 1.2.1
+# Rev. 1.2.3
 
 import os, sys
 import xbmc, xbmcaddon, xbmcgui
 from pyxbmct.addonwindow import *
-
 
 __addon__ = xbmcaddon.Addon()
 __addonversion__ = __addon__.getAddonInfo('version')
@@ -91,16 +90,16 @@ class RodinaPlayer(xbmc.Player):
             
             pystep = MyPyStep(self.lng['title'])
             pystep .doModal()
-            seek = pystep.value - 50.0
+            seek = pystep.hvalue + pystep.value - 50.0
             del pystep
             
-            if seek == None or seek == 0:
-                self.pause()
-            else:
+            if seek != None and seek != 0:
                 seek = int(seek * 60)
                 params = 'mode=seek&time=%s&seek=%s' % (int(float(stime)), seek)
                 script = 'special://home/addons/%s/default.py' % 'plugin.video.rodina.tv'
                 xbmc.executebuiltin('XBMC.RunScript(%s, %d, %s)' % (script, 99, params))
+                
+            self.pause()
       
 ACTION_PREVIOUS_MENU = 10
 ACTION_SELECT_ITEM = 7
@@ -124,7 +123,8 @@ class MyPyStep(AddonDialogWindow):
                     'min'   : __addon_lng__(30902),
                     'cancel': __addon_lng__(30903),
                     'ok'    : __addon_lng__(30904),
-                    'sec'   : __addon_lng__(30905) }
+                    'sec'   : __addon_lng__(30905),
+                    'hour'  : __addon_lng__(30906) }
                     
         # Set width, height and the grid parameters
         self.setGeometry(800, 300, 5, 7)
@@ -136,6 +136,7 @@ class MyPyStep(AddonDialogWindow):
         self.connectEventList([ACTION_NAV_BACK, ACTION_PREVIOUS_MENU, ACTION_PARENT_DIR], self.close)
 
         self.value = 50.0
+        self.hvalue = 0
 
     def set_controls(self):
         # Image control
@@ -192,6 +193,16 @@ class MyPyStep(AddonDialogWindow):
         self.m5_button = Button('-5 %s'%self.lng['min'])
         self.placeControl(self.m5_button, 3, 0)
         self.connect(self.m5_button, self.m5)  
+        
+        # plus 60 button
+        self.p60_button = Button('+60 %s'%self.lng['min'])
+        self.placeControl(self.p60_button, 2, 6)
+        self.connect(self.p60_button, self.p60)      
+        
+        # minus 60 button
+        self.m60_button = Button('-60 %s'%self.lng['min'])
+        self.placeControl(self.m60_button, 2, 0)
+        self.connect(self.m60_button, self.m60)  
                 
                
     def set_navigation(self):
@@ -214,7 +225,7 @@ class MyPyStep(AddonDialogWindow):
         self.p30_button.controlLeft(self.ok_button)
         self.p30_button.controlRight(self.p5_button)        
         
-        self.p5_button.controlUp(self.slider)
+        self.p5_button.controlUp(self.p60_button)
         self.p5_button.controlDown(self.ok_button)
         self.p5_button.controlLeft(self.p30_button)
         self.p5_button.controlRight(self.m5_button)   
@@ -224,10 +235,20 @@ class MyPyStep(AddonDialogWindow):
         self.m30_button.controlLeft(self.m5_button)
         self.m30_button.controlRight(self.cancel_button)     
         
-        self.m5_button.controlUp(self.slider)
+        self.m5_button.controlUp(self.m60_button)
         self.m5_button.controlDown(self.cancel_button)
         self.m5_button.controlLeft(self.p5_button)
-        self.m5_button.controlRight(self.cancel_button)  
+        self.m5_button.controlRight(self.m30_button)  
+
+        self.p60_button.controlUp(self.ok_button)
+        self.p60_button.controlDown(self.p5_button)
+        self.p60_button.controlLeft(self.slider)
+        self.p60_button.controlRight(self.m60_button) 
+
+        self.m60_button.controlUp(self.cancel_button)
+        self.m60_button.controlDown(self.m5_button)
+        self.m60_button.controlLeft(self.p60_button)
+        self.m60_button.controlRight(self.slider) 
         
         # Set initial focus.
         self.setFocus(self.slider)
@@ -236,8 +257,11 @@ class MyPyStep(AddonDialogWindow):
         # Update slider value label when the slider nib moves
         try:
             val = self.value - 50.0
-            self.label.setLabel('%d %s %d %s' % (int(val), self.lng['min'], 
-                                abs(60*(val - int(val))), self.lng['sec']) )
+            sval = '%d %s %d %s' % (int(val), self.lng['min'], 
+                                abs(60*(val - int(val))), self.lng['sec'])
+            if self.hvalue:
+                sval = '%d %s %s' % (self.hvalue/60, self.lng['hour'], sval)
+            self.label.setLabel( sval )
         except (RuntimeError, SystemError):
             pass
 
@@ -261,6 +285,7 @@ class MyPyStep(AddonDialogWindow):
             
     def close(self):
         self.value = None
+        self.hvalue = None
         super(MyPyStep, self).close()
         
     def Ok(self):
@@ -289,6 +314,14 @@ class MyPyStep(AddonDialogWindow):
         if self.value < 0.0: self.value = 0.0
         self.label_update()
         self.slider.setPercent(self.value)
+
+    def p60(self):
+        self.hvalue += 60.0
+        self.label_update()
+        
+    def m60(self):
+        self.hvalue -= 60.0
+        self.label_update()
         
 
     def setAnimation(self, control):
