@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Writer (c) 2013, Silhouette, E-mail: 
-# Rev. 0.5.0
+# Rev. 0.5.2
 
 
 import urllib,urllib2,re,sys
@@ -24,7 +24,7 @@ except: use_translit = 'false'
 
 
 
-dbg = 1
+dbg = 0
 
 pluginhandle = int(sys.argv[1])
 
@@ -35,13 +35,15 @@ page_pg = start_pg + "/page/"
 # find_pg = start_pg + "/search/?q="
 find_pg = start_pg + "/index.php?do=search"
 find_dt = "do=search&subaction=search&search_start="
-find_str = "&full_search=0&result_from=25&story="
+# find_str = "&full_search=0&result_from=25&story="
+find_str = "&full_search=0&story="
 # do=search&subaction=search&search_start=3&full_search=0&result_from=25&story=mama
 # do=search&subaction=search&story=test&sfSbm=&a=2
 
 def gettranslit(msg):
     if use_translit == 'true': 
-        return translit.rus(msg)
+        try: return translit.rus(msg)
+        except: return msg
     else: return msg
     
 
@@ -334,6 +336,14 @@ def uni2enc(ustr):
         raw += ('%%%02X') % ord(ustr[i])        
     return raw
     
+def uni2cp(ustr):
+    raw = ''
+    uni = unicode(ustr, 'utf8')
+    uni_sz = len(uni)
+    for i in range(uni_sz):
+        raw += ('%%%02X') % ord(uni[i].encode('cp1251'))
+    return raw  
+        
 def KNX_find():     
     dbg_log('-KNX_find:'+ '\n')
     
@@ -341,7 +351,7 @@ def KNX_find():
     kbd.setHeading('ПОИСК')
     kbd.doModal()
     if kbd.isConfirmed():
-        stxt = uni2enc(gettranslit(kbd.getText()))
+        stxt = uni2cp(gettranslit(kbd.getText()))
 #         stxt = kbd.getText()
 #         furl = find_pg + stxt + fdpg_pg
         furl = find_pg
@@ -411,7 +421,7 @@ elif mode == 'find': KNX_find()
 elif mode == 'show': KNX_show(url)
 elif mode == 'search': 
     url = find_pg
-    KNX_list(url, '1', 'unis', uni2enc(gettranslit(keyword)))
+    KNX_list(url, '1', 'unis', uni2cp(gettranslit(keyword)))
     
 #elif mode == 'list': KNX_list(url, page)
 
