@@ -711,7 +711,7 @@ Audio sources are
 
 <addon id="plugin.video.docu.im"
        name="[COLOR FF00FF00]Документальные фильмы ([/COLOR][COLOR FFFFF000]docu.im[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.4"
+       version="1.0.5"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
