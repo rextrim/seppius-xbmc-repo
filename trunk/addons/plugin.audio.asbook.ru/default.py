@@ -65,6 +65,7 @@ class Param:
     bcount          = ''
     pcount          = ''
     track           = ''
+    search          = ''
 
 #---------- get parameters -----------------------------------------------------
 def Get_Parameters(params):
@@ -92,12 +93,14 @@ def Get_Parameters(params):
     #-- pcount
     try:    p.pcount = urllib.unquote_plus(params['pcount'])
     except: p.pcount = ''
+    #-- search
+    try:    p.search = urllib.unquote_plus(params['search'])
+    except: p.search = ''
     #-----
     return p
 
 #-- get page source ------------------------------------------------------------
-def get_URL(url):
-    post = None
+def get_URL(url, post = None, ref = None):
     request = urllib2.Request(url, post)
 
     request.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
@@ -129,6 +132,9 @@ def Get_Header(par):
     if par.genre <> '':
         info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre + '[/COLOR]'
 
+    if par.search <> '':
+        info += ' | Поиск: ' + '[COLOR FF00FFF0]'+ par.search + '[/COLOR]'
+
     if info <> '':
         #-- info line
         name    = info
@@ -148,6 +154,7 @@ def Get_Header(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus('1')
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
+        u += '&search=%s'%urllib.quote_plus(par.search)
         #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- previous page link
@@ -160,6 +167,7 @@ def Get_Header(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
+        u += '&search=%s'%urllib.quote_plus(par.search)
         #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
@@ -176,6 +184,7 @@ def Get_Footer(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(str(int(par.page)+1))
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
+        u += '&search=%s'%urllib.quote_plus(par.search)
         #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
     #-- last page link
@@ -188,21 +197,56 @@ def Get_Footer(par):
         u += '&genre=%s'%urllib.quote_plus(par.genre)
         u += '&page=%s'%urllib.quote_plus(par.pcount)
         u += '&pcount=%s'%urllib.quote_plus(par.pcount)
+        u += '&search=%s'%urllib.quote_plus(par.search)
         #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
 def Empty():
     return False
 
+# ----- search on site --------------------------------------------------------
+def get_Search_HTML(search_str, page):
+    url = 'http://asbook.net/index.php?do=search'
+    str = search_str#.decode('utf-8').encode('windows-1251')
+
+    values = {
+                 'do'            : 'search'
+                ,'subaction'     : 'search'
+                ,'search_start'  : page
+                ,'full_search'   : 0
+                ,'result_from'   : (page-1)*10+1
+                ,'story'         : str
+            }
+
+    post = urllib.urlencode(values)
+    html = get_URL(url, post)
+
+    return html
+
 #---------- movie list ---------------------------------------------------------
 def Book_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
-    #== get book list =====================================================
-    url = par.url+'page/'+par.page+'/'
+    # show search dialog
+    if par.search != '':
+        if par.search == 'Y':
+            skbd = xbmc.Keyboard()
+            skbd.setHeading('Поиск сериалов.')
+            skbd.doModal()
+            if skbd.isConfirmed():
+                SearchStr = skbd.getText().split(':')
+                par.search = SearchStr[0]
+            else:
+                return False
 
-    html = get_URL(url)
+        #-- get result
+        html = get_Search_HTML(par.search, int(par.page))
+    else:
+        #== get book list =====================================================
+        url = par.url+'page/'+par.page+'/'
+        html = get_URL(url)
+
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
@@ -225,44 +269,83 @@ def Book_List(params):
 
     #-- get book info
     #try:
-    for rec in soup.findAll('div', {'class':'b-showshort'}):
-        b_name  = unescape(rec.find('div', {'class':'b-showshort__title'}).find('a').text).encode('utf-8')
+    if par.search != '':
+        for rec in soup.findAll('div', {'class':'b-searchpost'}):
+            b_name  = unescape(rec.find('div', {'class':'b-searchpost__title'}).find('a').text).encode('utf-8')
 
-        b_name_s = b_name.split('"')
-        try:
-            if b_name_s[0] == '':
-                b_name   = b_name_s[2].strip()+' "'+b_name_s[1].strip()+'"'
-                b_name_f = '[COLOR FFFFF000]'+b_name_s[2].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
-            elif b_name_s[2] == '':
-                b_name = b_name_s[0].strip()+' "'+b_name_s[1].strip()+'"'
-                b_name_f = '[COLOR FFFFF000]'+b_name_s[0].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
-        except:
-            b_name_s = b_name.split('-')
+            b_name_s = b_name.split('"')
             try:
-                b_name = b_name_s[0].strip()+' "'+b_name_s[1].strip()+'"'
-                b_name_f = '[COLOR FFFFF000]'+b_name_s[0].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
+                if b_name_s[0] == '':
+                    b_name   = b_name_s[2].strip()+' "'+b_name_s[1].strip()+'"'
+                    b_name_f = '[COLOR FFFFF000]'+b_name_s[2].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
+                elif b_name_s[2] == '':
+                    b_name = b_name_s[0].strip()+' "'+b_name_s[1].strip()+'"'
+                    b_name_f = '[COLOR FFFFF000]'+b_name_s[0].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
             except:
-                b_name_f = '[COLOR FF00FFF0]"'+b_name+'"[/COLOR]'
-        #---
-        b_url   = rec.find('div', {'class':'b-showshort__title'}).find('a')['href']
-        try:
-            b_img   = rec.find('img')['src']
-        except:
-            b_img = icon
-        b_descr = '' #unescape(rec.find('div', {'class':'post_text clearfix'}).text).encode('utf-8')
+                b_name_s = b_name.split('-')
+                try:
+                    b_name = b_name_s[0].strip()+' "'+b_name_s[1].strip()+'"'
+                    b_name_f = '[COLOR FFFFF000]'+b_name_s[0].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
+                except:
+                    b_name_f = '[COLOR FF00FFF0]"'+b_name+'"[/COLOR]'
+            #---
+            b_url   = rec.find('div', {'class':'b-searchpost__title'}).find('a')['href']
+            try:
+                b_img   = rec.find('img')['src']
+            except:
+                b_img = icon
+            b_descr = ''#unescape(rec.find('div', {'class':'b-searchpost__text'}).text).encode('utf-8')
 
-        i = xbmcgui.ListItem(b_name_f, iconImage=b_img, thumbnailImage=b_img)
-        u = sys.argv[0] + '?mode=BOOK'
-        u += '&name=%s'%urllib.quote_plus(b_name)
-        u += '&url=%s'%urllib.quote_plus(b_url)
-        u += '&genre=%s'%urllib.quote_plus(par.genre)
-        u += '&page=%s'%urllib.quote_plus(par.page)
-        u += '&pcount=%s'%urllib.quote_plus(par.pcount)
-        #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
-        i.setInfo(type='music', infoLabels={    'title':       b_name,
-                        						#'plot':        b_descr,
-                        						'genre':       par.genre})
-        xbmcplugin.addDirectoryItem(h, u, i, True)
+            i = xbmcgui.ListItem(b_name_f, iconImage=b_img, thumbnailImage=b_img)
+            u = sys.argv[0] + '?mode=BOOK'
+            u += '&name=%s'%urllib.quote_plus(b_name)
+            u += '&url=%s'%urllib.quote_plus(b_url)
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&page=%s'%urllib.quote_plus(par.page)
+            u += '&pcount=%s'%urllib.quote_plus(par.pcount)
+            i.setInfo(type='music', infoLabels={    'title':       b_name,
+                            						#'plot':        b_descr,
+                            						'genre':       par.genre})
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+    else:
+        for rec in soup.findAll('div', {'class':'b-showshort'}):
+            b_name  = unescape(rec.find('div', {'class':'b-showshort__title'}).find('a').text).encode('utf-8')
+
+            b_name_s = b_name.split('"')
+            try:
+                if b_name_s[0] == '':
+                    b_name   = b_name_s[2].strip()+' "'+b_name_s[1].strip()+'"'
+                    b_name_f = '[COLOR FFFFF000]'+b_name_s[2].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
+                elif b_name_s[2] == '':
+                    b_name = b_name_s[0].strip()+' "'+b_name_s[1].strip()+'"'
+                    b_name_f = '[COLOR FFFFF000]'+b_name_s[0].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
+            except:
+                b_name_s = b_name.split('-')
+                try:
+                    b_name = b_name_s[0].strip()+' "'+b_name_s[1].strip()+'"'
+                    b_name_f = '[COLOR FFFFF000]'+b_name_s[0].strip()+'[/COLOR] [COLOR FF00FFF0]"'+b_name_s[1].strip()+'"[/COLOR]'
+                except:
+                    b_name_f = '[COLOR FF00FFF0]"'+b_name+'"[/COLOR]'
+            #---
+            b_url   = rec.find('div', {'class':'b-showshort__title'}).find('a')['href']
+            try:
+                b_img   = rec.find('img')['src']
+            except:
+                b_img = icon
+            b_descr = '' #unescape(rec.find('div', {'class':'post_text clearfix'}).text).encode('utf-8')
+
+            i = xbmcgui.ListItem(b_name_f, iconImage=b_img, thumbnailImage=b_img)
+            u = sys.argv[0] + '?mode=BOOK'
+            u += '&name=%s'%urllib.quote_plus(b_name)
+            u += '&url=%s'%urllib.quote_plus(b_url)
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&page=%s'%urllib.quote_plus(par.page)
+            u += '&pcount=%s'%urllib.quote_plus(par.pcount)
+            #u += '&bcount=%s'%urllib.quote_plus(par.bcount)
+            i.setInfo(type='music', infoLabels={    'title':       b_name,
+                            						#'plot':        b_descr,
+                            						'genre':       par.genre})
+            xbmcplugin.addDirectoryItem(h, u, i, True)
     #except:
     #    pass
 
@@ -368,6 +451,19 @@ def Book_Info(params):
 def Genre_List(params):
     #-- get filter parameters
     par = Get_Parameters(params)
+
+    # -- search ----------------------------------------------------------------
+    name    = '[COLOR FF00FFF0]' + '[ПОИСК]' + '[/COLOR]'
+    mode = 'BOOK_LIST'
+
+    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode='+mode
+    #-- filter parameters
+    u += '&search=%s'%urllib.quote_plus('Y')
+    u += '&page=%s'%urllib.quote_plus('1')
+    u += '&pcount=%s'%urllib.quote_plus('0')
+
+    xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- get generes
     url = 'http://asbook.net/'
