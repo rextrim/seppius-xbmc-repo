@@ -650,12 +650,19 @@ def PLAY():
         audio_id = 1
     else:
         audio_id = 0
-
+    '''
     v_param = video_url[video_url.find('?'):video_url.find('{')]
 
     if Addon.getSetting('Ext_Player') == 'false':
         video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s%s%s swfVfy=1 live=1'%(v_host, url, v_quality[0], v_param, v_audio[0])
         #video = '%s app=docu swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s?audioIndex=%s%s swfVfy=1 live=1'%(v_host, url, v_quality[0], v_audio[0], v_auth)
+    '''
+    v_param = video_url[video_url.find('?'):video_url.find('{')]
+
+    v_auth1 = v_param.split('/',1)[0]
+
+    if Addon.getSetting('Ext_Player') == 'false':
+        video = '%s app=docu%s swfUrl=http://docu.im/player/uppod.swf pageUrl=%s playpath=mp4:%s%s%s swfVfy=1 live=1'%(v_host, v_auth1, url, v_quality[0], v_param, v_audio[0])
     else:
         rtmp = xbmc.translatePath(Addon.getSetting('RTMP'))
         vlc =  xbmc.translatePath(Addon.getSetting('VLC'))
