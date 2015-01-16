@@ -172,5 +172,19 @@ dc={
 "tv 1000 megahit hd" : "tv1000_megahit_hd",
 "tv 1000 premium hd" : "tv1000_premium_hd",
 "iconcerts":"iconcerts",
-"tv 3+" : "tv3plus"
+"tv 3+" : "tv3plus",
+"кинопоказ 1 hd" : "kinopokaz1_hd",
+"кинопоказ 2 hd" : "kinopokaz2_hd",
+"кинопремиум hd" : "kinopremium",
+"наше hd" : "nashehd",
+"остросюжетное hd" : "ostrosugetnoe",
+"семейное hd" : "semejnoe_hd",
+"сериал hd" : "serial_hd",
+"телепутешествия hd" : "teletravel_hd",
+"motors tv" : "motorstv",
+"eureka hd" : "eureka_hd_ru",
+"animal family hd" : "animal_family_hd_ru",
+"русский роман" : "rus_roman",
+"k2" : "k2",
+"сарафан тв" : "sarafan"
 } 
