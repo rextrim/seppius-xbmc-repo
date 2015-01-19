@@ -16,9 +16,8 @@ import xml.dom.minidom as mn
 from urlparse import parse_qs
 import hashlib
 from urllib import unquote_plus
-from GoshaParser import gosha_parsers
-from ArshavirParser import arshavir_parsers
 from SGParser import sg_parsers
+from cScParser import cSc_parsers
 from demjson3 import loads
 hos = int(sys.argv[1])
 addon_id = Addon.getAddonInfo('id')
@@ -76,45 +75,40 @@ def Categories(params):
 			url = url
 	except:
 		url = start
-	if url.find('nStreamModul@http://brb.to') > -1:
-		brb(url)
-	elif url.find('http://fileplaneta.com/?op=playlist&type=uppod&fld_id=') > -1:
-		fileplaneta(url)
+	xml = _downloadUrl(url)
+	print 'HTTP LEN = [%s]' % len(xml)
+	if url.find('m3u') > -1:
+		m3u(xml)
 	else:
-		xml = _downloadUrl(url)
+			xml = mn.parseString(xml)
+	n = 0
+	if searchon == None:
+		try: search = xml.getElementsByTagName('xbmc_search')[0].firstChild.data
+		except: search = None
+	if search != None:
+		kbd = xbmc.Keyboard()
+		kbd.setDefault('')
+		kbd.setHeading('Search')
+		kbd.doModal()
+		if kbd.isConfirmed():
+			sts=kbd.getText();
+			sign = '?'
+			if url.find('?') > -1:	
+				sign = '&'
+			sts = sts.replace(' ','%20')
+			url2 = url + sign + 'search=' + sts
+			print url2
+			xml = _downloadUrl(url2)
+		else:
+			xml = _downloadUrl(url)
 		print 'HTTP LEN = [%s]' % len(xml)
+		xml = mn.parseString(xml)
+		playlist(xml)
+	else:
 		if url.find('m3u') > -1:
 			m3u(xml)
 		else:
-				xml = mn.parseString(xml)
-		n = 0
-		if searchon == None:
-			try: search = xml.getElementsByTagName('xbmc_search')[0].firstChild.data
-			except: search = None
-		if search != None:
-			kbd = xbmc.Keyboard()
-			kbd.setDefault('')
-			kbd.setHeading('Search')
-			kbd.doModal()
-			if kbd.isConfirmed():
-				sts=kbd.getText();
-				sign = '?'
-				if url.find('?') > -1:	
-					sign = '&'
-				sts = sts.replace(' ','%20')
-				url2 = url + sign + 'search=' + sts
-				print url2
-				xml = _downloadUrl(url2)
-			else:
-				xml = _downloadUrl(url)
-			print 'HTTP LEN = [%s]' % len(xml)
-			xml = mn.parseString(xml)
 			playlist(xml)
-		else:
-			if url.find('m3u') > -1:
-				m3u(xml)
-			else:
-				playlist(xml)
 		
 	if start == url:
 		uri = construct_request({
@@ -232,113 +226,22 @@ def m3u(xml):
 		listitem.setInfo(type = 'video', infoLabels = '')
 		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)		
 	
-def brb(url):
-	parts = url.split('@')
-	url = parts[1]
-	name = parts[3].encode('utf-8')
-	fl = parts[2]
-	video_list_temp = []
-	chan_counter = 0
-	plot = "No description"
-	site = url + '?ajax&folder=' + fl
-	request = urllib2.Request(site, None, {'User-agent': 'QuickTime/7.6.2 (qtver=7.6.2;os=Windows NT 5.1 Service Pack 3)'})
-	html = urllib2.urlopen(request).read()
-	regex_films = re.findall('name="fl([0-9]*)".*subtype.*rel=".*">(.*)</a>', html)
-	
-	for text in regex_films:
-		title = text[1]
-		url2 = text[0]
-		link = "nStreamModul@" + url + "@" + url2 + "@BRB.TO"
-		mysetInfo={}
-		mysetInfo['plot'] = plot
-		mysetInfo['plotoutline'] = plot
-		uri = construct_request({
-			'func': 'Categories',
-			'link':link 
-			})	
-		listitem=xbmcgui.ListItem(title, '', '')
-		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-		
-	urls = re.findall('<a href="#" name="fl([0-9]*)" class="link-simple title.*\\s.*<b>(.*)</b>', html)
-	for film in urls:
-		title = film[1]
-		url2 = film[0]
-		link = "nStreamModul@" + url + "@" + url2 + "@BRB.TO"
-		mysetInfo={}
-		mysetInfo['plot'] = plot
-		mysetInfo['plotoutline'] = plot
-		uri = construct_request({
-			'func': 'Categories',
-			'link':link 
-			})	
-		listitem=xbmcgui.ListItem(title, '', '')
-		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-		
-	play = re.findall('<span class="b-file-new__link-material-filename-text".*>(.*)</span>.*\\s.*\\s.*\\s.*<a id="dl_.*" href="(.*)" class="b-file-new__link-material-download" rel="nofollow">', html)
-	for names in play:
-		title = names[0]
-		url2 = names[1]
-		stream = "http://brb.to" + url2
-		mysetInfo={}
-		mysetInfo['plot'] = plot
-		mysetInfo['plotoutline'] = plot
-		uri = construct_request({
-			'func': 'Play',
-			'title':title,
-			'stream':stream 
-			})
-		listitem=xbmcgui.ListItem(title, '', '')
-		listitem.setInfo(type = 'video', infoLabels = mysetInfo)
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, False)
-	
-def fileplaneta(url):
-	video_list_temp = []
-	chan_counter = 0
-	plist = []
-	request = urllib2.Request(url, None, {'User-agent': 'QuickTime/7.6.2 (qtver=7.6.2;os=Windows NT 5.1 Service Pack 3)'})
-	html = urllib2.urlopen(request, timeout=30).read()
-	pl = loads(html)
-	for rec in pl['playlist']:
-		plist.append({'comment': rec['comment'].encode('iso-8859-1'),
-		'file': rec['file'],
-		'filehd': rec['filehd'],
-		'poster': rec['poster']})
-	for rec in plist:
-		chan_counter += 1
-		title = rec['comment']
-		url = rec['file']
-		img = rec['poster']
-		uri = construct_request({
-			'func': 'Play',
-			'title':title,
-			'stream':url
-			})
-		listitem=xbmcgui.ListItem(title, img, img)
-		listitem.setInfo(type = 'video', infoLabels = '')
-		xbmcplugin.addDirectoryItem(hos, uri, listitem, True)
-	
 def settings(params):
 	Addon.openSettings()
 	return None
 	
 def Play(params):
-	global ARSHAVIR_PARSER
 	global SG_PARSER
-	global GOSHA_PARSER
 	global CSC_PARSER
 	SG_PARSER = sg_parsers()
-	GOSHA_PARSER = gosha_parsers()
-	ARSHAVIR_PARSER = arshavir_parsers()
+	CSC_PARSER = cSc_parsers()
 	url = urllib.unquote(params['stream'])
 	try: img = params['img']
 	except: img = 'DefaultVideo.png'
 	title = params['title']
 	try:
 		url = SG_PARSER.get_parsed_link(url)
-		url = GOSHA_PARSER.get_parsed_link(url)
-		url = ARSHAVIR_PARSER.get_parsed_link(url)
+		url = CSC_PARSER.get_parsed_link(url)
 		if url.find('vk.com') > -1 or url.find('/vkontakte.php?video') > 0 or url.find('vkontakte.ru/video_ext.php') > 0 or url.find('/vkontakte/vk_kinohranilishe.php?id=') > 0:
 			http=GET(params['stream'])
 			soup = BeautifulSoup(http, fromEncoding="windows-1251")

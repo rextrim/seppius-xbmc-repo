@@ -81,8 +81,18 @@ class youtube_url:
                             fmturl = unquote_plus(string['url'][0])
                         if ('s') in string:
                             fmtsig = string['s'][0]
-                            s =  fmtsig[:-2]
-                            fmtsig =  s[3]+s[1:3]+s[0]+s[4:69]+s[80]+s[70:80]+s[69]
+                            s =  fmtsig
+                            sig = ''
+                            ill = len(s)
+                            while ill > 0:
+                                ill -= 1
+                                if ill == 77:
+                                    sig = sig + s[53]
+                                if ill == 53:
+                                    sig = sig + s[77]
+                                if ill != 81 and ill != 77 and ill != 53 and ill != 0:
+                                    sig = sig + s[ill]
+                            fmtsig = sig
                         else:
                             fmtsig = ''
 
@@ -99,9 +109,6 @@ class youtube_url:
             #print video_url
             return video_url
 
-#url = 'http://www.youtube.com/watch?v=j5-yKhDd64s'
-#url = 'http://www.youtube.com/watch?v=3ibciGmxeLw'
-#youtube_url().get_youtube_link2(url)
 
 
 
