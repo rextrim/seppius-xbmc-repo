@@ -529,7 +529,7 @@ Audio sources are
 
 <addon id="plugin.video.cScVOD"
        name="[COLOR FF00FF00]cScVOD[/COLOR]"
-       version="1.5.2"
+       version="1.5.3"
        provider-name="CSC">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
