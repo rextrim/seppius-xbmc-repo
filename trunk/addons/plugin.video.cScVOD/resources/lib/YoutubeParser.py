@@ -81,18 +81,8 @@ class youtube_url:
                             fmturl = unquote_plus(string['url'][0])
                         if ('s') in string:
                             fmtsig = string['s'][0]
-                            s =  fmtsig
-                            sig = ''
-                            ill = len(s)
-                            while ill > 0:
-                                ill -= 1
-                                if ill == 77:
-                                    sig = sig + s[53]
-                                if ill == 53:
-                                    sig = sig + s[77]
-                                if ill != 81 and ill != 77 and ill != 53 and ill != 0:
-                                    sig = sig + s[ill]
-                            fmtsig = sig
+                            ytrequest = Request('http://185.25.119.98/php/youtubesign/youtube.php?sig=' + fmtsig, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1', 'Connection': 'Close'})
+                            fmtsig = urlopen2(ytrequest).read()
                         else:
                             fmtsig = ''
 
@@ -106,7 +96,6 @@ class youtube_url:
                                 
             except Exception as ex:
                 return 'No Youtube video'
-            #print video_url
             return video_url
 
 
