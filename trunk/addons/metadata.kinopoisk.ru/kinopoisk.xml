@@ -461,7 +461,7 @@
 			<!-- выбираем первое если нет такого названия -->
 			<RegExp input="$$7" output="$$6" dest="7">
 				<RegExp input="$$1" output="\1" dest="6">
-					<expression>a href="/title/(tt\d+)/"</expression>
+					<expression>href="/title/(tt\d+)/"</expression>
 				</RegExp>
 				<expression>^$</expression>
 			</RegExp>
@@ -519,7 +519,7 @@
 			<!-- выбираем первое если нет такого названия -->
 			<RegExp input="$$7" output="$$6" dest="7">
 				<RegExp input="$$1" output="\1" dest="6">
-					<expression>/title/(tt\d+)/</expression>
+					<expression>href="/title/(tt\d+)/"</expression>
 				</RegExp>
 				<expression>^$</expression>
 			</RegExp>
