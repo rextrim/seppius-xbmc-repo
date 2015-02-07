@@ -726,12 +726,48 @@ def get_material_ids(material_id, params):
 def readdir(params):
     folder = params['folder']
     if is_hidden_allowed() and folder == '0':
+        if __settings__.getSetting('Show progress') == 'true':
+            add_played_items(params)
+
         try:
             read_materials(params)
         except:
             read_directory_unuthorized(params)
     else:
         read_directory_unuthorized(params)
+
+
+def add_played_items(params):
+    folderUrl = urllib.unquote_plus(params['href'])
+    cover = urllib.unquote_plus(params['cover'])
+    parts = folderUrl.split('/')
+    parts.insert(-1, 'view')
+    playLink = '/'.join(parts)
+    playlist = get_playlist(playLink)
+
+    if playlist is not None:
+        next = None
+        for i, item in enumerate(playlist):
+            if item['fsData']['is_first'] == 1:
+                li = xbmcgui.ListItem(
+                    'Last: %s' % htmlEntitiesDecode(item['fsData']['file_name']),
+                    iconImage=getThumbnailImage(cover),
+                    thumbnailImage=getPosterImage(cover)
+                )
+                li.setProperty('IsPlayable', 'true')
+                xbmcplugin.addDirectoryItem(h, get_full_url(item['url']), li)
+                next = i+1
+                break
+
+        if next is not None and next < len(playlist):
+            nextItem = playlist[next]
+            li = xbmcgui.ListItem(
+                'Next: %s' % htmlEntitiesDecode(nextItem['fsData']['file_name']),
+                iconImage=getThumbnailImage(cover),
+                thumbnailImage=getPosterImage(cover)
+            )
+            li.setProperty('IsPlayable', 'true')
+            xbmcplugin.addDirectoryItem(h, get_full_url(nextItem['url']), li)
 
 
 def is_hidden_allowed():
@@ -1044,6 +1080,16 @@ def get_jsplayer_info(playUrl):
     fileRegExp = re.compile('file=(\d+)')
     requestedFile = fileRegExp.findall(playUrl)[0]
 
+    playlist = get_playlist(playUrl)
+    if playlist is not None and len(playlist) > 0:
+        for playListItem in playlist:
+            if playListItem['fsData']['file_id'] == requestedFile:
+                return playListItem
+
+    return None
+
+
+def get_playlist(playUrl):
     try:
         http = GET(get_full_url(playUrl), httpSiteUrl)
         if http is None:
@@ -1054,11 +1100,7 @@ def get_jsplayer_info(playUrl):
 
         if playlist is not None and len(playlist) > 0:
             playlist = fix_broken_json(str(playlist[0]).replace('\t\n', '')[0:-1])
-            playlist = json.loads(playlist)
-            if len(playlist) > 0:
-                for playListItem in playlist:
-                    if playListItem['fsData']['file_id'] == requestedFile:
-                        return playListItem
+            return json.loads(playlist)
     except:
         pass
 
