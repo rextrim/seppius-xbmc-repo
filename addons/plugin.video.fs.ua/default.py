@@ -57,6 +57,7 @@ __language__ = __settings__.getLocalizedString
 siteUrl = __settings__.getSetting('Site URL')
 proxyScriptUrl = __settings__.getSetting('Proxy URL')
 httpSiteUrl = 'http://' + siteUrl
+basePingUrl = httpSiteUrl + "/jsplayer.aspx?f=set_file_status"
 cookiepath = os.path.join(__addondir__, 'plugin.video.fs.ua.cookies.lwp')
 if isinstance(cookiepath, unicode):
     cookiepath = cookiepath.encode('utf8')
@@ -683,8 +684,7 @@ def read_material_files(files, params):
                     'cover': cover,
                     'href': item['link'],
                     'referer': httpSiteUrl,
-                    'type': item_type,
-                    'fallbackHref': item['link']
+                    'type': item_type
                 })
 
     xbmcplugin.endOfDirectory(h)
@@ -783,23 +783,21 @@ def read_directory_unuthorized(params):
         show_message('ОШИБКА', 'No filelist', 3000)
         return False
 
-    items = mainItems.findAll('li')
+    if 'quality' in params and params['quality'] is not None and params['quality'] != 'None' and params['quality'] != '':
+        items = mainItems.findAll('li', 'video-' + params['quality'])
+    else:
+        items = mainItems.findAll('li')
 
-    folderRegexp = re.compile('(\d+)')
+    materialQualityRegexp = re.compile('quality_list:\s*[\'|"]([a-zA-Z0-9,]+)[\'|"]')
     if len(items) == 0:
         show_message('ОШИБКА', 'Неверная страница', 3000)
         return False
     else:
-        langRegexp = re.compile('\s*m\-(\w+)\s*')
         for item in items:
-            isFolder = item['class'] == 'folder'
+            isFolder = 'folder' in item['class']
             playLink = None
-            lang = None
             if isFolder:
                 linkItem = item.find('a', 'title')
-                lang_data = langRegexp.findall(linkItem['class'])
-                if len(lang_data) > 0:
-                    lang = str(lang_data[0])
                 playLinkClass = ''
             else:
                 playLinkClass = 'b-file-new__link-material'
@@ -810,71 +808,86 @@ def read_directory_unuthorized(params):
                     playLink = item.find('div', playLinkClass)
 
             if linkItem is not None:
-                title = ""
-                if isFolder:
-                    titleB = linkItem.find('b')
-                    if titleB is None:
-                        title = str(linkItem.string)
+                materialData = linkItem['rel']
+                if materialData is not None:
+                    qualities = materialQualityRegexp.findall(linkItem['rel'])
+                    if qualities is not None and len(qualities) > 0:
+                        qualities = str(qualities[0]).split(',')
+                        for quality in qualities:
+                            add_directory_item(linkItem, isFolder, playLink, playLinkClass, cover, folderUrl, folder, params['isMusic'], quality)
                     else:
-                        title = str(titleB.string)
-                    quality = item.findAll('span', 'material-size')
-                    if len(quality) > 1:
-                        title = title + " [" + str(quality[0].string) + "]"
+                        add_directory_item(linkItem, isFolder, playLink, playLinkClass, cover, folderUrl, folder, params['isMusic'], None)
                 else:
-                    try:
-                        title = str(playLink.find('span', playLinkClass + '-filename-text').string)
-                    except:
-                        pass
-                if lang is not None:
-                    title = lang.upper() + ' - ' + title
-
-                useFlv = False #__settings__.getSetting('Use flv files for playback') == 'true'
-                fallbackHref = linkItem['href']
-                if useFlv and playLink is not None and playLink.name == 'a':
-                    try:
-                        href = httpSiteUrl + str(playLink['href'])
-                    except:
-                        href = fallbackHref
-                else:
-                    href = fallbackHref
-                    try:
-                        folder = folderRegexp.findall(linkItem['rel'])[0]
-                    except:
-                        pass
-
-                if isFolder:
-                    li = xbmcgui.ListItem(
-                        htmlEntitiesDecode(title),
-                        iconImage=getThumbnailImage(cover),
-                        thumbnailImage=getPosterImage(cover)
-                    )
-                    li.setProperty('IsPlayable', 'false')
-
-                    uri = construct_request({
-                        'cover': cover,
-                        'href': folderUrl,
-                        'referer': folderUrl,
-                        'mode': 'read_directory_unuthorized',
-                        'folder': folder,
-                        'isMusic': params['isMusic']
-                    })
-                    xbmcplugin.addDirectoryItem(h, uri, li, isFolder)
-                else:
-                    item_type = 'video'
-                    if params['isMusic'] == 'yes':
-                        item_type = 'music'
-
-                    add_folder_file({
-                        'title': title,
-                        'cover': cover,
-                        'href': href,
-                        'referer': folderUrl,
-                        'type': item_type,
-                        'fallbackHref': fallbackHref
-                    })
+                    add_directory_item(linkItem, isFolder, playLink, playLinkClass, cover, folderUrl, folder, params['isMusic'], None)
 
     xbmcplugin.endOfDirectory(h)
 
+
+def add_directory_item(linkItem, isFolder, playLink, playLinkClass, cover, folderUrl, folder, isMusic, quality = None):
+    folderRegexp = re.compile('(\d+)')
+    lang = None
+    langRegexp = re.compile('\s*m\-(\w+)\s*')
+    lang_data = langRegexp.findall(linkItem['class'])
+    if len(lang_data) > 0:
+        lang = str(lang_data[0])
+    title = ""
+    if isFolder:
+        title = fix_string(linkItem.text)
+        lang_quality_el = linkItem.find('font')
+        if lang_quality_el:
+            lang_quality = fix_string(lang_quality_el.text)
+            title = title.replace(lang_quality, ' ' + lang_quality)
+
+        if quality is not None:
+            title = "%s [%s]" % (title, quality)
+    else:
+        try:
+            title = str(playLink.find('span', playLinkClass + '-filename-text').string)
+        except:
+            pass
+    if lang is not None:
+        title = lang.upper() + ' - ' + title
+
+    if playLink is not None and playLink.name == 'a':
+        playLink = httpSiteUrl + str(playLink['href'])
+
+    href = linkItem['href']
+    try:
+        folder = folderRegexp.findall(linkItem['rel'])[0]
+    except:
+        pass
+
+    if isFolder:
+        li = xbmcgui.ListItem(
+            htmlEntitiesDecode(title),
+            iconImage=getThumbnailImage(cover),
+            thumbnailImage=getPosterImage(cover)
+        )
+        li.setProperty('IsPlayable', 'false')
+
+        uri = construct_request({
+            'cover': cover,
+            'href': folderUrl,
+            'referer': folderUrl,
+            'mode': 'read_directory_unuthorized',
+            'folder': folder,
+            'isMusic': isMusic,
+            'quality': quality
+        })
+        xbmcplugin.addDirectoryItem(h, uri, li, isFolder)
+    else:
+        item_type = 'video'
+        if isMusic == 'yes':
+            item_type = 'music'
+
+        add_folder_file({
+            'title': title,
+            'cover': cover,
+            'href': href,
+            'referer': folderUrl,
+            'type': item_type,
+            'playLink': playLink
+        })
 
 def add_folder_file(item):
     title = item['title']
@@ -882,8 +895,7 @@ def add_folder_file(item):
     href = item['href']
     referer = item['referer']
     item_type = item['type']
-    fallbackHref = item['fallbackHref']
-    useFlv = False #__settings__.getSetting('Use flv files for playback') == 'true'
+    useFlv = __settings__.getSetting('Use flv files for playback') == 'true'
 
     li = xbmcgui.ListItem(
         htmlEntitiesDecode(title),
@@ -909,14 +921,15 @@ def add_folder_file(item):
         uri = construct_request({
             'file': str(href.encode('utf-8')),
             'referer': referer,
-            'mode': 'play'
+            'mode': 'play',
+            'playLink': item['playLink']
         })
-    elif useFlv:
+    elif useFlv and 'playLink' in item:
         uri = construct_request({
-            'file': href,
+            'playLink': item['playLink'],
             'referer': referer,
             'mode': 'playflv',
-            'fallbackHref': fallbackHref
+            'fallbackHref': href
         })
     elif proxyScriptUrl:
         uri = construct_request({
@@ -1010,26 +1023,68 @@ def addto(params):
 
 
 def playflv(params):
-    referer = urllib.unquote_plus(params['referer'])
-    plfile = urllib.unquote_plus(params['file'])
+    plfile = urllib.unquote_plus(params['playLink'])
+
+    jsPlayListItem = get_jsplayer_info(plfile)
+    if jsPlayListItem is not None:
+        url = urllib.urlopen(get_full_url(str(jsPlayListItem['url'])))
+        fileUrl = url.geturl()
+        title = jsPlayListItem['fsData']['file_name']
+    else:
+        fileUrl = urllib.unquote_plus(params['fallbackHref'])
+        title = fileUrl
+
+    set_play_start(plfile)
+
+    i = xbmcgui.ListItem(path=get_full_url(fileUrl), label=title)
+    xbmcplugin.setResolvedUrl(h, True, i)
+
+
+def get_jsplayer_info(playUrl):
+    fileRegExp = re.compile('file=(\d+)')
+    requestedFile = fileRegExp.findall(playUrl)[0]
+
     try:
-        http = GET(get_full_url(plfile), referer)
+        http = GET(get_full_url(playUrl), httpSiteUrl)
         if http is None:
             raise Exception('HTTP Error', 'page loading error')
 
-        fileRegexp = re.compile("playlist:\s*\[\s*\{\s*url:\s*'([^']+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
-        playerLink = fileRegexp.findall(http)
-        if playerLink is None or len(playerLink) == 0:
-            raise Exception('Flv search', 'link not found')
+        playlistRegexp = re.compile("playlist:\s*([^;]+)", re.IGNORECASE + re.DOTALL + re.MULTILINE)
+        playlist = playlistRegexp.findall(http)
 
-        plfile = urllib.urlopen(get_full_url(str(playerLink[0])))
-        fileUrl = plfile.geturl()
+        if playlist is not None and len(playlist) > 0:
+            playlist = fix_broken_json(str(playlist[0]).replace('\t\n', '')[0:-1])
+            playlist = json.loads(playlist)
+            if len(playlist) > 0:
+                for playListItem in playlist:
+                    if playListItem['fsData']['file_id'] == requestedFile:
+                        return playListItem
     except:
-        fileUrl = urllib.unquote_plus(params['fallbackHref'])
+        pass
 
-    i = xbmcgui.ListItem(path=get_full_url(fileUrl))
-    xbmcplugin.setResolvedUrl(h, True, i)
+    return None
 
+
+def send_js_ping(data):
+    pingUrl = basePingUrl + '&' + urllib.urlencode(data)
+    GET(pingUrl, httpSiteUrl)
+
+
+def set_play_start(playUrl):
+    jsPlayListItem = get_jsplayer_info(playUrl)
+    if jsPlayListItem is not None:
+        data = jsPlayListItem['fsData']
+        data['is_begin'] = 1
+        data['is_finish'] = 0
+        send_js_ping(data)
+
+
+def fix_broken_json(data):
+    data = re.sub(r'(\w+):', r'"\1":', data)
+    data = data.replace(': \'', ': "')
+    data = data.replace('\',', '",')
+
+    return data
 
 def play(params):
     referer = urllib.unquote_plus(params['referer'])
@@ -1039,13 +1094,16 @@ def play(params):
     plfile = urllib.urlopen(get_full_url(plfile))
     fileUrl = plfile.geturl()
 
+    if 'playLink' in params:
+        set_play_start(urllib.unquote_plus(params['playLink']))
+
     i = xbmcgui.ListItem(path=get_full_url(fileUrl))
     xbmcplugin.setResolvedUrl(h, True, i)
 
 def playProxy(params):
     file = get_full_url(urllib.unquote_plus(params['file']))
     realFile = GET(proxyScriptUrl + '?resolveUrl=' + urllib.quote(file), httpSiteUrl)
-    print realFile
+
     i = xbmcgui.ListItem(path=realFile)
     xbmcplugin.setResolvedUrl(h, True, i)
 

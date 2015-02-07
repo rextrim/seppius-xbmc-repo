@@ -394,7 +394,7 @@ Audio sources are
 
 <addon id="plugin.video.KinoPoisk.ru"
        name="KinoPoisk"
-       version="1.2.1"
+       version="1.2.2"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -413,7 +413,7 @@ Audio sources are
 
 <addon id="plugin.video.LostFilm"
        name="LostFilm"
-       version="0.4.5"
+       version="0.4.6"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -796,7 +796,7 @@ Audio sources are
 
 <addon id="plugin.video.fs.ua"
        name="Fs.ua"
-       version="1.9.19"
+       version="1.9.20"
        provider-name="x86demon">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
