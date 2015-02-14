@@ -136,15 +136,17 @@ def Movie_List(params):
         request.add_header('Accept-Language', 'ru-RU')
         request.add_header('Referer',	'http://galileo-tv.ru')
 
+        html = ''
+
         try:
             f = urllib2.urlopen(request)
+            html = f.read()
         except IOError, e:
             if hasattr(e, 'reason'):
-                xbmc.log('We failed to reach a server. Reason: '+ e.reason)
+                xbmc.log('We failed to reach a server. Reason: '+ str(e.reason))
             elif hasattr(e, 'code'):
-                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ e.code)
+                xbmc.log('The server couldn\'t fulfill the request. Error code: '+ str(e.code))
 
-        html = f.read()
 
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html, fromEncoding="windows-1251")

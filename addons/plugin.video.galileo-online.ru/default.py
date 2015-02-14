@@ -25,11 +25,6 @@ import urlparse
 
 fcookies = 'cookies.txt'
 
-# load XML library
-
-sys.path.append(os.path.join(os.getcwd(), r'resources', r'lib'))
-from BeautifulSoup  import BeautifulSoup
-
 # get cookies from last session
 cj = cookielib.MozillaCookieJar(fcookies)
 hr  = urllib2.HTTPCookieProcessor(cj)
@@ -38,7 +33,7 @@ urllib2.install_opener(opener)
 
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
-Addon = xbmcaddon.Addon(id='plugin.video.galileo-tv.ru')
+Addon = xbmcaddon.Addon(id='plugin.video.galileo-online.ru')
 icon = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'),'icon.png'))
 fcookies = xbmc.translatePath(os.path.join(Addon.getAddonInfo('path'), r'resources', r'data', r'cookies.txt'))
 
