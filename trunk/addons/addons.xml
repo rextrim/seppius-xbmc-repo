@@ -821,7 +821,7 @@ Audio sources are
 
 <addon id="plugin.video.galileo-online.ru"
        name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-online.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -842,7 +842,7 @@ Audio sources are
 
 <addon id="plugin.video.galileo-tv.ru"
        name="[COLOR FF00FF00]Галилео ([/COLOR][COLOR FFFFF000]galileo-tv.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
