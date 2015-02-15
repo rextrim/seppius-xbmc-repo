@@ -884,8 +884,10 @@ def add_directory_item(linkItem, isFolder, playLink, playLinkClass, cover, folde
     if lang is not None:
         title = lang.upper() + ' - ' + title
 
-    if playLink is not None and playLink.name == 'a':
+    if playLink is not None and playLink.name == 'a' and 'href' in playLink:
         playLink = httpSiteUrl + str(playLink['href'])
+    else:
+        playLink = ''
 
     href = linkItem['href']
     try:
@@ -1136,7 +1138,7 @@ def play(params):
     plfile = urllib.urlopen(get_full_url(plfile))
     fileUrl = plfile.geturl()
 
-    if 'playLink' in params:
+    if 'playLink' in params and params['playLink']:
         set_play_start(urllib.unquote_plus(params['playLink']))
 
     i = xbmcgui.ListItem(path=get_full_url(fileUrl))
