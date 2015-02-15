@@ -394,7 +394,7 @@ def readfavorites(params):
             id = item['href'].split('/')[-1]
             li.addContextMenuItems([
                 (
-                __language__(50003), "XBMC.RunPlugin(%s)" % construct_request({
+                    __language__(50003), "XBMC.RunPlugin(%s)" % construct_request({
                         'mode': 'addto',
                         'section': 'favorites',
                         'id': id,
@@ -402,7 +402,7 @@ def readfavorites(params):
                     })
                 ),
                 (
-                __language__(50004), "XBMC.RunPlugin(%s)" % construct_request({
+                    __language__(50004), "XBMC.RunPlugin(%s)" % construct_request({
                         'mode': 'addto',
                         'section': 'playlist',
                         'id': id,
@@ -1033,6 +1033,23 @@ def render_search_results(params):
                 li = xbmcgui.ListItem('[%s] %s' % (htmlEntitiesDecode(section), htmlEntitiesDecode(title)), iconImage=getThumbnailImage(cover),
                                       thumbnailImage=getPosterImage(cover))
                 li.setProperty('IsPlayable', 'false')
+                id = item['href'].split('/')[-1]
+                li.addContextMenuItems([
+                    (
+                    __language__(50001), "XBMC.RunPlugin(%s)" % construct_request({
+                            'mode': 'addto',
+                            'section': 'favorites',
+                            'id': id
+                        })
+                    ),
+                    (
+                    __language__(50002), "XBMC.RunPlugin(%s)" % construct_request({
+                            'mode': 'addto',
+                            'section': 'playlist',
+                            'id': id
+                        })
+                    )
+                ])
 
                 isMusic = 'no'
                 if params['section'] == 'audio':
