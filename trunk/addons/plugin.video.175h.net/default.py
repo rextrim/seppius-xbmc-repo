@@ -155,7 +155,11 @@ def main(params):
             })
             )
         ])
-        xbmcplugin.addDirectoryItem(h, href, li, False)
+        uri = construct_request({
+            'href': href,
+            'mode': 'play',
+        })
+        xbmcplugin.addDirectoryItem(h, uri, li, False)
 
     xbmcplugin.endOfDirectory(h)
 
@@ -183,6 +187,13 @@ def fix_broken_json(data):
     data = data.replace('\',', '",')
 
     return data
+
+
+def play(params):
+    fileUrl = urllib.unquote_plus(params['href'])
+
+    i = xbmcgui.ListItem(path=get_full_url(fileUrl))
+    xbmcplugin.setResolvedUrl(h, True, i)
 
 
 def download(params):
