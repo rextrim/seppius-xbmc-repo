@@ -128,7 +128,6 @@ def main(params):
         data = json.loads(material_data)
 
         href = get_file_path(data)
-        print fix_string(data['title'])
         li = xbmcgui.ListItem(
             fix_string(data['title']),
             thumbnailImage=get_image(data),
@@ -198,7 +197,9 @@ def play(params):
 
 def download(params):
     fileUrl = get_full_url(urllib.unquote_plus(params['file_url']))
-    fileName = fileUrl.split('/')[-1]
+    fileName = urllib.unquote_plus(params['file_name'])
+    if not fileName:
+        fileName = fileUrl.split('/')[-1]
     download_params = {
         'url': fileUrl,
         'download_path': __settings__.getSetting('Download Path')

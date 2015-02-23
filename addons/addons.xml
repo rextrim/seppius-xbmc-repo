@@ -319,7 +319,7 @@ Audio sources are
 
 <addon id="plugin.video.175h.net"
        name="175h.net"
-       version="0.2"
+       version="0.3"
        provider-name="x86demon">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
