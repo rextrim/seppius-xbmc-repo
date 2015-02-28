@@ -431,7 +431,7 @@ def Book_Info(params):
 
         i = xbmcgui.ListItem(s_name, path = urllib.unquote(s_url), thumbnailImage=b_img)
         u = sys.argv[0] + '?mode=PLAY'
-        u += '&url=%s'%urllib.quote_plus(b_url)
+        u += '&url=%s'%urllib.quote_plus(url) #b_url)
         u += '&name=%s'%urllib.quote_plus(s_name)
         u += '&img=%s'%urllib.quote_plus(b_img)
         u += '&track=%s'%urllib.quote_plus(str(n))
@@ -521,7 +521,18 @@ def PLAY(params):
                 'User-Agent'            :'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C; .NET4.0E)'
              }
 
+    #------------------------------------------------
     html = get_URL(url)
+    # -- parsing web page
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+
+    for j in soup.findAll('script', {'type':'text/javascript'}):
+        if 'var flashvars = {' in j.text:
+            b_pl = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(j.text)
+            b_url = b_pl[0].split(',')[1].replace('pl:','').replace('"','')
+    #------------------------------------------------
+    html = get_URL(b_url)
+
     n = 0
     playlist = json.loads(html)
     for rec in playlist['playlist']:
