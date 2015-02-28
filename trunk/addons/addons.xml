@@ -68,7 +68,7 @@
 
 <addon id="plugin.audio.asbook.ru"
        name="[COLOR FF00FF00]Аудиокниги ([/COLOR][COLOR FFFFF000]asbook.ru[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.8"
+       version="1.0.9"
        provider-name="Silen">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -108,7 +108,7 @@
 
 <addon id="plugin.audio.moskva.fm"
        name="MOSKVA.FM"
-       version="0.2.2"
+       version="1.0.1"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
