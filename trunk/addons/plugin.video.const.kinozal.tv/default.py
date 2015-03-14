@@ -510,7 +510,8 @@ def get_info(params):
     
     title = "[COLOR=FF008BEE][%s][%s]%s[/COLOR]" % (star.__len__(),sp.encode('utf-8'),tag_title.h1.a.getText().encode('utf-8'))
     id = params['url'].split('=')[1]
-    link = 'http://kinozal.tv/download.php/%s/[kinozal.tv]id%s.torrent' % (id, id)
+    #link = 'http://kinozal.tv/download.php/%s/[kinozal.tv]id%s.torrent' % (id, id)
+    link = 'http://kinozal.tv/download.php?id=%s' % id
     xinfo = all.find('div', attrs={'class':'mn1_content'}).findAll('div', attrs={'class' : 'bx1 justify'})
     isBlock = False
     if xinfo.__len__() == 4:
