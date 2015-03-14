@@ -453,7 +453,7 @@ Audio sources are
 
 <addon id="plugin.video.RuTor"
        name="RuTor"
-       version="2.3.5"
+       version="2.4.0"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -670,7 +670,7 @@ Audio sources are
 
 <addon id="plugin.video.const.kinozal.tv"
        name="kinozal.tv by const"
-       version="1.1.1"
+       version="1.1.2"
        provider-name="nuismons">
 	<requires>
         <import addon="xbmc.python" version="2.1.0"/>
