@@ -23,6 +23,11 @@ import re, os, urllib, urllib2, cookielib, time, random
 from time import gmtime, strftime
 from urlparse import urlparse
 
+#(------------- Add 12/03/2015 Evgenii S----------------------------------------
+import string
+digs = string.digits + string.letters
+#-------------- End Add 12/03/2015 Evgenii S------------------------------------
+
 import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 #import json
 import demjson3 as json
@@ -413,10 +418,15 @@ def Book_Info(params):
         if rec.find('i', {'class' : "b-sprt icon-6-2"}):
             b_actor = rec.find('div', {'class' : "cell string"}).find('a').text
 
-    for j in soup.findAll('script', {'type':'text/javascript'}):
-        if 'var flashvars = {' in j.text:
-            pl = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(j.text)
-            b_url = pl[0].split(',')[1].replace('pl:','').replace('"','')
+    #(------------- Change 12/03/2015 Evgenii S----------------------------------------
+    #for j in soup.findAll('script', {'type':'text/javascript'}):
+    #    if 'var flashvars = {' in j.text:
+    #        pl = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(j.text)
+    #        b_url = pl[0].split(',')[1].replace('pl:','').replace('"','')
+    packed_flash_data = soup.find('div', {'class':'b-fullpost__player_wrapper clearfix'}).contents[1].text
+    unpacked_flash_data = eval('unpack' + packed_flash_data[packed_flash_data.find('}(')+1:-1])
+    b_url = re.compile("json_url=\\'(.+?)\'", re.MULTILINE|re.DOTALL).findall(unpacked_flash_data)[0]
+    #-------------- End Change 12/03/2015 Evgenii S------------------------------------
 
     # -- parsing web page --------------------------------------------------
     html = get_URL(b_url)
@@ -526,10 +536,15 @@ def PLAY(params):
     # -- parsing web page
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for j in soup.findAll('script', {'type':'text/javascript'}):
-        if 'var flashvars = {' in j.text:
-            b_pl = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(j.text)
-            b_url = b_pl[0].split(',')[1].replace('pl:','').replace('"','')
+    #(------------- Change 12/03/2015 Evgenii S----------------------------------------
+    #for j in soup.findAll('script', {'type':'text/javascript'}):
+    #    if 'var flashvars = {' in j.text:
+    #        pl = re.compile('var flashvars = {(.+?)}', re.MULTILINE|re.DOTALL).findall(j.text)
+    #        b_url = pl[0].split(',')[1].replace('pl:','').replace('"','')
+    packed_flash_data = soup.find('div', {'class':'b-fullpost__player_wrapper clearfix'}).contents[1].text
+    unpacked_flash_data = eval('unpack' + packed_flash_data[packed_flash_data.find('}(')+1:-1])
+    b_url = re.compile("json_url=\\'(.+?)\'", re.MULTILINE|re.DOTALL).findall(unpacked_flash_data)[0]
+    #-------------- End Change 12/03/2015 Evgenii S------------------------------------
     #------------------------------------------------
     html = get_URL(b_url)
 
@@ -580,6 +595,51 @@ def get_params(paramstring):
 			if (len(splitparams))==2:
 				param[splitparams[0]]=splitparams[1]
 	return param
+
+
+#(------------- Add 12/03/2015 Evgenii S----------------------------------------
+def int2base(x, base):
+
+    if x < 0: sign = -1
+    elif x == 0: return digs[0]
+    else: sign = 1
+
+    x *= sign
+    digits = []
+
+    while x:
+        digits.append(digs[x % base])
+        x /= base
+
+    if sign < 0:
+        digits.append('-')
+    digits.reverse()
+    return ''.join(digits)
+
+def unpack(p, a, c, k, e=None, d=None):
+    ''' unpack
+    Unpacker for the popular Javascript compression algorithm.
+
+    @param  p  template code
+    @param  a  radix for variables in p
+    @param  c  number of variables in p
+    @param  k  list of c variable substitutions
+    @param  e  not used
+    @param  d  not used
+    @return p  decompressed string
+
+    example of call:
+        txt = '....'
+        eval('unpack' + txt[txt.find('}(')+1:-1])
+
+    '''
+    # Paul Koppen, 2011
+    for i in xrange(c-1,-1,-1):
+        if k[i]:
+            p = re.sub('\\b'+int2base(i,a)+'\\b', k[i], p)
+    return p
+#-------------- End Add 12/03/2015 Evgenii S------------------------------------
+
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
