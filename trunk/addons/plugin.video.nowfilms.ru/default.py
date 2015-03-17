@@ -100,9 +100,9 @@ def get_HTML(url, post = None, ref = None):
         if host==None:
             host = url.replace('http://', '').split('/')[0]
             if host==None:
-                host = 'nowfilms.ru'
+                host = 'kinokong.net'
     except:
-        host = 'nowfilms.ru'
+        host = 'kinokong.net'
 
     if ref==None:
         ref='http://'+host
@@ -162,7 +162,7 @@ def Get_Parameters(params):
 
 # ----- search on site --------------------------------------------------------
 def get_Search_HTML(search_str, page):
-    url = 'http://nowfilms.ru/index.php?do=search'
+    url = 'http://kinokong.net/index.php?do=search'
     str = search_str.decode('utf-8').encode('windows-1251')
 
     values = {
@@ -320,12 +320,12 @@ def Movie_List(params):
                 for rec in soup.findAll('div', {'class':'new_movie15'}):
                     mi.url      = rec.find('span', {'class':"new_movie8"}).find('a')['href']
                     if mi.url[0] == '/':
-                        mi.url = 'http://nowfilms.ru'+ mi.url
+                        mi.url = 'http://kinokong.net'+ mi.url
                     mi.title    = rec.find('span', {'class':"new_movinfo1"}).text.encode('utf-8')
                     mi.genre    = rec.find('span', {'class':"new_movinfo2"}).text.encode('utf-8')
                     mi.img      = rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
                     if mi.img[0] == '/':
-                        mi.img = 'http://nowfilms.ru'+ mi.img
+                        mi.img = 'http://kinokong.net'+ mi.img
 
                     #-- paint title ---
                     try:
@@ -371,12 +371,12 @@ def Movie_List(params):
                             mi.url = u['href']
 
                     if mi.url[0] == '/':
-                        mi.url = 'http://nowfilms.ru'+ mi.url
+                        mi.url = 'http://kinokong.net'+ mi.url
 
                     mi.title    = rec.find('span', {'class':"short_music2"}).text.encode('utf-8')
                     mi.img      = rec.find('span', {'class':"short_music1"}).find('img')['src']
                     if mi.img[0] == '/':
-                        mi.img = 'http://nowfilms.ru'+ mi.img
+                        mi.img = 'http://kinokong.net'+ mi.img
 
                     #-- paint title ---
                     try:
@@ -468,12 +468,12 @@ def Search_List(par):
         for rec in soup.findAll('div', {'class':'new_movie15'}):
             mi.url      = rec.find('span', {'class':"new_movie8"}).find('a')['href']
             if 'http://' not in mi.url:
-                mi.url = 'http://nowfilms.ru'+ mi.url
+                mi.url = 'http://kinokong.net'+ mi.url
             mi.title    = rec.find('span', {'class':"new_movinfo1"}).text.encode('utf-8')
             mi.genre    = rec.find('span', {'class':"new_movinfo2"}).text.encode('utf-8')
             mi.img      = rec.find('span', {'class':re.compile("new_movie4")}).find('img')['src']
             if mi.img[0] == '/':
-                mi.img = 'http://nowfilms.ru'+ mi.img
+                mi.img = 'http://kinokong.net'+ mi.img
             #-- paint title ---
             try:
                 m = min(mi.title.index('/'), mi.title.index('('))
@@ -515,11 +515,11 @@ def Search_List(par):
     for rec in soup.findAll('div', {'class':"short_news"}):
         mi.url      = rec.find('a')['href']
         if 'http://' not in mi.url:
-            mi.url = 'http://nowfilms.ru'+ mi.url
+            mi.url = 'http://kinokong.net'+ mi.url
         mi.title    = rec.find('span', {'class':"short_news4"}).find('img')['alt'].encode('utf-8')
         mi.img      = rec.find('span', {'class':"short_news4"}).find('img')['src']
         if mi.img[0] == '/':
-            mi.img = 'http://nowfilms.ru'+ mi.img
+            mi.img = 'http://kinokong.net'+ mi.img
         mi.text     = rec.find('span', {'class':"short_news2"}).find('span').text.encode('utf-8')
 
         title = '[COLOR FF00FFFF]'+mi.title+'[/COLOR]'
@@ -656,7 +656,7 @@ def Genre_List(params):
     for rec in soup.find("div", {"class":"header_submenu"}).findAll('a'):
         if rec.text == u'Фильмы онлайн':
             break
-        url      = 'http://nowfilms.ru/'+rec['href']
+        url      = 'http://kinokong.net/'+rec['href']
 
         name     = rec.text.encode('utf-8')
 
@@ -678,7 +678,7 @@ def Type_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://nowfilms.ru'
+    url = 'http://kinokong.net'
     html = get_HTML(url)
 
     # -- search ----------------------------------------------------------------
@@ -693,13 +693,13 @@ def Type_List(params):
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
     for rec in soup.find('div', { 'class':"flymenu1"}).find('ul', {'class':"reset flymenu2"}).findAll('li'):
-        if rec.find('a').text <> u'Топ':
+        if rec.find('a').text <> u'Топ' and rec.find('a')['href'] <> u'/viewed.html':
             if rec.find('span'):
                 txt = rec.find('a').text+' :  '
                 for t in rec.find('span').findAll('a'):
                     name = (txt+t.text.split('(')[0]).encode('utf-8')
                     lname = '[COLOR FF66FF66]'+txt.encode('utf-8')+'[/COLOR][COLOR FFFFCC33]'+t.text.split('(')[0].encode('utf-8')+'[/COLOR]'
-                    url = 'http://nowfilms.ru/'+ t['href']
+                    url = 'http://kinokong.net/'+ t['href']
 
                     i = xbmcgui.ListItem(lname, iconImage=icon, thumbnailImage=icon)
                     u = sys.argv[0] + '?mode=MOVIE'
@@ -714,7 +714,7 @@ def Type_List(params):
                 lname = '[COLOR FF66FF66]'+name+'[/COLOR]'
                 url  = rec.find('a')['href']
                 if url[0] == '/':
-                    url = 'http://nowfilms.ru'+ url
+                    url = 'http://kinokong.net'+ url
 
                 i = xbmcgui.ListItem(lname, iconImage=icon, thumbnailImage=icon)
                 u = sys.argv[0] + '?mode=MOVIE'
@@ -837,7 +837,7 @@ def get_params(paramstring):
 
 def Initialize():
 
-    url = 'http://nowfilms.ru/index.php'
+    url = 'http://kinokong.net/index.php'
     html = get_HTML(url)
 
     login       = Addon.getSetting('Login')
@@ -875,7 +875,7 @@ def Set_Order(ignor):
         _dir = 'desc'
         _sort= 'kp_rating'
 
-    url = 'http://nowfilms.ru/serial/boeviki/'
+    url = 'http://kinokong.net/serial/boeviki/'
     values = {  'dlenewssortby'       : _sort,
                 'dledirection'        : _dir,
                 'set_new_sort'        :'dle_sort_cat',
