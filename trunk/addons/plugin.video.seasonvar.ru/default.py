@@ -95,6 +95,7 @@ class Param:
     playlist        = ''
     title           = ''
     full_name       = ''
+    alphabet        = ''
 
 class Info:
     img         = ''
@@ -146,7 +147,11 @@ def Get_Parameters(params):
     #-- playlist url
     try:    p.playlist = urllib.unquote_plus(params['playlist'])
     except: p.playlist = ''
+    #-- alphabet
+    try:    p.alphabet = urllib.unquote_plus(params['alphabet'])
+    except: p.alphabet = ''
     #-----
+
     return p
 
 #----------- get Header string ---------------------------------------------------
@@ -154,6 +159,10 @@ def Get_Header(par, count):
 
     if par.search == '':
         info  = 'Сериалов: ' + '[COLOR FF00FF00]'+ str(count) +'[/COLOR] | '
+
+        if par.alphabet != '':
+            info += 'Буква: ' + '[COLOR FF00FFF0][B]'+ par.alphabet + '[/B][/COLOR] | '
+
         info += 'Жанр: ' + '[COLOR FFFF00FF]'+ par.genre_name + '[/COLOR] | '
         info += 'Страна: ' + '[COLOR FFFFF000]'+ par.country_name + '[/COLOR]'
     else:
@@ -181,6 +190,7 @@ def Get_Header(par, count):
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&country=%s'%urllib.quote_plus(par.country)
         u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&alphabet=%s'%urllib.quote_plus(par.alphabet)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- genre
@@ -193,6 +203,7 @@ def Get_Header(par, count):
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&country=%s'%urllib.quote_plus(par.country)
         u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&alphabet=%s'%urllib.quote_plus(par.alphabet)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- search & history
@@ -275,29 +286,55 @@ def Movie_List(params):
         soup = BeautifulSoup(html, fromEncoding="utf-8")
         # -- get number of serials
         mtag = GetTag(soup)
+        #with open('d:\\seasonvar.html', 'a') as the_file:
+        #    the_file.write(html)
 
-        for rec in soup.findAll('div', {'class':mtag}):
-            list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'].encode('utf-8'),
-                         'title' : rec.find('a').text.encode('utf-8'),
-                         'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
-            count = len(list)
+        if par.alphabet == '':
+            count = 0
+            for rec in soup.findAll('div', {'class':'alf-letter'}):
+                a_name = u'[COLOR FF00FFF0][B]' +rec.text+u'[/B][/COLOR] сериалов: '+str(len(rec.parent.findAll('div', {'class':mtag})))
+                list.append({'title'    : a_name.encode('utf-8'),
+                             'alphabet' : rec.text.encode('utf-8')})
+                count = count+len(rec.parent.findAll('div', {'class':mtag}))
+        else:
+            for reca in soup.findAll('div', {'class':'alf-letter'}):
+                if reca.text.encode('utf-8') == par.alphabet:
+                    for rec in reca.parent.findAll('div', {'class':mtag}):
+                        list.append({'url'   : 'http://seasonvar.ru'+rec.find('a')['href'].encode('utf-8'),
+                                     'title' : rec.find('a').text.encode('utf-8'),
+                                     'img'   : 'http://cdn.seasonvar.ru/oblojka/'+rec['id'].replace('div','')+'.jpg'})
+                        count = len(list)
 
     #-- add header info
     Get_Header(par, count)
 
     #-- get movie info
     #try:
-    for rec in list:
-        i = xbmcgui.ListItem(rec['title'], iconImage=rec['img'], thumbnailImage=rec['img'])
-        u = sys.argv[0] + '?mode=SERIAL'
-        u += '&name=%s'%urllib.quote_plus(rec['title'])
-        u += '&title=%s'%urllib.quote_plus(rec['title'])
-        u += '&url=%s'%urllib.quote_plus(rec['url'])
-        u += '&genre=%s'%urllib.quote_plus(par.genre)
-        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
-        u += '&country=%s'%urllib.quote_plus(par.country)
-        u += '&country_name=%s'%urllib.quote_plus(par.country_name)
-        xbmcplugin.addDirectoryItem(h, u, i, True)
+    if par.alphabet != '' or par.search != '':
+        for rec in list:
+            i = xbmcgui.ListItem(rec['title'], iconImage=rec['img'], thumbnailImage=rec['img'])
+            u = sys.argv[0] + '?mode=SERIAL'
+            u += '&name=%s'%urllib.quote_plus(rec['title'])
+            u += '&title=%s'%urllib.quote_plus(rec['title'])
+            u += '&url=%s'%urllib.quote_plus(rec['url'])
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&country=%s'%urllib.quote_plus(par.country)
+            u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+    else:
+        for rec in list:
+            i = xbmcgui.ListItem(rec['title'], iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            #u += '&name=%s'%urllib.quote_plus(rec['title'])
+            #u += '&title=%s'%urllib.quote_plus(rec['title'])
+            u += '&alphabet=%s'%urllib.quote_plus(rec['alphabet'])
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&country=%s'%urllib.quote_plus(par.country)
+            u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
     #except:
     #    pass
 
@@ -487,6 +524,7 @@ def Genre_List(params):
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&country=%s'%urllib.quote_plus(par.country)
         u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&alphabet=%s'%urllib.quote_plus(par.alphabet)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     xbmcplugin.endOfDirectory(h)
@@ -514,6 +552,7 @@ def Country_List(params):
         u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
         u += '&country=%s'%urllib.quote_plus(par.country)
         u += '&country_name=%s'%urllib.quote_plus(par.country_name)
+        u += '&alphabet=%s'%urllib.quote_plus(par.alphabet)
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     xbmcplugin.endOfDirectory(h)
@@ -653,13 +692,14 @@ def Get_PlayList(soup, parent_url):
 
     # -- get play list
     html = get_HTML(url, None, swf_player, True)
+
     #html = Decoder.Decode(html)
 
     pl = []
     name    = re.compile('"comment"\:"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
     video   = re.compile('"file"\:"(.+?)"', re.MULTILINE|re.DOTALL).findall(html)
 
-    for i in range(len(name)):
+    for i in range(len(video)):
         pl.append({'name':name[i], 'video':video[i]})
 
     return pl, url, swf_player
@@ -703,6 +743,7 @@ def Initialize():
 
     group = ''
     for r in fcookie.split('\n'):
+        r = r.strip()
         if group == '' and r != '':
             group = r
         elif r != '':
