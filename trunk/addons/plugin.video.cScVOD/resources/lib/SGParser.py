@@ -920,7 +920,7 @@ class sg_parsers:
                 except Exception as ex:
                     print ex
 
-            if url.find('188.227.185.66/s/md5') > -1 or url.find('176.58.40.180/s/md5') > -1:
+            if url.find('188.227.185.66/s/md5') > -1 or url.find('176.58.40.180/s/md5') > -1 or url.find('212.113.33.98/s/md5') > -1:
                 url1 = 'http://kino-live.org/hq/715505-slova.html'
                 request = urllib2.Request(url1, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})

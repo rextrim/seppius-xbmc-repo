@@ -501,11 +501,13 @@ class cSc_parsers:
                     print ex
 
             if url.find('veterok.tv/v/') > -1:
+                #id = url.replace('http://veterok.tv/v/','')
+                #reg = 'files["' + id + '"]="(.*?)";'
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
                 try:
                     page = urllib2.urlopen(request).read()
-                    code = re.findall('http://cdn(.*?)"', page)
+                    code = re.findall('files.*?http://cdn(.*?)"', page)
                     code = code[0]
                     if len(code) > 0:
                         url = 'http://cdn' + code
@@ -827,7 +829,8 @@ class cSc_parsers:
                 except Exception as ex:
                     print ex
 
-            if url.find('api.uakino.net/ifr.php') > -1:
+            if url.find('uakino.net/ifr.php') > -1:
+                url = url.replace('api','go')			
                 request = urllib2.Request(url, None, {'User-agent': 'Mozilla/5.0 nStreamVOD 0.1',
                  'Connection': 'Close'})
                 try:
