@@ -160,11 +160,7 @@ class shura:
 				self.getChannelsList()
 			if self.last_list and 'ttl' in self.last_list:
 				if self.last_list['ttl'] <> now.strftime('%Y-%m-%d') or 'ott' not in self.last_list or self.last_list['ott']<>self.OTT or 'server' not in self.last_list or self.last_list['server']<>self.ServerName or 'streamType' not in self.last_list or self.last_list['streamType']<>self.StreamType:
-					xbmc.log('[SHURA.TV] no list')
-					xbmc.log('[SHURA.TV] Last list expired: ttl:' + str(self.last_list['ttl']) +'<>'+str(now.strftime('%Y-%m-%d')))
-					xbmc.log('[SHURA.TV] Last list expired: ott:' + str(self.last_list['ott']) +'<>'+str(self.OTT))
-					xbmc.log('[SHURA.TV] Last list expired: server:' +str(self.last_list['server'])+'<>'+str(self.ServerName))
-					xbmc.log('[SHURA.TV] Last list expired: streamType:' +str(self.last_list['streamType'])+'<>'+str(self.StreamType))
+					xbmc.log('[SHURA.TV] Last list expired')
 					self.getChannelsList()
 		return self.last_list['channels']
 	def getChannelsList(self):
