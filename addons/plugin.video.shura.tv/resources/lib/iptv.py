@@ -160,7 +160,11 @@ class shura:
 				self.getChannelsList()
 			if self.last_list and 'ttl' in self.last_list:
 				if self.last_list['ttl'] <> now.strftime('%Y-%m-%d') or 'ott' not in self.last_list or self.last_list['ott']<>self.OTT or 'server' not in self.last_list or self.last_list['server']<>self.ServerName or 'streamType' not in self.last_list or self.last_list['streamType']<>self.StreamType:
-					xbmc.log('[SHURA.TV] Last list expired')
+					xbmc.log('[SHURA.TV] no list')
+					xbmc.log('[SHURA.TV] Last list expired: ttl:' + str(self.last_list['ttl']) +'<>'+str(now.strftime('%Y-%m-%d')))
+					xbmc.log('[SHURA.TV] Last list expired: ott:' + str(self.last_list['ott']) +'<>'+str(self.OTT))
+					xbmc.log('[SHURA.TV] Last list expired: server:' +str(self.last_list['server'])+'<>'+str(self.ServerName))
+					xbmc.log('[SHURA.TV] Last list expired: streamType:' +str(self.last_list['streamType'])+'<>'+str(self.StreamType))
 					self.getChannelsList()
 		return self.last_list['channels']
 	def getChannelsList(self):
@@ -208,7 +212,7 @@ class shura:
 			#response = JSONDECODE(response)
 		#except:
 			#xbmc.log('[SHURA.TV] Error.. :(')
-		self.last_list = {'channels': res, 'ttl': now.strftime('%Y-%m-%d'), 'ott':self.OTT, 'server':self.ServerName, 'StreamType':self.StreamType}
+		self.last_list = {'channels': res, 'ttl': now.strftime('%Y-%m-%d'), 'ott':self.OTT, 'server':self.ServerName, 'streamType':self.StreamType}
 		f = open(LASTLISTFILE, 'wb')
 		try:
 			jsave = JSONENCODE(self.last_list, encoding='utf8')
@@ -236,9 +240,12 @@ class shura:
 		#mindex = resp.index('},{')
 		#epg1 = resp[1:mindex+1]
 		try:
-			resp2 = JSONDECODE(resp)
+			if resp <> None and len(resp)>0:
+				resp2 = JSONDECODE(resp)
+			else:
+				resp2=None
 		except Exception, e:
-			xbmc.log('[SHURA.TV] Error in decoding json currentEPG' + str(e))
+			xbmc.log('[SHURA.TV] Error in decoding json currentEPG' + str(e) +'for'+str(resp) +'len='+ str(len(resp)))
 			resp2=None
 		else:
 			resstream.close();
