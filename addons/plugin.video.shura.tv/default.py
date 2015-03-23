@@ -485,7 +485,7 @@ def ShowChannelsList(plugin, mode = 'TV'):
 							archive_days= archive_days + str(int(channel['archive'])/24) +' дней'.decode('utf-8')
 							label = '%s[B] %s[/B] %s %s' % ('', channel['name']+':', timerange + '-'+CurrentEPG.decode('utf-8') + ', '+str(int(played)), '%,'+ archive_days)
 						else:
-							label='-'
+							label = '%s[B] %s[/B]' % ('', channel['name'])
 						iconimage=gettbn(formating(channel['name']))
 						item=xbmcgui.ListItem(channel['name'], iconImage = iconimage, thumbnailImage = iconimage)
 						item.setLabel(label)
