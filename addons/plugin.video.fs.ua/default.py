@@ -40,6 +40,11 @@ import re
 import cookielib
 import socket
 import simplejson as json
+try:
+    import sqlite3
+    from sqlite3 import dbapi2 as sqlite
+except:
+    pass
 
 import SimpleDownloader as downloader
 from BeautifulSoup import BeautifulSoup, BeautifulStoneSoup
@@ -944,6 +949,9 @@ def add_folder_file(item):
     li.setProperty('IsPlayable', 'true')
 
     li.setInfo(type=item_type, infoLabels={'title': title})
+    playCount = get_playCount(htmlEntitiesDecode(title))
+    if playCount:
+        li.setInfo(type=item_type, infoLabels={'title': title, 'playcount': 1})
     if not useFlv:
         li.addContextMenuItems([
             (
@@ -1184,6 +1192,31 @@ def get_params(paramstring):
                 param[splitparams[0]] = splitparams[1]
     return param
 
+# Originally posted by dimnik @ xbmc.ru
+def get_playCount(filename):
+    # Obtaining playback counter
+    playCount = False
+    if not filename or sqlite is None:
+        return playCount
+
+    # get path to database and determine videobase filename
+    basepath = xbmc.translatePath("special://database")
+    for basefile in xbmcvfs.listdir(basepath)[1]:
+        if 'MyVideos' in basefile:
+            videobase = basefile
+            # connect to database
+            db = sqlite.connect(os.path.join(basepath, videobase))
+            try:
+                sqlcur = db.execute('SELECT playCount FROM files WHERE strFilename like ?', ('%'+filename+'%',))
+                res_playCount = sqlcur.fetchall()
+                if res_playCount:
+                    # check in the result data for at the least one played current file
+                    if any(plcount > 0 for plcount in res_playCount):
+                        playCount = True
+            except:
+                print 'Error connection to table file. Database is may be busy'
+            db.close()
+    return playCount
 
 params = get_params(sys.argv[2])
 
