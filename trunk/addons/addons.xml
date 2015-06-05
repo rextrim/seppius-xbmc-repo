@@ -415,7 +415,7 @@ Audio sources are
 
 <addon id="plugin.video.KinoPoisk.ru"
        name="KinoPoisk"
-       version="1.2.2"
+       version="1.3.4"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -434,7 +434,7 @@ Audio sources are
 
 <addon id="plugin.video.LostFilm"
        name="LostFilm"
-       version="0.4.6"
+       version="0.4.9"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -761,7 +761,7 @@ Audio sources are
 
 <addon id="plugin.video.fasttorrent.org"
        name="fast-torrent.org"
-       version="1.2.3"
+       version="1.2.5"
        provider-name="TDW">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1311,24 +1311,6 @@ I hope you like this!
   </extension>
 </addon>
 
-<addon id="plugin.video.raketa.tv"
-       name="Raketa-TV"
-       version="2.0.6"
-       provider-name="Const86, -=St.Anger=-">
-    <requires>
-		<import addon="script.module.torrent.ts"/>
-		<import addon="script.module.beautifulsoup"/>
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-        <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-        <summary>Raketa TV</summary>
-        <description>Просмотр каналов Raketa-TV через Torrent Stream</description>
-        <platform>all</platform>
-    </extension>
-</addon>
-
 <addon id="plugin.video.rodina.tv" name="[COLOR FF23a0e3]Rodina.TV[/COLOR]" version="2.7.3" provider-name="Rodina TV">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -1787,7 +1769,7 @@ RuTube - отличная стартовая площадка для незав�
 
 <addon id="plugin.video.torrent.tv"
        name="Torrent-TV.RU"
-       version="2.1.2"
+       version="2.1.5"
        provider-name="Const86, -=St.Anger=-">
     <requires>
 		<import addon="script.module.torrent.ts"/>
@@ -2240,10 +2222,11 @@ provider-name="Roman_V_M">
 
 <addon id="script.module.YaTv"
        name="YaTv"
-       version="2.1.4"
+       version="2.1.7"
        provider-name="TDW, -=St.Anger=-">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
+	<import addon="script.module.beautifulsoup"/>
   </requires>
   <extension point="xbmc.addon.metadata">
     <summary>YaTv</summary>
