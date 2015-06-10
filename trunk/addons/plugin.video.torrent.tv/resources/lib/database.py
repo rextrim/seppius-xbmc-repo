@@ -9,9 +9,19 @@ import xbmcaddon
 import time
 import os
 import sys
+import urllib
 __addon__ = xbmcaddon.Addon( id = 'plugin.video.torrent.tv' )
 addon_icon     = __addon__.getAddonInfo('icon')
 addon_id        = __addon__.getAddonInfo('id')
+login = __addon__.getSetting("login")
+passw = __addon__.getSetting("password")
+
+data = urllib.urlencode({
+    'email' : login,
+    'password' : passw,
+    'remember' : 1,
+    'enter' : 'enter'
+})
 
 def showMessage(message = '', heading='TorrentTV', times = 3000, pics = addon_icon):
     try: xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s, "%s")' % (heading.encode('utf-8'), message.encode('utf-8'), times, pics.encode('utf-8')))
@@ -84,8 +94,7 @@ def GET(target, post=None, cookie = None):
         if cookie:
             req.add_header('Cookie', cookie)
             
-        resp = urllib2.urlopen(req, timeout=10000)
-            
+        resp = urllib2.urlopen(req)
         http = resp.read()
         resp.close()
         return http
@@ -272,11 +281,11 @@ class DataBase:
         for ch in res:
             torr_link = ''
             try:
-                page = GET('http://torrent-tv.ru/' + ch[1], cookie=self.cookie)
+                #page = GET('http://torrent-tv.ru/' + ch[1], cookie=self.cookie)
+                #if page == None:
+                page = GET('http://1ttv.org/' + ch[1], cookie=self.cookie)
                 if page == None:
-                    page = GET('http://1ttv.org/' + ch[1], cookie=self.cookie)
-                    if page == None:
-                        showMessage('Torrent TV', 'Сайты не отвечают')
+                    showMessage('Torrent TV', 'Сайты не отвечают')
                 try:
                     torr_link = AddURL[str(ch[0])]
                 except:
@@ -315,11 +324,11 @@ class DataBase:
             return torr_link[0]
         else:
             try:
-                page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + id, cookie=self.cookie)
+                #page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + id, cookie=self.cookie)
+                #if page == None:
+                page = GET('http://1ttv.org/torrent-online.php?translation=' + id, cookie=self.cookie)
                 if page == None:
-                    page = GET('http://1ttv.org/torrent-online.php?translation=' + id, cookie=self.cookie)
-                    if page == None:
-                        showMessage('Torrent TV', 'Сайты не отвечают')
+                    showMessage('Torrent TV', 'Сайты не отвечают')
                 try: torr_link = AddURL[id]
                 except:
                     beautifulSoup = BeautifulSoup(page)
@@ -446,11 +455,12 @@ class DataBase:
         try:
             self.Connect()
             import time
-            page = GET('http://torrent-tv.ru/channels.php', cookie = self.cookie)
+            #page = GET('http://torrent-tv.ru/channels.php', cookie = self.cookie)
+            #if page == None:
+            page = GET('http://1ttv.org/channels.php', cookie = self.cookie)
             if page == None:
-                page = GET('http://1ttv.org/channels.php', cookie = self.cookie)
-                if page == None:
-                    showMessage('Torrent TV', 'Сайты не отвечают')
+                showMessage('Torrent TV', 'Сайты не отвечают')
+                return
             
             beautifulSoup = BeautifulSoup(page)
             el = beautifulSoup.findAll('a', attrs={'class': 'simple-link'})
