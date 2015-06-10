@@ -170,8 +170,12 @@ def GetCookie(target, post=None):
         req = urllib2.Request(url = target, data = post)
         req.add_header('User-Agent', 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1) ; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET4.0C)')
         resp = urllib2.urlopen(req)
+        #print resp.headers['Set-Cookie']
+        #for i in resp.headers:
+            #print i
         cookie = resp.headers['Set-Cookie'].split(";")[0]
         http=resp.read()
+        resp.close()
         if not http.find('Вход') > 1:
             showMessage('Torrent TV', 'Успешная авторизация', 3000)
             return cookie
@@ -187,13 +191,13 @@ def UpdCookie():
         os.remove(cookiefile)
     out = open(cookiefile, 'w')
     cookie = ''
-    if GetCookie('http://torrent-tv.ru/auth.php', data) == None:
-        if GetCookie('http://1ttv.org/auth.php', data) == None:
-            return None
-        else:
-            cookie = GetCookie('http://1ttv.org/auth.php', data)
+    #if GetCookie('http://torrent-tv.ru/auth.php', data) == None:
+    if GetCookie('http://1ttv.org/auth.php', data) == None:
+        return None
     else:
-        cookie = GetCookie('http://torrent-tv.ru/auth.php', data)
+        cookie = GetCookie('http://1ttv.org/auth.php', data)
+    #else:
+        #cookie = GetCookie('http://torrent-tv.ru/auth.php', data)
     try:
         out.write(cookie)
         out.close()
@@ -1092,12 +1096,13 @@ def GetChannelsWeb(params):
         import YaTv
     except: pass
 #########################
-    http = GET('http://torrent-tv.ru/' + params['file'])
+    #http = GET('http://torrent-tv.ru/' + params['file'])
+    #if http == None:
+    http = GET('http://1ttv.org/' + params['file'])
     if http == None:
-        http = GET('http://1ttv.org/' + params['file'])
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
+    #print http
     beautifulSoup = BeautifulSoup(http)
     channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
     for ch in channels:
@@ -1284,12 +1289,12 @@ def get_querry(params):
 
 def getCat(params):
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-    http = GET('http://torrent-tv.ru/films.php')
+    #http = GET('http://torrent-tv.ru/films.php')
+    #if http == None:
+    http = GET('http://1ttv.org/films.php')
     if http == None:
-        http = GET('http://1ttv.org/films.php')
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     next=beautifulSoup.findAll('a', attrs={'class': 'genre_cat_link'})
     title = ''
@@ -1329,12 +1334,12 @@ def getABC(params):
 
 def getPages(params):
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-    http = GET('http://torrent-tv.ru' + params['file']+'&page=1')
+    #http = GET('http://torrent-tv.ru' + params['file']+'&page=1')
+    #if http == None:
+    http = GET('http://1ttv.org' + params['file']+'&page=1')
     if http == None:
-        http = GET('http://1ttv.org' + params['file']+'&page=1')
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     next=beautifulSoup.findAll('div', attrs={'class': 'best-channels'})[1].findAll('a')
     count_ch = 0
@@ -1366,12 +1371,12 @@ def getPages(params):
 def getFilms(params):
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
     page = '&page='+params['page']
-    http = GET('http://torrent-tv.ru' + params['file']+page)
+    #http = GET('http://torrent-tv.ru' + params['file']+page)
+    #if http == None:
+    http = GET('http://1ttv.org' + params['file']+page)
     if http == None:
-        http = GET('http://1ttv.org' + params['file']+page)
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
     des = beautifulSoup.find(text=re.compile('var descrs = {.*'))
@@ -1443,12 +1448,12 @@ def getFilms(params):
 
 def GetFilmsWeb(params):
     xbmcplugin.setContent(int(sys.argv[1]), 'movies')
-    http = GET('http://torrent-tv.ru/' + params['file'])
+    #http = GET('http://torrent-tv.ru/' + params['file'])
+    #if http == None:
+    http = GET('http://1ttv.org/' + params['file'])
     if http == None:
-        http = GET('http://1ttv.org/' + params['file'])
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     try:
         if not params.has_key("descr") or params["descr"].find('...')>-1:
@@ -1689,12 +1694,12 @@ def play_url2(params):
 def GetArchive(params):
     #date = datetime.datetime.now().timetuple()
     #title = str(date.tm_mday) + '-' + str(date.tm_mon) + '-'  + str(date.tm_year)
-    http = GET('http://torrent-tv.ru/' + params['file'])#+'?data='+title)
+    #http = GET('http://torrent-tv.ru/' + params['file'])#+'?data='+title)
+    #if http == None:
+    http = GET('http://1ttv.org/' + params['file'])
     if http == None:
-        http = GET('http://1ttv.org/' + params['file'])
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels-content'})
     for ch in channels:
@@ -1751,12 +1756,12 @@ def getArchiveCalendar(params):
 def getArchiveDate(params):
     date = datetime.datetime.now().timetuple()
     title = str(date.tm_mday) + '-' + str(date.tm_mon) + '-'  + str(date.tm_year)
-    http = GET('http://torrent-tv.ru/' + params['file'].replace(title,params['date']))
+    #http = GET('http://torrent-tv.ru/' + params['file'].replace(title,params['date']))
+    #if http == None:
+    http = GET('http://1ttv.org/' + params['file'].replace(title,params['date']))
     if http == None:
-        http = GET('http://1ttv.org/' + params['file'].replace(title,params['date']))
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     channels=beautifulSoup.findAll('div', attrs={'class': 'best-channels'})
     search = channels[0].findAll('p')
@@ -1791,12 +1796,12 @@ def play_ch_db(params):
     showMessage(message = 'Запуск...', heading='Torrent TV', times = 2000)
     xbmc.executebuiltin('Action(Stop)')
     try:
-        page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + str(params['id']), data)
+        #page = GET('http://torrent-tv.ru/torrent-online.php?translation=' + str(params['id']), data)
+        #if page == None:
+        page = GET('http://1ttv.org/torrent-online.php?translation=' + str(params['id']), data)
         if page == None:
-            page = GET('http://1ttv.org/torrent-online.php?translation=' + str(params['id']), data)
-            if page == None:
-                showMessage('Torrent TV', 'Сайты не отвечают')
-                return
+            showMessage('Torrent TV', 'Сайты не отвечают')
+            return
         res = re.compile('DateTime = ".*"')
         res.findall(page)
         if res:
@@ -1855,12 +1860,12 @@ def play_ch_db(params):
 def play_ch_web(params):
     showMessage(message = 'Запуск...', heading='Torrent TV', times = 2000)
     xbmc.executebuiltin('Action(Stop)') 
-    http = GET('http://torrent-tv.ru/' + params['file'])
+    #http = GET('http://torrent-tv.ru/' + params['file'])
+    #if http == None:
+    http = GET('http://1ttv.org/' + params['file'])
     if http == None:
-        http = GET('http://1ttv.org/' + params['file'])
-        if http == None:
-            showMessage('Torrent TV', 'Сайты не отвечают')
-            return
+        showMessage('Torrent TV', 'Сайты не отвечают')
+        return
     beautifulSoup = BeautifulSoup(http)
     tget= beautifulSoup.find('div', attrs={'class':'tv-player'})
     mode = ''
